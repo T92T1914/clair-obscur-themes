@@ -9,13 +9,31 @@ This record distinguishes implementation from application acceptance for the 0.1
 | Clair and Obscur for Chrome | Native color-theme generators and package validation are implemented | Install each in ordinary Chrome and verify native frame states and rollback |
 | Clair and Obscur for Equicord | Standalone CSS generators, local font aliases and matching-base gates are implemented | Load each in Equibop with Equicord and inspect actual host surfaces and rollback |
 | Local application versions | Chrome 153.0.8010.53 and Equibop 3.3.1.0 were identified | These versions are test targets, not passed compatibility claims |
-| Rendered Inter faces | The retained 0.1.0 fixture resolved six Inter faces. The 0.1.1 Windows strict rerun failed to resolve any local Inter alias, despite the local files and font registrations remaining present. Its fallback fixture rendered Segoe UI | Resolve the current local font availability discrepancy and verify actual Equibop glyphs and preserved code/icon/language fallback |
+| Rendered Inter faces | After a scoped Windows session repair, the strict headless check resolves all six required installed Inter faces with actual glyphs. The earlier failure and its direct-byte control are retained separately | Verify persistence after a future normal restart and actual Equibop glyphs, including preserved code/icon/language fallback |
 | Native installation | No completed installation result is recorded for either target application | Both application checks remain **not verified** |
 | Physical display and comfort | User-reported baseline is recorded in the design document | Physical viewing, captured-media comparison and subjective comfort remain **not verified** |
 
 The identified application versions are Windows test targets. Other operating systems, Discord clients and browser derivatives are not covered by a native compatibility claim. No theme rejection or successful native installation is established by the missing result. Detailed private environment and capture records stay outside the public source.
 
-The strict font assertion remains enabled with `THEME_REQUIRE_INTER=1`. Ordinary CI skips that assertion when the required local faces are unavailable and tests fallback separately. A skipped font assertion is not a passed typography check. An independent headless diagnostic reproduced the local-name lookup failure and rendered all six expected glyph faces from the same files supplied as in-memory bytes. That narrows the issue to local font discovery, not a malformed font file or alias spelling, but its cause remains unresolved. The product still uses local fonts only. No font installation, cache reset or system setting change was made to force a pass.
+The strict font assertion remains enabled with `THEME_REQUIRE_INTER=1`. Ordinary CI skips that assertion when the required local faces are unavailable and tests fallback separately. A skipped font assertion is not a passed typography check. Each expected PostScript face must have a positive glyph count in its own specimen. A family declaration or an expected face with zero glyphs does not pass.
+
+## Installed-font investigation
+
+On September 24, 2026, the same Windows Chrome version and unchanged font declarations passed, then failed after an intervening Windows restart. The six files and current-user registry entries still existed, but Windows font enumeration omitted Inter. Fresh isolated processes reproduced the following results. All six weights/styles were tested in each row.
+
+| Path | Before repair | After repair |
+| --- | --- | --- |
+| Generated local aliases | No Inter glyphs | All six expected Inter faces rendered |
+| Ordinary `Inter` family with explicit weight/style | System fallback | All six expected Inter faces rendered |
+| Individual full-name and PostScript `local()` lookups read from the files | All twelve lookups failed | All twelve resolved and rendered their expected face |
+| Diagnostic-only direct-byte control | All six expected faces rendered | All six expected faces rendered |
+| Intentionally unavailable local font | System fallback | System fallback |
+
+The repair activated the six already-installed, hash-verified files through Windows' documented [AddFontResourceW](https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-addfontresourcew) API and sent its font-change notification. Fresh processes then resolved the unchanged local names, and the strict test passed without a skip. Font files, registry entries, desktop font choices, browser profiles and display settings were not rewritten. No global cache was cleared, service restarted or font binary added to the product.
+
+This establishes a runtime font-availability failure and a successful repair in the tested Windows session. It does not establish why the saved per-user installation failed to become available after that restart, or prove that the repair survives another restart. The direct-byte control bypasses installed-name discovery. Its success alone never establishes that a `local()` alias works. Here, the independent post-repair local lookups supply that evidence.
+
+The original failing result remains part of the evidence. The current pass covers the isolated Chrome specimen, not typography in a running Equibop client. Native installation, switching and restoration remain open for all four variants. The published 0.1.1 theme files did not need an artifact change for this machine-local repair.
 
 ## Evidence levels
 

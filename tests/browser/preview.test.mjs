@@ -8,6 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import http from 'node:http';
 import crypto from 'node:crypto';
+import { assertRenderedFace } from './font-evidence.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 let temp, site, server, browser, origin;
@@ -41,8 +42,17 @@ before(async () => {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   origin = `http://127.0.0.1:${server.address().port}`;
   // Uses a disposable profile and never falls back to a visible browser.
-  browser = await chromium.launch({ channel: process.env.THEME_BROWSER_CHANNEL || 'chrome', headless: true });
-  results.environment = { browser: browser.version(), channel: process.env.THEME_BROWSER_CHANNEL || 'chrome', node: process.version, platform: process.platform, renderer: 'isolated headless page', nativeChromeFrameVerified: false, equibopVerified: false };
+  const launchOptions = { channel: process.env.THEME_BROWSER_CHANNEL || 'chrome', headless: true, chromiumSandbox: true, args: ['--mute-audio'] };
+  browser = await chromium.launch(launchOptions);
+  results.environment = { browser: browser.version(), channel: launchOptions.channel, requestedLaunch: launchOptions, node: process.version, platform: process.platform, renderer: 'isolated headless page', nativeChromeFrameVerified: false, equibopVerified: false };
+  let versionSession;
+  try {
+    versionSession = await browser.newBrowserCDPSession();
+    const { product, revision, protocolVersion, jsVersion } = await versionSession.send('Browser.getVersion');
+    results.environment.browserProcess = { status: 'observed', product, revision, protocolVersion, jsVersion };
+  } catch (error) {
+    results.environment.browserProcess = { status: 'unavailable', error: error.name };
+  } finally { await versionSession?.detach(); }
   if (evidence) await mkdir(evidence, { recursive: true });
 });
 
@@ -111,15 +121,27 @@ test('six genuine Inter glyph faces and native monospace are distinguishable', a
   try {
     const session = await context.newCDPSession(page);
     await session.send('DOM.enable'); await session.send('CSS.enable');
-    const faceStates = await page.evaluate(() => [...document.fonts].filter(face => face.family === 'Clair Obscur Inter')
-      .map(face => ({ family: face.family, weight: face.weight, style: face.style, status: face.status })));
+    const faceStates = await page.evaluate(async () => Promise.all(
+      [...document.fonts].filter(face => face.family === 'Clair Obscur Inter').map(async face => {
+        const record = { family: face.family, weight: face.weight, style: face.style, statusBeforeRequest: face.status };
+        try { await face.load(); record.loadRequest = 'fulfilled'; }
+        catch (error) { record.loadRequest = 'rejected'; record.error = error.name; }
+        return { ...record, status: face.status };
+      })));
     results.fonts.localFaces = { required: process.env.THEME_REQUIRE_INTER === '1', faces: faceStates };
+    assert.deepEqual(faceStates.map(face => `${face.weight}:${face.style}`).sort(),
+      ['400:normal', '400:italic', '600:normal', '600:italic', '700:normal', '700:italic'].sort(),
+      'The fixture must declare each required face exactly once');
     const loadedFaces = faceStates.filter(face => face.status === 'loaded').length;
     if (loadedFaces !== 6 && process.env.THEME_REQUIRE_INTER !== '1') {
       t.skip('Six installed Inter faces are required for exact glyph-face verification');
       return;
     }
-    assert.equal(loadedFaces, 6);
+    assert.equal(loadedFaces, 6, JSON.stringify(results.fonts.localFaces));
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    });
     const { root: document } = await session.send('DOM.getDocument');
     const expected = {
       regular: 'Inter-Regular', semibold: 'Inter-SemiBold', bold: 'Inter-Bold', italic: 'Inter-Italic',
@@ -129,12 +151,12 @@ test('six genuine Inter glyph faces and native monospace are distinguishable', a
       const { nodeId } = await session.send('DOM.querySelector', { nodeId: document.nodeId, selector: '#face-' + kind });
       const { fonts } = await session.send('CSS.getPlatformFontsForNode', { nodeId });
       results.fonts[kind] = fonts;
-      assert.ok(fonts.some(font => font.glyphCount > 0));
-      assert.ok(fonts.some(font => font.postScriptName === face), JSON.stringify(fonts));
+      assertRenderedFace(fonts, face);
     }
     const { nodeId } = await session.send('DOM.querySelector', { nodeId: document.nodeId, selector: '#face-code' });
     const { fonts } = await session.send('CSS.getPlatformFontsForNode', { nodeId });
     results.fonts.code = fonts;
+    assert.ok(fonts.some(font => font.glyphCount > 0));
     assert.ok(fonts.every(font => !font.postScriptName?.startsWith('Inter')));
     await session.detach();
   } finally { await context.close(); }
