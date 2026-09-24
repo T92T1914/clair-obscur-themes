@@ -45,12 +45,14 @@ To switch, disable the current family file, select the matching native appearanc
 
 Use a [separate local test profile](https://support.google.com/chrome/answer/2364824?hl=en) in standard Google Chrome for the first installation. Add it from the profile menu, continue without signing in and keep sync off. Do not import or copy data from the everyday profile. Record the test profile's initial appearance. This isolates the theme change from existing browser choices.
 
-1. Extract one Chrome ZIP, or use its generated directory directly. Locate the folder containing `manifest.json`.
+1. Extract one Chrome ZIP to a permanent folder outside the repository's managed `dist/` directory. If building from source, copy the generated theme folder to that separate installation location. Locate the folder containing `manifest.json`.
 2. Open `chrome://extensions` in the test profile, enable **Developer mode**, choose **Load unpacked** and select that folder. This is Chrome's [development installation route](https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world#load-unpacked), not a consumer store installation. If Chrome rejects the package or the control is unavailable, retain the exact error. Do not change browser policy or switch to another browser to obtain a pass.
 3. Inspect **Settings > Appearance** and the real browser frame. Begin with Obscur, then give Clair the same checks. Test active/inactive tabs, multiple windows, the address bar and suggestions, bookmarks, tab groups, downloads and Incognito recognition.
 4. Try windowed, split-screen and maximized sizes. Use normal browser zoom for page content when needed. Page zoom does not establish a change to Chrome's native UI font or frame scaling.
 
 Installing the other package should switch the active theme in that profile. Confirm the resulting appearance instead of treating the click as proof. Switch back once to test both directions. To remove it, use **Settings > Appearance > Reset to default**, Chrome's [documented removal path](https://support.google.com/chrome_webstore/answer/148695). Confirm the candidate is gone, restore any test-profile color choice recorded earlier and close the test windows. Do not delete a profile containing data you want to keep. Keep the everyday profile untouched until the preview has passed the intended checks.
+
+Keep the installation folder separate from generated output. During the recorded native test, the loaded theme directory acquired `Cached Theme.pak`. The build validator correctly rejected that extra file. Do not delete files from a live theme installation or weaken the validator to make a rebuild pass. Build to a fresh output directory when the original is in use.
 
 These themes do not recolor ordinary websites, replace the new-tab page, change search or select a browser font. Chrome derives some component colors itself. A readable preview webpage does not prove that address-bar suggestions or inactive windows render correctly.
 

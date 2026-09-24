@@ -262,7 +262,10 @@ test('static delivery remains usable without JavaScript and internal links resol
   try {
     assert.equal(await page.locator('#downloads .download-card a[download]').count(), 4);
     assert.match(await page.locator('#downloads .status').textContent(), /preview builds/);
-    assert.match(await page.locator('body').textContent(), /Native Chrome and Equibop\/Equicord installation, switching and restoration tests remain pending/);
+    assert.match(await page.locator('.hero .status').textContent(), /Full native acceptance remains open/);
+    const acceptance = page.getByRole('link', { name: 'dated acceptance record', exact: true });
+    assert.ok(await acceptance.isVisible());
+    assert.equal(await acceptance.getAttribute('href'), 'https://github.com/T92T1914/clair-obscur-themes/blob/main/docs/acceptance.md');
     assert.doesNotMatch(await page.content(), /\{\{[A-Z_]+\}\}/);
     for (const [name, background] of [['Obscur', 'rgb(9, 9, 9)'], ['Clair', 'rgb(248, 247, 243)']]) {
       const card = page.locator(`[data-palette="${name}"]`);
