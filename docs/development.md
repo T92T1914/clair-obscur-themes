@@ -14,6 +14,8 @@ py -3.11 -X utf8 preview.py --output outputs\preview-0.1.1
 
 Use `python` instead of `py -3.11` where the Windows launcher is unavailable. The exact Inter check requires all six local static faces. Without that requirement, an environment missing those faces reports the face-specific test as skipped and still tests system fallback. The browser suite never opens a visible browser or uses an ordinary profile. It defaults to installed Google Chrome. CI uses a separately installed Chromium engine and cannot replace the native Chrome check.
 
+The runner explicitly keeps the Chromium sandbox enabled and mutes audio. It records the requested launch configuration and observed browser process version. The Inter check requests every declared face, records load failures, waits for layout and requires the intended PostScript face to supply actual glyphs in each specimen. Portable regressions reject mismatched or empty glyph evidence without installing a font. A font file on disk, successful direct-byte diagnostic or green fallback check cannot substitute for this installed-font result.
+
 The preview builder copies only verified release bytes and explicitly selected source categories. It rejects a stale or edited artifact. Repeating the same build is harmless. When the source changes, choose a fresh preview output directory so an existing candidate is not silently replaced. `site-manifest.json` describes the exact preview bytes.
 
 To serve a built preview locally:
