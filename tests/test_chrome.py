@@ -42,7 +42,11 @@ class ChromeThemeTests(unittest.TestCase):
         for name in ("Clair", "Obscur"):
             with self.subTest(name=name):
                 target = build_theme(name, TOKENS, self.root, "1.2.3")
-                self.assertEqual(target, self.root / name.lower())
+                # Windows TEMP may use an 8.3 alias while the builder returns
+                # the canonical path. Check both the path contract and identity.
+                expected = self.root / name.lower()
+                self.assertEqual(target, expected.resolve())
+                self.assertTrue(target.samefile(expected))
                 self.assertEqual({p.name for p in target.iterdir()}, {"manifest.json", "icon128.png", "LICENSE.txt"})
                 canonical = (Path(__file__).resolve().parents[1] / "LICENSE").read_text(encoding="utf-8")
                 self.assertEqual((target / "LICENSE.txt").read_text(encoding="utf-8"), canonical)
