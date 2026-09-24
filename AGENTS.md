@@ -17,4 +17,11 @@ Build a shared original theme family for native Google Chrome and Windows Equibo
 - Browser tests use temporary profiles, loopback-only fixtures, no visible fallback and no desktop input. They never establish native frame or Equibop acceptance.
 - `python preview.py --output outputs/preview` packages the static specimen and verified downloads. A changed existing preview is preserved. Use a fresh output directory for a new candidate.
 - `dist/` is an exact managed build tree. Never edit generated theme files or add files to it. The builder rejects foreign or edited output and checks existing hashes before replacement.
-- Native checks require a current scoped control grant and a functioning desktop tool. Preserve the interruption state and do not bypass a physical Escape stop.
+- Extract native installation copies outside managed build output. Preserve files Chrome creates inside a live installation, including `Cached Theme.pak`.
+- Native checks require a current scoped control grant and a functioning desktop tool. Preserve the exact interruption state, including URL-confidence and physical Escape stops. Do not retry or change controllers to bypass enforcement.
+
+## Publication
+
+- Reviewed updates merged into `main` deploy automatically after the same run's Linux, Windows and browser checks pass. Preserve the `github-pages` environment, approvals, scoped permissions, same-run artifact and concurrency controls. Manual dispatch is an optional fallback, not the ordinary publication step.
+- Keep push triggers available for version tags. Tag prereleases are separate from website deployment. Do not move existing tags or replace published assets for documentation changes.
+- Verify the main-triggered Pages result, served `site-manifest.json` revision, acceptance link and four actual downloads before reporting deployment. The versioned source link must use the original release archive. A current-source snapshot needs its actual revision and matching checksum.

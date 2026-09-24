@@ -80,7 +80,9 @@ preserve_native_scaling = True</code></pre>
       <nav class="platform-links" aria-label="Download platform"><a href="#chrome-downloads">Google Chrome</a><a href="#equicord-downloads">Equibop with Equicord</a></nav>
       <div id="chrome-downloads" class="platform-group"><h3>Google Chrome</h3><p>Native browser colors. Chrome retains its own interface font and website styling.</p><div class="download-grid">{{CHROME_CARDS}}</div></div>
       <div id="equicord-downloads" class="platform-group"><h3>Equibop with Equicord</h3><p>Local CSS using installed Inter 400, 600 and 700 with genuine italics. Code, icons and language fallbacks retain their own fonts.</p><div class="download-grid">{{EQUICORD_CARDS}}</div></div>
-      <p class="muted"><a href="release-SHA256SUMS" download>Download checksums</a> <span aria-hidden="true">/</span> <a href="downloads/artifact-manifest.json" download>Artifact manifest</a> <span aria-hidden="true">/</span> <a href="source.zip" download>Source {{VERSION}}</a></p>
+      <p class="muted"><a href="downloads/SHA256SUMS" download>Theme build checksums</a> <span aria-hidden="true">/</span> <a href="downloads/artifact-manifest.json" download>Artifact manifest</a></p>
+      <p class="muted">Published v{{VERSION}}: <a id="released-source" href="{{RELEASE_URL}}/source.zip" rel="noreferrer">Original release source</a> <span aria-hidden="true">/</span> <a id="released-checksums" href="{{RELEASE_URL}}/release-SHA256SUMS" rel="noreferrer">Release checksums</a>. These remain tied to the published release.</p>
+      <p id="source-identity" class="muted">Current preview source: {{SOURCE_DESCRIPTION}} <a id="current-source" href="source.zip" download>Current source snapshot</a> <span aria-hidden="true">/</span> <a href="source-SHA256SUMS" download>Snapshot checksum</a>. This snapshot may include documentation or preview changes made after the release.</p>
     </section>
 
     <section id="installation" aria-labelledby="installation-heading">

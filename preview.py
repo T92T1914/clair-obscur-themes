@@ -6,6 +6,8 @@ import hashlib
 import html
 import json
 from pathlib import Path
+import re
+import subprocess
 import tempfile
 
 from themeforge.build import (
@@ -17,6 +19,7 @@ from themeforge.tokens import load
 
 ROOT = Path(__file__).resolve().parent
 WEB_ASSETS = frozenset({'index.html', 'preview.css', 'preview.js'})
+REPOSITORY_URL = 'https://github.com/T92T1914/clair-obscur-themes'
 
 
 def read_source(root: Path, path: Path) -> bytes:
@@ -60,7 +63,52 @@ def source_files(root: Path) -> dict[str, bytes]:
     return result
 
 
-def preview_files(root: Path, artifacts: Path) -> dict[str, bytes]:
+def source_identity(root: Path, sources: dict[str, bytes], expected_revision: str | None = None) -> dict:
+    """Identify the captured public source, without requiring Git in source exports."""
+    if expected_revision is not None and not re.fullmatch(r'[0-9a-f]{40}|[0-9a-f]{64}', expected_revision):
+        raise ValueError('Expected revision must be a complete lowercase Git commit ID')
+    if not (root / '.git').exists():
+        if expected_revision is not None:
+            raise ValueError('Expected revision requires a Git checkout')
+        return {'revision': None, 'state': 'unavailable'}
+
+    def git(*arguments: str) -> bytes:
+        try:
+            result = subprocess.run(['git', '-C', str(root), *arguments], capture_output=True, timeout=15)
+        except (OSError, subprocess.TimeoutExpired) as error:
+            raise ValueError('Cannot inspect the source Git checkout') from error
+        if result.returncode != 0:
+            raise ValueError('Cannot inspect the source Git checkout')
+        return result.stdout
+
+    revision = git('rev-parse', '--verify', 'HEAD').decode('ascii').strip()
+    if not re.fullmatch(r'[0-9a-f]{40}|[0-9a-f]{64}', revision):
+        raise ValueError('Git returned an invalid source revision')
+    if expected_revision is not None and revision != expected_revision:
+        raise ValueError('Source HEAD differs from the expected revision')
+    # Compare the captured bytes themselves with committed blobs. A clean status
+    # alone would miss a source edit captured just before the file was restored.
+    committed = {}
+    for entry in git('ls-tree', '-rz', revision).split(b'\0'):
+        if entry:
+            metadata, path = entry.split(b'\t', 1)
+            mode, kind, digest = metadata.split(b' ')
+            if kind == b'blob' and mode in (b'100644', b'100755'):
+                committed[path.decode('utf-8')] = digest.decode('ascii')
+    algorithm = 'sha1' if len(revision) == 40 else 'sha256'
+    changed = any(
+        hashlib.new(algorithm, b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest() != committed.get(path)
+        for path, data in sources.items()
+    )
+    tracked_changes = bool(git('status', '--porcelain', '--untracked-files=no'))
+    if git('rev-parse', '--verify', 'HEAD').decode('ascii').strip() != revision:
+        raise ValueError('Source HEAD changed while building the preview')
+    if expected_revision is not None and (changed or tracked_changes):
+        raise ValueError('Expected revision requires unchanged committed source')
+    return {'revision': revision, 'state': 'modified' if changed or tracked_changes else 'clean'}
+
+
+def preview_files(root: Path, artifacts: Path, expected_revision: str | None = None) -> dict[str, bytes]:
     document = load(root / 'tokens.json')
     manifest = build_release(root / 'tokens.json', artifacts, check=True)
     # Keep the exact verified snapshot. Later edits cannot replace bytes already
@@ -84,7 +132,20 @@ def preview_files(root: Path, artifacts: Path) -> dict[str, bytes]:
             f'Download {name} for {label}</a><small>{kind}, {record["bytes"]:,} bytes. '
             'Native acceptance pending.</small></article>'
         )
-    text = files['index.html'].decode().replace('{{VERSION}}', html.escape(document['version']))
+    sources = source_files(root)
+    identity = source_identity(root, sources, expected_revision)
+    version = document['version']
+    release_url = f'{REPOSITORY_URL}/releases/download/v{version}'
+    if identity['revision'] is None:
+        source_description = 'Revision unavailable in this source copy.'
+    else:
+        revision = identity['revision']
+        revision_link = f'<a href="{REPOSITORY_URL}/tree/{revision}" rel="noreferrer">{revision}</a>'
+        source_description = (f'Built from {revision_link}.' if identity['state'] == 'clean'
+                              else f'Based on {revision_link} with local source changes.')
+    text = (files['index.html'].decode().replace('{{VERSION}}', html.escape(version))
+            .replace('{{RELEASE_URL}}', html.escape(release_url, quote=True))
+            .replace('{{SOURCE_DESCRIPTION}}', source_description))
     for platform, cards in groups.items():
         text = text.replace('{{' + platform.upper() + '_CARDS}}', '\n'.join(cards))
     files['index.html'] = text.encode()
@@ -103,7 +164,9 @@ def preview_files(root: Path, artifacts: Path) -> dict[str, bytes]:
     for name in ('SHA256SUMS', 'artifact-manifest.json'):
         files[f'downloads/{name}'] = snapshot[name]
     files['LICENSE'] = read_source(root, root / 'LICENSE')
-    files['source.zip'] = _zip_bytes(source_files(root))
+    files['source.zip'] = _zip_bytes(sources)
+    source_digest = hashlib.sha256(files['source.zip']).hexdigest()
+    files['source-SHA256SUMS'] = f'{source_digest}  source.zip\n'.encode()
     # GitHub release assets share one flat directory. The build-tree checksums
     # remain separate because their nested paths would not verify those downloads.
     release_hashes = {
@@ -111,20 +174,23 @@ def preview_files(root: Path, artifacts: Path) -> dict[str, bytes]:
         for item in manifest['downloads']
     }
     release_hashes['artifact-manifest.json'] = hashlib.sha256(files['downloads/artifact-manifest.json']).hexdigest()
-    release_hashes['source.zip'] = hashlib.sha256(files['source.zip']).hexdigest()
+    release_hashes['source.zip'] = source_digest
     files['release-SHA256SUMS'] = ''.join(
         f'{digest}  {name}\n' for name, digest in sorted(release_hashes.items())
     ).encode()
     files['site-manifest.json'] = (json.dumps({
-        'schema_version': 1, 'generator': 'clair-obscur-preview',
+        'schema_version': 2, 'generator': 'clair-obscur-preview',
+        'source': {**identity, 'archive': 'source.zip', 'sha256': source_digest},
+        'release': {'version': version, 'source_url': f'{release_url}/source.zip',
+                    'checksums_url': f'{release_url}/release-SHA256SUMS'},
         'files': {name: hashlib.sha256(data).hexdigest() for name, data in sorted(files.items())},
     }, indent=2, sort_keys=True) + '\n').encode()
     return files
 
 
-def build_preview(root: Path, artifacts: Path, output: Path) -> None:
+def build_preview(root: Path, artifacts: Path, output: Path, expected_revision: str | None = None) -> None:
     output = _safe_destination(output)
-    files = preview_files(root, artifacts)
+    files = preview_files(root, artifacts, expected_revision)
     if output.exists():
         existing, _ = _inventory(output)
         if existing != files:
@@ -148,9 +214,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--artifacts', type=Path, default=ROOT / 'dist')
     parser.add_argument('--output', type=Path, default=ROOT / 'outputs' / 'preview')
+    parser.add_argument('--expected-revision', help='Require clean source at this complete Git commit ID')
     args = parser.parse_args()
     try:
-        build_preview(ROOT, args.artifacts, args.output)
+        build_preview(ROOT, args.artifacts, args.output, args.expected_revision)
     except (ValueError, OSError) as error:
         parser.exit(1, f'Preview build failed: {error}\n')
     print('Built static specimen, four theme downloads and source archive')
