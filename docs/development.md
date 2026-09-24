@@ -9,7 +9,7 @@ py -3.11 -X utf8 build.py --check
 npm ci --ignore-scripts --no-audit --no-fund
 $env:THEME_REQUIRE_INTER = '1'
 npm run test:browser
-py -3.11 -X utf8 preview.py --output outputs\preview
+py -3.11 -X utf8 preview.py --output outputs\preview-0.1.1
 ```
 
 Use `python` instead of `py -3.11` where the Windows launcher is unavailable. The exact Inter check requires all six local static faces. Without that requirement, an environment missing those faces reports the face-specific test as skipped and still tests system fallback. The browser suite never opens a visible browser or uses an ordinary profile. It defaults to installed Google Chrome. CI uses a separately installed Chromium engine and cannot replace the native Chrome check.
@@ -19,12 +19,20 @@ The preview builder copies only verified release bytes and explicitly selected s
 To serve a built preview locally:
 
 ```powershell
-py -3.11 -m http.server 8765 --bind 127.0.0.1 --directory outputs\preview
+py -3.11 -m http.server 8765 --bind 127.0.0.1 --directory outputs\preview-0.1.1
 ```
 
 This is a local development command, not a public deployment. Stop that server when finished. The packaged preview also works from its `index.html` without a server, apart from browser-specific download behavior that should be checked separately.
 
 The build pipeline stages complete outputs, validates their contents and only replaces an earlier tree when its manifest still matches every file. It refuses foreign files, modified artifacts and links. An interrupted lock is evidence to inspect, not a file to remove automatically while another build might be active.
+
+## Change the source, then regenerate
+
+Edit `tokens.json` for shared colors, `themeforge/chrome.py` or `themeforge/equicord.py` for platform mappings, and `web/` for the component specimen. Do not patch `dist/` or a generated preview. Keep the version in `tokens.json` and the development package metadata consistent when preparing a new release.
+
+The preview includes a source archive with an explicit allowlist. A README, installation guide or test change can legitimately alter that archive even when the four theme assets stay visually identical. Rebuild the site after those edits and review its new manifest. Do not copy old hashes into a new version or overwrite an already published version's bytes.
+
+The [CI workflow](../.github/workflows/checks.yml) produces downloadable build output and supports separate prerelease and Pages publication. The [publication guide](publication.md#github-delivery) describes those gates. A local run, a remote workflow pass and a verified public download remain distinct results.
 
 ## Reading the evidence
 

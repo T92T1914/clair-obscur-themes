@@ -1,6 +1,6 @@
 # Distribution and publication
 
-The project is currently a local preview. A public repository, published release, Equicord listing and Chrome Web Store listing are separate deliverables. None is established by a successful package build. Current native application acceptance is recorded in [acceptance.md](acceptance.md).
+The project distributes experimental previews. A public repository, downloadable prerelease, deployed preview, native acceptance and store approval are separate states. None is established by a successful local package build. Current application acceptance is recorded in [acceptance.md](acceptance.md).
 
 ## What can be distributed
 
@@ -20,7 +20,19 @@ Before publishing a downloadable preview:
 4. Review the full source, artifacts, image metadata and proposed copy for private material and unsupported claims.
 5. Reopen the resulting remote revision and downloadable artifacts after upload. A completed upload is distinct from verified public access.
 
-A preview may describe its implemented behavior and remaining gates accurately. It must not claim successful Equibop loading, physical HDR tuning, complete accessibility, store approval or universal readability without the corresponding evidence. README and store text are proposed copy until approved for their destination.
+A preview may describe its implemented behavior and remaining gates accurately. It must not claim successful Equibop loading, physical HDR tuning, complete accessibility, store approval or universal readability without the corresponding evidence. The [README](../README.md) is the adopted project introduction. Store copy and promotional assets still require their destination-specific checks.
+
+## GitHub delivery
+
+The public source destination is [T92T1914/clair-obscur-themes](https://github.com/T92T1914/clair-obscur-themes). Inspect its current revision and Actions results rather than assuming that a local commit has been pushed.
+
+The [Theme checks workflow](../.github/workflows/checks.yml) runs package checks on Linux and Windows plus a separate headless Chromium specimen job. Its Linux build retains the generated site and downloads as a workflow artifact. That artifact is an output of the recorded workflow run, not a native compatibility certificate or permanent release URL.
+
+For a downloadable prerelease, create a `v<VERSION>` tag for the intended source revision only after review. The version must match `tokens.json`. After its required build and browser jobs pass, the workflow can publish the two Chrome ZIPs, two Equicord CSS files, `release-SHA256SUMS`, `artifact-manifest.json` and `source.zip` to a GitHub prerelease. Verify the resulting release and downloaded bytes. A tag push alone is not proof of publication.
+
+The manual workflow's `publish_pages` option can deploy the generated preview from `main` after checks pass. The repository must have GitHub Pages configured to use GitHub Actions. Keep that setting separate from a successful source push or release upload. Verify the deployment result, then open the served page and follow its downloads before advertising a public preview URL.
+
+Use the repository's normal scoped workflow token for authorized Actions publication. Do not place personal access tokens, browser data or local credential material in the source or artifacts. Keep published versioned bytes intact. Source or documentation changes that alter a published source archive belong to a new version.
 
 ## Equicord library
 
@@ -40,8 +52,6 @@ Prepare the required original promotional image and actual native-product screen
 
 Review listing text separately for each variant. State that fonts and websites remain native. Explain the light or dark palette directly. Do not promise OLED power savings, burn-in prevention, eye-health benefits or a correction to a recording pipeline.
 
-## Current external state
+## Store status
 
-No new public project repository or store/library listing has been created for this project. Repository creation and remote delivery remain pending, so there is no verified public project URL to supply. Local files are not a published release. Reassess the authorized delivery route before publication without extracting credentials or altering unrelated repositories.
-
-No optional reader has been built or published. Its decision remains deferred until the installed native Reading mode has been evaluated.
+No Chrome Web Store or Equicord library approval is claimed. GitHub distribution does not imply either directory reviewed the theme. No optional reader is included in these packages.

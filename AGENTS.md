@@ -8,7 +8,7 @@ Build a shared original theme family for native Google Chrome and Windows Equibo
 - Actual Equibop loading and native Chrome frame checks are separate from local fixture checks. Never label a fixture as application acceptance or a screenshot as physical luminance measurement.
 - Preserve existing client themes, QuickCSS, plugins and Chrome profiles. Only the coordinating agent performs scoped native application checks.
 - Keep current private acceptance evidence outside the repository. Publish only sanitized facts and approved original assets.
-- README and store copy remain proposed until requested. Necessary factual installation, build and compatibility documentation is in scope.
+- Maintain the actual README and necessary documentation as part of verified delivery. Keep public compatibility claims tied to the recorded evidence. Store publication remains a separate approval and acceptance process.
 
 ## Verification and generated files
 

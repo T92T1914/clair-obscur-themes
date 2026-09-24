@@ -24,9 +24,19 @@
       <p class="eyebrow">A shared palette. Two native hosts.</p>
       <h1 id="title">Room to read.</h1>
       <p class="lead">Warm paper and clear ink in Clair. Deep neutral surfaces and restrained emphasis in Obscur. Built from the Tornado Atlas appearance system, with Inter where the host allows it.</p>
-      <p class="status">Developer preview {{VERSION}}. Native application acceptance is still open.</p>
+      <p class="status"><strong>Preview {{VERSION}}.</strong> Native Chrome and Equibop/Equicord installation, switching and restoration tests remain pending.</p>
       <a class="button" href="#downloads">Get the four themes</a>
       <a class="secondary-link" href="#installation">Installation and removal</a>
+      <noscript><p>Page controls need JavaScript. Both palette specimens, downloads and installation instructions remain available below.</p></noscript>
+    </section>
+
+    <section aria-labelledby="palettes-heading">
+      <h2 id="palettes-heading">One identity, two appearances.</h2>
+      <p class="muted">Palette specimens, not native application screenshots. Both remain visible while you choose the page appearance above.</p>
+      <div class="palette-grid">
+        <article class="paper palette" data-palette="Obscur"><p class="eyebrow">Deep and restrained</p><h3>Obscur</h3><p>Near-black surfaces, clear text and quiet separation between layers. Emphasis stays useful without filling the page with color.</p><blockquote>Leave room for the content.</blockquote><a href="#chrome-obscur">Find Obscur downloads</a></article>
+        <article class="paper palette" data-palette="Clair"><p class="eyebrow">Warm and light</p><h3>Clair</h3><p>Warm paper surfaces and dark ink, with clear borders and the same restrained accent. The structure carries across both appearances.</p><blockquote>Keep the hierarchy readable.</blockquote><a href="#chrome-clair">Find Clair downloads</a></article>
+      </div>
     </section>
 
     <section aria-labelledby="specimen-heading">
@@ -66,15 +76,18 @@ preserve_native_scaling = True</code></pre>
     <section id="downloads" aria-labelledby="downloads-heading">
       <h2 id="downloads-heading">Four independent downloads</h2>
       <p>Chrome themes contain native colors and an original icon. Equicord themes contain self-contained CSS. Neither needs the other, a reader extension, analytics or remote fonts.</p>
-      <div class="download-grid">{{DOWNLOAD_CARDS}}</div>
-      <p class="muted"><a href="downloads/SHA256SUMS">SHA-256 checksums</a> <span aria-hidden="true">/</span> <a href="downloads/artifact-manifest.json">Artifact manifest</a> <span aria-hidden="true">/</span> <a href="source.zip">Source {{VERSION}}</a></p>
+      <p class="status"><strong>All four are preview builds.</strong> The component checks do not establish native application compatibility or Chrome Web Store approval.</p>
+      <nav class="platform-links" aria-label="Download platform"><a href="#chrome-downloads">Google Chrome</a><a href="#equicord-downloads">Equibop with Equicord</a></nav>
+      <div id="chrome-downloads" class="platform-group"><h3>Google Chrome</h3><p>Native browser colors. Chrome retains its own interface font and website styling.</p><div class="download-grid">{{CHROME_CARDS}}</div></div>
+      <div id="equicord-downloads" class="platform-group"><h3>Equibop with Equicord</h3><p>Local CSS using installed Inter 400, 600 and 700 with genuine italics. Code, icons and language fallbacks retain their own fonts.</p><div class="download-grid">{{EQUICORD_CARDS}}</div></div>
+      <p class="muted"><a href="release-SHA256SUMS" download>Download checksums</a> <span aria-hidden="true">/</span> <a href="downloads/artifact-manifest.json" download>Artifact manifest</a> <span aria-hidden="true">/</span> <a href="source.zip" download>Source {{VERSION}}</a></p>
     </section>
 
     <section id="installation" aria-labelledby="installation-heading">
       <h2 id="installation-heading">Install with a way back.</h2>
       <div class="specimen-grid">
-        <article class="paper"><h3>Ordinary Google Chrome</h3><ol><li>Extract one Chrome ZIP to a permanent folder.</li><li>In a dedicated test profile, open <code>chrome://extensions</code>, enable Developer mode, select Load unpacked, and choose that folder.</li><li>Use one theme at a time. Load the other folder to switch.</li><li>To undo it, use Settings, Appearance, Reset to default. Remove the development entry if it remains.</li></ol><p>This is a developer installation. There is no reviewed Chrome Web Store listing yet.</p></article>
-        <article class="paper"><h3>Equibop with Equicord</h3><ol><li>Save your current theme choices and QuickCSS before testing.</li><li>Use Equicord's Themes page to open the active themes folder. Add one downloaded CSS file.</li><li>Enable that theme on its own for the first check. Use native Dark for Obscur or Light for Clair.</li><li>Disable it to return to your previous themes. Remove only its CSS file when no longer needed.</li></ol><p>Other theme or font plugins can override these styles. Their settings are not changed by the CSS.</p></article>
+        <article class="paper"><h3>Ordinary Google Chrome</h3><ol><li>Create a separate, unsynced test profile. Keep your everyday profile and its theme unchanged.</li><li>Extract the Obscur Chrome ZIP to a permanent folder. Open <code>chrome://extensions</code>, enable Developer mode, select Load unpacked, and choose the folder containing <code>manifest.json</code>.</li><li>Check tabs, the toolbar, menus, focus and the new-tab page. Repeat with Clair, then switch back to Obscur.</li><li>To undo it, use Settings, Appearance, Reset to default. Remove the development entry if it remains and return Developer mode to its recorded setting.</li></ol><p>This is a developer installation. There is no reviewed Chrome Web Store listing yet.</p></article>
+        <article class="paper"><h3>Equibop with Equicord</h3><ol><li>Record the current appearance, enabled themes and relevant font settings. Preserve QuickCSS and existing theme files.</li><li>Use Equicord's Themes page to open the active themes folder. Add the downloaded CSS files without replacing another file or pasting over QuickCSS.</li><li>Temporarily disable conflicting themes, enable Obscur and use native Dark. Check messages, inputs, settings, code, icons and focus. Repeat with Clair on native Light, then switch back.</li><li>Disable the candidate and restore the recorded appearance and theme selections. Remove only the added CSS files when no longer needed.</li></ol><p>Other theme or font plugins can override these styles. Stop and restore if an important surface becomes unreadable.</p></article>
       </div>
     </section>
 
@@ -85,6 +98,6 @@ preserve_native_scaling = True</code></pre>
       <p>Actual theme loading, host interaction and physical reading acceptance are still pending for both appearances. Chrome's installed Reading mode must be evaluated before a separate reading companion is justified.</p>
     </section>
   </main>
-  <footer><p>Clair &amp; Obscur {{VERSION}}. Original theme code under the <a href="LICENSE">MIT license</a>.</p><p><a href="https://github.com/T92T1914/tornado-atlas" rel="noreferrer">Palette lineage: Tornado Atlas</a>. No affiliation with Google, Discord or Equicord is implied.</p></footer>
+  <footer><p>Clair &amp; Obscur {{VERSION}}. <a href="https://github.com/T92T1914/clair-obscur-themes" rel="noreferrer">Source and installation guide</a>. Original theme code under the <a href="LICENSE">MIT license</a>.</p><p><a href="https://github.com/T92T1914/tornado-atlas" rel="noreferrer">Palette lineage: Tornado Atlas</a>. No affiliation with Google, Discord or Equicord is implied.</p></footer>
 </body>
 </html>

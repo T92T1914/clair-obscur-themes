@@ -33,7 +33,7 @@ def read_source(root: Path, path: Path) -> bytes:
 def source_files(root: Path) -> dict[str, bytes]:
     """Package reviewed source categories, never a broad workspace archive."""
     paths = [root / name for name in (
-        'AGENTS.md', 'LICENSE', 'CHANGELOG.md', 'tokens.json', 'build.py', 'preview.py',
+        'README.md', 'AGENTS.md', 'LICENSE', 'CHANGELOG.md', 'tokens.json', 'build.py', 'preview.py',
         'package.json', 'package-lock.json', '.gitignore', '.gitattributes',
     )]
     for folder, endings in (
@@ -72,26 +72,28 @@ def preview_files(root: Path, artifacts: Path) -> dict[str, bytes]:
     if {p.name for p in (root / 'web').iterdir()} != WEB_ASSETS:
         raise ValueError('Unreviewed web assets must not enter the public preview')
     files = {name: read_source(root, root / 'web' / name) for name in sorted(WEB_ASSETS)}
-    cards = []
+    groups = {'chrome': [], 'equicord': []}
     for download in manifest['downloads']:
         name, platform, path = download['name'], download['platform'], download['path']
         label = 'Google Chrome' if platform == 'chrome' else 'Equibop + Equicord'
         kind = 'Native theme ZIP' if platform == 'chrome' else 'Standalone CSS'
         record = next(r for r in manifest['files'] if r['path'] == path)
-        cards.append(
-            f'<article class="download-card"><p class="eyebrow">{label}</p>'
-            f'<h3>{name}</h3><a class="button" download href="downloads/{path}">'
+        groups[platform].append(
+            f'<article id="{platform}-{name.lower()}" class="download-card"><p class="eyebrow">Preview {document["version"]}</p>'
+            f'<h4>{name}</h4><a class="button" download href="downloads/{path}">'
             f'Download {name} for {label}</a><small>{kind}, {record["bytes"]:,} bytes. '
             'Native acceptance pending.</small></article>'
         )
     text = files['index.html'].decode().replace('{{VERSION}}', html.escape(document['version']))
-    files['index.html'] = text.replace('{{DOWNLOAD_CARDS}}', '\n'.join(cards)).encode()
+    for platform, cards in groups.items():
+        text = text.replace('{{' + platform.upper() + '_CARDS}}', '\n'.join(cards))
+    files['index.html'] = text.encode()
     css = []
     for weight, style, full, postscript in FACES:
         css.append(f'@font-face {{font-family:"Clair Obscur Inter";src:local("{full}"),local("{postscript}");font-weight:{weight};font-style:{style};font-display:swap;}}')
     for name, tokens in document['themes'].items():
         # :where keeps system-color media overrides stronger than this selector.
-        css.append(f':where(:root[data-theme="{name}"]) {{')
+        css.append(f':where(:root[data-theme="{name}"], [data-palette="{name}"]) {{')
         css.extend(f'--{key.replace("_", "-")}:{value};' for key, value in tokens.items())
         css.append(f'color-scheme:{"light" if name == "Clair" else "dark"};}}')
     files['tokens.css'] = ('\n'.join(css) + '\n').encode()
@@ -102,6 +104,17 @@ def preview_files(root: Path, artifacts: Path) -> dict[str, bytes]:
         files[f'downloads/{name}'] = snapshot[name]
     files['LICENSE'] = read_source(root, root / 'LICENSE')
     files['source.zip'] = _zip_bytes(source_files(root))
+    # GitHub release assets share one flat directory. The build-tree checksums
+    # remain separate because their nested paths would not verify those downloads.
+    release_hashes = {
+        Path(item['path']).name: hashlib.sha256(snapshot[item['path']]).hexdigest()
+        for item in manifest['downloads']
+    }
+    release_hashes['artifact-manifest.json'] = hashlib.sha256(files['downloads/artifact-manifest.json']).hexdigest()
+    release_hashes['source.zip'] = hashlib.sha256(files['source.zip']).hexdigest()
+    files['release-SHA256SUMS'] = ''.join(
+        f'{digest}  {name}\n' for name, digest in sorted(release_hashes.items())
+    ).encode()
     files['site-manifest.json'] = (json.dumps({
         'schema_version': 1, 'generator': 'clair-obscur-preview',
         'files': {name: hashlib.sha256(data).hexdigest() for name, data in sorted(files.items())},

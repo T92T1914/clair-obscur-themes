@@ -34,7 +34,8 @@ class PreviewTests(unittest.TestCase):
     def test_source_archive_contains_rebuild_inputs_without_runtime_state(self):
         with zipfile.ZipFile(io.BytesIO(preview_files(ROOT, self.artifacts)['source.zip'])) as archive:
             names = set(archive.namelist())
-            self.assertTrue({'tokens.json', 'build.py', 'preview.py', 'LICENSE'} <= names)
+            self.assertTrue({'README.md', 'tokens.json', 'build.py', 'preview.py', 'LICENSE'} <= names)
+            self.assertEqual(archive.read('README.md'), (ROOT / 'README.md').read_bytes())
             self.assertFalse(any(n.startswith(('node_modules/', '.git/', 'outputs/', 'dist/')) for n in names))
             self.assertFalse(any(n.endswith(('.ttf', '.woff2', '.icc', '.icm')) for n in names))
 
@@ -78,7 +79,8 @@ class PreviewTests(unittest.TestCase):
 
     def test_newer_complete_build_cannot_replace_the_verified_snapshot(self):
         document = json.loads((ROOT / 'tokens.json').read_text())
-        document['version'] = '0.1.1'
+        major, minor, micro = map(int, document['version'].split('.'))
+        document['version'] = f'{major}.{minor}.{micro + 1}'
         alternative = self.base / 'other-tokens.json'
         alternative.write_text(json.dumps(document))
         def changed_after_check(*args, **kwargs):
@@ -103,3 +105,20 @@ class PreviewTests(unittest.TestCase):
         with patch('preview._linked', side_effect=lambda path: path == ROOT / 'docs'):
             with self.assertRaisesRegex(ValueError, 'Linked source directories'):
                 source_files(ROOT)
+
+    def test_release_checksums_verify_flat_downloads_including_source(self):
+        files = preview_files(ROOT, self.artifacts)
+        manifest = json.loads(files['downloads/artifact-manifest.json'])
+        expected = {Path(item['path']).name: files['downloads/' + item['path']]
+                    for item in manifest['downloads']}
+        expected['source.zip'] = files['source.zip']
+        expected['artifact-manifest.json'] = files['downloads/artifact-manifest.json']
+        actual = {}
+        for line in files['release-SHA256SUMS'].decode().splitlines():
+            digest, name = line.split('  ', 1)
+            self.assertNotIn(name, actual)
+            self.assertEqual(Path(name).name, name)
+            actual[name] = digest
+        self.assertEqual(set(actual), set(expected))
+        for name, payload in expected.items():
+            self.assertEqual(actual[name], hashlib.sha256(payload).hexdigest())

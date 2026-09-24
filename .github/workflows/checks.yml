@@ -3,6 +3,13 @@ name: Theme checks
 on:
   push:
   pull_request:
+  workflow_dispatch:
+    inputs:
+      publish_pages:
+        description: Deploy the checked preview from main to GitHub Pages
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -16,6 +23,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -27,11 +36,21 @@ jobs:
         run: python build.py --check
       - name: Build static download specimen
         run: python preview.py
+      - name: Retain the checked preview and downloads
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: clair-obscur-preview
+          path: outputs/preview/
+          if-no-files-found: error
+          retention-days: 14
 
   browser:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -45,3 +64,114 @@ jobs:
         run: npm run test:browser
         env:
           THEME_BROWSER_CHANNEL: chromium
+
+  prerelease:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: [build, browser]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: theme-release-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: clair-obscur-preview
+          path: site
+      - name: Check release version, notes and download inventory
+        shell: python
+        run: |
+          import json
+          import os
+          from pathlib import Path
+          import re
+
+          version = json.loads(Path('tokens.json').read_text(encoding='utf-8'))['version']
+          if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', version):
+              raise SystemExit('The release version must contain three numeric components')
+          if os.environ['GITHUB_REF_NAME'] != f'v{version}':
+              raise SystemExit('The tag must match the version in tokens.json')
+          notes = Path('docs/releases') / f'{version}.md'
+          if not notes.is_file() or not notes.read_text(encoding='utf-8').strip():
+              raise SystemExit(f'Release notes are missing or empty: {notes}')
+          manifest = json.loads(Path('site/downloads/artifact-manifest.json').read_text(encoding='utf-8'))
+          expected = {
+              f'artifacts/Clair-Chrome-{version}.zip',
+              f'artifacts/Obscur-Chrome-{version}.zip',
+              'equicord/Clair.theme.css',
+              'equicord/Obscur.theme.css',
+          }
+          downloads = [item['path'] for item in manifest['downloads']]
+          if manifest['version'] != version or len(downloads) != 4 or set(downloads) != expected:
+              raise SystemExit('The build artifact does not contain the four downloads for this version')
+          actual = {
+              path.relative_to('site/downloads').as_posix()
+              for pattern in ('artifacts/*.zip', 'equicord/*.theme.css')
+              for path in Path('site/downloads').glob(pattern)
+          }
+          if actual != expected:
+              raise SystemExit('The release file inventory differs from the four reviewed downloads')
+          for relative in expected:
+              if not (Path('site/downloads') / relative).is_file():
+                  raise SystemExit(f'A release download is missing: {relative}')
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as output:
+              output.write(f'RELEASE_NOTES={notes.as_posix()}\n')
+      - name: Stage and verify the flat release downloads
+        shell: bash
+        run: |
+          mkdir release
+          cp site/downloads/artifacts/*.zip site/downloads/equicord/*.theme.css \
+            site/downloads/artifact-manifest.json site/source.zip site/release-SHA256SUMS release/
+          cd release
+          sha256sum --check --strict release-SHA256SUMS
+      - name: Upload the preview without replacing an existing release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" --paginate \
+            --jq '.[].tag_name' > existing-release-tags.txt
+          if grep -Fxq -- "$RELEASE_TAG" existing-release-tags.txt; then
+            printf 'A release or draft already exists for %s. Inspect it before retrying.\n' "$RELEASE_TAG" >&2
+            exit 1
+          fi
+          gh release create "$RELEASE_TAG" release/* \
+            --repo "$GITHUB_REPOSITORY" --verify-tag --prerelease --latest=false \
+            --title "$RELEASE_TAG preview" --notes-file "$RELEASE_NOTES"
+
+  pages:
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_pages && github.ref == 'refs/heads/main'
+    needs: [build, browser]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: clair-obscur-preview
+          path: site
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload the checked preview
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+      - name: Deploy the preview
+        id: deployment
+        uses: actions/deploy-pages@v4

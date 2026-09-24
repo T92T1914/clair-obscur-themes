@@ -1,6 +1,6 @@
 # Acceptance scope
 
-This record distinguishes implementation from application acceptance. It covers the initial 0.1.0 preview. Source contracts and component fixtures can establish useful facts without proving that a running client consumes every style as intended.
+This record distinguishes implementation from application acceptance for the 0.1.1 preview. Source contracts and component fixtures can establish useful facts without proving that a running client consumes every style as intended. The same native gates remain open for both Clair and Obscur.
 
 ## Current state
 
@@ -9,13 +9,13 @@ This record distinguishes implementation from application acceptance. It covers 
 | Clair and Obscur for Chrome | Native color-theme generators and package validation are implemented | Install each in ordinary Chrome and verify native frame states and rollback |
 | Clair and Obscur for Equicord | Standalone CSS generators, local font aliases and matching-base gates are implemented | Load each in Equibop with Equicord and inspect actual host surfaces and rollback |
 | Local application versions | Chrome 153.0.8010.53 and Equibop 3.3.1.0 were identified | These versions are test targets, not passed compatibility claims |
-| Rendered Inter faces | Headless fixture glyph-face inspection was performed separately | Verify actual Equibop glyphs and preserved code/icon/language fallback |
-| Native installation | No candidate theme was installed during the interrupted application check | Both application checks remain **not verified** |
+| Rendered Inter faces | The retained 0.1.0 fixture resolved six Inter faces. The 0.1.1 Windows strict rerun failed to resolve any local Inter alias, despite the local files and font registrations remaining present. Its fallback fixture rendered Segoe UI | Resolve the current local font availability discrepancy and verify actual Equibop glyphs and preserved code/icon/language fallback |
+| Native installation | No completed installation result is recorded for either target application | Both application checks remain **not verified** |
 | Physical display and comfort | User-reported baseline is recorded in the design document | Physical viewing, captured-media comparison and subjective comfort remain **not verified** |
-| Chrome Reading mode | Official controls were researched | Inspect installed controls before deciding whether a companion is justified |
-| Optional reader | No companion was created | Decision is deferred until the native Reading mode comparison |
 
-The native check was interrupted before any settings change. It is not a failed theme result and it does not close the acceptance gate. Detailed private environment and capture records stay outside the public source.
+The identified application versions are Windows test targets. Other operating systems, Discord clients and browser derivatives are not covered by a native compatibility claim. No theme rejection or successful native installation is established by the missing result. Detailed private environment and capture records stay outside the public source.
+
+The strict font assertion remains enabled with `THEME_REQUIRE_INTER=1`. Ordinary CI skips that assertion when the required local faces are unavailable and tests fallback separately. A skipped font assertion is not a passed typography check. An independent headless diagnostic reproduced the local-name lookup failure and rendered all six expected glyph faces from the same files supplied as in-memory bytes. That narrows the issue to local font discovery, not a malformed font file or alias spelling, but its cause remains unresolved. The product still uses local fonts only. No font installation, cache reset or system setting change was made to force a pass.
 
 ## Evidence levels
 
@@ -29,6 +29,8 @@ The native check was interrupted before any settings change. It is not a failed 
 | SDR screenshot or recording | The inspected capture's appearance | The monitor's live HDR appearance or physical luminance |
 
 Executed check results should identify the source revision or working-tree identity, exact command, tool versions, duration, exit status and retained log. A list of available tests is not evidence that all of them ran. Later source changes require the affected checks to run again.
+
+Preserve who performed a native check. A user's manual installation and restoration can establish useful acceptance evidence when the version, steps and result are recorded. Label it user-performed. Separately identify any screenshots or recordings inspected by someone else. Do not relabel that evidence as an automated or agent-controlled test.
 
 ## Native acceptance checklist
 
@@ -55,7 +57,6 @@ Run Obscur first and repeat the same coverage for Clair. Record the package hash
 
 - Preserve the existing HDR, SDR brightness, Auto HDR, monitor mode and color-profile associations. Record inspected facts separately from reported settings.
 - Read a sustained passage in both variants, then inspect selection, code and a dense control surface. Record discomfort or ambiguity as feedback, not as a medical finding.
-- Compare native Reading mode with a public or synthetic article. Inspect actual font, color, width and spacing choices plus extraction quality before considering an optional companion.
 - Label captures by their actual capture/export path. Do not apply a hidden transform to make screenshots imitate the physical display.
 
 Completion means all four native variants have the relevant recorded results, remaining limitations are explicit, and removal works. It does not mean every Discord plugin, Chrome version or monitor has been certified.

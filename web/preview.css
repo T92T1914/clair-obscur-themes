@@ -5,10 +5,10 @@ header, main, footer { width: min(74rem, calc(100% - 3rem)); margin-inline: auto
 header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-block: 1.5rem; border-bottom: 1px solid var(--divider); }
 a { color: var(--accent); text-underline-offset: .2em; overflow-wrap: anywhere; }
 a:hover { text-decoration-thickness: .14em; }
-h1, h2, h3, p { margin-top: 0; }
+h1, h2, h3, h4, p { margin-top: 0; }
 h1 { font-size: clamp(3rem, 7vw, 6.4rem); line-height: 1.06; letter-spacing: -.05em; margin-bottom: 1.5rem; }
 h2 { font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.25; letter-spacing: -.025em; }
-h3 { font-size: 1.25rem; line-height: 1.4; }
+h3, h4 { font-size: 1.25rem; line-height: 1.4; }
 strong, b { font-weight: 700; }
 .semibold, button, summary, .wordmark, label, .button { font-weight: 600; }
 .wordmark { color: var(--text); text-decoration: none; letter-spacing: -.025em; }
@@ -16,7 +16,7 @@ strong, b { font-weight: 700; }
 .lead { font-size: clamp(1.2rem, 2vw, 1.45rem); max-width: 48rem; }
 .eyebrow { color: var(--muted); letter-spacing: .11em; font-size: .75rem; text-transform: uppercase; font-weight: 600; }
 .status, .muted, #appearance-status, footer, #control-status { color: var(--muted); }
-.status { margin: 1.5rem 0; }
+.status { margin: 1.5rem 0; padding-left: 1rem; border-left: 3px solid var(--border); }
 section { margin-bottom: 4rem; scroll-margin-top: 1rem; }
 .section-heading { display: flex; gap: 1rem; justify-content: space-between; align-items: baseline; flex-wrap: wrap; }
 .switcher { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: .5rem; min-width: 0; }
@@ -52,15 +52,19 @@ input[type="checkbox"] { width: 1.25rem; height: 1.25rem; accent-color: var(--ac
 summary { cursor: pointer; }
 details p { padding-top: .75rem; }
 .download-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 1.25rem; margin: 1.5rem 0; }
+.palette-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 1.25rem; }
+.palette { background: var(--canvas); color: var(--text); }
+.platform-links { display: flex; flex-wrap: wrap; gap: 1rem 2rem; margin-block: 1.5rem; }
+.platform-group { scroll-margin-top: 1rem; margin-top: 2.5rem; }
 .download-card small { display: block; margin-top: .75rem; color: var(--muted); }
 .limits { max-width: 70ch; }
 li { padding-left: .2rem; margin-bottom: .7rem; }
 ol { padding-left: 1.3rem; }
 footer { border-top: 1px solid var(--divider); padding-block: 2rem; font-size: .875rem; }
-@media (max-width: 700px) { .specimen-grid, .download-grid { grid-template-columns: 1fr; } header, main, footer { width: calc(100% - 2rem); } header { flex-wrap: wrap; } .secondary-link { margin-inline: 0; margin-right: 1rem; } }
+@media (max-width: 700px) { .specimen-grid, .download-grid, .palette-grid { grid-template-columns: 1fr; } header, main, footer { width: calc(100% - 2rem); } header { flex-wrap: wrap; } .secondary-link { margin-inline: 0; margin-right: 1rem; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto; transition: none; animation: none; } }
 @media (forced-colors: active) {
-  :root { --canvas: Canvas; --panel: Canvas; --text: CanvasText; --muted: CanvasText; --divider: CanvasText; --control: ButtonFace; --hover: ButtonFace; --selected: Highlight; --border: ButtonText; --accent: LinkText; --on-accent: Canvas; --focus: Highlight; --success: CanvasText; --warning: CanvasText; --error: CanvasText; --code: Canvas; --disabled: GrayText; }
+  :root, [data-palette] { --canvas: Canvas; --panel: Canvas; --text: CanvasText; --muted: CanvasText; --divider: CanvasText; --control: ButtonFace; --hover: ButtonFace; --selected: Highlight; --border: ButtonText; --accent: LinkText; --on-accent: Canvas; --focus: Highlight; --success: CanvasText; --warning: CanvasText; --error: CanvasText; --code: Canvas; --disabled: GrayText; }
   mark { color: HighlightText; }
   button[aria-pressed="true"] { outline: 2px solid Highlight; }
 }

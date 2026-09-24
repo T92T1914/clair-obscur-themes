@@ -111,7 +111,10 @@ test('six genuine Inter glyph faces and native monospace are distinguishable', a
   try {
     const session = await context.newCDPSession(page);
     await session.send('DOM.enable'); await session.send('CSS.enable');
-    const loadedFaces = await page.evaluate(() => [...document.fonts].filter(face => face.family === 'Clair Obscur Inter' && face.status === 'loaded').length);
+    const faceStates = await page.evaluate(() => [...document.fonts].filter(face => face.family === 'Clair Obscur Inter')
+      .map(face => ({ family: face.family, weight: face.weight, style: face.style, status: face.status })));
+    results.fonts.localFaces = { required: process.env.THEME_REQUIRE_INTER === '1', faces: faceStates };
+    const loadedFaces = faceStates.filter(face => face.status === 'loaded').length;
     if (loadedFaces !== 6 && process.env.THEME_REQUIRE_INTER !== '1') {
       t.skip('Six installed Inter faces are required for exact glyph-face verification');
       return;
@@ -189,21 +192,31 @@ test('keyboard, enlarged text, reduced motion and forced colors retain usable co
     for (const name of ['Obscur', 'Clair']) {
       await page.getByRole('button', { name, exact: true }).click();
       assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--panel').trim()), 'Canvas');
+      for (const palette of await page.locator('[data-palette]').all()) {
+        assert.equal(await palette.evaluate(node => getComputedStyle(node).getPropertyValue('--canvas').trim()), 'Canvas');
+      }
       assert.equal(await page.locator('#sample-button').isEnabled(), true);
     }
     results.scenarios.push({ name: 'keyboard, 200% text, reduced motion, forced colors', status: 'passed' });
   } finally { await context.close(); }
 });
 
-test('downloads match the artifact hashes and parsed CSS has no rejected rules', async () => {
+test('download clicks save all four verified packages without navigating away', async () => {
   const { context, page, consoleErrors } = await pageFor();
   try {
     const manifest = await (await context.request.get(origin + '/downloads/artifact-manifest.json')).json();
     assert.equal(manifest.downloads.length, 4);
     for (const download of manifest.downloads) {
-      const response = await context.request.get(origin + '/downloads/' + download.path);
-      assert.equal(response.status(), 200);
-      const bytes = await response.body();
+      const group = page.locator(download.platform === 'chrome' ? '#chrome-downloads' : '#equicord-downloads');
+      const link = group.locator(`a[download][href="downloads/${download.path}"]`);
+      assert.equal(await link.count(), 1);
+      const [saved] = await Promise.all([page.waitForEvent('download'), link.click()]);
+      assert.equal(saved.suggestedFilename(), path.basename(download.path));
+      assert.equal(await saved.failure(), null);
+      const chunks = [];
+      for await (const chunk of await saved.createReadStream()) chunks.push(chunk);
+      const bytes = Buffer.concat(chunks);
+      assert.equal(page.url(), origin + '/');
       const record = manifest.files.find(file => file.path === download.path);
       assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'), record.sha256);
       if (download.platform === 'equicord') {
@@ -219,6 +232,28 @@ test('downloads match the artifact hashes and parsed CSS has no rejected rules',
     results.metrics.previewNavigation = { ...navigation, scope: 'single local headless specimen navigation, not application startup or comparative performance' };
     assert.deepEqual(consoleErrors, []);
     assert.deepEqual(failures, []);
+  } finally { await context.close(); }
+});
+
+test('static delivery remains usable without JavaScript and internal links resolve', async () => {
+  const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
+  try {
+    assert.equal(await page.locator('#downloads .download-card a[download]').count(), 4);
+    assert.match(await page.locator('#downloads .status').textContent(), /preview builds/);
+    assert.match(await page.locator('body').textContent(), /Native Chrome and Equibop\/Equicord installation, switching and restoration tests remain pending/);
+    assert.doesNotMatch(await page.content(), /\{\{[A-Z_]+\}\}/);
+    for (const [name, background] of [['Obscur', 'rgb(9, 9, 9)'], ['Clair', 'rgb(248, 247, 243)']]) {
+      const card = page.locator(`[data-palette="${name}"]`);
+      assert.equal(await card.evaluate(node => getComputedStyle(node).backgroundColor), background);
+    }
+    const unresolved = await page.evaluate(() => [...document.querySelectorAll('a[href^="#"]')]
+      .map(link => link.getAttribute('href').slice(1)).filter(id => !document.getElementById(id)));
+    assert.deepEqual(unresolved, []);
+    await page.getByRole('link', { name: 'Equibop with Equicord', exact: true }).click();
+    assert.equal(new URL(page.url()).hash, '#equicord-downloads');
+    assert.ok(await page.locator('#equicord-downloads').isVisible());
+    assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: 'no-JavaScript palette comparison, grouped downloads and anchor navigation', status: 'passed' });
   } finally { await context.close(); }
 });
 
