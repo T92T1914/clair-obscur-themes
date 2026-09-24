@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en" data-theme="Obscur">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="description" content="Clair and Obscur, a quiet theme family for native Google Chrome and Equibop with Equicord.">
+  <title>Clair &amp; Obscur</title>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="preview.css">
+  <script src="preview.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header>
+    <a class="wordmark" href="#main">Clair &amp; Obscur</a>
+    <fieldset class="switcher"><legend>Preview appearance</legend>
+      <button type="button" data-appearance="Obscur" aria-label="Obscur" aria-pressed="true">Obscur</button>
+      <button type="button" data-appearance="Clair" aria-label="Clair" aria-pressed="false">Clair</button>
+    </fieldset>
+  </header>
+  <main id="main">
+    <section class="hero" aria-labelledby="title">
+      <p class="eyebrow">A shared palette. Two native hosts.</p>
+      <h1 id="title">Room to read.</h1>
+      <p class="lead">Warm paper and clear ink in Clair. Deep neutral surfaces and restrained emphasis in Obscur. Built from the Tornado Atlas appearance system, with Inter where the host allows it.</p>
+      <p class="status">Developer preview {{VERSION}}. Native application acceptance is still open.</p>
+      <a class="button" href="#downloads">Get the four themes</a>
+      <a class="secondary-link" href="#installation">Installation and removal</a>
+    </section>
+
+    <section aria-labelledby="specimen-heading">
+      <div class="section-heading"><h2 id="specimen-heading">The reading surface</h2><p id="appearance-status" role="status">Showing Obscur</p></div>
+      <p class="muted">This is an interactive component specimen, not a screenshot of Chrome or Equibop. Changing it does not switch your application themes.</p>
+      <div class="specimen-grid">
+        <article class="paper">
+          <p class="eyebrow">Typography specimen</p>
+          <h3>Make the words do the work.</h3>
+          <p id="face-regular" data-face="regular">Regular text gives a paragraph room to breathe. A readable interface also needs clear focus, recognizable controls and enough contrast when the pointer moves.</p>
+          <p><span id="face-semibold" class="semibold" data-face="semibold">Semibold for useful emphasis.</span> <strong id="face-bold" data-face="bold">Bold for a stronger point.</strong></p>
+          <p><em id="face-italic" data-face="italic">A genuine italic has its own letterforms.</em> <em id="face-semibold-italic" class="semibold" data-face="semiboldItalic">Semibold italic.</em> <strong><em id="face-bold-italic" data-face="boldItalic">Bold italic.</em></strong></p>
+          <blockquote>Color should clarify a state without becoming the only way to recognize it.</blockquote>
+          <p>A <a href="#limits">descriptive link</a>, a <mark>search match</mark> and an inline <code id="face-code">theme.version</code> retain distinct roles.</p>
+          <pre tabindex="0" aria-label="Code example"><code>appearance = "Obscur"
+font = "Inter, system-ui, sans-serif"
+preserve_native_scaling = True</code></pre>
+          <p class="language-sample" lang="ja">言葉と読みやすさ</p>
+          <p lang="ar" dir="rtl">نص واضح للقراءة</p>
+        </article>
+        <aside class="controls" aria-labelledby="states-heading">
+          <h3 id="states-heading">Controls and states</h3>
+          <label for="sample-input">Example input</label>
+          <input id="sample-input" placeholder="Try a long value" autocomplete="off">
+          <label class="check"><input id="sample-check" type="checkbox" checked> Keep the original media colors</label>
+          <button id="sample-button" type="button">Test a normal control</button>
+          <button type="button" disabled>Disabled example</button>
+          <p id="control-status" role="status">Ready for keyboard or pointer input.</p>
+          <p class="notice positive"><strong>Available.</strong> Positive state with a text label.</p>
+          <p class="notice warning"><strong>Check needed.</strong> Native loading remains unverified.</p>
+          <p class="notice error"><strong>Example error.</strong> Color is accompanied by an explanation.</p>
+          <details><summary>What happens if Inter is missing?</summary><p>The preview and CSS use a system sans-serif fallback. No font is downloaded automatically. Install the official local Inter package for the intended faces.</p><a href="https://rsms.me/inter/" rel="noreferrer">Official Inter project</a></details>
+        </aside>
+      </div>
+    </section>
+
+    <section id="downloads" aria-labelledby="downloads-heading">
+      <h2 id="downloads-heading">Four independent downloads</h2>
+      <p>Chrome themes contain native colors and an original icon. Equicord themes contain self-contained CSS. Neither needs the other, a reader extension, analytics or remote fonts.</p>
+      <div class="download-grid">{{DOWNLOAD_CARDS}}</div>
+      <p class="muted"><a href="downloads/SHA256SUMS">SHA-256 checksums</a> <span aria-hidden="true">/</span> <a href="downloads/artifact-manifest.json">Artifact manifest</a> <span aria-hidden="true">/</span> <a href="source.zip">Source {{VERSION}}</a></p>
+    </section>
+
+    <section id="installation" aria-labelledby="installation-heading">
+      <h2 id="installation-heading">Install with a way back.</h2>
+      <div class="specimen-grid">
+        <article class="paper"><h3>Ordinary Google Chrome</h3><ol><li>Extract one Chrome ZIP to a permanent folder.</li><li>In a dedicated test profile, open <code>chrome://extensions</code>, enable Developer mode, select Load unpacked, and choose that folder.</li><li>Use one theme at a time. Load the other folder to switch.</li><li>To undo it, use Settings, Appearance, Reset to default. Remove the development entry if it remains.</li></ol><p>This is a developer installation. There is no reviewed Chrome Web Store listing yet.</p></article>
+        <article class="paper"><h3>Equibop with Equicord</h3><ol><li>Save your current theme choices and QuickCSS before testing.</li><li>Use Equicord's Themes page to open the active themes folder. Add one downloaded CSS file.</li><li>Enable that theme on its own for the first check. Use native Dark for Obscur or Light for Clair.</li><li>Disable it to return to your previous themes. Remove only its CSS file when no longer needed.</li></ol><p>Other theme or font plugins can override these styles. Their settings are not changed by the CSS.</p></article>
+      </div>
+    </section>
+
+    <section id="limits" class="limits" aria-labelledby="limits-heading">
+      <h2 id="limits-heading">What the evidence covers</h2>
+      <p>The shared palette is checked against its actual text and control-state pairings. Browser fixtures test local font selection, layout, keyboard controls, fallback and package downloads. These checks do not certify every surface in either host.</p>
+      <p>Chrome retains its own interface font and controls. The design target is a 4K OLED desktop with Windows HDR enabled, but the theme uses ordinary sRGB colors. It does not change brightness, calibration, color profiles or recording behavior. Screenshots do not establish physical luminance or reading comfort.</p>
+      <p>Actual theme loading, host interaction and physical reading acceptance are still pending for both appearances. Chrome's installed Reading mode must be evaluated before a separate reading companion is justified.</p>
+    </section>
+  </main>
+  <footer><p>Clair &amp; Obscur {{VERSION}}. Original theme code under the <a href="LICENSE">MIT license</a>.</p><p><a href="https://github.com/T92T1914/tornado-atlas" rel="noreferrer">Palette lineage: Tornado Atlas</a>. No affiliation with Google, Discord or Equicord is implied.</p></footer>
+</body>
+</html>

@@ -1,0 +1,617 @@
+{
+  "schema_version": 1,
+  "inspected_on": "2026-09-24",
+  "scope": "Focused nonrepresentative theme and feedback sample. No candidate installs or reproduction in this research track.",
+  "count_semantics": "Downloads, likes, repository stars, store users and rating counts are separate dated observations. Rounded store displays remain strings.",
+  "candidates": [
+    {
+      "id": "D1",
+      "name": "ClearVision",
+      "platform": "Discord CSS",
+      "url": "https://betterdiscord.app/themes/ClearVision",
+      "access": "listing or official documentation text inspected",
+      "version": "7.0.1",
+      "listing_updated": "2025-12-11",
+      "author_claim_or_scope": "Customization, light/dark support, smallest practical CSS targets. Plugin support is limited.",
+      "author_supported_clients": [
+        "BetterDiscord",
+        "Vencord"
+      ],
+      "metrics": [
+        {
+          "unit": "directory downloads",
+          "value": 2827487
+        },
+        {
+          "unit": "directory likes",
+          "value": 1866
+        }
+      ],
+      "local_behavior": "not installed or tested during research",
+      "maintenance_limit": "Listing and source dates do not establish installed compatibility.",
+      "repository": {
+        "url": "https://github.com/ClearVision/ClearVision-v7",
+        "revision": "e083b2b84602a1d47d5408de5d4582eb42037d84",
+        "commit_date": "2026-09-06T01:27:42Z",
+        "repository_last_push": "2026-09-06T01:28:07Z",
+        "archived": false,
+        "license": "Apache-2.0",
+        "license_limit": "Repository metadata inspected. No implementation reused.",
+        "metrics": [
+          {
+            "unit": "repository stars",
+            "value": 100,
+            "scope": "entire repository"
+          }
+        ]
+      }
+    },
+    {
+      "id": "D2",
+      "name": "midnight",
+      "platform": "Discord CSS",
+      "url": "https://betterdiscord.app/themes/midnight",
+      "access": "listing or official documentation text inspected",
+      "version": "2.1.1",
+      "listing_updated": "2026-06-04",
+      "author_claim_or_scope": "Dark customizable theme with light and other flavors.",
+      "author_supported_clients": [
+        "Vencord",
+        "BetterDiscord",
+        "author also claims other clients supporting theme files"
+      ],
+      "metrics": [
+        {
+          "unit": "directory downloads",
+          "value": 473737
+        },
+        {
+          "unit": "directory likes",
+          "value": 402
+        }
+      ],
+      "local_behavior": "not installed or tested during research",
+      "maintenance_limit": "Listing and source dates do not establish installed compatibility.",
+      "repository": {
+        "url": "https://github.com/refact0r/midnight-discord",
+        "revision": "85dd67148cbbbfa027cb091e41a479a16ab16a65",
+        "commit_date": "2026-09-01T01:43:52Z",
+        "repository_last_push": "2026-09-01T01:43:55Z",
+        "archived": false,
+        "license": "MIT",
+        "license_limit": "Repository metadata inspected. No implementation reused.",
+        "metrics": [
+          {
+            "unit": "repository stars",
+            "value": 1387,
+            "scope": "entire repository"
+          }
+        ]
+      }
+    },
+    {
+      "id": "D3",
+      "name": "BasicBackground",
+      "platform": "Discord CSS",
+      "url": "https://betterdiscord.app/themes/BasicBackground",
+      "access": "listing or official documentation text inspected",
+      "version": "1.0.5",
+      "listing_updated": "2025-04-15",
+      "author_claim_or_scope": "Background images with limited layout changes.",
+      "author_supported_clients": [
+        "BetterDiscord directory target"
+      ],
+      "metrics": [
+        {
+          "unit": "directory downloads",
+          "value": 721020
+        },
+        {
+          "unit": "directory likes",
+          "value": 586
+        }
+      ],
+      "local_behavior": "not installed or tested during research",
+      "maintenance_limit": "Listing and source dates do not establish installed compatibility.",
+      "repository": {
+        "url": "https://github.com/mwittrien/BetterDiscordAddons",
+        "revision": "21c049bb77fbe3ffc5cda8961830c098fc6bccad",
+        "commit_date": "2026-09-19T06:34:13Z",
+        "repository_last_push": "2026-09-19T06:33:41Z",
+        "archived": false,
+        "license": "GPL-2.0",
+        "license_limit": "Repository metadata inspected. No implementation reused.",
+        "metrics": [
+          {
+            "unit": "repository stars",
+            "value": 2344,
+            "scope": "Entire add-on repository, not this theme alone"
+          }
+        ]
+      },
+      "theme_file_revision": {
+        "path": "Themes/BasicBackground/BasicBackground.theme.css",
+        "sha": "bca7c871d2374f0b21e836d60dbf096d65df53aa",
+        "date": "2025-04-15T16:20:41Z"
+      }
+    },
+    {
+      "id": "D4",
+      "name": "MaterialDiscord",
+      "platform": "Discord CSS",
+      "url": "https://betterdiscord.app/themes/MaterialDiscord",
+      "access": "listing or official documentation text inspected",
+      "version": "3.0.7",
+      "listing_updated": "2026-02-04",
+      "author_claim_or_scope": "Component-focused Material Design skin with light/dark surface and control variables.",
+      "author_supported_clients": [
+        "BetterDiscord",
+        "Vencord link in repository"
+      ],
+      "metrics": [
+        {
+          "unit": "directory downloads",
+          "value": 206317
+        }
+      ],
+      "local_behavior": "not installed or tested during research",
+      "maintenance_limit": "Listing and source dates do not establish installed compatibility.",
+      "repository": {
+        "url": "https://github.com/CapnKitten/Material-Discord",
+        "revision": "1950def1418d468f24bb9ddd79e51609cc9bd296",
+        "commit_date": "2026-06-21T09:30:01Z",
+        "repository_last_push": "2026-06-21T09:30:01Z",
+        "archived": false,
+        "license": null,
+        "license_limit": "Repository metadata inspected. No implementation reused.",
+        "metrics": [
+          {
+            "unit": "repository stars",
+            "value": 454,
+            "scope": "entire repository"
+          }
+        ]
+      }
+    },
+    {
+      "id": "D5",
+      "name": "Catppuccin Discord",
+      "platform": "Discord CSS",
+      "url": "https://github.com/catppuccin/discord",
+      "access": "listing or official documentation text inspected",
+      "version": null,
+      "listing_updated": null,
+      "author_claim_or_scope": "Paired light/dark family. Exact revision identifies inspected source.",
+      "author_supported_clients": [
+        "Author Discord port. Equibop compatibility not established by research."
+      ],
+      "metrics": [],
+      "local_behavior": "not installed or tested during research",
+      "maintenance_limit": "Listing and source dates do not establish installed compatibility.",
+      "repository": {
+        "url": "https://github.com/catppuccin/discord",
+        "revision": "b9b5547f0b32296d2389716ef606de87b3c1e7c7",
+        "commit_date": "2026-02-07T01:05:12Z",
+        "repository_last_push": "2026-09-23T20:44:11Z",
+        "archived": false,
+        "license": "MIT",
+        "license_limit": "Repository metadata inspected. No implementation reused.",
+        "metrics": [
+          {
+            "unit": "repository stars",
+            "value": 1433,
+            "scope": "entire repository"
+          }
+        ]
+      }
+    },
+    {
+      "id": "D6",
+      "name": "Native Discord appearance",
+      "platform": "Discord native",
+      "url": "https://support.discord.com/hc/en-us/articles/207260127-How-to-Change-Discord-Color-Themes-and-Customize-Appearance-Settings",
+      "access": "listing or official documentation text inspected",
+      "version": null,
+      "listing_updated": null,
+      "author_claim_or_scope": "Zoom, chat scaling, spacing, native light/dark choices and Nitro custom-color controls.",
+      "author_supported_clients": [
+        "Discord desktop",
+        "Discord browser",
+        "Discord mobile with documented differences"
+      ],
+      "metrics": [],
+      "local_behavior": "not installed or tested during research",
+      "maintenance_limit": "Listing and source dates do not establish installed compatibility.",
+      "license": "No implementation reuse license established from this listing or help page."
+    },
+    {
+      "id": "C1",
+      "name": "Just Black",
+      "platform": "Chrome native",
+      "url": "https://chromewebstore.google.com/detail/just-black/aghfnjkcakhmadgdomlmlhhaocbkloab",
+      "access": "listing or official documentation text inspected",
+      "version": "3",
+      "listing_updated": "2020-08-01",
+      "author_claim_or_scope": "Google monochrome theme.",
+      "author_supported_clients": [
+        "Google Chrome"
+      ],
+      "metrics": [
+        {
+          "unit": "store users",
+          "value": 4000000
+        },
+        {
+          "unit": "rating average out of 5",
+          "value": 4.2
+        },
+        {
+          "unit": "store rating count display",
+          "value": "5.1K"
+        },
+        {
+          "unit": "package size KiB display",
+          "value": 6.44
+        }
+      ],
+      "local_behavior": "not installed or tested during research",
+      "maintenance_limit": "Listing and source dates do not establish installed compatibility.",
+      "license": "No implementation reuse license established from this listing or help page."
+    },
+    {
+      "id": "C2",
+      "name": "Slate",
+      "platform": "Chrome native",
+      "url": "https://chromewebstore.google.com/detail/slate/cmhmcmgkegfffbbfobhjpdbimgmoohap",
+      "access": "listing or official documentation text inspected",
+      "version": "2",
+      "listing_updated": "2019-03-08",
+      "author_claim_or_scope": "Google cool-neutral theme.",
+      "author_supported_clients": [
+        "Google Chrome"
+      ],
+      "metrics": [
+        {
+          "unit": "store users",
+          "value": 900000
+        },
+        {
+          "unit": "rating average out of 5",
+          "value": 4.5
+        },
+        {
+          "unit": "store rating count display",
+          "value": "1.6K"
+        },
+        {
+          "unit": "package size KiB display",
+          "value": 3.28
+        }
+      ],
+      "local_behavior": "not installed or tested during research",
+      "maintenance_limit": "Listing and source dates do not establish installed compatibility.",
+      "license": "No implementation reuse license established from this listing or help page."
+    },
+    {
+      "id": "C3",
+      "name": "Catppuccin Latte",
+      "platform": "Chrome native",
+      "url": "https://chromewebstore.google.com/detail/catppuccin-chrome-theme-l/jhjnalhegpceacdhbplhnakmkdliaddd",
+      "access": "listing or official documentation text inspected",
+      "version": "5.0.0",
+      "listing_updated": "2025-07-06",
+      "author_claim_or_scope": "Official author listing of the paired light/dark family.",
+      "author_supported_clients": [
+        "Google Chrome"
+      ],
+      "metrics": [
+        {
+          "unit": "store users",
+          "value": 2000
+        },
+        {
+          "unit": "rating average out of 5",
+          "value": 5.0
+        },
+        {
+          "unit": "store rating count",
+          "value": 15
+        },
+        {
+          "unit": "package size KiB display",
+          "value": 22.2
+        }
+      ],
+      "local_behavior": "not installed or tested during research",
+      "maintenance_limit": "Listing and source dates do not establish installed compatibility.",
+      "repository": {
+        "url": "https://github.com/catppuccin/chrome",
+        "revision": "2162917a85c7c91b52526e6560ad9e95ac0ccf8f",
+        "commit_date": "2026-04-05T14:52:52Z",
+        "repository_last_push": "2026-07-26T02:54:36Z",
+        "archived": false,
+        "license": "MIT",
+        "license_limit": "Repository metadata inspected. No implementation reused.",
+        "metrics": [
+          {
+            "unit": "repository stars",
+            "value": 310,
+            "scope": "entire repository"
+          }
+        ]
+      }
+    },
+    {
+      "id": "C4",
+      "name": "Catppuccin Mocha",
+      "platform": "Chrome native",
+      "url": "https://chromewebstore.google.com/detail/catppuccin-chrome-theme-m/bkkmolkhemgaeaeggcmfbghljjjoofoh",
+      "access": "listing or official documentation text inspected",
+      "version": "5.0.0",
+      "listing_updated": "2025-07-06",
+      "author_claim_or_scope": "Official author listing of the paired light/dark family.",
+      "author_supported_clients": [
+        "Google Chrome"
+      ],
+      "metrics": [
+        {
+          "unit": "store users",
+          "value": 60000
+        },
+        {
+          "unit": "rating average out of 5",
+          "value": 4.7
+        },
+        {
+          "unit": "store rating count",
+          "value": 53
+        },
+        {
+          "unit": "package size KiB display",
+          "value": 22.19
+        }
+      ],
+      "local_behavior": "not installed or tested during research",
+      "maintenance_limit": "Listing and source dates do not establish installed compatibility.",
+      "repository": {
+        "url": "https://github.com/catppuccin/chrome",
+        "revision": "2162917a85c7c91b52526e6560ad9e95ac0ccf8f",
+        "commit_date": "2026-04-05T14:52:52Z",
+        "repository_last_push": "2026-07-26T02:54:36Z",
+        "archived": false,
+        "license": "MIT",
+        "license_limit": "Repository metadata inspected. No implementation reused.",
+        "metrics": [
+          {
+            "unit": "repository stars",
+            "value": 310,
+            "scope": "entire repository"
+          }
+        ]
+      }
+    },
+    {
+      "id": "C5",
+      "name": "Native Chrome appearance",
+      "platform": "Chrome native",
+      "url": "https://support.google.com/chrome/answer/9275525?hl=en",
+      "access": "listing or official documentation text inspected",
+      "version": null,
+      "listing_updated": null,
+      "author_claim_or_scope": "Host baseline and native dark/light appearance. Separate from webpage restyling.",
+      "author_supported_clients": [
+        "Google Chrome"
+      ],
+      "metrics": [],
+      "local_behavior": "not installed or tested during research",
+      "maintenance_limit": "Listing and source dates do not establish installed compatibility.",
+      "license": "No implementation reuse license established from this listing or help page."
+    }
+  ],
+  "equicord_midnight": {
+    "url": "https://themes.equicord.org/theme/4",
+    "metadata_url": "https://api.themes.equicord.org/get/4",
+    "id": 4,
+    "source": "https://github.com/refact0r/midnight-discord/blob/master/themes/midnight.theme.css",
+    "last_updated": "2025-03-26T22:14:57.265Z",
+    "metrics": [
+      {
+        "unit": "library downloads",
+        "value": 8771
+      },
+      {
+        "unit": "library likes",
+        "value": 61
+      }
+    ]
+  },
+  "firsthand_reports": [
+    {
+      "id": "F1",
+      "url": "https://github.com/refact0r/midnight-discord/issues/452",
+      "title": "Code block text has insufficient contrast in light themes when Discord is set to a dark theme",
+      "source_date": "2026-06-26",
+      "access": "original text inspected",
+      "kind": "firsthand report, not reproduced",
+      "observation": "Reporter suspects an undefined --text-code variable.",
+      "limit": "Issue open when inspected. Proposed cause is not a verified diagnosis here. Screenshot not analyzed.",
+      "verification_task": "Check inline, fenced, syntax and selected code under matching and opposite base modes."
+    },
+    {
+      "id": "F2",
+      "url": "https://github.com/refact0r/midnight-discord/issues/446",
+      "title": "Search Bar results are barely visible",
+      "source_date": "2026-06-03",
+      "access": "original text inspected",
+      "kind": "firsthand report, not reproduced",
+      "observation": "Reporter cannot read server search results. A screenshot was subsequently attached.",
+      "limit": "Issue open when inspected. Main text and comments read, screenshot not analyzed.",
+      "verification_task": "Inspect search-result foreground, snippet and highlight composition."
+    },
+    {
+      "id": "F3",
+      "url": "https://github.com/Equicord/Equicord/issues/906",
+      "title": "Bug - Broken CSS for toggles",
+      "source_date": "2026-03-12",
+      "access": "original text inspected",
+      "kind": "firsthand report, not reproduced",
+      "observation": "Reporter compares one theme in Equibop and Vesktop and sees very saturated Equibop toggles.",
+      "limit": "Closed not planned. Maintainer attributes issue to theme. Local reproducibility unknown.",
+      "verification_task": "Check Equibop settings switches directly, including disabled, focus, on and off."
+    },
+    {
+      "id": "F4",
+      "url": "https://www.reddit.com/r/chrome/comments/17vx02u/some_new_black_oled_theme_for_chrome/",
+      "title": "Some new BLACK OLED theme for Chrome?",
+      "source_date": "2023-11-15; relevant reply 2024-01-13",
+      "access": "original text inspected",
+      "kind": "firsthand report, not reproduced",
+      "observation": "One reply favors tab differentiation within a dark theme.",
+      "limit": "Older Chrome context. Suggested alternative store listing now resolves empty. No installation or current compatibility established.",
+      "verification_task": "Inspect active and inactive native tabs plus unfocused windows."
+    },
+    {
+      "id": "F5",
+      "url": "https://www.reddit.com/r/chrome/comments/fy382r/just_black_theme_update/",
+      "title": "Just Black Theme Update",
+      "source_date": "2020-04-09",
+      "access": "original text inspected",
+      "kind": "firsthand report, not reproduced",
+      "observation": "Users report a white address bar after Chrome 81.",
+      "limit": "Historical breakage report, not current Chrome regression. No removal-rate evidence.",
+      "verification_task": "Check current omnibox and suggestion surfaces after install, switch and rollback."
+    },
+    {
+      "id": "F6",
+      "url": "https://www.reddit.com/r/discordapp/comments/d49mru/discord_if_youre_going_to_have_a_light_theme_you/",
+      "title": "Light-theme structure discussion",
+      "source_date": "2019-09",
+      "access": "original text inspected",
+      "kind": "firsthand report, not reproduced",
+      "observation": "Original author criticizes insufficient distinction among light panels. Replies disagree over restoring a dark sidebar.",
+      "limit": "Historical discussion. Quoted reports in the original post are not counted as new independent observations.",
+      "verification_task": "Check panel hierarchy independently from text contrast."
+    },
+    {
+      "id": "F7",
+      "url": "https://www.reddit.com/r/discordapp/comments/d24oyb/why_do_people_hate_this_new_light_theme/",
+      "title": "Why do people hate this new Light theme?",
+      "source_date": "2019-09",
+      "access": "original text inspected",
+      "kind": "firsthand report, not reproduced",
+      "observation": "Original author prefers the newer light theme for consistency and readable type. Responses describe opposite experiences.",
+      "limit": "Subjective disagreement, not clinical evidence or present-day Discord test.",
+      "verification_task": "Give genuine light styling equal testing and preserve user choice."
+    },
+    {
+      "id": "F8",
+      "url": "https://www.reddit.com/r/OLED_Gaming/comments/1qmezrz/what_brightness_do_you_use/",
+      "title": "What brightness do you use?",
+      "source_date": "2026-01-25",
+      "access": "original text inspected",
+      "kind": "firsthand report, not reproduced",
+      "observation": "Dark-room author reports a zero Windows HDR brightness slider. Others prefer higher values.",
+      "limit": "Different displays and conditions. No instrumented calibration or burn-in evidence.",
+      "verification_task": "Preserve the requested baseline and separate human viewing feedback."
+    },
+    {
+      "id": "F9",
+      "url": "https://www.reddit.com/r/OLED_Gaming/comments/1hgnnno/32_inch_4k_oled_text_is_not_crisp/",
+      "title": "32 inch 4K OLED text is not crisp",
+      "source_date": "2024-12",
+      "access": "original text inspected",
+      "kind": "firsthand report, not reproduced",
+      "observation": "Aorus FO32U2 owner reports disappointing text at 125% scaling. Replies differ, including users of other models.",
+      "limit": "No PG32UCDMR inference or automatic ClearType/scaling changes are justified.",
+      "verification_task": "Record real scaling and rendered faces. Keep physical text inspection separate."
+    },
+    {
+      "id": "F10",
+      "url": "https://www.reddit.com/r/gnome/comments/1kewe64/any_suggestions_for_the_perfect_ui_font_i_hate/",
+      "title": "Any suggestions for the perfect UI font?",
+      "source_date": "2025-05",
+      "access": "original text inspected",
+      "kind": "firsthand report, not reproduced",
+      "observation": "GNOME user describes Adwaita Sans/Inter as clear but bland.",
+      "limit": "Subjective Linux UI report, not a Windows font benchmark.",
+      "verification_task": "Use Inter as requested and verify faces rather than claiming universal preference."
+    }
+  ],
+  "publication_sources": [
+    {
+      "id": "P1",
+      "url": "https://themes.equicord.org/",
+      "access": "public listing text inspected",
+      "observation": "Library identifies Equicord and Vencord as targets. No local theme acceptance established."
+    },
+    {
+      "id": "P2",
+      "url": "https://themes.equicord.org/privacy",
+      "source_date": "2024-11-08 displayed policy date",
+      "access": "full policy text inspected",
+      "observation": "Describes OAuth identity data and submission attribution. No login performed."
+    },
+    {
+      "id": "P3",
+      "url": "https://github.com/Equicord/Equithemes.org",
+      "revision": "ddefa615fd1d7e23c2b77330213a50a945e45986",
+      "access": "repository metadata, raw submit UI and selected API sections inspected",
+      "files": [
+        "src/pages/theme/submit.tsx",
+        "src/pages/api/submit/theme.ts",
+        "src/pages/api/submit/approve.ts"
+      ],
+      "observation": "Source separates attribution and CSS metadata submission from administrator approval. Current form differs from some README API descriptions. No submission performed.",
+      "unresolved": "Library-specific licensing and assisted-authorship eligibility were not established. Public form itself failed text retrieval."
+    },
+    {
+      "id": "P4",
+      "url": "https://docs.betterdiscord.app/themes/publishing/guidelines",
+      "access": "full guidelines inspected",
+      "observation": "Directory requires primarily self-written code and excludes automatically generated or others-authored submissions. Not a rule governing Equicord or independent GitHub publication."
+    }
+  ],
+  "other_primary_sources": [
+    {
+      "id": "R1",
+      "url": "https://rsms.me/inter/",
+      "access": "official design text inspected",
+      "kind": "font author description",
+      "observation": "Text and display optical sizes are described. Does not verify local installation or rendered face."
+    },
+    {
+      "id": "R2",
+      "url": "https://support.google.com/chrome/answer/14218344?hl=en",
+      "access": "official Reading mode controls inspected",
+      "kind": "official documented capability",
+      "observation": "Font, color, line-height, letter-spacing, links and images controls. Exact local font choices and colors must be exercised before companion decision."
+    }
+  ],
+  "discovery_and_access_limits": [
+    {
+      "url": "https://themes.equicord.org/",
+      "result": "opened listing text"
+    },
+    {
+      "url": "https://betterdiscord.app/themes",
+      "result": "opened directory text"
+    },
+    {
+      "url": "https://github.com/topics/discord-theme",
+      "result": "opened topic page text"
+    },
+    {
+      "url": "https://chromewebstore.google.com/category/themes?pli=1",
+      "result": "text tool internal error; individual original listings inspected instead"
+    },
+    {
+      "url": "https://chromewebstore.google.com/detail/github-dark-mode-high-con/hdhgeieepkaajfagieiifnckbfmbfkif",
+      "result": "redirected to empty-title listing; not counted as available candidate"
+    },
+    {
+      "url": "https://themes.equicord.org/theme/submit",
+      "result": "text retrieval failed; read public UI source instead, no authenticated workflow verified"
+    }
+  ],
+  "reuse": "No candidate code, image, testimonial or font binary copied. Metadata licenses are not project dependencies."
+}

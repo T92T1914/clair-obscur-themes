@@ -1,0 +1,35 @@
+name: Appearance or installation problem
+description: Report a reproducible theme problem without sharing private messages or account data.
+body:
+  - type: dropdown
+    id: host
+    attributes:
+      label: Target application
+      options: [Google Chrome, Equibop with Equicord, Local preview]
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Application and theme versions
+      description: Include your operating system and the selected Clair or Obscur version.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: What happened and how to reproduce it
+      description: Include the native Light or Dark base, zoom/text size and relevant theme or font plugins. Do not include private messages, usernames, paths, tokens or full settings exports.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: image
+    attributes:
+      label: Optional non-sensitive screenshot
+      description: State whether HDR was enabled and how the capture was exported. A screenshot is not a physical brightness measurement.
