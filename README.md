@@ -6,6 +6,8 @@ This is an experimental preview. The packages and component preview can be built
 
 ## Choose your theme
 
+Open the [live preview and downloads](https://t92t1914.github.io/clair-obscur-themes/) to compare Clair and Obscur and choose a package for your application. The page includes installation and restoration steps, source and checksums. All four downloads are labeled as previews while native acceptance remains open.
+
 | Application | Clair | Obscur | Typography |
 | --- | --- | --- | --- |
 | Google Chrome | Warm light browser colors | Deep neutral browser colors | Chrome keeps its native UI font |
@@ -23,7 +25,7 @@ python build.py --check
 python preview.py --output outputs/preview-0.1.1
 ```
 
-Open `outputs/preview-0.1.1/index.html` to compare both palettes and download the matching Chrome ZIP or Equicord CSS. The page includes installation guidance, source and checksums. It is generated locally by these commands. A local build does not establish that a public website or release has been published.
+Open `outputs/preview-0.1.1/index.html` to compare both palettes and download the matching Chrome ZIP or Equicord CSS. These commands generate a local copy. They do not update the published preview.
 
 | Artifact | Output |
 | --- | --- |
