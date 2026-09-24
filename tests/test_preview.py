@@ -2,6 +2,7 @@ import hashlib
 import io
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -9,7 +10,7 @@ import unittest
 from unittest.mock import patch
 import zipfile
 
-from preview import ROOT, build_preview, preview_files, source_files
+from preview import ROOT, build_preview, preview_files, source_files, source_identity
 from themeforge.build import build_release
 
 
@@ -122,3 +123,88 @@ class PreviewTests(unittest.TestCase):
         self.assertEqual(set(actual), set(expected))
         for name, payload in expected.items():
             self.assertEqual(actual[name], hashlib.sha256(payload).hexdigest())
+
+    def test_released_source_and_current_snapshot_have_separate_identity(self):
+        files = preview_files(ROOT, self.artifacts)
+        manifest = json.loads(files['site-manifest.json'])
+        version = json.loads((ROOT / 'tokens.json').read_text())['version']
+        release_url = f'https://github.com/T92T1914/clair-obscur-themes/releases/download/v{version}'
+        page = files['index.html'].decode()
+        self.assertIn(f'id="released-source" href="{release_url}/source.zip"', page)
+        self.assertIn(f'id="released-checksums" href="{release_url}/release-SHA256SUMS"', page)
+        self.assertIn('id="current-source" href="source.zip"', page)
+        self.assertNotIn(f'>Source {version}</a>', page)
+        digest = hashlib.sha256(files['source.zip']).hexdigest()
+        self.assertEqual(manifest['source']['sha256'], digest)
+        self.assertEqual(files['source-SHA256SUMS'], f'{digest}  source.zip\n'.encode())
+        self.assertEqual(manifest['release']['source_url'], release_url + '/source.zip')
+        self.assertNotIn('{{', page)
+
+
+class SourceIdentityTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+        self.sources = {'README.md': b'Original public source\n'}
+        (self.root / 'README.md').write_bytes(self.sources['README.md'])
+
+    def checkout(self):
+        if shutil.which('git') is None:
+            self.skipTest('Git is unavailable for the repository identity fixture')
+        commands = [
+            ['init', '--quiet'],
+            ['-c', 'core.autocrlf=false', 'add', 'README.md'],
+            ['-c', 'user.name=Preview fixture', '-c', 'user.email=preview@example.invalid',
+             '-c', f'core.hooksPath={self.root / "unused-hooks"}', 'commit', '--quiet', '--no-gpg-sign', '-m', 'Fixture'],
+        ]
+        for arguments in commands:
+            result = subprocess.run(['git', '-C', str(self.root), *arguments], capture_output=True, timeout=15)
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+        return subprocess.check_output(['git', '-C', str(self.root), 'rev-parse', 'HEAD'], timeout=15).decode().strip()
+
+    def test_unpacked_source_has_no_claimed_revision(self):
+        self.assertEqual(source_identity(self.root, self.sources), {'revision': None, 'state': 'unavailable'})
+        with self.assertRaisesRegex(ValueError, 'requires a Git checkout'):
+            source_identity(self.root, self.sources, 'a' * 40)
+
+    def test_committed_source_identifies_exact_revision(self):
+        revision = self.checkout()
+        self.assertEqual(source_identity(self.root, self.sources, revision), {'revision': revision, 'state': 'clean'})
+
+    def test_modified_source_is_labeled_and_rejected_for_deployment(self):
+        revision = self.checkout()
+        self.sources['README.md'] = b'Changed public source\n'
+        (self.root / 'README.md').write_bytes(self.sources['README.md'])
+        self.assertEqual(source_identity(self.root, self.sources)['state'], 'modified')
+        with self.assertRaisesRegex(ValueError, 'unchanged committed source'):
+            source_identity(self.root, self.sources, revision)
+
+    def test_captured_changed_bytes_cannot_claim_clean_even_after_file_restoration(self):
+        revision = self.checkout()
+        captured = {'README.md': b'Captured before restoration\n'}
+        self.assertEqual(source_identity(self.root, captured)['state'], 'modified')
+        with self.assertRaisesRegex(ValueError, 'unchanged committed source'):
+            source_identity(self.root, captured, revision)
+
+    def test_untracked_public_source_cannot_claim_clean_revision(self):
+        revision = self.checkout()
+        self.sources['new-source.py'] = b'print("new source")\n'
+        self.assertEqual(source_identity(self.root, self.sources)['state'], 'modified')
+        with self.assertRaisesRegex(ValueError, 'unchanged committed source'):
+            source_identity(self.root, self.sources, revision)
+
+    def test_wrong_expected_revision_is_rejected(self):
+        self.checkout()
+        with self.assertRaisesRegex(ValueError, 'differs from the expected'):
+            source_identity(self.root, self.sources, 'a' * 40)
+
+    def test_git_failure_cannot_be_reported_as_clean_or_unavailable(self):
+        self.checkout()
+        with patch('preview.subprocess.run', return_value=subprocess.CompletedProcess([], 1, b'', b'failed')):
+            with self.assertRaisesRegex(ValueError, 'Cannot inspect'):
+                source_identity(self.root, self.sources)
+
+    def test_expected_revision_cannot_be_a_floating_ref(self):
+        with self.assertRaisesRegex(ValueError, 'complete lowercase Git commit ID'):
+            source_identity(self.root, self.sources, 'main')

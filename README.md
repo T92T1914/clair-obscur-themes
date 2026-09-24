@@ -27,6 +27,8 @@ python preview.py --output outputs/preview-0.1.1
 
 Open `outputs/preview-0.1.1/index.html` to compare both palettes and download the matching Chrome ZIP or Equicord CSS. These commands generate a local copy. They do not update the published preview.
 
+Reviewed changes merged into `main` publish the checked preview automatically after Linux, Windows and browser CI succeed. Website and documentation updates can advance without replacing the v0.1.1 release. The download page distinguishes the original released source from its current-source snapshot.
+
 | Artifact | Output |
 | --- | --- |
 | Clair for Chrome | `dist/artifacts/Clair-Chrome-0.1.1.zip` |

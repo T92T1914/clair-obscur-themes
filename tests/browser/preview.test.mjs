@@ -257,6 +257,34 @@ test('download clicks save all four verified packages without navigating away', 
   } finally { await context.close(); }
 });
 
+test('released source stays separate from the current preview snapshot', async () => {
+  const { context, page } = await pageFor();
+  try {
+    const manifest = await (await context.request.get(origin + '/site-manifest.json')).json();
+    const releaseBase = `https://github.com/T92T1914/clair-obscur-themes/releases/download/v${manifest.release.version}`;
+    assert.equal(await page.locator('#released-source').getAttribute('href'), releaseBase + '/source.zip');
+    assert.equal(await page.locator('#released-checksums').getAttribute('href'), releaseBase + '/release-SHA256SUMS');
+    assert.equal(await page.locator('#current-source').textContent(), 'Current source snapshot');
+    const sourceText = await page.locator('#source-identity').textContent();
+    if (manifest.source.revision) {
+      assert.ok(sourceText.includes(manifest.source.revision));
+      assert.equal(sourceText.includes('with local source changes'), manifest.source.state === 'modified');
+    } else {
+      assert.ok(sourceText.includes('Revision unavailable'));
+      assert.equal(manifest.source.state, 'unavailable');
+    }
+    const [saved] = await Promise.all([page.waitForEvent('download'), page.locator('#current-source').click()]);
+    assert.equal(saved.suggestedFilename(), 'source.zip');
+    assert.equal(await saved.failure(), null);
+    const chunks = [];
+    for await (const chunk of await saved.createReadStream()) chunks.push(chunk);
+    const digest = crypto.createHash('sha256').update(Buffer.concat(chunks)).digest('hex');
+    assert.equal(digest, manifest.source.sha256);
+    assert.equal(await (await context.request.get(origin + '/source-SHA256SUMS')).text(), `${digest}  source.zip\n`);
+    results.scenarios.push({ name: 'separate release source links and revision-labeled current source download', status: 'passed', source: manifest.source });
+  } finally { await context.close(); }
+});
+
 test('static delivery remains usable without JavaScript and internal links resolve', async () => {
   const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
   try {

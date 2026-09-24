@@ -14,6 +14,12 @@ on:
 permissions:
   contents: read
 
+# Main publication runs replace obsolete work. Check-only manual runs cannot
+# cancel publication. Tag runs retain the separate release job's queue.
+concurrency:
+  group: theme-checks-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && !inputs.publish_pages && '-check-only' || '' }}
+  cancel-in-progress: ${{ github.ref == 'refs/heads/main' }}
+
 jobs:
   build:
     strategy:
@@ -35,7 +41,7 @@ jobs:
       - name: Verify reproducible output
         run: python build.py --check
       - name: Build static download specimen
-        run: python preview.py
+        run: python preview.py --expected-revision "${{ github.sha }}"
       - name: Retain the checked preview and downloads
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
@@ -150,7 +156,10 @@ jobs:
             --title "$RELEASE_TAG preview" --notes-file "$RELEASE_NOTES"
 
   pages:
-    if: github.event_name == 'workflow_dispatch' && inputs.publish_pages && github.ref == 'refs/heads/main'
+    if: >-
+      success() && github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' ||
+       (github.event_name == 'workflow_dispatch' && inputs.publish_pages))
     needs: [build, browser]
     runs-on: ubuntu-latest
     permissions:

@@ -34,9 +34,11 @@ The build pipeline stages complete outputs, validates their contents and only re
 
 Edit `tokens.json` for shared colors, `themeforge/chrome.py` or `themeforge/equicord.py` for platform mappings, and `web/` for the component specimen. Do not patch `dist/` or a generated preview. Keep the version in `tokens.json` and the development package metadata consistent when preparing a new release.
 
-The preview includes a source archive with an explicit allowlist. A README, installation guide or test change can legitimately alter that archive even when the four theme assets stay visually identical. Rebuild the site after those edits and review its new manifest. Do not copy old hashes into a new version or overwrite an already published version's bytes.
+The preview includes a source archive with an explicit allowlist. A README, installation guide or test change can legitimately alter that archive even when the four theme assets stay identical. The current-source snapshot is separate from the versioned source download, which points to the existing release. Inspect the snapshot's revision, working-tree status and SHA-256 in the generated page and `site-manifest.json`. Source extracted without Git history is labeled with an unavailable revision rather than assigned a guessed commit.
 
-The [CI workflow](../.github/workflows/checks.yml) produces downloadable build output and supports separate prerelease and Pages publication. The [publication guide](publication.md#github-delivery) describes those gates. A local run, a remote workflow pass and a verified public download remain distinct results.
+CI uses `python preview.py --expected-revision <workflow-commit>` to require that exact clean source revision. Rebuild the site after source changes and review its new manifest. Do not copy old hashes into a new build or overwrite a published release's bytes.
+
+The [CI workflow](../.github/workflows/checks.yml) deploys checked pushes to `main` automatically and publishes prereleases only on reviewed version tags. Manual Pages dispatch is an optional fallback. The [publication guide](publication.md#github-delivery) describes the checks, artifact provenance and environment gates. A local run, a remote workflow pass and a verified public download remain distinct results.
 
 ## Reading the evidence
 
