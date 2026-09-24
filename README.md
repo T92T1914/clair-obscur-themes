@@ -2,7 +2,7 @@
 
 Two appearances, built for ordinary Google Chrome and Equibop with Equicord. Clair uses warm paper surfaces and dark text. Obscur uses near-black layers, clear text and restrained blue emphasis. Both come from the visual identity of [Tornado Atlas](https://github.com/T92T1914/tornado-atlas), with the host application's layout and scaling left in place.
 
-This is an experimental preview. The packages and component preview can be built and checked locally. Installation, switching and restoration in actual Chrome and Equibop still need native acceptance. The webpage specimen is not a screenshot of either application's interface. See the [compatibility and acceptance record](docs/acceptance.md) for the boundary between those checks.
+This is an experimental preview. Both themes have passed limited native Equibop checks for loading, matching and opposite appearance modes, switching and restoration. Obscur also installed in an isolated ordinary Chrome profile. Full interface and typography acceptance remains open, including Clair's Chrome installation and Chrome switching, restoration and cleanup. The webpage specimen is not a screenshot of either application's interface. See the [compatibility and acceptance record](docs/acceptance.md) for the inspected surfaces and remaining checks.
 
 ## Choose your theme
 
@@ -45,7 +45,7 @@ The [installation and removal guide](docs/installation.md) covers the exact step
 
 The browser specimen exercises readable components, local font resolution, keyboard interaction, larger text and fallback behavior. It uses an isolated headless browser profile. Those tests help find mistakes in the supplied CSS and preview, but they cannot certify Chrome's tab strip, Equibop's full interface or physical HDR appearance.
 
-Inter verification checks the actual rendered Regular, SemiBold and Bold faces and their genuine italic counterparts. A scoped Windows activation restored those faces in one session, but the next normal restart reproduced all six installed-font failures before any repair. Persistent font availability remains unresolved on the tested machine. The [acceptance record](docs/acceptance.md#installed-font-investigation) preserves both results and the remaining native-application checks. A readable fallback is a separate result, not a passed Inter check. The released theme files are unchanged.
+Inter verification checks the actual rendered Regular, SemiBold and Bold faces and their genuine italic counterparts. Windows' normal per-user installation has now restored all six faces, and the latest strict checks passed with zero skips. Actual Equibop settings text rendered Inter Regular and Bold under both themes. The other four faces and native code/language fallback remain unverified. An earlier session activation failed after the next normal restart. Persistence after the native installation remains unverified until another normal restart is checked before any repair. The [acceptance record](docs/acceptance.md#installed-font-investigation) preserves these results and the remaining native-application checks. A readable fallback is a separate result, not a passed Inter check. The released theme files are unchanged.
 
 See [development and verification](docs/development.md) for reproducible commands, [design](docs/design.md) for the color and typography choices, and [research](research/research.md) for the source-backed concerns behind the native checks. The [publication guide](docs/publication.md) separates a downloadable preview, native acceptance and store approval.
 
