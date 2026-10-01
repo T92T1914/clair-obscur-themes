@@ -20,6 +20,8 @@ The CI browser uses packaged Chrome because Ubuntu already supplies its sandbox 
 
 The preview builder copies only verified release bytes and explicitly selected source categories. It rejects a stale or edited artifact. Repeating the same build is harmless. When the source changes, choose a fresh preview output directory so an existing candidate is not silently replaced. `site-manifest.json` describes the exact preview bytes.
 
+The displayed palette, verified downloads and source archive must use the same token values. The preview compares their canonical token digests and rejects a change between reads before writing output. Equivalent JSON formatting is allowed, and the source archive retains the captured file bytes. This check does not establish native application acceptance.
+
 To serve a built preview locally:
 
 ```powershell

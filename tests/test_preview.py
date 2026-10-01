@@ -141,6 +141,93 @@ class PreviewTests(unittest.TestCase):
         self.assertNotIn('{{', page)
 
 
+class PreviewTokenSnapshotTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.base = Path(self.temporary.name)
+        self.root = self.base / 'source'
+        for name, data in source_files(ROOT).items():
+            path = self.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(data)
+        self.tokens = self.root / 'tokens.json'
+        self.original = json.loads(self.tokens.read_bytes())
+        major, minor, patch_version = map(int, self.original['version'].split('.'))
+        self.changed = dict(self.original, version=f'{major}.{minor}.{patch_version + 1}')
+        self.artifacts = self.base / 'artifacts'
+        self.output = self.base / 'preview'
+        build_release(self.tokens, self.artifacts)
+
+    def test_token_change_during_artifact_check_cannot_mix_preview_versions(self):
+        # The display read sees old tokens, but the artifact check sees the
+        # newer complete build. Both inputs are individually valid.
+        self.tokens.write_text(json.dumps(self.changed), encoding='utf-8')
+        build_release(self.tokens, self.artifacts)
+        self.tokens.write_text(json.dumps(self.original), encoding='utf-8')
+
+        def change_after_display_read(path):
+            document = json.loads(path.read_bytes())
+            self.tokens.write_text(json.dumps(self.changed), encoding='utf-8')
+            return document
+
+        with patch('preview.load', side_effect=change_after_display_read):
+            with self.assertRaisesRegex(ValueError, 'Token snapshot'):
+                build_preview(self.root, self.artifacts, self.output)
+        self.assertFalse(self.output.exists())
+
+    def test_token_change_during_source_capture_cannot_publish_unmatched_source(self):
+        def change_before_capture(root):
+            self.tokens.write_text(json.dumps(self.changed), encoding='utf-8')
+            return source_files(root)
+
+        with patch('preview.source_files', side_effect=change_before_capture):
+            with self.assertRaisesRegex(ValueError, 'Source tokens'):
+                build_preview(self.root, self.artifacts, self.output)
+        self.assertFalse(self.output.exists())
+
+    def test_rejected_token_change_preserves_an_existing_preview(self):
+        build_preview(self.root, self.artifacts, self.output)
+        before = {path.relative_to(self.output): path.read_bytes()
+                  for path in self.output.rglob('*') if path.is_file()}
+
+        def change_before_capture(root):
+            self.tokens.write_text(json.dumps(self.changed), encoding='utf-8')
+            return source_files(root)
+
+        with patch('preview.source_files', side_effect=change_before_capture):
+            with self.assertRaisesRegex(ValueError, 'Source tokens'):
+                build_preview(self.root, self.artifacts, self.output)
+        after = {path.relative_to(self.output): path.read_bytes()
+                 for path in self.output.rglob('*') if path.is_file()}
+        self.assertEqual(before, after)
+        self.assertFalse(list(self.base.glob('.preview-stage-*')))
+
+    def test_equivalent_token_formatting_preserves_downloads_and_exact_source_bytes(self):
+        formatted = (json.dumps(self.original, indent=4) + '\n').encode()
+
+        def reformat_before_capture(root):
+            self.tokens.write_bytes(formatted)
+            return source_files(root)
+
+        with patch('preview.source_files', side_effect=reformat_before_capture):
+            files = preview_files(self.root, self.artifacts)
+        with zipfile.ZipFile(io.BytesIO(files['source.zip'])) as archive:
+            self.assertEqual(archive.read('tokens.json'), formatted)
+        self.assertEqual(files['downloads/artifact-manifest.json'],
+                         (self.artifacts / 'artifact-manifest.json').read_bytes())
+
+    def test_captured_source_tokens_must_keep_the_loader_utf8_encoding(self):
+        def change_encoding_before_capture(root):
+            self.tokens.write_bytes(json.dumps(self.original).encode('utf-16'))
+            return source_files(root)
+
+        with patch('preview.source_files', side_effect=change_encoding_before_capture):
+            with self.assertRaises(UnicodeDecodeError):
+                build_preview(self.root, self.artifacts, self.output)
+        self.assertFalse(self.output.exists())
+
+
 class SourceIdentityTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
