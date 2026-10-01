@@ -11,7 +11,7 @@ import subprocess
 import tempfile
 
 from themeforge.build import (
-    _inventory, _linked, _output_lock, _remove_owned_tree, _safe_destination,
+    _digest, _inventory, _json_bytes, _linked, _output_lock, _remove_owned_tree, _safe_destination,
     _verify_owned, _zip_bytes, build_release,
 )
 from themeforge.equicord import FACES
@@ -110,7 +110,10 @@ def source_identity(root: Path, sources: dict[str, bytes], expected_revision: st
 
 def preview_files(root: Path, artifacts: Path, expected_revision: str | None = None) -> dict[str, bytes]:
     document = load(root / 'tokens.json')
+    tokens_digest = _digest(_json_bytes(document))
     manifest = build_release(root / 'tokens.json', artifacts, check=True)
+    if manifest['tokens_sha256'] != tokens_digest:
+        raise ValueError('Token snapshot changed during artifact verification')
     # Keep the exact verified snapshot. Later edits cannot replace bytes already
     # captured here, and a concurrent newer complete build has a different manifest.
     with _output_lock(artifacts):
@@ -133,6 +136,8 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
             'Native acceptance pending.</small></article>'
         )
     sources = source_files(root)
+    if _digest(_json_bytes(json.loads(sources['tokens.json'].decode('utf-8')))) != tokens_digest:
+        raise ValueError('Source tokens differ from the verified artifact snapshot')
     identity = source_identity(root, sources, expected_revision)
     version = document['version']
     release_url = f'{REPOSITORY_URL}/releases/download/v{version}'
