@@ -31,6 +31,7 @@ def validate(document):
             rgb(value)
         pairs = [(fg, bg, 4.5) for fg in ('text','muted') for bg in ('canvas','panel','control','hover','selected','code')]
         pairs += [(fg, 'panel', 4.5) for fg in ('accent','success','warning','error')]
+        pairs += [('accent', bg, 4.5) for bg in ('selected', 'hover')]
         pairs += [('on_accent','accent',4.5)]
         pairs += [(fg,bg,3) for fg in ('focus','border') for bg in ('canvas','panel','control','hover','selected')]
         for fg,bg,minimum in pairs:

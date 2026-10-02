@@ -76,14 +76,41 @@ def _icon(colors: dict[str, tuple[int, int, int]]) -> bytes:
             + chunk(b"IEND", b""))
 
 
+def _note_cleanup_failure(failure: BaseException, cleanup_error: BaseException, action: str) -> None:
+    try:
+        failure.add_note(
+            f"Native Chrome temporary-file {action} could not finish "
+            f"({type(cleanup_error).__name__}). The original failure "
+            "remains primary and the temporary file may remain."
+        )
+    except BaseException:
+        pass
+
+
 def _write_atomic(path: Path, payload: bytes) -> None:
     temporary = None
     try:
-        with tempfile.NamedTemporaryFile(dir=path.parent, prefix=".theme-", delete=False) as stream:
+        stream = tempfile.NamedTemporaryFile(dir=path.parent, prefix=".theme-", delete=False)
+        try:
             temporary = Path(stream.name)
             stream.write(payload)
+        except BaseException as failure:
+            try:
+                stream.close()
+            except BaseException as cleanup_error:
+                _note_cleanup_failure(failure, cleanup_error, "closure")
+            raise
+        else:
+            stream.close()
         os.replace(temporary, path)
-    finally:
+    except BaseException as failure:
+        if temporary is not None:
+            try:
+                temporary.unlink(missing_ok=True)
+            except BaseException as cleanup_error:
+                _note_cleanup_failure(failure, cleanup_error, "cleanup")
+        raise
+    else:
         if temporary is not None:
             temporary.unlink(missing_ok=True)
 

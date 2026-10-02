@@ -374,6 +374,8 @@ test('static delivery remains usable without JavaScript and internal links resol
 test('Equicord CSS consumes host variables only on its matching native base', async () => {
   const { context, page } = await pageFor();
   try {
+    const palettes = JSON.parse(await readFile(path.join(root, 'tokens.json'), 'utf8')).themes;
+    const color = hex => `rgb(${[1, 3, 5].map(offset => parseInt(hex.slice(offset, offset + 2), 16)).join(', ')})`;
     for (const [name, mode, background, text] of [
       ['Obscur', 'dark', 'rgb(9, 9, 9)', 'rgb(244, 244, 244)'],
       ['Clair', 'light', 'rgb(248, 247, 243)', 'rgb(36, 36, 36)'],
@@ -385,10 +387,18 @@ test('Equicord CSS consumes host variables only on its matching native base', as
         button { font-family:var(--font-primary,Arial); background:var(--control-primary-background-default); color:var(--control-primary-text-default); }
         .switch { background:var(--switch-background-default); border:1px solid var(--switch-border-default); }
         .switch.checked { background:var(--switch-background-selected-default); }
+        #primary:hover { background:var(--control-primary-background-hover); color:var(--control-primary-text-hover); }
+        #secondary { background:var(--control-secondary-background-default); color:var(--control-secondary-text-default); }
+        #secondary:hover { background:var(--control-secondary-background-hover); color:var(--control-secondary-text-hover); }
+        #mention { display:block; background:var(--mention-background); color:var(--mention-foreground); }
+        #mention:hover { background:var(--background-mentioned-hover); }
       </style></head><body><p id="message-content-fixture">Regular <strong>bold</strong> <em>italic</em> <code>code</code></p>
-      <button class="vc-btn-base vc-btn-medium">Host control</button><span class="switch">Off</span><span class="switch checked">On</span></body></html>`);
+      <button id="primary" class="vc-btn-base vc-btn-medium">Host control</button><button id="secondary">Secondary control</button>
+      <a id="mention" href="#fixture">Mention</a>
+      <span class="switch">Off</span><span class="switch checked">On<span class="vc-switch-indicator">Indicator</span></span></body></html>`);
       await page.addStyleTag({ content: css });
       await page.evaluate(() => document.fonts.ready);
+      await page.mouse.move(1270, 890);
       const rendered = await page.evaluate(() => ({
         background: getComputedStyle(document.body).backgroundColor,
         text: getComputedStyle(document.body).color,
@@ -400,9 +410,35 @@ test('Equicord CSS consumes host variables only on its matching native base', as
       assert.equal(rendered.background, background); assert.equal(rendered.text, text);
       assert.equal(rendered.controlWeight, '600'); assert.match(rendered.codeFont, /monospace|Consolas/);
       assert.notEqual(rendered.off, rendered.on);
+      const colors = async selector => page.locator(selector).evaluate(node => ({
+        background: getComputedStyle(node).backgroundColor, text: getComputedStyle(node).color,
+      }));
+      const expected = palettes[name];
+      assert.deepEqual(await colors('#primary'), { background: color(expected.accent), text: color(expected.on_accent) });
+      assert.deepEqual(await colors('#secondary'), { background: color(expected.control), text: color(expected.text) });
+      assert.deepEqual(await colors('#mention'), { background: color(expected.selected), text: color(expected.accent) });
+      await page.locator('#primary').hover();
+      assert.deepEqual(await colors('#primary'), { background: color(expected.accent), text: color(expected.on_accent) });
+      await page.locator('#secondary').hover();
+      assert.deepEqual(await colors('#secondary'), { background: color(expected.hover), text: color(expected.text) });
+      await page.locator('#mention').hover();
+      assert.deepEqual(await colors('#mention'), { background: color(expected.hover), text: color(expected.accent) });
+      await page.locator('#primary').focus();
+      await page.keyboard.press('Tab');
+      assert.equal(await page.locator('#secondary').evaluate(node => node.matches(':focus-visible')), true);
+      const focus = await page.locator('#secondary').evaluate(node => ({
+        width: getComputedStyle(node).outlineWidth, style: getComputedStyle(node).outlineStyle,
+        offset: getComputedStyle(node).outlineOffset, color: getComputedStyle(node).outlineColor,
+      }));
+      assert.deepEqual(focus, { width: '2px', style: 'solid', offset: '2px', color: color(expected.focus) });
+      await page.locator('.checked').evaluate(node => node.classList.add('vc-switch-focusVisible'));
+      assert.equal(await page.locator('.vc-switch-indicator').evaluate(node => getComputedStyle(node).outlineColor), color(expected.focus));
+      assert.equal(await page.locator('.vc-switch-indicator').evaluate(node => getComputedStyle(node).outlineWidth), '2px');
       await page.evaluate(value => document.documentElement.className = `theme-${value}`, mode === 'dark' ? 'light' : 'dark');
       assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(171, 205, 239)');
-      results.scenarios.push({ name: `${name} Equicord host-contract fixture`, status: 'passed', rendered, oppositeBase: 'retains fixture native baseline', nativeAppVerified: false });
+      results.scenarios.push({ name: `${name} Equicord host-contract fixture`, status: 'passed', rendered, focus,
+        pairedStates: 'primary, secondary and mention default/hover; separate keyboard and switch-class focus',
+        oppositeBase: 'retains fixture native baseline', nativeAppVerified: false });
     }
   } finally { await context.close(); }
 });
