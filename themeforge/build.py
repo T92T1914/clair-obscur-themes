@@ -235,6 +235,51 @@ def _output_lock(output: Path):
         lock.unlink()
 
 
+def _install_stage(stage: Path, output: Path, previous: dict[str, bytes],
+                   generated: dict[str, bytes]) -> None:
+    """Restore the prior tree if an owned install is interrupted before commit."""
+    had_output = output.exists()
+    backup = None
+    try:
+        if had_output:
+            backup = Path(tempfile.mkdtemp(prefix=f".{output.name}.previous-", dir=output.parent))
+            backup.rmdir()
+            output.rename(backup)
+        stage.rename(output)
+    except BaseException as failure:
+        # A signal can arrive after rename takes effect but before it returns.
+        # Inspect actual trees rather than treating the exception as proof that
+        # nothing moved. Never replace or delete intervening foreign output.
+        try:
+            if backup is not None and backup.exists():
+                backup_files, backup_directories = _inventory(backup)
+                if (not backup_files and not backup_directories and output.exists()
+                        and stage.exists() and _verify_owned(output) == previous):
+                    _remove_owned_tree(backup, {})
+                else:
+                    if _verify_owned(backup) != previous:
+                        raise ValueError("The previous build changed during recovery")
+                    if output.exists():
+                        if _verify_owned(output) != generated:
+                            raise ValueError("The output changed during recovery")
+                        _remove_owned_tree(output, generated)
+                    backup.rename(output)
+            elif not had_output and output.exists():
+                if _verify_owned(output) != generated:
+                    raise ValueError("The output changed during recovery")
+                _remove_owned_tree(output, generated)
+        except BaseException as recovery_error:
+            failure.add_note(
+                f"Build recovery could not finish ({type(recovery_error).__name__}). "
+                "Preserved remaining output and previous-build files. Inspect them before retrying."
+            )
+        raise
+    # The new tree is committed only after its install returned successfully.
+    # Later cleanup failure leaves that complete output available for inspection.
+    if backup is not None:
+        _remove_owned_tree(backup, previous)
+
+
 def build_release(tokens_path: Path, output: Path, *, check: bool = False) -> dict:
     """Build or compare the complete release tree without installing anything.
 
@@ -264,19 +309,7 @@ def build_release(tokens_path: Path, output: Path, *, check: bool = False) -> di
             # are preserved instead of being silently replaced.
             if _verify_owned(output) != previous:
                 raise ValueError("Output changed during generation")
-            backup = None
-            if output.exists():
-                backup = Path(tempfile.mkdtemp(prefix=f".{output.name}.previous-", dir=output.parent))
-                backup.rmdir()
-                output.rename(backup)
-            try:
-                stage.rename(output)
-            except OSError:
-                if backup is not None:
-                    backup.rename(output)
-                raise
-            if backup is not None:
-                _remove_owned_tree(backup, previous)
+            _install_stage(stage, output, previous, generated)
             return manifest
         finally:
             if stage.exists():
