@@ -34,6 +34,8 @@ The build pipeline stages complete outputs, validates their contents and only re
 
 If generation or installation fails, a secondary staging or lock cleanup error keeps the original failure and adds a short recovery note. Inspect any retained temporary files before retrying. If the build otherwise completed, a cleanup failure is reported normally. A complete newly installed tree remains available when later cleanup fails.
 
+Preview staging follows the same failure contract. A failed write or caller interruption stays primary if retiring its temporary stage also fails. The command prints secondary cleanup notes, and retained stage files need inspection before retrying. An interruption after the preview rename may leave a complete output available. It does not establish successful command completion.
+
 ## Change the source, then regenerate
 
 Edit `tokens.json` for shared colors, `themeforge/chrome.py` or `themeforge/equicord.py` for platform mappings, and `web/` for the component specimen. Do not patch `dist/` or a generated preview. Keep the version in `tokens.json` and the development package metadata consistent when preparing a new release.

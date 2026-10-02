@@ -11,8 +11,8 @@ import subprocess
 import tempfile
 
 from themeforge.build import (
-    _digest, _inventory, _json_bytes, _linked, _output_lock, _remove_owned_tree, _safe_destination,
-    _verify_owned, _zip_bytes, build_release,
+    _cleanup_scope, _digest, _inventory, _json_bytes, _linked, _output_lock, _retire_stage,
+    _safe_destination, _verify_owned, _zip_bytes, build_release,
 )
 from themeforge.equicord import FACES
 from themeforge.tokens import load
@@ -203,16 +203,12 @@ def build_preview(root: Path, artifacts: Path, output: Path, expected_revision: 
         return
     output.parent.mkdir(parents=True, exist_ok=True)
     stage = Path(tempfile.mkdtemp(prefix='.preview-stage-', dir=output.parent))
-    try:
+    with _cleanup_scope(lambda: _retire_stage(stage), 'Preview staging cleanup'):
         for name, data in files.items():
             path = stage / name
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
         stage.rename(output)
-    finally:
-        if stage.exists():
-            created, _ = _inventory(stage)
-            _remove_owned_tree(stage, created)
 
 
 def main():
@@ -224,7 +220,8 @@ def main():
     try:
         build_preview(ROOT, args.artifacts, args.output, args.expected_revision)
     except (ValueError, OSError) as error:
-        parser.exit(1, f'Preview build failed: {error}\n')
+        notes = ''.join(f'{note}\n' for note in getattr(error, '__notes__', ()))
+        parser.exit(1, f'Preview build failed: {error}\n{notes}')
     print('Built static specimen, four theme downloads and source archive')
 
 
