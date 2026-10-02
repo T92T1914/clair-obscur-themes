@@ -25,6 +25,8 @@ The first command generates all four theme downloads. The second regenerates int
 
 The output includes `dist/artifact-manifest.json` and `dist/SHA256SUMS`. Keep them with their corresponding artifacts. The builder rejects an output tree containing foreign, modified or incomplete files instead of overwriting them. If a check reports a difference after a source edit, build into a new output directory and inspect the change. Do not manually patch generated CSS or manifests.
 
+An interruption while switching the generated directory restores the previous build when its files and the destination remain intact. This includes a normal Ctrl+C and an error reported after a rename has taken effect. Intervening foreign files or a failed restore are preserved for inspection, with a recovery note on the original error. Do not remove a retained `.previous-*` directory or its contents before checking them. Once installation returns successfully, the new complete output remains available even if removal of the old temporary copy is interrupted. This recovery does not cover forced process termination, power loss or repeated interruptions during cleanup.
+
 ## Equibop with Equicord
 
 1. In the running Equibop client, privately record the current native appearance, enabled local/online themes, their activation modes, zoom/chat size and relevant font-plugin settings. Preserve existing QuickCSS separately without replacing its live contents. Do not export account or session data.
