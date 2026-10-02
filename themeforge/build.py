@@ -221,18 +221,46 @@ def _remove_owned_tree(root: Path, expected: dict[str, bytes]) -> None:
 
 
 @contextmanager
+def _cleanup_scope(cleanup, label: str):
+    """Retire owned temporary state without replacing an earlier failure."""
+    try:
+        yield
+    except BaseException as failure:
+        try:
+            cleanup()
+        except BaseException as cleanup_error:
+            # Diagnostics must not turn an interruption or generation error
+            # into an unrelated cleanup failure, even if add_note fails.
+            try:
+                failure.add_note(
+                    f"{label} could not finish ({type(cleanup_error).__name__}). "
+                    "Inspect remaining temporary files before retrying."
+                )
+            except BaseException:
+                pass
+        raise
+    else:
+        # Without an earlier error, failed cleanup remains the actual failure.
+        cleanup()
+
+
+def _retire_stage(stage: Path) -> None:
+    if stage.exists():
+        partial, _ = _inventory(stage)
+        _remove_owned_tree(stage, partial)
+
+
+@contextmanager
 def _output_lock(output: Path):
     lock = output.parent / f".themeforge-{output.name}.lock"
     try:
         descriptor = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
     except FileExistsError as error:
         raise ValueError("Another build owns this output lock. Inspect it before retrying") from error
-    try:
+    with _cleanup_scope(lock.unlink, "Output lock cleanup"):
         with os.fdopen(descriptor, "w", encoding="ascii") as stream:
             stream.write(f"{os.getpid()}\n")
         yield
-    finally:
-        lock.unlink()
 
 
 def _install_stage(stage: Path, output: Path, previous: dict[str, bytes],
@@ -298,7 +326,7 @@ def build_release(tokens_path: Path, output: Path, *, check: bool = False) -> di
     with _output_lock(output):
         previous = _verify_owned(output)
         stage = Path(tempfile.mkdtemp(prefix=f".{output.name}.stage-", dir=output.parent))
-        try:
+        with _cleanup_scope(lambda: _retire_stage(stage), "Staging cleanup"):
             manifest = _generate(document, stage)
             generated, _ = _inventory(stage)
             if check:
@@ -311,10 +339,6 @@ def build_release(tokens_path: Path, output: Path, *, check: bool = False) -> di
                 raise ValueError("Output changed during generation")
             _install_stage(stage, output, previous, generated)
             return manifest
-        finally:
-            if stage.exists():
-                partial, _ = _inventory(stage)
-                _remove_owned_tree(stage, partial)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -326,6 +350,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         manifest = build_release(args.tokens, args.output, check=args.check)
     except (OSError, ValueError, TypeError) as error:
-        parser.exit(1, f"Build failed: {error}\n")
+        notes = "".join(f"{note}\n" for note in getattr(error, "__notes__", ()))
+        parser.exit(1, f"Build failed: {error}\n{notes}")
     print(f"{'Verified' if args.check else 'Built'} {manifest['version']}: four theme downloads, {len(manifest['files'])} payload files")
     return 0
