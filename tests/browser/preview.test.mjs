@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { before, after, test } from 'node:test';
-import { chromium } from 'playwright';
+import { chromium, webkit } from 'playwright';
 import { spawnSync } from 'node:child_process';
 import { mkdtemp, readFile, writeFile, mkdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -42,9 +42,16 @@ before(async () => {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   origin = `http://127.0.0.1:${server.address().port}`;
   // Uses a disposable profile and never falls back to a visible browser.
-  const launchOptions = { channel: process.env.THEME_BROWSER_CHANNEL || 'chrome', headless: true, chromiumSandbox: true, args: ['--mute-audio'] };
-  browser = await chromium.launch(launchOptions);
-  results.environment = { browser: browser.version(), channel: launchOptions.channel, requestedLaunch: launchOptions, node: process.version, platform: process.platform, renderer: 'isolated headless page', nativeChromeFrameVerified: false, equibopVerified: false };
+  // WebKit can run the portable layout and download checks by test name.
+  // The exact glyph-face checks continue to require Chromium's CDP interface.
+  const engine = process.env.THEME_BROWSER_ENGINE || 'chromium';
+  assert.ok(['chromium', 'webkit'].includes(engine), 'Unknown specimen browser engine');
+  const launchOptions = engine === 'webkit' ? { headless: true } : {
+    channel: process.env.THEME_BROWSER_CHANNEL || 'chrome', headless: true,
+    chromiumSandbox: true, args: ['--mute-audio', '--disable-gpu'],
+  };
+  browser = await (engine === 'webkit' ? webkit : chromium).launch(launchOptions);
+  results.environment = { engine, browser: browser.version(), channel: launchOptions.channel, requestedLaunch: launchOptions, node: process.version, platform: process.platform, renderer: 'isolated headless page', nativeChromeFrameVerified: false, equibopVerified: false };
   let versionSession;
   try {
     versionSession = await browser.newBrowserCDPSession();
@@ -111,6 +118,60 @@ test('both appearances work at desktop and phone widths without horizontal overf
         if (evidence && width !== 2560) await page.screenshot({ path: path.join(evidence, `${name.toLowerCase()}-${width}-specimen.png`), fullPage: true });
       }
       assert.equal(new Set(network).size, 4, 'HTML, two CSS files and script only');
+      assert.deepEqual(consoleErrors, []);
+    } finally { await context.close(); }
+  }
+});
+
+test('narrow enlarged headings wrap without reducing text or hiding content', async () => {
+  for (const { width, height, enlarged } of [
+    { width: 390, height: 844, enlarged: false },
+    { width: 844, height: 320, enlarged: false },
+    { width: 320, height: 640, enlarged: true },
+  ]) {
+    const { context, page, consoleErrors } = await pageFor({
+      viewport: { width, height }, isMobile: true, hasTouch: true, reducedMotion: 'reduce',
+    });
+    try {
+      if (enlarged) await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+      for (const appearance of ['Obscur', 'Clair']) {
+        await page.getByRole('button', { name: appearance, exact: true }).tap();
+        const layout = await page.evaluate(() => ({
+          viewport: innerWidth, pageWidth: document.documentElement.scrollWidth,
+          rootFontSize: getComputedStyle(document.documentElement).fontSize,
+          headings: ['palettes-heading', 'downloads-heading'].map(id => {
+            const node = document.getElementById(id), box = node.getBoundingClientRect();
+            const style = getComputedStyle(node);
+            return { id, text: node.textContent, fontSize: style.fontSize,
+              width: box.width, height: box.height, left: box.left, right: box.right,
+              clientWidth: node.clientWidth, scrollWidth: node.scrollWidth,
+              overflowX: style.overflowX };
+          }),
+          controls: [...document.querySelectorAll('.switcher button,.download-card a.button')].map(node => {
+            const box = node.getBoundingClientRect();
+            return { label: node.textContent, left: box.left, right: box.right, height: box.height };
+          }),
+        }));
+        results.scenarios.push({ name: 'narrow headings', appearance, width, height, enlarged, layout });
+        assert.equal(layout.rootFontSize, enlarged ? '32px' : '16px');
+        assert.ok(layout.pageWidth <= width + 1, JSON.stringify(layout));
+        assert.deepEqual(layout.headings.map(h => h.text), [
+          'One identity, two appearances.', 'Four independent downloads',
+        ]);
+        for (const heading of layout.headings) {
+          assert.equal(heading.overflowX, 'visible', 'Do not hide the overflowing prose');
+          assert.ok(heading.scrollWidth <= heading.clientWidth + 1, JSON.stringify(heading));
+          if (enlarged) assert.ok(parseFloat(heading.fontSize) >= 48, 'Keep the enlarged heading size');
+        }
+        for (const control of layout.controls) {
+          assert.ok(control.height >= 44, JSON.stringify(control));
+          assert.ok(control.left >= -1 && control.right <= width + 1, JSON.stringify(control));
+        }
+        if (evidence && enlarged) {
+          await page.locator('#palettes-heading').scrollIntoViewIfNeeded();
+          await page.screenshot({ path: path.join(evidence, `${appearance.toLowerCase()}-320-enlarged-headings.png`) });
+        }
+      }
       assert.deepEqual(consoleErrors, []);
     } finally { await context.close(); }
   }
