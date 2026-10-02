@@ -32,6 +32,8 @@ This is a local development command, not a public deployment. Stop that server w
 
 The build pipeline stages complete outputs, validates their contents and only replaces an earlier tree when its manifest still matches every file. It refuses foreign files, modified artifacts and links. An interrupted lock is evidence to inspect, not a file to remove automatically while another build might be active.
 
+If generation or installation fails, a secondary staging or lock cleanup error keeps the original failure and adds a short recovery note. Inspect any retained temporary files before retrying. If the build otherwise completed, a cleanup failure is reported normally. A complete newly installed tree remains available when later cleanup fails.
+
 ## Change the source, then regenerate
 
 Edit `tokens.json` for shared colors, `themeforge/chrome.py` or `themeforge/equicord.py` for platform mappings, and `web/` for the component specimen. Do not patch `dist/` or a generated preview. Keep the version in `tokens.json` and the development package metadata consistent when preparing a new release.
