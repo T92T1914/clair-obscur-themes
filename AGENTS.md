@@ -1,8 +1,9 @@
 # Clair and Obscur
 
-Build a shared original theme family for native Google Chrome and Windows Equibop with Equicord. Atlas is a read-only design reference. Keep fonts, application integration, public previews and physical display evidence distinct.
+Build a shared original theme family for native browsers and local client CSS. Preserve Chrome and Equicord 0.1.1 while developing the Firefox, Edge, Vencord and BetterDiscord candidates described in docs/platform-portability.md. Atlas is a read-only design reference. Keep fonts, application integration, public previews and physical display evidence distinct.
 
 - Edit shared tokens and generators, then rebuild. Generated packages contain no scripts, remote imports, analytics, font binaries or private machine data.
+- New adapters have their own explicit version. Edge aliases reuse exact Chrome bytes. Never label local manifest or component checks as Firefox, Edge or Discord-client native acceptance. No signature bypass or store submission is implied.
 - Preserve native scaling, appropriate monospace and language/icon fallbacks. Use installed Inter 400, 600, 700 and genuine italics where supported. Native Chrome theme APIs cannot change its UI font.
 - The primary reference is a user-reported PG32UCDMR, 4K/240 Hz, dark room, Windows HDR on, SDR brightness 0 and Auto HDR off. Do not change display settings, calibration, profiles or application security to satisfy a theme check.
 - Actual Equibop loading and native Chrome frame checks are separate from local fixture checks. Never label a fixture as application acceptance or a screenshot as physical luminance measurement.

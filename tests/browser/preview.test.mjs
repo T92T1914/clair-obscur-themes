@@ -34,7 +34,7 @@ before(async () => {
     if (!target.startsWith(site + path.sep)) { response.writeHead(403).end(); return; }
     try {
       const body = await readFile(target);
-      const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json', '.png': 'image/png', '.zip': 'application/zip' };
+      const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json', '.png': 'image/png', '.zip': 'application/zip', '.xpi': 'application/x-xpinstall' };
       response.writeHead(200, { 'Content-Type': types[path.extname(target)] || 'text/plain', 'Cache-Control': 'no-store' });
       response.end(body);
     } catch { response.writeHead(404).end(); }
@@ -156,7 +156,7 @@ test('narrow enlarged headings wrap without reducing text or hiding content', as
         assert.equal(layout.rootFontSize, enlarged ? '32px' : '16px');
         assert.ok(layout.pageWidth <= width + 1, JSON.stringify(layout));
         assert.deepEqual(layout.headings.map(h => h.text), [
-          'One identity, two appearances.', 'Four independent downloads',
+          'One identity, two appearances.', 'Choose a platform candidate',
         ]);
         for (const heading of layout.headings) {
           assert.equal(heading.overflowX, 'visible', 'Do not hide the overflowing prose');
@@ -284,16 +284,25 @@ test('keyboard, enlarged text, reduced motion and forced colors retain usable co
   } finally { await context.close(); }
 });
 
-test('download clicks save all four verified packages without navigating away', async () => {
-  const { context, page, consoleErrors } = await pageFor();
-  try {
+test('download clicks save all platform choices without navigating away', async () => {
+  // Separate palette chooser journeys keep the test about deliberate file
+  // selection. A single rapid twelve-click burst measures Chromium's download
+  // throttle instead. Browser limits and download permissions stay unchanged.
+  for (const name of ['Clair', 'Obscur']) {
+    const { context, page, consoleErrors } = await pageFor();
+    try {
     const manifest = await (await context.request.get(origin + '/downloads/artifact-manifest.json')).json();
-    assert.equal(manifest.downloads.length, 4);
-    for (const download of manifest.downloads) {
-      const group = page.locator(download.platform === 'chrome' ? '#chrome-downloads' : '#equicord-downloads');
+    assert.equal(manifest.downloads.length, 12);
+    for (const download of manifest.downloads.filter(item => item.name === name)) {
+      const group = page.locator(`#${download.platform}-downloads`);
       const link = group.locator(`a[download][href="downloads/${download.path}"]`);
       assert.equal(await link.count(), 1);
-      const [saved] = await Promise.all([page.waitForEvent('download'), link.click()]);
+      let saved;
+      try { [saved] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }), link.click()]); }
+      catch (error) {
+        failures.push({ scenario:'download', platform:download.platform, path:download.path, pageUrl:page.url(), error:error.message });
+        throw new Error(`${download.platform} ${download.name} download failed (${download.path}): ${error.message}`, { cause:error });
+      }
       assert.equal(saved.suggestedFilename(), path.basename(download.path));
       assert.equal(await saved.failure(), null);
       const chunks = [];
@@ -302,7 +311,8 @@ test('download clicks save all four verified packages without navigating away', 
       assert.equal(page.url(), origin + '/');
       const record = manifest.files.find(file => file.path === download.path);
       assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'), record.sha256);
-      if (download.platform === 'equicord') {
+      results.scenarios.push({ name:`${download.name} ${download.platform} download`, status:'passed', path:download.path, sha256:record.sha256 });
+      if (['equicord', 'vencord', 'betterdiscord'].includes(download.platform)) {
         const css = await page.evaluate(text => { const sheet = new CSSStyleSheet(); sheet.replaceSync(text); return { rules: sheet.cssRules.length, faces: [...sheet.cssRules].filter(rule => rule.type === CSSRule.FONT_FACE_RULE).length }; }, bytes.toString('utf8'));
         assert.ok(css.rules > 10);
         assert.equal(css.faces, 6);
@@ -312,10 +322,11 @@ test('download clicks save all four verified packages without navigating away', 
       const n = performance.getEntriesByType('navigation')[0];
       return { domContentLoadedMs: n.domContentLoadedEventEnd, loadMs: n.loadEventEnd, requests: performance.getEntriesByType('resource').length };
     });
-    results.metrics.previewNavigation = { ...navigation, scope: 'single local headless specimen navigation, not application startup or comparative performance' };
+    results.metrics[`previewNavigation${name}`] = { ...navigation, scope: 'one local headless six-choice palette journey, not application startup or comparative performance' };
     assert.deepEqual(consoleErrors, []);
     assert.deepEqual(failures, []);
-  } finally { await context.close(); }
+    } finally { await context.close(); }
+  }
 });
 
 test('released source stays separate from the current preview snapshot', async () => {
@@ -349,7 +360,7 @@ test('released source stays separate from the current preview snapshot', async (
 test('static delivery remains usable without JavaScript and internal links resolve', async () => {
   const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
   try {
-    assert.equal(await page.locator('#downloads .download-card a[download]').count(), 4);
+    assert.equal(await page.locator('#downloads .download-card a[download]').count(), 12);
     assert.match(await page.locator('#downloads .status').textContent(), /preview builds/);
     assert.match(await page.locator('.hero .status').textContent(), /Full native acceptance remains open/);
     const acceptance = page.getByRole('link', { name: 'dated acceptance record', exact: true });
@@ -439,6 +450,88 @@ test('Equicord CSS consumes host variables only on its matching native base', as
       results.scenarios.push({ name: `${name} Equicord host-contract fixture`, status: 'passed', rendered, focus,
         pairedStates: 'primary, secondary and mention default/hover; separate keyboard and switch-class focus',
         oppositeBase: 'retains fixture native baseline', nativeAppVerified: false });
+    }
+  } finally { await context.close(); }
+});
+
+test('client adapters preserve switch geometry and pair their real selector contracts', async () => {
+  const { context, page } = await pageFor({ reducedMotion: 'reduce' });
+  try {
+    const palettes = JSON.parse(await readFile(path.join(root, 'tokens.json'), 'utf8')).themes;
+    const color = hex => `rgb(${[1, 3, 5].map(offset => parseInt(hex.slice(offset, offset + 2), 16)).join(', ')})`;
+    for (const [client, label] of [['vencord', 'Vencord'], ['betterdiscord', 'BetterDiscord']]) {
+      for (const [name, mode] of [['Clair', 'light'], ['Obscur', 'dark']]) {
+        const css = await (await context.request.get(`${origin}/downloads/${client}/${name}-${label}.theme.css`)).text();
+        // Original synthetic model of the inspected client selectors. It does
+        // not contain Discord content or establish a loaded client result.
+        const vc = client === 'vencord';
+        const markup = vc ? `
+          <button id="brand" class="vc-btn-base vc-btn-primary">Brand</button>
+          <div id="off" class="vc-switch-container"><svg class="vc-switch-slider" style="transform:translateX(-2px)"><rect fill="white"/><path/></svg></div>
+          <div id="on" class="vc-switch-container vc-switch-checked"><svg class="vc-switch-slider" style="transform:translateX(18px)"><rect fill="white"/><path/></svg></div>
+          <div id="disabled" class="vc-switch-container vc-switch-disabled">Disabled</div>` : `
+          <button id="brand" class="bd-button bd-button-filled bd-button-color-brand">Brand</button>
+          <label class="bd-switch"><input id="off-input" type="checkbox"><span id="off" class="bd-switch-body"><svg><rect class="bd-switch-handle" fill="white"/><path/></svg></span></label>
+          <label class="bd-switch"><input id="on-input" type="checkbox" checked><span id="on" class="bd-switch-body"><svg style="transform:translateX(18px)"><rect class="bd-switch-handle" fill="white"/><path/></svg></span></label>
+          <label id="disabled" class="bd-switch bd-switch-disabled"><input type="checkbox" disabled><span class="bd-switch-body">Disabled</span></label>`;
+        await page.setContent(`<html class="theme-${mode}"><head><style>
+          body { background:var(--background-primary,#abcdef); color:var(--text-normal,#123456); }
+          #brand { width:80px; height:28px; }
+          .vc-btn-primary { background:var(--control-primary-background-default,#445566); color:var(--control-primary-text-default,white); }
+          .vc-switch-container { width:44px; height:28px; border:1px solid transparent; background:#72767d; transition:background-color 120ms; }
+          .vc-switch-checked { background:#445566; }
+          .vc-switch-disabled { opacity:.3; }
+          .vc-switch-slider { width:28px; height:28px; transition:transform 120ms; }
+          .vc-switch-slider path { fill:#72767d; }
+          .bd-button-color-brand { background:var(--bd-brand,#445566); color:white; transition:background-color 120ms; }
+          .bd-switch { display:block; position:relative; width:40px; height:24px; }
+          .bd-switch input { opacity:0; position:absolute; width:100%; height:100%; margin:0; }
+          .bd-switch-body { --switch-color:#72767d; display:block; width:40px; height:24px; background:var(--switch-color); transition:background-color 120ms; }
+          .bd-switch input:checked + .bd-switch-body { --switch-color:var(--bd-brand,#445566); }
+          .bd-switch-body svg { width:24px; height:24px; }
+          .bd-switch-body path { fill:var(--switch-color); }
+          .bd-switch-disabled { opacity:.5; filter:grayscale(100%); }
+          #critical { background:#be1f1f; color:white; }
+        </style></head><body>${markup}<button id="critical" class="bd-button bd-button-filled bd-button-color-red">Critical</button></body></html>`);
+        const geometry = () => page.evaluate(() => Object.fromEntries(['brand', 'off', 'on', 'disabled'].map(id => {
+          const node = document.getElementById(id), style = getComputedStyle(node), svg = node.querySelector('svg');
+          return [id, { width:style.width, height:style.height, position:style.position,
+            display:style.display, opacity:style.opacity, filter:style.filter,
+            transform:svg && getComputedStyle(svg).transform }];
+        })));
+        const beforeGeometry = await geometry();
+        const beforeCritical = await page.locator('#critical').evaluate(node => ({ background:getComputedStyle(node).backgroundColor, text:getComputedStyle(node).color }));
+        await page.addStyleTag({ content: css });
+        await page.mouse.move(1270, 890);
+        const expected = palettes[name];
+        const state = await page.evaluate(vcModel => {
+          const pair = id => ({ background:getComputedStyle(document.getElementById(id)).backgroundColor, text:getComputedStyle(document.getElementById(id)).color });
+          return { brand:pair('brand'), critical:pair('critical'), off:pair('off').background,
+            on:pair('on').background,
+            offHandle:getComputedStyle(document.querySelector(vcModel ? '#off rect' : '#off .bd-switch-handle')).fill,
+            onHandle:getComputedStyle(document.querySelector(vcModel ? '#on rect' : '#on .bd-switch-handle')).fill,
+            offMark:getComputedStyle(document.querySelector('#off path')).fill,
+            onMark:getComputedStyle(document.querySelector('#on path')).fill,
+            reducedTransition:getComputedStyle(document.getElementById('on')).transitionDuration };
+        }, vc);
+        assert.deepEqual(await geometry(), beforeGeometry);
+        assert.deepEqual(state.critical, beforeCritical);
+        assert.deepEqual(state.brand, { background:color(expected.accent), text:color(expected.on_accent) });
+        assert.equal(state.off, color(expected.control)); assert.equal(state.on, color(expected.accent));
+        assert.equal(state.offHandle, color(expected.text)); assert.equal(state.onHandle, color(expected.on_accent));
+        assert.equal(state.offMark, color(expected.control)); assert.equal(state.onMark, color(expected.accent));
+        assert.equal(state.reducedTransition, '0s');
+        await page.locator('#brand').hover();
+        assert.deepEqual(await page.locator('#brand').evaluate(node => ({ background:getComputedStyle(node).backgroundColor, text:getComputedStyle(node).color })), state.brand);
+        if (vc) await page.locator('#on').evaluate(node => node.classList.add('vc-switch-focusVisible'));
+        else { await page.locator('#brand').focus(); await page.keyboard.press('Tab'); await page.keyboard.press('Tab'); }
+        const focus = await page.locator('#on').evaluate(node => ({ width:getComputedStyle(node).outlineWidth, color:getComputedStyle(node).outlineColor }));
+        assert.deepEqual(focus, { width:'2px', color:color(expected.focus) });
+        await page.evaluate(value => document.documentElement.className = `theme-${value}`, mode === 'dark' ? 'light' : 'dark');
+        assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(171, 205, 239)');
+        results.scenarios.push({ name:`${name} ${label} component-contract fixture`, status:'passed', state, focus,
+          geometry:'unchanged width, height, display, position, transform and disabled behavior', nativeAppVerified:false });
+      }
     }
   } finally { await context.close(); }
 });

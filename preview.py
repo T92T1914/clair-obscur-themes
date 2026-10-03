@@ -124,14 +124,20 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
     if {p.name for p in (root / 'web').iterdir()} != WEB_ASSETS:
         raise ValueError('Unreviewed web assets must not enter the public preview')
     files = {name: read_source(root, root / 'web' / name) for name in sorted(WEB_ASSETS)}
-    groups = {'chrome': [], 'equicord': []}
+    labels = {'chrome': 'Google Chrome', 'equicord': 'Equibop + Equicord',
+              'edge': 'Microsoft Edge', 'firefox': 'Firefox', 'vencord': 'Vencord',
+              'betterdiscord': 'BetterDiscord'}
+    kinds = {'chrome': 'Native theme ZIP', 'equicord': 'Standalone CSS',
+             'edge': 'Original Chromium ZIP, reused candidate', 'firefox': 'Unsigned static-theme XPI',
+             'vencord': 'Standalone CSS', 'betterdiscord': 'Standalone CSS'}
+    groups = {platform: [] for platform in labels}
     for download in manifest['downloads']:
         name, platform, path = download['name'], download['platform'], download['path']
-        label = 'Google Chrome' if platform == 'chrome' else 'Equibop + Equicord'
-        kind = 'Native theme ZIP' if platform == 'chrome' else 'Standalone CSS'
+        label, kind = labels[platform], kinds[platform]
+        version = download['version']
         record = next(r for r in manifest['files'] if r['path'] == path)
         groups[platform].append(
-            f'<article id="{platform}-{name.lower()}" class="download-card"><p class="eyebrow">Preview {document["version"]}</p>'
+            f'<article id="{platform}-{name.lower()}" class="download-card"><p class="eyebrow">Preview {version}</p>'
             f'<h4>{name}</h4><a class="button" download href="downloads/{path}">'
             f'Download {name} for {label}</a><small>{kind}, {record["bytes"]:,} bytes. '
             'Native acceptance pending.</small></article>'
@@ -146,6 +152,10 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
         if (snapshot[f'chrome/{name.lower()}/LICENSE.txt'] != license_bytes
                 or license_comment not in snapshot[f'equicord/{name}.theme.css']):
             raise ValueError('Source license differs from the verified theme package grants')
+        if (snapshot[f'firefox/{name.lower()}/LICENSE.txt'] != license_bytes
+                or any(license_comment not in snapshot[f'{client}/{name}-{label}.theme.css']
+                       for client, label in (('vencord', 'Vencord'), ('betterdiscord', 'BetterDiscord')))):
+            raise ValueError('Source license differs from the portability package grants')
     identity = source_identity(root, sources, expected_revision)
     version = document['version']
     release_url = f'{REPOSITORY_URL}/releases/download/v{version}'
@@ -182,10 +192,13 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
     files['source-SHA256SUMS'] = f'{source_digest}  source.zip\n'.encode()
     # GitHub release assets share one flat directory. The build-tree checksums
     # remain separate because their nested paths would not verify those downloads.
-    release_hashes = {
-        Path(item['path']).name: hashlib.sha256(snapshot[item['path']]).hexdigest()
-        for item in manifest['downloads']
-    }
+    release_hashes = {}
+    for item in manifest['downloads']:
+        name = Path(item['path']).name
+        digest = hashlib.sha256(snapshot[item['path']]).hexdigest()
+        if name in release_hashes and release_hashes[name] != digest:
+            raise ValueError('Distinct downloads must not collide in a flat release directory')
+        release_hashes[name] = digest
     release_hashes['artifact-manifest.json'] = hashlib.sha256(files['downloads/artifact-manifest.json']).hexdigest()
     release_hashes['source.zip'] = source_digest
     files['release-SHA256SUMS'] = ''.join(
@@ -230,7 +243,7 @@ def main():
     except (ValueError, OSError) as error:
         notes = ''.join(f'{note}\n' for note in getattr(error, '__notes__', ()))
         parser.exit(1, f'Preview build failed: {error}\n{notes}')
-    print('Built static specimen, four theme downloads and source archive')
+    print('Built static specimen, platform download choices and source archive')
 
 
 if __name__ == '__main__':

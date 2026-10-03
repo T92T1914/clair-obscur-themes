@@ -1,5 +1,13 @@
 # Changes
 
+## Unreleased platform candidates
+
+- Generate color-only Firefox 0.2.0 static themes, with manual browser appearance and the system website preference preserved.
+- Generate self-contained Vencord and BetterDiscord 0.2.0 CSS with separate settings-switch and paired brand-button mappings.
+- Retain the Chrome and Equicord 0.1.1 artifact bytes. Offer the exact Chromium ZIP as an explicitly unverified Edge candidate.
+- Add platform choices, installation prerequisites and native/distribution limits to the existing preview and documentation.
+- Keep store signing, native installation, normal restart and restoration as separate acceptance stages.
+
 ## 0.1.1 preview
 
 - Add the project README and complete installation, restoration, verification and publication guidance.

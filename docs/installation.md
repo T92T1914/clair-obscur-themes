@@ -1,5 +1,7 @@
 # Install, switch and remove
 
+Firefox, Edge, Vencord and BetterDiscord candidates have separate prerequisites and pending native checks. Read [platform portability](platform-portability.md) before testing them. The original Chrome and Equicord instructions below remain applicable to their unchanged 0.1.1 files. No native app installation or settings change is performed by the builder.
+
 These are local preview packages. Native Chrome and Equibop acceptance is still pending as described in [acceptance.md](acceptance.md). Keep a recoverable record of existing theme choices before changing them. Do not copy an authenticated browser profile, replace QuickCSS or remove unrelated plugins to try a theme.
 
 ## Files

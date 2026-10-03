@@ -1,23 +1,27 @@
 # Clair and Obscur
 
-Two appearances, built for ordinary Google Chrome and Equibop with Equicord. Clair uses warm paper surfaces and dark text. Obscur uses near-black layers, clear text and restrained blue emphasis. Both come from the visual identity of [Tornado Atlas](https://github.com/T92T1914/tornado-atlas), with the host application's layout and scaling left in place.
+Two appearances with native browser and self-contained client CSS candidates. Clair uses warm paper surfaces and dark text. Obscur uses near-black layers, clear text and restrained blue emphasis. Both come from the visual identity of [Tornado Atlas](https://github.com/T92T1914/tornado-atlas), with the host application's layout and scaling left in place.
 
 This is an experimental preview. Both themes have passed limited native Equibop checks for loading, matching and opposite appearance modes, switching and restoration. Obscur also installed in an isolated ordinary Chrome profile. Full interface and typography acceptance remains open, including Clair's Chrome installation and Chrome switching, restoration and cleanup. The webpage specimen is not a screenshot of either application's interface. See the [compatibility and acceptance record](docs/acceptance.md) for the inspected surfaces and remaining checks.
 
 ## Choose your theme
 
-Open the [live preview and downloads](https://t92t1914.github.io/clair-obscur-themes/) to compare Clair and Obscur and choose a package for your application. The page includes installation and restoration steps, source and checksums. All four downloads are labeled as previews while native acceptance remains open.
+Open the [live preview and downloads](https://t92t1914.github.io/clair-obscur-themes/) to compare Clair and Obscur and choose a package for your application. The page includes installation and restoration steps, source and checksums. All downloads are labeled as previews while native acceptance remains open. The original Chrome and Equicord 0.1.1 bytes are preserved. New Firefox, Vencord and BetterDiscord adapters are 0.2.0 candidates. [Platform contracts and remaining acceptance](docs/platform-portability.md).
 
 | Application | Clair | Obscur | Typography |
 | --- | --- | --- | --- |
 | Google Chrome | Warm light browser colors | Deep neutral browser colors | Chrome keeps its native UI font |
 | Equibop with Equicord | Use with native Light appearance | Use with a native dark appearance | Installed Inter 400, 600 and 700, with genuine italics |
+| Firefox desktop | Manual warm light static theme | Manual deep neutral static theme | Native browser font, unsigned 0.2.0 candidate |
+| Microsoft Edge | Original Chrome artifact for native testing | Original Chrome artifact for native testing | Native browser font, native acceptance pending |
+| Vencord | CSS with native Light appearance | CSS with native dark appearance | Local Inter and system fallback, separate client checks pending |
+| BetterDiscord | CSS with native Light appearance | CSS with native dark appearance | Local Inter and system fallback, native check pending |
 
 The Chrome downloads are native color themes, not replacement browsers or website restylers. The Equicord downloads are self-contained local CSS files. They preserve code fonts, icons, emoji and language fallbacks. Neither platform's theme downloads fonts, runs scripts or collects data.
 
 ## Build and try the preview
 
-Python 3.11 or newer is enough to build all four artifacts. From this project directory:
+Python 3.11 or newer builds the original four artifacts plus six new candidate files. Edge download choices reuse the existing Chrome files. From this project directory:
 
 ```powershell
 python build.py
@@ -25,7 +29,7 @@ python build.py --check
 python preview.py --output outputs/preview-0.1.1
 ```
 
-Open `outputs/preview-0.1.1/index.html` to compare both palettes and download the matching Chrome ZIP or Equicord CSS. These commands generate a local copy. They do not update the published preview.
+Open the generated `index.html` to compare both palettes and select a platform candidate. Choose a fresh output folder when preserving an earlier preview. These commands generate a local copy. They do not update the published preview.
 
 Reviewed changes merged into `main` publish the checked preview automatically after Linux, Windows and browser CI succeed. Website and documentation updates can advance without replacing the v0.1.1 release. The download page distinguishes the original released source from its current-source snapshot.
 
@@ -35,6 +39,9 @@ Reviewed changes merged into `main` publish the checked preview automatically af
 | Obscur for Chrome | `dist/artifacts/Obscur-Chrome-0.1.1.zip` |
 | Clair for Equicord | `dist/equicord/Clair.theme.css` |
 | Obscur for Equicord | `dist/equicord/Obscur.theme.css` |
+| Firefox candidates | `dist/artifacts/Clair-Firefox-0.2.0.xpi` and `dist/artifacts/Obscur-Firefox-0.2.0.xpi` |
+| Vencord candidates | `dist/vencord/Clair-Vencord.theme.css` and `dist/vencord/Obscur-Vencord.theme.css` |
+| BetterDiscord candidates | `dist/betterdiscord/Clair-BetterDiscord.theme.css` and `dist/betterdiscord/Obscur-BetterDiscord.theme.css` |
 | Integrity records | `dist/SHA256SUMS` and `dist/artifact-manifest.json` |
 
 Start with Obscur in a separate Chrome test profile or a recoverable Equicord configuration, then give Clair the same checks. In Chrome, extract the ZIP and use **Load unpacked** in `chrome://extensions`. In Equibop, use Equicord's **Open Themes Folder** control and copy the CSS there. Do not paste it over QuickCSS or install another Discord client.
@@ -43,7 +50,7 @@ The [installation and removal guide](docs/installation.md) covers the exact step
 
 ## How it is built
 
-[tokens.json](tokens.json) holds one shared palette with named roles for text, surfaces, focus and control states. Small Python generators map those roles to Chrome's native theme fields and Equicord's host variables. The build produces deterministic packages, verifies their contents and refuses to overwrite an output tree that contains unexpected or edited files.
+[tokens.json](tokens.json) holds one shared palette with named roles for text, surfaces, focus and control states. Small Python generators map those roles to native browser theme fields and shared client host variables. Narrow Vencord and BetterDiscord adapters handle their own settings switches and brand buttons. The build produces deterministic packages, verifies their contents and refuses to overwrite an output tree that contains unexpected or edited files.
 
 The browser specimen exercises readable components, local font resolution, keyboard interaction, larger text and fallback behavior. It uses an isolated headless browser profile. Those tests help find mistakes in the supplied CSS and preview, but they cannot certify Chrome's tab strip, Equibop's full interface or physical HDR appearance.
 
