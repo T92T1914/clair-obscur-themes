@@ -22,6 +22,8 @@ The preview builder copies only verified release bytes and explicitly selected s
 
 The displayed palette, verified downloads and source archive must use the same token values. The preview compares their canonical token digests and rejects a change between reads before writing output. Equivalent JSON formatting is allowed, and the source archive retains the captured file bytes. This check does not establish native application acceptance.
 
+The standalone license download and source archive share one captured `LICENSE` file. Its normalized grant must match both Chrome packages and both Equicord CSS files before the preview is written. Equivalent Windows line endings and extra final newlines are accepted, while the source archive and standalone download keep the captured bytes. A changed grant requires a matching artifact build rather than a preview beside older package notices.
+
 To serve a built preview locally:
 
 ```powershell

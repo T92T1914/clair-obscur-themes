@@ -7,6 +7,16 @@ import stat
 LICENSE_PATH = Path(__file__).resolve().parents[1] / "LICENSE"
 
 
+def normalize_license(payload: bytes) -> str:
+    """Validate captured license bytes using the package grant's normalization."""
+    if len(payload) > 65536:
+        raise ValueError("Canonical license is unexpectedly large")
+    text = payload.decode("utf-8").replace("\r\n", "\n")
+    if not text.startswith("MIT License\n") or any(value in text for value in ("/*", "*/", "\x00", "\r")):
+        raise ValueError("Canonical license must be plain MIT text safe for a CSS comment")
+    return text.rstrip("\n") + "\n"
+
+
 def license_text() -> str:
     """Return normalized plain text without following a linked license file."""
     info = LICENSE_PATH.lstat()
@@ -15,12 +25,7 @@ def license_text() -> str:
     # A bounded read also prevents an accidental large file becoming a download.
     with LICENSE_PATH.open("rb") as stream:
         payload = stream.read(65537)
-    if len(payload) > 65536:
-        raise ValueError("Canonical license is unexpectedly large")
-    text = payload.decode("utf-8").replace("\r\n", "\n")
-    if not text.startswith("MIT License\n") or any(value in text for value in ("/*", "*/", "\x00", "\r")):
-        raise ValueError("Canonical license must be plain MIT text safe for a CSS comment")
-    return text.rstrip("\n") + "\n"
+    return normalize_license(payload)
 
 
 def license_comment() -> str:

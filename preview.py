@@ -15,6 +15,7 @@ from themeforge.build import (
     _safe_destination, _verify_owned, _zip_bytes, build_release,
 )
 from themeforge.equicord import FACES
+from themeforge.legal import normalize_license
 from themeforge.tokens import load
 
 ROOT = Path(__file__).resolve().parent
@@ -138,6 +139,13 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
     sources = source_files(root)
     if _digest(_json_bytes(json.loads(sources['tokens.json'].decode('utf-8')))) != tokens_digest:
         raise ValueError('Source tokens differ from the verified artifact snapshot')
+    license_text = normalize_license(sources['LICENSE'])
+    license_bytes = license_text.encode('utf-8')
+    license_comment = ('/*\n' + license_text + '*/\n').encode('utf-8')
+    for name in ('Clair', 'Obscur'):
+        if (snapshot[f'chrome/{name.lower()}/LICENSE.txt'] != license_bytes
+                or license_comment not in snapshot[f'equicord/{name}.theme.css']):
+            raise ValueError('Source license differs from the verified theme package grants')
     identity = source_identity(root, sources, expected_revision)
     version = document['version']
     release_url = f'{REPOSITORY_URL}/releases/download/v{version}'
@@ -168,7 +176,7 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
         files[f'downloads/{path}'] = snapshot[path]
     for name in ('SHA256SUMS', 'artifact-manifest.json'):
         files[f'downloads/{name}'] = snapshot[name]
-    files['LICENSE'] = read_source(root, root / 'LICENSE')
+    files['LICENSE'] = sources['LICENSE']
     files['source.zip'] = _zip_bytes(sources)
     source_digest = hashlib.sha256(files['source.zip']).hexdigest()
     files['source-SHA256SUMS'] = f'{source_digest}  source.zip\n'.encode()
