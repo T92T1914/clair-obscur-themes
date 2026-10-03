@@ -1,6 +1,6 @@
 # Build and verification
 
-Python 3.11 or later builds the four themes using the standard library. Node 24 and the locked Playwright development dependency run the separate browser specimen tests.
+Python 3.11 or later builds the original four downloads and the new platform candidates using the standard library. Node 24 and the locked Playwright development dependency run the separate browser specimen tests. The new adapters and their native limits are described in [platform portability](platform-portability.md).
 
 ```powershell
 py -3.11 -X utf8 -m unittest discover -s tests -v
@@ -24,6 +24,17 @@ The displayed palette, verified downloads and source archive must use the same t
 
 The standalone license download and source archive share one captured `LICENSE` file. Its normalized grant must match both Chrome packages and both Equicord CSS files before the preview is written. Equivalent Windows line endings and extra final newlines are accepted, while the source archive and standalone download keep the captured bytes. A changed grant requires a matching artifact build rather than a preview beside older package notices.
 
+The same grant is checked for the new Firefox packages and client CSS. Client-qualified Vencord and BetterDiscord filenames avoid collisions when downloads share a flat release directory. Edge's aliases deliberately refer to the same Chrome files. A different file with the same flat filename is refused.
+
+Mozilla validation is separate from the standard-library contract tests. With `web-ext` 10.7.0 available as a development tool, run the following against each generated Firefox directory. It uses Mozilla's actual schemas, treats warnings as failures and does not discover personal configuration, install a theme or submit it for signing:
+
+```powershell
+web-ext --no-config-discovery lint --source-dir dist/firefox/clair --warnings-as-errors --output json
+web-ext --no-config-discovery lint --source-dir dist/firefox/obscur --warnings-as-errors --output json
+```
+
+The browser download checks use separate six-choice palette journeys. A rapid twelve-click burst in one page reached Chromium's download throttle in the retained diagnostic. The tests do not change download permissions or disable safeguards. Native theme installation and normal restart acceptance remain manual, separately authorized checks.
+
 To serve a built preview locally:
 
 ```powershell
@@ -40,13 +51,13 @@ Preview staging follows the same failure contract. A failed write or caller inte
 
 ## Change the source, then regenerate
 
-Edit `tokens.json` for shared colors, `themeforge/chrome.py` or `themeforge/equicord.py` for platform mappings, and `web/` for the component specimen. Do not patch `dist/` or a generated preview. Keep the version in `tokens.json` and the development package metadata consistent when preparing a new release.
+Edit `tokens.json` for shared colors and the selected `themeforge` module for platform mappings. `firefox.py` implements Mozilla's static contract. `discord_clients.py` adds narrow client states over the unchanged shared Equicord generator. Edit `web/` for the component specimen. Do not patch `dist/` or a generated preview. The original release remains 0.1.1. New adapters declare 0.2.0 separately in the generator and artifact manifest. Preparing a combined release requires a deliberate version and distribution review.
 
 The preview includes a source archive with an explicit allowlist. A README, installation guide or test change can legitimately alter that archive even when the four theme assets stay identical. The current-source snapshot is separate from the versioned source download, which points to the existing release. Inspect the snapshot's revision, working-tree status and SHA-256 in the generated page and `site-manifest.json`. Source extracted without Git history is labeled with an unavailable revision rather than assigned a guessed commit.
 
 CI uses `python preview.py --expected-revision <workflow-commit>` to require that exact clean source revision. Rebuild the site after source changes and review its new manifest. Do not copy old hashes into a new build or overwrite a published release's bytes.
 
-The [CI workflow](../.github/workflows/checks.yml) deploys checked pushes to `main` automatically and publishes prereleases only on reviewed version tags. Manual Pages dispatch is an optional fallback. The [publication guide](publication.md#github-delivery) describes the checks, artifact provenance and environment gates. A local run, a remote workflow pass and a verified public download remain distinct results.
+The [CI workflow](../.github/workflows/checks.yml) deploys checked pushes to `main` automatically. Its tag publication gate refuses this mixed-version preview so separately versioned candidates cannot silently replace the original release. Prepare a deliberate family release before tagging. Manual Pages dispatch is an optional fallback. The [publication guide](publication.md#github-delivery) describes the checks, artifact provenance and environment gates. A local run, a remote workflow pass and a verified public download remain distinct results.
 
 ## Reading the evidence
 

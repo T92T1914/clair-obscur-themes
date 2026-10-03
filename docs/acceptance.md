@@ -2,6 +2,18 @@
 
 This record distinguishes implementation from application acceptance for the 0.1.1 preview. Source contracts and component fixtures can establish useful facts without proving that a running client consumes every style as intended. Partial native Equibop results and the remaining gates are recorded separately below.
 
+## Platform adapter increment
+
+The 0.2.0 Firefox, Vencord and BetterDiscord candidates add explicit platform mappings while retaining the original four 0.1.1 download hashes. Edge reuses the exact Chrome ZIP. [Platform portability](platform-portability.md) records the mappings, source contracts, manual native acceptance scenarios and distribution limits.
+
+Both Firefox static manifests passed Mozilla `web-ext` 10.7.0 with `addons-linter` 10.13.0, warnings treated as errors and configuration discovery disabled. Each returned zero errors, warnings and notices. This is schema and package validation. Firefox was not installed or launched, and neither XPI is signed.
+
+On Windows, isolated headless Chrome 154.0.8037.95 with Playwright 1.63.0 passed all 13 browser checks with no skips. The actual glyph checks established all six local Inter faces in the specimen. Synthetic Vencord and BetterDiscord component models checked matching and opposite host modes, paired brand and switch colors, keyboard focus, reduced motion, disabled behavior and unchanged geometry. All twelve download choices saved the expected bytes in separate six-choice Clair and Obscur journeys. No real Discord client or browser theme was installed by that suite.
+
+The first twelve-click burst test stopped producing a download event after ten saved files. Chromium's [implementation at the observed browser revision](https://github.com/chromium/chromium/blob/05d469856e75794131cc2e5d9b2f6b6f10a70388/third_party/blink/renderer/core/frame/local_frame.cc#L284) defines that burst limit. The corrected chooser tests keep browser safeguards unchanged and preserve byte verification. This finding concerns the harness's rapid bulk-download scenario. It is not a product performance result or a guarantee about every browser's download behavior.
+
+Native Firefox, Edge, browser Vencord, desktop Vencord, Vesktop and BetterDiscord loading, full surfaces, restart persistence and restoration remain unverified. Native typography, physical displays and mobile-native theme availability remain separate questions. No signing, store or gallery approval is claimed.
+
 ## Current state
 
 | Item | Established | Remaining gate |

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="dark light">
-  <meta name="description" content="Clair and Obscur, a quiet theme family for native Google Chrome and Equibop with Equicord.">
+  <meta name="description" content="Clair and Obscur, a quiet theme family with native browser and self-contained client CSS candidates.">
   <title>Clair &amp; Obscur</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="preview.css">
@@ -21,11 +21,11 @@
   </header>
   <main id="main">
     <section class="hero" aria-labelledby="title">
-      <p class="eyebrow">A shared palette. Two native hosts.</p>
+      <p class="eyebrow">A shared palette. Deliberate platform mappings.</p>
       <h1 id="title">Room to read.</h1>
       <p class="lead">Warm paper and clear ink in Clair. Deep neutral surfaces and restrained emphasis in Obscur. Built from the Tornado Atlas appearance system, with Inter where the host allows it.</p>
       <p class="status"><strong>Preview {{VERSION}}.</strong> Both Equibop themes have limited native checks and verified restoration. Obscur installed in isolated Chrome. Full native acceptance remains open.</p>
-      <a class="button" href="#downloads">Get the four themes</a>
+      <a class="button" href="#downloads">Choose your platform</a>
       <a class="secondary-link" href="#installation">Installation and removal</a>
       <noscript><p>Page controls need JavaScript. Both palette specimens, downloads and installation instructions remain available below.</p></noscript>
     </section>
@@ -74,12 +74,17 @@ preserve_native_scaling = True</code></pre>
     </section>
 
     <section id="downloads" aria-labelledby="downloads-heading">
-      <h2 id="downloads-heading">Four independent downloads</h2>
-      <p>Chrome themes contain native colors and an original icon. Equicord themes contain self-contained CSS. Neither needs the other, a reader extension, analytics or remote fonts.</p>
-      <p class="status"><strong>All four are preview builds.</strong> The component checks do not establish native application compatibility or Chrome Web Store approval.</p>
-      <nav class="platform-links" aria-label="Download platform"><a href="#chrome-downloads">Google Chrome</a><a href="#equicord-downloads">Equibop with Equicord</a></nav>
+      <h2 id="downloads-heading">Choose a platform candidate</h2>
+      <p>The original Chrome and Equicord 0.1.1 files are preserved. Firefox, Vencord and BetterDiscord candidates use adapter version 0.2.0. Edge reuses the exact Chrome ZIP. Each download is independent and contains no scripts, analytics or remote fonts.</p>
+      <p class="status"><strong>These are preview builds.</strong> New platform candidates have no native installation acceptance. Firefox XPIs are unsigned. No store or client-theme-gallery approval is claimed.</p>
+      <nav class="platform-links" aria-label="Download platform"><a href="#chrome-downloads">Google Chrome</a><a href="#equicord-downloads">Equibop with Equicord</a><a href="#firefox-downloads">Firefox</a><a href="#edge-downloads">Microsoft Edge</a><a href="#vencord-downloads">Vencord</a><a href="#betterdiscord-downloads">BetterDiscord</a></nav>
       <div id="chrome-downloads" class="platform-group"><h3>Google Chrome</h3><p>Native browser colors. Chrome retains its own interface font and website styling.</p><div class="download-grid">{{CHROME_CARDS}}</div></div>
       <div id="equicord-downloads" class="platform-group"><h3>Equibop with Equicord</h3><p>Local CSS using installed Inter 400, 600 and 700 with genuine italics. Code, icons and language fallbacks retain their own fonts.</p><div class="download-grid">{{EQUICORD_CARDS}}</div></div>
+      <div id="firefox-downloads" class="platform-group"><h3>Firefox</h3><p>Color-only desktop static themes for Firefox 128 or later. Manual Clair or Obscur selection, with the system website appearance preference preserved. Unsigned developer candidates, not normal signed installations.</p><div class="download-grid">{{FIREFOX_CARDS}}</div></div>
+      <div id="edge-downloads" class="platform-group"><h3>Microsoft Edge</h3><p>The original Chrome artifact is offered for a separate native Edge check. No Edge tab-strip, address-popup, sidebar, installation or restoration pass is established. Edge-owned surfaces may remain unchanged.</p><div class="download-grid">{{EDGE_CARDS}}</div></div>
+      <div id="vencord-downloads" class="platform-group"><h3>Vencord</h3><p>Local CSS with the current Vencord switch and settings-button contract. Browser Vencord, desktop Vencord and Vesktop require separate native checks. Use matching native Light or Dark appearance.</p><div class="download-grid">{{VENCORD_CARDS}}</div></div>
+      <div id="betterdiscord-downloads" class="platform-group"><h3>BetterDiscord</h3><p>Local CSS with BetterDiscord brand-button and switch mappings. Matching native Light or Dark appearance is required. Client installation, account behavior and gallery acceptance are outside these fixtures.</p><div class="download-grid">{{BETTERDISCORD_CARDS}}</div></div>
+      <p class="muted">Vencord, Equicord and BetterDiscord are unofficial client-mod targets. They are not Discord-endorsed appearance options. CSS validation does not establish zero account risk. <a href="https://github.com/T92T1914/clair-obscur-themes/blob/main/docs/platform-portability.md" rel="noreferrer">Platform contracts and acceptance boundaries</a>.</p>
       <p class="muted"><a href="downloads/SHA256SUMS" download>Theme build checksums</a> <span aria-hidden="true">/</span> <a href="downloads/artifact-manifest.json" download>Artifact manifest</a></p>
       <p class="muted">Published v{{VERSION}}: <a id="released-source" href="{{RELEASE_URL}}/source.zip" rel="noreferrer">Original release source</a> <span aria-hidden="true">/</span> <a id="released-checksums" href="{{RELEASE_URL}}/release-SHA256SUMS" rel="noreferrer">Release checksums</a>. These remain tied to the published release.</p>
       <p id="source-identity" class="muted">Current preview source: {{SOURCE_DESCRIPTION}} <a id="current-source" href="source.zip" download>Current source snapshot</a> <span aria-hidden="true">/</span> <a href="source-SHA256SUMS" download>Snapshot checksum</a>. This snapshot may include documentation or preview changes made after the release.</p>
@@ -91,6 +96,7 @@ preserve_native_scaling = True</code></pre>
         <article class="paper"><h3>Ordinary Google Chrome</h3><ol><li>Create a separate, unsynced test profile. Keep your everyday profile and its theme unchanged.</li><li>Extract the Obscur Chrome ZIP to a permanent folder. Open <code>chrome://extensions</code>, enable Developer mode, select Load unpacked, and choose the folder containing <code>manifest.json</code>.</li><li>Check tabs, the toolbar, menus, focus and the new-tab page. Repeat with Clair, then switch back to Obscur.</li><li>To undo it, use Settings, Appearance, Reset to default. Remove the development entry if it remains and return Developer mode to its recorded setting.</li></ol><p>This is a developer installation. There is no reviewed Chrome Web Store listing yet.</p></article>
         <article class="paper"><h3>Equibop with Equicord</h3><ol><li>Record the current appearance, enabled themes and relevant font settings. Preserve QuickCSS and existing theme files.</li><li>Use Equicord's Themes page to open the active themes folder. Add the downloaded CSS files without replacing another file or pasting over QuickCSS.</li><li>Temporarily disable conflicting themes, enable Obscur and use native Dark. Check messages, inputs, settings, code, icons and focus. Repeat with Clair on native Light, then switch back.</li><li>Disable the candidate and restore the recorded appearance and theme selections. Remove only the added CSS files when no longer needed.</li></ol><p>Other theme or font plugins can override these styles. Stop and restore if an important surface becomes unreadable.</p></article>
       </div>
+      <div class="paper"><h3>New platform candidates</h3><p>Firefox requires a temporary developer test or a separately signed distribution. Do not disable signature verification. Edge needs its own recoverable native-profile check. Vencord and BetterDiscord files belong in each installed client's own local Themes folder, without replacing QuickCSS or installing a different client. Enable one family file with the matching native appearance, then disable it to restore the recorded configuration.</p><p>The <a href="https://github.com/T92T1914/clair-obscur-themes/blob/main/docs/platform-portability.md" rel="noreferrer">platform guide</a> records the exact prerequisites and remaining checks. This webpage does not install or switch an application theme.</p></div>
     </section>
 
     <section id="limits" class="limits" aria-labelledby="limits-heading">

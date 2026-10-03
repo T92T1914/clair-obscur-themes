@@ -110,6 +110,8 @@ jobs:
           if not notes.is_file() or not notes.read_text(encoding='utf-8').strip():
               raise SystemExit(f'Release notes are missing or empty: {notes}')
           manifest = json.loads(Path('site/downloads/artifact-manifest.json').read_text(encoding='utf-8'))
+          if manifest.get('adapter_version', version) != version:
+              raise SystemExit('The preview contains separately versioned adapter candidates. Prepare a reviewed family release before tagging; do not replace the existing release.')
           expected = {
               f'artifacts/Clair-Chrome-{version}.zip',
               f'artifacts/Obscur-Chrome-{version}.zip',

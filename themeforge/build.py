@@ -16,6 +16,8 @@ import zipfile
 
 from .chrome import build_theme
 from .equicord import render_theme
+from .discord_clients import CLIENTS, render_client_theme
+from .firefox import COLOR_TOKENS as FIREFOX_COLORS, theme_manifest as firefox_manifest
 from .legal import license_comment, license_text
 from .tokens import load
 
@@ -25,6 +27,9 @@ OWNER = "clair-obscur-themeforge"
 MANIFEST = "artifact-manifest.json"
 CHECKSUMS = "SHA256SUMS"
 SHA = re.compile(r"[0-9a-f]{64}\Z")
+# The existing Chrome and Equicord release remains byte-identical at 0.1.1.
+# New adapters have their own version until a deliberate family release.
+PORTABILITY_VERSION = "0.2.0"
 
 
 def _digest(payload: bytes) -> str:
@@ -144,6 +149,8 @@ def _review_payloads(files: dict[str, bytes]) -> None:
     """Enforce the pure-theme boundary before producing any release archive."""
     expected = {f"chrome/{name}/{file}" for name in ("clair", "obscur") for file in ("manifest.json", "icon128.png", "LICENSE.txt")}
     expected |= {f"equicord/{name}.theme.css" for name in ("Clair", "Obscur")}
+    expected |= {f"firefox/{name}/{file}" for name in ("clair", "obscur") for file in ("manifest.json", "LICENSE.txt")}
+    expected |= {f"{client}/{name}-{label}.theme.css" for client, label in CLIENTS.items() for name in ("Clair", "Obscur")}
     if set(files) != expected:
         raise ValueError("Generated payload contains missing or unexpected files")
     for path, payload in files.items():
@@ -162,6 +169,26 @@ def _review_payloads(files: dict[str, bytes]) -> None:
         elif path.endswith("/LICENSE.txt"):
             if text != license_text():
                 raise ValueError("Chrome package must retain the complete canonical license")
+        elif path.startswith("firefox/"):
+            manifest = json.loads(text)
+            if set(manifest) != {"manifest_version", "name", "version", "author", "description", "browser_specific_settings", "theme"}:
+                raise ValueError("Native Firefox package contains unexpected manifest capabilities")
+            if manifest["manifest_version"] != 2 or set(manifest["theme"]) != {"colors", "properties"}:
+                raise ValueError("Native Firefox package is not a color-only static theme")
+            if set(manifest["theme"]["colors"]) != set(FIREFOX_COLORS):
+                raise ValueError("Firefox color mapping is incomplete or unsupported")
+            if any(not isinstance(value, str) or not re.fullmatch(r"#[0-9a-f]{6}", value)
+                   for value in manifest["theme"]["colors"].values()):
+                raise ValueError("Firefox colors must be literal six-digit hex values")
+            name = manifest["name"]
+            if name not in ("Clair", "Obscur"):
+                raise ValueError("Firefox theme identity is invalid")
+            mode = "light" if name == "Clair" else "dark"
+            if manifest["theme"]["properties"] != {"color_scheme": mode, "content_color_scheme": "system"}:
+                raise ValueError("Firefox must preserve manual theme and system content selection")
+            if manifest["browser_specific_settings"] != {"gecko": {
+                    "id": f"{name.lower()}@themes.t92t1914.github.io", "strict_min_version": "128.0"}}:
+                raise ValueError("Firefox identity and minimum version are invalid")
         else:
             manifest = json.loads(text)
             if set(manifest) != {"manifest_version", "name", "version", "description", "icons", "theme"}:
@@ -179,6 +206,14 @@ def _generate(document: dict, stage: Path) -> dict:
         target = stage / "equicord" / f"{name}.theme.css"
         target.parent.mkdir(exist_ok=True)
         target.write_bytes(render_theme(name, document["themes"][name], version).encode("utf-8"))
+        native = stage / "firefox" / name.lower()
+        native.mkdir(parents=True)
+        (native / "manifest.json").write_bytes(_json_bytes(firefox_manifest(name, document["themes"][name], PORTABILITY_VERSION)))
+        (native / "LICENSE.txt").write_text(license_text(), encoding="utf-8", newline="\n")
+        for client, label in CLIENTS.items():
+            target = stage / client / f"{name}-{label}.theme.css"
+            target.parent.mkdir(exist_ok=True)
+            target.write_bytes(render_client_theme(client, name, document["themes"][name], PORTABILITY_VERSION).encode("utf-8"))
     files, _ = _inventory(stage)
     _review_payloads(files)
     downloads = []
@@ -187,13 +222,25 @@ def _generate(document: dict, stage: Path) -> dict:
         path = f"artifacts/{name}-Chrome-{version}.zip"
         files[path] = _zip_bytes(native)
         downloads.extend([
-            {"name": name, "platform": "chrome", "path": path, "kind": "native-theme-zip"},
-            {"name": name, "platform": "equicord", "path": f"equicord/{name}.theme.css", "kind": "local-theme-css"},
+            {"name": name, "platform": "chrome", "path": path, "kind": "native-theme-zip", "version": version},
+            {"name": name, "platform": "equicord", "path": f"equicord/{name}.theme.css", "kind": "local-theme-css", "version": version},
         ])
+        # Edge uses the original Chromium artifact. An alias is not a native pass.
+        downloads.append({"name": name, "platform": "edge", "path": path,
+                          "kind": "chromium-theme-zip", "version": version, "native_acceptance": "unverified"})
+        native = {key.split("/", 2)[2]: data for key, data in files.items() if key.startswith(f"firefox/{name.lower()}/")}
+        path = f"artifacts/{name}-Firefox-{PORTABILITY_VERSION}.xpi"
+        files[path] = _zip_bytes(native)
+        downloads.append({"name": name, "platform": "firefox", "path": path,
+                          "kind": "unsigned-static-theme-xpi", "version": PORTABILITY_VERSION, "native_acceptance": "unverified"})
+        for client, label in CLIENTS.items():
+            downloads.append({"name": name, "platform": client, "path": f"{client}/{name}-{label}.theme.css",
+                              "kind": "local-theme-css", "version": PORTABILITY_VERSION, "native_acceptance": "unverified"})
     manifest = {
         "schema_version": 1,
         "generator": OWNER,
         "version": version,
+        "adapter_version": PORTABILITY_VERSION,
         "tokens_sha256": _digest(_json_bytes(document)),
         "files": [{"path": name, "sha256": _digest(data), "bytes": len(data)} for name, data in sorted(files.items())],
         "downloads": downloads,
@@ -342,7 +389,7 @@ def build_release(tokens_path: Path, output: Path, *, check: bool = False) -> di
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Build or verify the four Clair and Obscur theme artifacts")
+    parser = argparse.ArgumentParser(description="Build or verify Clair and Obscur theme artifacts and portability candidates")
     parser.add_argument("--tokens", type=Path, default=PROJECT_ROOT / "tokens.json")
     parser.add_argument("--output", type=Path, default=PROJECT_ROOT / "dist")
     parser.add_argument("--check", action="store_true", help="Compare the existing complete output without rewriting it")
@@ -352,5 +399,6 @@ def main(argv: list[str] | None = None) -> int:
     except (OSError, ValueError, TypeError) as error:
         notes = "".join(f"{note}\n" for note in getattr(error, "__notes__", ()))
         parser.exit(1, f"Build failed: {error}\n{notes}")
-    print(f"{'Verified' if args.check else 'Built'} {manifest['version']}: four theme downloads, {len(manifest['files'])} payload files")
+    print(f"{'Verified' if args.check else 'Built'} {manifest['version']} with adapters {manifest['adapter_version']}: "
+          f"{len(manifest['downloads'])} download choices, {len(manifest['files'])} payload files")
     return 0

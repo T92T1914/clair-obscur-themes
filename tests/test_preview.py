@@ -112,6 +112,7 @@ class PreviewTests(unittest.TestCase):
         manifest = json.loads(files['downloads/artifact-manifest.json'])
         expected = {Path(item['path']).name: files['downloads/' + item['path']]
                     for item in manifest['downloads']}
+        self.assertEqual(len(expected), len({item['path'] for item in manifest['downloads']}))
         expected['source.zip'] = files['source.zip']
         expected['artifact-manifest.json'] = files['downloads/artifact-manifest.json']
         actual = {}
