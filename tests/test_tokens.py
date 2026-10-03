@@ -29,6 +29,32 @@ class TokenTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'border on hover'):
             validate(document)
 
+    def test_mention_text_cannot_pass_only_against_the_plain_panel(self):
+        document=load(ROOT/'tokens.json')
+        document['themes']['Obscur']['accent']='#878787'
+        palette=document['themes']['Obscur']
+        self.assertGreaterEqual(contrast(palette['accent'],palette['panel']),4.5)
+        self.assertGreaterEqual(contrast(palette['on_accent'],palette['accent']),4.5)
+        self.assertLess(contrast(palette['accent'],palette['selected']),4.5)
+        with self.assertRaisesRegex(ValueError,'accent on selected'):
+            validate(document)
+
+    def test_hovered_mention_text_is_checked_separately_from_selected(self):
+        document=load(ROOT/'tokens.json')
+        document['themes']['Obscur']['accent']='#9c9c9c'
+        palette=document['themes']['Obscur']
+        self.assertGreaterEqual(contrast(palette['accent'],palette['selected']),4.5)
+        self.assertLess(contrast(palette['accent'],palette['hover']),4.5)
+        with self.assertRaisesRegex(ValueError,'accent on hover'):
+            validate(document)
+
+    def test_shipped_mention_pairs_remain_in_the_validated_contract(self):
+        checks=validate(load(ROOT/'tokens.json'))
+        pairs={(check['theme'],check['foreground'],check['background']) for check in checks}
+        for name in ('Clair','Obscur'):
+            for background in ('selected','hover'):
+                self.assertIn((name,'accent',background),pairs)
+
     def test_incomplete_palette_is_rejected(self):
         document=load(ROOT/'tokens.json'); del document['themes']['Obscur']['error']
         with self.assertRaisesRegex(ValueError,'token roles'): validate(document)

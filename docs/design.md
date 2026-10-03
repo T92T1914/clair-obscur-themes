@@ -22,7 +22,7 @@ The shared source is [tokens.json](../tokens.json). Its Atlas reference is [revi
 
 Clair's panel is deliberately softened from Atlas's white to `#fdfcf8`. The body text stays dark. A blue accent identifies ordinary interaction without reusing Atlas's pink remembrance meaning. Success, warning and error have separate semantic roles. A decorative divider is not a substitute for the stronger border used where a control boundary matters.
 
-The token validator checks selected text/background pairs at 4.5:1 and essential borders/focus at 3:1. These are checks on declared opaque sRGB pairs. They do not certify every inherited host state, prove physical luminance or establish complete accessibility compliance. The [acceptance record](acceptance.md) separates those questions.
+The token validator checks selected text/background pairs at 4.5:1 and essential borders/focus at 3:1. Mention accent text is checked against both its selected surface and its hover surface, in addition to the plain panel. These are checks on declared opaque sRGB pairs. They do not certify every inherited host state, prove physical luminance or establish complete accessibility compliance. The [acceptance record](acceptance.md) separates those questions.
 
 ## Typography
 
