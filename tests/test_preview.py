@@ -227,6 +227,83 @@ class PreviewTokenSnapshotTests(unittest.TestCase):
                 build_preview(self.root, self.artifacts, self.output)
         self.assertFalse(self.output.exists())
 
+    def test_license_download_and_source_archive_use_the_same_captured_bytes(self):
+        license_path = self.root / 'LICENSE'
+        captured = license_path.read_bytes()
+
+        def change_after_capture(root):
+            sources = source_files(root)
+            license_path.write_bytes(captured.replace(b'2026 T92T1914', b'2027 Other author'))
+            return sources
+
+        with patch('preview.source_files', side_effect=change_after_capture):
+            files = preview_files(self.root, self.artifacts)
+        with zipfile.ZipFile(io.BytesIO(files['source.zip'])) as archive:
+            self.assertEqual(archive.read('LICENSE'), captured)
+        self.assertEqual(files['LICENSE'], captured)
+        self.assertNotEqual(license_path.read_bytes(), captured)
+
+    def test_source_license_change_after_artifact_verification_is_rejected(self):
+        license_path = self.root / 'LICENSE'
+        changed = license_path.read_bytes().replace(b'2026 T92T1914', b'2027 Other author')
+
+        def change_before_capture(root):
+            license_path.write_bytes(changed)
+            return source_files(root)
+
+        with patch('preview.source_files', side_effect=change_before_capture):
+            with self.assertRaisesRegex(ValueError, 'Source license'):
+                build_preview(self.root, self.artifacts, self.output)
+        self.assertFalse(self.output.exists())
+        self.assertFalse(list(self.base.glob('.preview-stage-*')))
+
+    def test_rejected_source_license_change_preserves_an_existing_preview(self):
+        build_preview(self.root, self.artifacts, self.output)
+        before = {path.relative_to(self.output): path.read_bytes()
+                  for path in self.output.rglob('*') if path.is_file()}
+        license_path = self.root / 'LICENSE'
+        changed = license_path.read_bytes().replace(b'2026 T92T1914', b'2027 Other author')
+
+        def change_before_capture(root):
+            license_path.write_bytes(changed)
+            return source_files(root)
+
+        with patch('preview.source_files', side_effect=change_before_capture):
+            with self.assertRaisesRegex(ValueError, 'Source license'):
+                build_preview(self.root, self.artifacts, self.output)
+        after = {path.relative_to(self.output): path.read_bytes()
+                 for path in self.output.rglob('*') if path.is_file()}
+        self.assertEqual(before, after)
+        self.assertFalse(list(self.base.glob('.preview-stage-*')))
+
+    def test_equivalent_license_line_endings_keep_exact_source_and_download_bytes(self):
+        license_path = self.root / 'LICENSE'
+        formatted = license_path.read_bytes().replace(b'\n', b'\r\n') + b'\r\n'
+
+        def reformat_before_capture(root):
+            license_path.write_bytes(formatted)
+            return source_files(root)
+
+        with patch('preview.source_files', side_effect=reformat_before_capture):
+            files = preview_files(self.root, self.artifacts)
+        with zipfile.ZipFile(io.BytesIO(files['source.zip'])) as archive:
+            self.assertEqual(archive.read('LICENSE'), formatted)
+        self.assertEqual(files['LICENSE'], formatted)
+        self.assertEqual(files['downloads/artifact-manifest.json'],
+                         (self.artifacts / 'artifact-manifest.json').read_bytes())
+
+    def test_invalid_captured_license_is_rejected_before_preview_output(self):
+        license_path = self.root / 'LICENSE'
+        for payload in (b'not MIT text', b'MIT License\n/* grant */',
+                        b'MIT License\n\x00', b'MIT License\nremaining\r',
+                        b'MIT License\n' + b'x' * 65536, b'MIT License\n\xff'):
+            with self.subTest(payload_length=len(payload)):
+                license_path.write_bytes(payload)
+                with self.assertRaises(ValueError):
+                    build_preview(self.root, self.artifacts, self.output)
+                self.assertFalse(self.output.exists())
+                self.assertFalse(list(self.base.glob('.preview-stage-*')))
+
 
 class SourceIdentityTests(unittest.TestCase):
     def setUp(self):
