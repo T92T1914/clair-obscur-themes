@@ -1,9 +1,9 @@
 # Clair and Obscur
 
-Build a shared original theme family for native browsers and local client CSS. Preserve Chrome and Equicord 0.1.1 while developing the Firefox, Edge, Vencord and BetterDiscord candidates described in docs/platform-portability.md. Atlas is a read-only design reference. Keep fonts, application integration, public previews and physical display evidence distinct.
+Build a shared original theme family for native browsers and local client CSS. Preserve Chrome and Equicord 0.1.1 and Firefox, Vencord and BetterDiscord 0.2.0 while developing the browser candidates described in docs/platform-portability.md. Atlas is a read-only design reference. Keep fonts, application integration, public previews and physical display evidence distinct.
 
 - Edit shared tokens and generators, then rebuild. Generated packages contain no scripts, remote imports, analytics, font binaries or private machine data.
-- New adapters have their own explicit version. Edge aliases reuse exact Chrome bytes. Never label local manifest or component checks as Firefox, Edge or Discord-client native acceptance. No signature bypass or store submission is implied.
+- New adapters have their own explicit version. Edge and Brave aliases reuse exact Chrome bytes. Vivaldi uses settings JSON, while Opera GX uses a paired light/dark color-hint payload. Never label local format or component checks as native acceptance. No signature bypass or store submission is implied.
 - Preserve native scaling, appropriate monospace and language/icon fallbacks. Use installed Inter 400, 600, 700 and genuine italics where supported. Native Chrome theme APIs cannot change its UI font.
 - The primary reference is a user-reported PG32UCDMR, 4K/240 Hz, dark room, Windows HDR on, SDR brightness 0 and Auto HDR off. Do not change display settings, calibration, profiles or application security to satisfy a theme check.
 - Actual Equibop loading and native Chrome frame checks are separate from local fixture checks. Never label a fixture as application acceptance or a screenshot as physical luminance measurement.
@@ -25,4 +25,4 @@ Build a shared original theme family for native browsers and local client CSS. P
 
 - Reviewed updates merged into `main` deploy automatically after the same run's Linux, Windows and browser checks pass. Preserve the `github-pages` environment, approvals, scoped permissions, same-run artifact and concurrency controls. Manual dispatch is an optional fallback, not the ordinary publication step.
 - Keep push triggers available for version tags. Tag prereleases are separate from website deployment. Do not move existing tags or replace published assets for documentation changes.
-- Verify the main-triggered Pages result, served `site-manifest.json` revision, acceptance link and four actual downloads before reporting deployment. The versioned source link must use the original release archive. A current-source snapshot needs its actual revision and matching checksum.
+- Verify the main-triggered Pages result, served `site-manifest.json` revision, acceptance link and actual distinct downloads before reporting deployment. Preserve original release bytes and distinguish aliases from additional files. The versioned source link must use the original release archive. A current-source snapshot needs its actual revision and matching checksum.

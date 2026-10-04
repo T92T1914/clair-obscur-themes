@@ -14,6 +14,18 @@ The first twelve-click burst test stopped producing a download event after ten s
 
 Native Firefox, Edge, browser Vencord, desktop Vencord, Vesktop and BetterDiscord loading, full surfaces, restart persistence and restoration remain unverified. Native typography, physical displays and mobile-native theme availability remain separate questions. No signing, store or gallery approval is claimed.
 
+## Browser candidate increment
+
+The 0.3.0 increment adds separate color-only Vivaldi settings ZIPs and one Opera GX package pairing Clair Light with Obscur Dark. Brave choices reuse the exact Chrome 0.1.1 ZIPs. All ten earlier download hashes remain unchanged, including the Firefox, Vencord and BetterDiscord 0.2.0 files. Seventeen choices now refer to thirteen distinct files. The [platform guide](platform-portability.md) records each native route and the limits of its color mapping.
+
+On October 3, 2026, Windows Python 3.11.8 ran all 125 unit tests with zero failures and one existing skip because this host cannot create a symlink without additional privilege. No privilege was changed to remove that skip. A fresh build, byte-for-byte rebuild check and preview generation each completed successfully. The added tests inspect Vivaldi identities and original color fields, paired canonical GX hints, original icon pixels and PNG integrity, deterministic archive contents, preservation of earlier files and refusal of unwanted capabilities or layout settings.
+
+Isolated headless Chrome 154.0.8037.95 with Playwright 1.63.0 and Node 24.16.0 passed all 11 checks in `tests/browser/preview.test.mjs` with zero skips. This count covers that actual executed file. Other unchanged browser test files were not rerun solely to increase it. The six Inter glyph faces, system fallback, existing client state fixtures, keyboard interaction, larger text and no-JavaScript delivery remained usable. The new browser sections were readable and navigable at 390 pixels with touch-oriented interaction. The page saved all seventeen choices with matching SHA-256 values in separate eight-choice Clair and Obscur journeys and one paired Opera GX journey. This is emulated page evidence, not a physical phone or native theme installation result.
+
+The jobs retained source fingerprints and logs, completed within their fixed bounds and reported zero owned processes after retirement. The first monitored unit attempt was interrupted by a temporary-directory observation race and remains an incomplete run. The successful run used a separately reviewed correction to that observer. No theme assertion was weakened, and no browser download safeguard was changed.
+
+No Vivaldi or Opera GX native schema validator was run. The tests enforce the project's inspected format contract, not an official certification. Vivaldi's acceptance of omitted optional fields and its effective selection colors remain unknown. Opera GX's documented limits on overly light or dark hints, resulting palette and contrast remain unverified. Brave loading and branded surfaces also remain unverified. Installation, switching, ordinary restart, disable/restoration and store or gallery decisions are separately pending for each new desktop target. No mobile-native theme compatibility is claimed.
+
 ## Current state
 
 | Item | Established | Remaining gate |

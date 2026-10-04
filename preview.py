@@ -126,10 +126,13 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
     files = {name: read_source(root, root / 'web' / name) for name in sorted(WEB_ASSETS)}
     labels = {'chrome': 'Google Chrome', 'equicord': 'Equibop + Equicord',
               'edge': 'Microsoft Edge', 'firefox': 'Firefox', 'vencord': 'Vencord',
-              'betterdiscord': 'BetterDiscord'}
+              'betterdiscord': 'BetterDiscord', 'brave': 'Brave',
+              'vivaldi': 'Vivaldi', 'opera-gx': 'Opera GX'}
     kinds = {'chrome': 'Native theme ZIP', 'equicord': 'Standalone CSS',
              'edge': 'Original Chromium ZIP, reused candidate', 'firefox': 'Unsigned static-theme XPI',
-             'vencord': 'Standalone CSS', 'betterdiscord': 'Standalone CSS'}
+             'vencord': 'Standalone CSS', 'betterdiscord': 'Standalone CSS',
+             'brave': 'Original Chromium ZIP, reused candidate',
+             'vivaldi': 'Native settings JSON ZIP', 'opera-gx': 'Paired native color-hint ZIP'}
     groups = {platform: [] for platform in labels}
     for download in manifest['downloads']:
         name, platform, path = download['name'], download['platform'], download['path']
@@ -137,7 +140,7 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
         version = download['version']
         record = next(r for r in manifest['files'] if r['path'] == path)
         groups[platform].append(
-            f'<article id="{platform}-{name.lower()}" class="download-card"><p class="eyebrow">Preview {version}</p>'
+            f'<article id="{platform}-{"paired" if platform == "opera-gx" else name.lower()}" class="download-card"><p class="eyebrow">Preview {version}</p>'
             f'<h4>{name}</h4><a class="button" download href="downloads/{path}">'
             f'Download {name} for {label}</a><small>{kind}, {record["bytes"]:,} bytes. '
             'Native acceptance pending.</small></article>'
@@ -156,6 +159,9 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
                 or any(license_comment not in snapshot[f'{client}/{name}-{label}.theme.css']
                        for client, label in (('vencord', 'Vencord'), ('betterdiscord', 'BetterDiscord')))):
             raise ValueError('Source license differs from the portability package grants')
+    for path in ('vivaldi/LICENSE.txt', 'opera-gx/LICENSE.txt'):
+        if snapshot[path] != license_bytes:
+            raise ValueError('Source license differs from the browser candidate grants')
     identity = source_identity(root, sources, expected_revision)
     version = document['version']
     release_url = f'{REPOSITORY_URL}/releases/download/v{version}'
@@ -170,7 +176,7 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
             .replace('{{RELEASE_URL}}', html.escape(release_url, quote=True))
             .replace('{{SOURCE_DESCRIPTION}}', source_description))
     for platform, cards in groups.items():
-        text = text.replace('{{' + platform.upper() + '_CARDS}}', '\n'.join(cards))
+        text = text.replace('{{' + platform.upper().replace('-', '_') + '_CARDS}}', '\n'.join(cards))
     files['index.html'] = text.encode()
     css = []
     for weight, style, full, postscript in FACES:

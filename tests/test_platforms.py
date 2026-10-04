@@ -40,8 +40,8 @@ class PlatformTests(unittest.TestCase):
                 self.assertEqual(edge["path"], chrome["path"])
                 self.assertEqual(edge["native_acceptance"], "unverified")
             paths = {download["path"] for download in manifest["downloads"]}
-            self.assertEqual(len(paths), 10)
-            self.assertEqual(len({Path(path).name for path in paths}), 10)
+            self.assertEqual(len(paths), 13)
+            self.assertEqual(len({Path(path).name for path in paths}), 13)
 
     def test_firefox_xpi_is_only_the_static_manifest_and_license(self):
         with tempfile.TemporaryDirectory() as directory:

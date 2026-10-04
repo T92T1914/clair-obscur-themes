@@ -36,7 +36,7 @@ jobs:
           python-version: '3.11'
       - name: Unit and packaging checks
         run: python -m unittest discover -s tests -v
-      - name: Build four theme artifacts
+      - name: Build reviewed theme artifacts
         run: python build.py
       - name: Verify reproducible output
         run: python build.py --check
