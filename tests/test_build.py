@@ -31,9 +31,9 @@ class ReleaseBuildTests(unittest.TestCase):
         manifest = self.build()
         before = contents(self.output)
         mtimes = {p: p.stat().st_mtime_ns for p in self.output.rglob("*") if p.is_file()}
-        self.assertEqual(len(manifest["downloads"]), 12)
-        self.assertEqual(len({item["path"] for item in manifest["downloads"]}), 10)
-        self.assertEqual(len(manifest["files"]), 20)
+        self.assertEqual(len(manifest["downloads"]), 17)
+        self.assertEqual(len({item["path"] for item in manifest["downloads"]}), 13)
+        self.assertEqual(len(manifest["files"]), 29)
         self.build(check=True)
         self.assertEqual(mtimes, {p: p.stat().st_mtime_ns for p in mtimes})
         self.build()
@@ -101,7 +101,7 @@ class ReleaseBuildTests(unittest.TestCase):
 
         self.build()
         original = {name: payload for name, payload in contents(self.output).items()
-                    if name.startswith(("chrome/", "equicord/", "firefox/", "vencord/", "betterdiscord/"))}
+                    if not name.startswith("artifacts/") and name not in (MANIFEST, CHECKSUMS)}
         for name in ("chrome/clair/LICENSE.txt", "equicord/Obscur.theme.css"):
             with self.subTest(path=name):
                 changed = dict(original)

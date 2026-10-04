@@ -286,14 +286,18 @@ test('keyboard, enlarged text, reduced motion and forced colors retain usable co
 
 test('download clicks save all platform choices without navigating away', async () => {
   // Separate palette chooser journeys keep the test about deliberate file
-  // selection. A single rapid twelve-click burst measures Chromium's download
+  // selection. One context per palette and one for the paired GX candidate
+  // keep each journey below Chromium's ordinary ten-download burst threshold.
+  // A single rapid seventeen-click burst measures Chromium's download
   // throttle instead. Browser limits and download permissions stay unchanged.
-  for (const name of ['Clair', 'Obscur']) {
-    const { context, page, consoleErrors } = await pageFor();
+  for (const name of ['Clair', 'Obscur', 'Clair and Obscur']) {
+    const { context, page, consoleErrors } = await pageFor({ viewport: { width: name === 'Clair and Obscur' ? 390 : 1280, height: 900 } });
     try {
     const manifest = await (await context.request.get(origin + '/downloads/artifact-manifest.json')).json();
-    assert.equal(manifest.downloads.length, 12);
-    for (const download of manifest.downloads.filter(item => item.name === name)) {
+    assert.equal(manifest.downloads.length, 17);
+    const choices = manifest.downloads.filter(item => item.name === name);
+    assert.equal(choices.length, name === 'Clair and Obscur' ? 1 : 8);
+    for (const download of choices) {
       const group = page.locator(`#${download.platform}-downloads`);
       const link = group.locator(`a[download][href="downloads/${download.path}"]`);
       assert.equal(await link.count(), 1);
@@ -322,7 +326,7 @@ test('download clicks save all platform choices without navigating away', async 
       const n = performance.getEntriesByType('navigation')[0];
       return { domContentLoadedMs: n.domContentLoadedEventEnd, loadMs: n.loadEventEnd, requests: performance.getEntriesByType('resource').length };
     });
-    results.metrics[`previewNavigation${name}`] = { ...navigation, scope: 'one local headless six-choice palette journey, not application startup or comparative performance' };
+    results.metrics[`previewNavigation${name}`] = { ...navigation, scope: `one local headless ${choices.length}-choice journey, not application startup or comparative performance` };
     assert.deepEqual(consoleErrors, []);
     assert.deepEqual(failures, []);
     } finally { await context.close(); }
@@ -360,7 +364,7 @@ test('released source stays separate from the current preview snapshot', async (
 test('static delivery remains usable without JavaScript and internal links resolve', async () => {
   const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
   try {
-    assert.equal(await page.locator('#downloads .download-card a[download]').count(), 12);
+    assert.equal(await page.locator('#downloads .download-card a[download]').count(), 17);
     assert.match(await page.locator('#downloads .status').textContent(), /preview builds/);
     assert.match(await page.locator('.hero .status').textContent(), /Full native acceptance remains open/);
     const acceptance = page.getByRole('link', { name: 'dated acceptance record', exact: true });
@@ -379,6 +383,35 @@ test('static delivery remains usable without JavaScript and internal links resol
     assert.ok(await page.locator('#equicord-downloads').isVisible());
     assert.deepEqual(consoleErrors, []);
     results.scenarios.push({ name: 'no-JavaScript palette comparison, grouped downloads and anchor navigation', status: 'passed' });
+  } finally { await context.close(); }
+});
+
+test('new desktop browser choices remain distinct and readable on a phone', async () => {
+  const { context, page, consoleErrors } = await pageFor({ viewport: { width: 390, height: 844 }, hasTouch: true });
+  try {
+    for (const [platform, label, count] of [['brave', 'Brave', 2], ['vivaldi', 'Vivaldi', 2], ['opera-gx', 'Opera GX', 1]]) {
+      await page.getByRole('link', { name: label, exact: true }).click();
+      assert.equal(new URL(page.url()).hash, `#${platform}-downloads`);
+      const group = page.locator(`#${platform}-downloads`);
+      assert.ok(await group.isVisible());
+      assert.equal(await group.locator('.download-card').count(), count);
+      assert.equal(await group.locator('a[download]').count(), count);
+      assert.match(await group.textContent(), /unverified|No Brave installation/);
+    }
+    assert.match(await page.locator('#opera-gx-downloads').textContent(), /One package pairs Clair Light with Obscur Dark/);
+    assert.match(await page.locator('#vivaldi-downloads').textContent(), /5\.0 or later/);
+    const geometry = await page.evaluate(() => ({ width: innerWidth, document: document.documentElement.scrollWidth }));
+    assert.ok(geometry.document <= geometry.width + 1, JSON.stringify(geometry));
+    const manifest = await (await context.request.get(origin + '/downloads/artifact-manifest.json')).json();
+    for (const name of ['Clair', 'Obscur']) {
+      const chrome = manifest.downloads.find(item => item.name === name && item.platform === 'chrome');
+      const brave = manifest.downloads.find(item => item.name === name && item.platform === 'brave');
+      assert.equal(brave.path, chrome.path);
+      assert.equal(brave.native_acceptance, 'unverified');
+    }
+    assert.deepEqual(consoleErrors, []);
+    assert.deepEqual(failures, []);
+    results.scenarios.push({ name: 'phone navigation to Brave, Vivaldi and paired Opera GX desktop candidates', status: 'passed', nativeAppsVerified: false });
   } finally { await context.close(); }
 });
 

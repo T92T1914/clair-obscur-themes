@@ -24,7 +24,7 @@ The displayed palette, verified downloads and source archive must use the same t
 
 The standalone license download and source archive share one captured `LICENSE` file. Its normalized grant must match both Chrome packages and both Equicord CSS files before the preview is written. Equivalent Windows line endings and extra final newlines are accepted, while the source archive and standalone download keep the captured bytes. A changed grant requires a matching artifact build rather than a preview beside older package notices.
 
-The same grant is checked for the new Firefox packages and client CSS. Client-qualified Vencord and BetterDiscord filenames avoid collisions when downloads share a flat release directory. Edge's aliases deliberately refer to the same Chrome files. A different file with the same flat filename is refused.
+The same grant is checked for the Firefox packages, client CSS, Opera GX package and the license beside Vivaldi's unpacked settings. Client-qualified filenames avoid collisions when downloads share a flat release directory. Edge and Brave aliases deliberately refer to the same Chrome files. A different file with the same flat filename is refused.
 
 Mozilla validation is separate from the standard-library contract tests. With `web-ext` 10.7.0 available as a development tool, run the following against each generated Firefox directory. It uses Mozilla's actual schemas, treats warnings as failures and does not discover personal configuration, install a theme or submit it for signing:
 
@@ -33,7 +33,7 @@ web-ext --no-config-discovery lint --source-dir dist/firefox/clair --warnings-as
 web-ext --no-config-discovery lint --source-dir dist/firefox/obscur --warnings-as-errors --output json
 ```
 
-The browser download checks use separate six-choice palette journeys. A rapid twelve-click burst in one page reached Chromium's download throttle in the retained diagnostic. The tests do not change download permissions or disable safeguards. Native theme installation and normal restart acceptance remain manual, separately authorized checks.
+The browser download checks use separate eight-choice Clair and Obscur journeys and one single-choice paired Opera GX journey. A rapid twelve-click burst in one page reached Chromium's download throttle in the earlier retained diagnostic. The tests do not change download permissions or disable safeguards. Native theme installation and normal restart acceptance remain manual, separately authorized checks.
 
 To serve a built preview locally:
 
@@ -51,7 +51,7 @@ Preview staging follows the same failure contract. A failed write or caller inte
 
 ## Change the source, then regenerate
 
-Edit `tokens.json` for shared colors and the selected `themeforge` module for platform mappings. `firefox.py` implements Mozilla's static contract. `discord_clients.py` adds narrow client states over the unchanged shared Equicord generator. Edit `web/` for the component specimen. Do not patch `dist/` or a generated preview. The original release remains 0.1.1. New adapters declare 0.2.0 separately in the generator and artifact manifest. Preparing a combined release requires a deliberate version and distribution review.
+Edit `tokens.json` for shared colors and the selected `themeforge` module for platform mappings. `firefox.py` implements Mozilla's static contract. `discord_clients.py` adds narrow client states over the unchanged shared Equicord generator. `vivaldi.py` supplies minimal shareable settings; `opera_gx.py` supplies paired HSL hints and its original icon. Edit `web/` for the component specimen. Do not patch `dist/` or a generated preview. The original release remains 0.1.1, earlier adapters remain 0.2.0, and new browser adapters declare 0.3.0 separately. Preparing a combined release requires a deliberate version and distribution review.
 
 The preview includes a source archive with an explicit allowlist. A README, installation guide or test change can legitimately alter that archive even when the four theme assets stay identical. The current-source snapshot is separate from the versioned source download, which points to the existing release. Inspect the snapshot's revision, working-tree status and SHA-256 in the generated page and `site-manifest.json`. Source extracted without Git history is labeled with an unavailable revision rather than assigned a guessed commit.
 

@@ -6,7 +6,7 @@ This is an experimental preview. Both themes have passed limited native Equibop 
 
 ## Choose your theme
 
-Open the [live preview and downloads](https://t92t1914.github.io/clair-obscur-themes/) to compare Clair and Obscur and choose a package for your application. The page includes installation and restoration steps, source and checksums. All downloads are labeled as previews while native acceptance remains open. The original Chrome and Equicord 0.1.1 bytes are preserved. New Firefox, Vencord and BetterDiscord adapters are 0.2.0 candidates. [Platform contracts and remaining acceptance](docs/platform-portability.md).
+Open the [live preview and downloads](https://t92t1914.github.io/clair-obscur-themes/) to compare Clair and Obscur and choose a package for your application. The page includes installation and restoration steps, source and checksums. All downloads are labeled as previews while native acceptance remains open. Chrome and Equicord 0.1.1 and Firefox, Vencord and BetterDiscord 0.2.0 retain their accepted bytes. New Vivaldi and Opera GX adapters are 0.3.0 candidates. Edge and Brave reuse the original Chrome ZIP. [Platform contracts and remaining acceptance](docs/platform-portability.md).
 
 | Application | Clair | Obscur | Typography |
 | --- | --- | --- | --- |
@@ -14,6 +14,9 @@ Open the [live preview and downloads](https://t92t1914.github.io/clair-obscur-th
 | Equibop with Equicord | Use with native Light appearance | Use with a native dark appearance | Installed Inter 400, 600 and 700, with genuine italics |
 | Firefox desktop | Manual warm light static theme | Manual deep neutral static theme | Native browser font, unsigned 0.2.0 candidate |
 | Microsoft Edge | Original Chrome artifact for native testing | Original Chrome artifact for native testing | Native browser font, native acceptance pending |
+| Brave desktop | Original Chrome artifact for native testing | Original Chrome artifact for native testing | Native browser font, host surfaces unverified |
+| Vivaldi desktop | Color-only shareable settings | Color-only shareable settings | Native font, import and derived colors unverified |
+| Opera GX desktop | Light appearance in one paired package | Dark appearance in the same package | Host-derived HSL colors, loading and contrast unverified |
 | Vencord | CSS with native Light appearance | CSS with native dark appearance | Local Inter and system fallback, separate client checks pending |
 | BetterDiscord | CSS with native Light appearance | CSS with native dark appearance | Local Inter and system fallback, native check pending |
 
@@ -21,7 +24,7 @@ The Chrome downloads are native color themes, not replacement browsers or websit
 
 ## Build and try the preview
 
-Python 3.11 or newer builds the original four artifacts plus six new candidate files. Edge download choices reuse the existing Chrome files. From this project directory:
+Python 3.11 or newer builds thirteen distinct download files. Seventeen platform choices include the exact Chrome ZIPs reused for Edge and Brave. The Vivaldi settings ZIPs are separate from the paired Opera GX mod candidate. From this project directory:
 
 ```powershell
 python build.py
@@ -42,6 +45,8 @@ Reviewed changes merged into `main` publish the checked preview automatically af
 | Firefox candidates | `dist/artifacts/Clair-Firefox-0.2.0.xpi` and `dist/artifacts/Obscur-Firefox-0.2.0.xpi` |
 | Vencord candidates | `dist/vencord/Clair-Vencord.theme.css` and `dist/vencord/Obscur-Vencord.theme.css` |
 | BetterDiscord candidates | `dist/betterdiscord/Clair-BetterDiscord.theme.css` and `dist/betterdiscord/Obscur-BetterDiscord.theme.css` |
+| Vivaldi candidates | `dist/artifacts/Clair-Vivaldi-0.3.0.zip` and `dist/artifacts/Obscur-Vivaldi-0.3.0.zip` |
+| Opera GX paired candidate | `dist/artifacts/Clair-Obscur-OperaGX-0.3.0.zip` |
 | Integrity records | `dist/SHA256SUMS` and `dist/artifact-manifest.json` |
 
 Start with Obscur in a separate Chrome test profile or a recoverable Equicord configuration, then give Clair the same checks. In Chrome, extract the ZIP and use **Load unpacked** in `chrome://extensions`. In Equibop, use Equicord's **Open Themes Folder** control and copy the CSS there. Do not paste it over QuickCSS or install another Discord client.
@@ -50,7 +55,7 @@ The [installation and removal guide](docs/installation.md) covers the exact step
 
 ## How it is built
 
-[tokens.json](tokens.json) holds one shared palette with named roles for text, surfaces, focus and control states. Small Python generators map those roles to native browser theme fields and shared client host variables. Narrow Vencord and BetterDiscord adapters handle their own settings switches and brand buttons. The build produces deterministic packages, verifies their contents and refuses to overwrite an output tree that contains unexpected or edited files.
+[tokens.json](tokens.json) holds one shared palette with named roles for text, surfaces, focus and control states. Small Python generators map those roles to native browser fields and shared client variables. Vivaldi receives five exported colors. Opera GX receives two integer HSL hints per appearance and derives its own palette, so exact source colors and contrast remain a native acceptance question. Narrow Vencord and BetterDiscord adapters handle their own settings switches and brand buttons. The build produces deterministic packages, verifies their contents and refuses to overwrite an output tree that contains unexpected or edited files.
 
 The browser specimen exercises readable components, local font resolution, keyboard interaction, larger text and fallback behavior. It uses an isolated headless browser profile. Those tests help find mistakes in the supplied CSS and preview, but they cannot certify Chrome's tab strip, Equibop's full interface or physical HDR appearance.
 

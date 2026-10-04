@@ -1,8 +1,8 @@
 # Platform candidates
 
-The family now generates Firefox static themes and local Vencord and BetterDiscord CSS from the existing palette. The Chrome and Equicord 0.1.1 downloads retain their accepted bytes. New adapters are versioned 0.2.0. They are preview candidates, not a new signed release or a native compatibility pass. The [acceptance record](acceptance.md#platform-adapter-increment) identifies the executed Mozilla validation and isolated browser checks.
+The family generates Firefox static themes and local Vencord and BetterDiscord CSS from the existing palette. Those 0.2.0 files and the Chrome and Equicord 0.1.1 files retain their accepted bytes. Vivaldi settings ZIPs and a paired Opera GX color-hint candidate use version 0.3.0. They are preview candidates, not a new signed release or a native compatibility pass. The [acceptance record](acceptance.md#platform-adapter-increment) preserves the earlier Mozilla validation and isolated browser checks.
 
-The artifact manifest records each download's own version. Edge points to the exact Chrome ZIP rather than a renamed copy. Twelve download choices refer to ten distinct files. A Chromium package that parses correctly still needs an actual Edge installation and surface check.
+The artifact manifest records each download's own version. Edge and Brave point to the exact Chrome ZIP rather than renamed copies. Seventeen download choices refer to thirteen distinct files. A Chromium package that parses correctly still needs an installation and surface check in each branded host.
 
 ## Firefox
 
@@ -19,6 +19,40 @@ Native acceptance must cover selected and inactive windows, address suggestions,
 The existing color-only Chromium artifact needs no code API translation. It contains no `update_url`. Reusing it is a candidate route supported by Microsoft's general porting guidance, not evidence that every Chromium color key reaches every Edge surface. [Microsoft's porting guide](https://learn.microsoft.com/en-us/microsoft-edge/extensions/developer-guide/port-chrome-extension) requires testing in Edge and describes separate branding requirements for certification. [Microsoft's extension overview](https://learn.microsoft.com/en-us/microsoft-edge/extensions/) explicitly includes native themes.
 
 The download label preserves the Chrome filename so its identity is visible. It is not an Edge store package. A separately permitted check must use an isolated, recoverable Edge profile, the supported unpacked test route and the exact generated manifest. Check the tab strip, focused address field, suggestions, favorites, sidebar, selected and inactive windows, private-window identity and restoration. Record unchanged Edge-owned surfaces rather than applying CSS to them. No native Edge acceptance or store submission is claimed.
+
+## Brave
+
+Both Brave choices reuse the exact original Chrome ZIP and its visible Chrome filename. There is no Brave-specific extension, script or recoloring layer. Brave's [closed native-color issue](https://github.com/brave/brave-browser/issues/40689) explicitly describes Chrome Web Store color themes as a route, but that historical issue is not current native acceptance of this package. Generic extension compatibility alone would not establish the theme's surfaces.
+
+Built-in Brave colors and later host changes can take precedence. A separately permitted isolated-profile check must establish loading, active and inactive windows, address suggestions, sidebars, private-window identity, native appearance changes and restoration. No browser version or native pass is claimed here. Brave mobile is not covered by this desktop artifact.
+
+## Vivaldi
+
+Vivaldi's [official shareable-theme guide](https://help.vivaldi.com/desktop/appearance-customization/shareable-vivaldi-themes/) documents a ZIP containing settings JSON and an optional background image. The ZIP import route requires desktop Vivaldi 5.0 or later. The guide does not publish a formal settings schema. Field names and integer metadata were inspected in an [original exported-settings example](https://github.com/catppuccin/vivaldi/blob/main/base_settings.json). That example supplies format evidence, not an official schema or a native test of these candidates. Its colors, UUID, layout fields, artwork and implementation are not copied.
+
+`themeforge/vivaldi.py` emits original `settings.json` files with separate stable project UUIDs, `engineVersion: 1` and initial integer export revision `version: 1`. That integer is not the adapter's package version 0.3.0. Each ZIP contains only its settings JSON. The project license remains beside the unpacked files and in the downloadable source and preview.
+
+| Export field | Canonical role | Intended contribution |
+| --- | --- | --- |
+| `colorBg` | `canvas` | Main neutral background |
+| `colorFg` | `text` | Primary readable foreground |
+| `colorAccentBg` | `panel` | Neutral accent surface |
+| `colorHighlightBg` | `accent` | Blue or pale-blue interaction hint |
+| `colorWindowBg` | `canvas` | Neutral window background |
+
+The export omits wallpaper, toolbar icons, radius, blur, opacity, transparency, scrollbar, webpage-accent and system-accent overrides. Omission is not proof that an import leaves every host preference unchanged. Vivaldi derives additional colors, and its [coloring mode and webpage-accent settings](https://help.vivaldi.com/desktop/appearance-customization/browser-themes/) can change which surfaces use the fields. The candidate neither rewrites websites nor selects a browser font. It does not set the separate private-window theme or create a schedule.
+
+Native acceptance must inspect the import preview before installation, final effective colors, selected/highlighted text, focus, tabs, toolbar, address suggestions, panels and private-window identity. Record whether missing optional fields are accepted and which host defaults or existing preferences apply. Verify both appearances, an ordinary restart and restoration. No native import has been performed and no Vivaldi theme-gallery approval is claimed.
+
+## Opera GX
+
+Opera GX has a distinct mod contract. Its [official template](https://github.com/opera-gaming/gxmods/blob/main/documentation/Mod_Template/manifest.json) and [mod documentation](https://github.com/opera-gaming/gxmods/blob/main/documentation/mods.md) describe `mod.payload.theme` with both `light` and `dark` entries. `themeforge/opera_gx.py` supplies one original paired candidate, Clair Light and Obscur Dark, with only `gx_accent` and `gx_secondary_base` HSL hints. Each accent derives from the canonical `accent`; each base derives from `canvas`. The standard sRGB-to-HSL conversion rounds to integer degrees and percentages. Those hints are not exact RGB surface assignments.
+
+Opera GX derives its palette. Its [published guidelines](https://github.com/opera-gaming/gxmods/blob/main/documentation/guidelines.md) warn that overly light or dark colors are unavailable. The near-white Clair and near-black Obscur base hints remain visible in the candidate. They are not silently changed to another palette or claimed to pass the host's limits. Native loading, any rejection or clamping, effective contrast and the resulting palette need actual observation. A reviewed native failure may justify a separately versioned mapping later.
+
+The package includes the existing MIT license and an original deterministic 512-pixel geometric palette icon. It bundles no Opera template artwork, sounds, music, wallpaper, shaders, page styles or third-party theme code. The icon identifies the package and does not replace browser toolbar icons. There are no permissions, background scripts, fonts, remote assets or website rules.
+
+This ZIP is an unpacked developer candidate, not a signed CRX or GX Store listing. The [official load route](https://github.com/opera-gaming/gxmods#how-to-load-sample-mods) uses `opera:extensions`, Developer mode and Load unpacked, with the candidate subsequently visible in `opera:mods`. A separately authorized isolated test must record its version, light/dark switching, derived surfaces, private-window distinction, native scaling, restart and disable/restoration. This project performs no installation or account change. Opera One and mobile Opera are separate targets.
 
 ## Vencord and BetterDiscord
 
@@ -42,6 +76,9 @@ Direct project distribution is separate from gallery approval. BetterDiscord's l
 | Equicord 0.1.1 | Existing accepted generator and unchanged bytes | Existing limited Clair/Obscur evidence retained | Prior restoration evidence retained, full acceptance open | Original local CSS unchanged |
 | Firefox 0.2.0 | Static manifest, bounded package and palette pairing tests | Deferred under SHARED_PC | Deferred under SHARED_PC | Unsigned candidate, signing and store review pending |
 | Edge, Chromium 0.1.1 | Exact Chrome artifact reuse | Deferred under SHARED_PC | Deferred under SHARED_PC | No Edge store submission |
+| Brave using Chrome 0.1.1 | Exact original Chromium artifact reuse | Deferred under SHARED_PC | Deferred under SHARED_PC | No Brave-specific store or native claim |
+| Vivaldi 0.3.0 | Minimal settings JSON and original palette mapping | Deferred under SHARED_PC, optional-field behavior unknown | Deferred under SHARED_PC | Direct developer ZIP, no gallery approval |
+| Opera GX 0.3.0 | Paired integer HSL hints and original local icon | Deferred under SHARED_PC, color limits unverified | Deferred under SHARED_PC | Unpacked developer ZIP, no signed CRX or store approval |
 | Vencord 0.2.0 | Original scoped CSS over inspected current component contracts | Deferred separately for browser, desktop and Vesktop | Deferred separately | Direct CSS candidate, no gallery claim |
 | BetterDiscord 0.2.0 | Original scoped CSS over inspected current component contracts | Deferred under SHARED_PC | Deferred under SHARED_PC | Direct CSS candidate, no gallery claim |
 
@@ -51,8 +88,6 @@ Local page fixtures can inspect color pairs, mode gates, keyboard focus, selecto
 
 | Target | Actual route and disposition |
 | --- | --- |
-| Brave desktop | Its official documentation describes Chromium-extension compatibility. Theme-specific surfaces have not been inspected here. No Brave native compatibility claim or separate artifact. [Brave extension guidance](https://support.brave.com/hc/en-us/articles/360017909112-How-can-I-add-extensions-to-Brave). |
-| Vivaldi desktop | Its shareable-theme route uses a ZIP with settings JSON. It requires a real adapter, not a renamed Chrome ZIP. Not implemented in this increment. [Vivaldi shareable themes](https://help.vivaldi.com/desktop/appearance-customization/shareable-vivaldi-themes/). |
-| Opera and Opera GX | Opera documents built-in themes, colors and wallpapers. That does not establish arbitrary Chromium native-color package compatibility. No artifact or native check. GX requires its own documented format assessment. [Opera customization](https://help.opera.com/en/latest/customization/). |
+| Opera One | Its built-in themes and appearance controls do not establish the Opera GX mod contract or arbitrary Chromium color-package compatibility. No equivalent adapter or native pass is supplied. [Opera customization](https://help.opera.com/en/latest/customization/). |
 | Safari | No compatible native color-theme route established in this investigation. A website extension would be a different product and is not substituted here. |
 | Mobile browsers and clients | No desktop artifact is presented as a mobile-native theme. Keep each mobile platform's actual appearance capabilities separate. |

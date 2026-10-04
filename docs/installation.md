@@ -23,7 +23,7 @@ python build.py --tokens tokens.json --output dist
 python build.py --tokens tokens.json --output dist --check
 ```
 
-The first command generates all four theme downloads. The second regenerates into a temporary staging directory and compares every output byte without rewriting `dist`. Both commands operate on files only. Neither installs a theme, opens an application or publishes anything.
+The first command generates thirteen distinct download files for seventeen choices. The second regenerates into a temporary staging directory and compares every output byte without rewriting `dist`. Both commands operate on files only. Neither installs a theme, opens an application or publishes anything.
 
 The output includes `dist/artifact-manifest.json` and `dist/SHA256SUMS`. Keep them with their corresponding artifacts. The builder rejects an output tree containing foreign, modified or incomplete files instead of overwriting them. If a check reports a difference after a source edit, build into a new output directory and inspect the change. Do not manually patch generated CSS or manifests.
 
@@ -59,6 +59,16 @@ Installing the other package should switch the active theme in that profile. Con
 Keep the installation folder separate from generated output. During the recorded native test, the loaded theme directory acquired `Cached Theme.pak`. The build validator correctly rejected that extra file. Do not delete files from a live theme installation or weaken the validator to make a rebuild pass. Build to a fresh output directory when the original is in use.
 
 These themes do not recolor ordinary websites, replace the new-tab page, change search or select a browser font. Chrome derives some component colors itself. A readable preview webpage does not prove that address-bar suggestions or inactive windows render correctly.
+
+## Other desktop browser candidates
+
+The [platform guide](platform-portability.md) explains the source mappings, versions and unverified native behavior. Keep every native check separately authorized and isolated from your everyday browser.
+
+- Brave and Edge choices download the exact original Chrome ZIP. Their Chrome filenames are deliberate. Do not assume Chrome's limited acceptance transfers to either host. Record the branded browser version and its supported developer route before loading anything. Preserve existing native color selections and verify private-window recognition and restoration.
+- Vivaldi's documented ZIP route uses **Settings > Themes > Library > Open Theme** on desktop version 5.0 or later. Select one settings ZIP, inspect the live preview, and choose **Cancel** to discard it or **Install** only within an authorized test. Record existing theme, accent, transparency, schedule and private-window choices before testing. Check whether this minimal color-only export preserves them. Restore the previously selected theme and any test changes. Do not change global settings to hide an import failure.
+- The paired Opera GX ZIP must be extracted to a separate permanent test folder. Its official developer route uses **opera:extensions > Developer mode > Load unpacked**, then shows the candidate in **opera:mods**. Record existing mods, their enabled elements and native appearance first. Test Clair in Light and Obscur in Dark, then disable only this candidate and restore the recorded choices. Keep sounds, music, wallpaper, shaders and website styling absent. The host can limit or derive the supplied colors, so a matching webpage is not proof of the effective palette.
+
+None of these packages selects Inter in browser chrome, installs a new browser, changes security indicators or supplies mobile-native coverage. No Vivaldi theme-gallery approval, signed Opera GX CRX or GX Store listing is claimed. Stop on a native rejection and retain the exact error rather than changing policy, signatures or your everyday configuration.
 
 ## If something looks wrong
 

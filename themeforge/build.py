@@ -18,6 +18,8 @@ from .chrome import build_theme
 from .equicord import render_theme
 from .discord_clients import CLIENTS, render_client_theme
 from .firefox import COLOR_TOKENS as FIREFOX_COLORS, theme_manifest as firefox_manifest
+from .vivaldi import COLOR_TOKENS as VIVALDI_COLORS, theme_id as vivaldi_id, theme_settings as vivaldi_settings
+from .opera_gx import package_icon as gx_icon, theme_manifest as gx_manifest
 from .legal import license_comment, license_text
 from .tokens import load
 
@@ -30,6 +32,7 @@ SHA = re.compile(r"[0-9a-f]{64}\Z")
 # The existing Chrome and Equicord release remains byte-identical at 0.1.1.
 # New adapters have their own version until a deliberate family release.
 PORTABILITY_VERSION = "0.2.0"
+BROWSER_VERSION = "0.3.0"
 
 
 def _digest(payload: bytes) -> str:
@@ -151,12 +154,16 @@ def _review_payloads(files: dict[str, bytes]) -> None:
     expected |= {f"equicord/{name}.theme.css" for name in ("Clair", "Obscur")}
     expected |= {f"firefox/{name}/{file}" for name in ("clair", "obscur") for file in ("manifest.json", "LICENSE.txt")}
     expected |= {f"{client}/{name}-{label}.theme.css" for client, label in CLIENTS.items() for name in ("Clair", "Obscur")}
+    expected |= {f"vivaldi/{name}/settings.json" for name in ("clair", "obscur")}
+    expected |= {"vivaldi/LICENSE.txt", "opera-gx/manifest.json", "opera-gx/icon512.png", "opera-gx/LICENSE.txt"}
     if set(files) != expected:
         raise ValueError("Generated payload contains missing or unexpected files")
     for path, payload in files.items():
         if path.endswith(".png"):
             if not payload.startswith(b"\x89PNG\r\n\x1a\n"):
-                raise ValueError("Chrome icon is not a PNG")
+                raise ValueError("Theme icon is not a PNG")
+            if path == "opera-gx/icon512.png" and payload[8:24] != b"\x00\x00\x00\rIHDR\x00\x00\x02\x00\x00\x00\x02\x00":
+                raise ValueError("GX package icon must declare 512 by 512 pixels")
             continue
         text = payload.decode("utf-8")
         if re.search(r"(?:file://|(?<![A-Za-z0-9])[A-Za-z]:[\\/]|\\\\[A-Za-z])", text):
@@ -168,7 +175,44 @@ def _review_payloads(files: dict[str, bytes]) -> None:
                 raise ValueError("CSS must retain the complete canonical license comment")
         elif path.endswith("/LICENSE.txt"):
             if text != license_text():
-                raise ValueError("Chrome package must retain the complete canonical license")
+                raise ValueError("Theme package must retain the complete canonical license")
+        elif path.startswith("vivaldi/"):
+            settings = json.loads(text)
+            if set(settings) != {"engineVersion", "id", "name", "version", *VIVALDI_COLORS}:
+                raise ValueError("Vivaldi settings contain unexpected non-color fields")
+            name = "Clair" if path == "vivaldi/clair/settings.json" else "Obscur"
+            if (settings["name"] != name or settings["id"] != vivaldi_id(name)
+                    or type(settings["engineVersion"]) is not int or settings["engineVersion"] != 1
+                    or type(settings["version"]) is not int or settings["version"] != 1):
+                raise ValueError("Vivaldi identity and integer export revisions are invalid")
+            if any(not isinstance(settings[field], str) or not re.fullmatch(r"#[0-9a-f]{6}", settings[field])
+                   for field in VIVALDI_COLORS):
+                raise ValueError("Vivaldi colors must be literal six-digit hex values")
+        elif path == "opera-gx/manifest.json":
+            manifest = json.loads(text)
+            if set(manifest) != {"manifest_version", "name", "version", "description", "developer", "icons", "mod"}:
+                raise ValueError("GX package contains unexpected manifest capabilities")
+            if (manifest["manifest_version"] != 3 or manifest["name"] != "Clair and Obscur"
+                    or manifest["version"] != BROWSER_VERSION
+                    or manifest["developer"] != {"name": "T92T1914"}
+                    or manifest["icons"] != {"512": "icon512.png"}):
+                raise ValueError("GX identity or packaged icon is invalid")
+            mod = manifest["mod"]
+            if (set(mod) != {"schema_version", "license", "payload"}
+                    or mod["schema_version"] != 1 or mod["license"] != "LICENSE.txt"
+                    or set(mod["payload"]) != {"theme"}):
+                raise ValueError("GX payload must contain only local color hints")
+            modes = mod["payload"]["theme"]
+            if set(modes) != {"light", "dark"}:
+                raise ValueError("GX requires both light and dark appearances")
+            for colors in modes.values():
+                if set(colors) != {"gx_accent", "gx_secondary_base"}:
+                    raise ValueError("GX appearance contains unsupported hints")
+                for hint in colors.values():
+                    if (set(hint) != {"h", "s", "l"}
+                            or any(type(hint[key]) is not int or not 0 <= hint[key] <= limit
+                                   for key, limit in (("h", 359), ("s", 100), ("l", 100)))):
+                        raise ValueError("GX HSL hints must be bounded integers")
         elif path.startswith("firefox/"):
             manifest = json.loads(text)
             if set(manifest) != {"manifest_version", "name", "version", "author", "description", "browser_specific_settings", "theme"}:
@@ -210,10 +254,21 @@ def _generate(document: dict, stage: Path) -> dict:
         native.mkdir(parents=True)
         (native / "manifest.json").write_bytes(_json_bytes(firefox_manifest(name, document["themes"][name], PORTABILITY_VERSION)))
         (native / "LICENSE.txt").write_text(license_text(), encoding="utf-8", newline="\n")
+        native = stage / "vivaldi" / name.lower()
+        native.mkdir(parents=True)
+        (native / "settings.json").write_bytes(_json_bytes(vivaldi_settings(name, document["themes"][name])))
         for client, label in CLIENTS.items():
             target = stage / client / f"{name}-{label}.theme.css"
             target.parent.mkdir(exist_ok=True)
             target.write_bytes(render_client_theme(client, name, document["themes"][name], PORTABILITY_VERSION).encode("utf-8"))
+    # Vivaldi's documented color-only ZIP contains one JSON file. Its original
+    # source grant remains alongside the unpacked settings and in the preview.
+    (stage / "vivaldi" / "LICENSE.txt").write_text(license_text(), encoding="utf-8", newline="\n")
+    native = stage / "opera-gx"
+    native.mkdir()
+    (native / "manifest.json").write_bytes(_json_bytes(gx_manifest(document["themes"], BROWSER_VERSION)))
+    (native / "icon512.png").write_bytes(gx_icon(document["themes"]))
+    (native / "LICENSE.txt").write_text(license_text(), encoding="utf-8", newline="\n")
     files, _ = _inventory(stage)
     _review_payloads(files)
     downloads = []
@@ -228,19 +283,30 @@ def _generate(document: dict, stage: Path) -> dict:
         # Edge uses the original Chromium artifact. An alias is not a native pass.
         downloads.append({"name": name, "platform": "edge", "path": path,
                           "kind": "chromium-theme-zip", "version": version, "native_acceptance": "unverified"})
+        downloads.append({"name": name, "platform": "brave", "path": path,
+                          "kind": "chromium-theme-zip", "version": version, "native_acceptance": "unverified"})
         native = {key.split("/", 2)[2]: data for key, data in files.items() if key.startswith(f"firefox/{name.lower()}/")}
         path = f"artifacts/{name}-Firefox-{PORTABILITY_VERSION}.xpi"
         files[path] = _zip_bytes(native)
         downloads.append({"name": name, "platform": "firefox", "path": path,
                           "kind": "unsigned-static-theme-xpi", "version": PORTABILITY_VERSION, "native_acceptance": "unverified"})
+        path = f"artifacts/{name}-Vivaldi-{BROWSER_VERSION}.zip"
+        files[path] = _zip_bytes({"settings.json": files[f"vivaldi/{name.lower()}/settings.json"]})
+        downloads.append({"name": name, "platform": "vivaldi", "path": path,
+                          "kind": "shareable-settings-zip", "version": BROWSER_VERSION, "native_acceptance": "unverified"})
         for client, label in CLIENTS.items():
             downloads.append({"name": name, "platform": client, "path": f"{client}/{name}-{label}.theme.css",
                               "kind": "local-theme-css", "version": PORTABILITY_VERSION, "native_acceptance": "unverified"})
+    path = f"artifacts/Clair-Obscur-OperaGX-{BROWSER_VERSION}.zip"
+    files[path] = _zip_bytes({key.split("/", 1)[1]: data for key, data in files.items() if key.startswith("opera-gx/")})
+    downloads.append({"name": "Clair and Obscur", "platform": "opera-gx", "path": path,
+                      "kind": "paired-color-hints-zip", "version": BROWSER_VERSION, "native_acceptance": "unverified"})
     manifest = {
         "schema_version": 1,
         "generator": OWNER,
         "version": version,
         "adapter_version": PORTABILITY_VERSION,
+        "browser_adapter_version": BROWSER_VERSION,
         "tokens_sha256": _digest(_json_bytes(document)),
         "files": [{"path": name, "sha256": _digest(data), "bytes": len(data)} for name, data in sorted(files.items())],
         "downloads": downloads,
@@ -399,6 +465,7 @@ def main(argv: list[str] | None = None) -> int:
     except (OSError, ValueError, TypeError) as error:
         notes = "".join(f"{note}\n" for note in getattr(error, "__notes__", ()))
         parser.exit(1, f"Build failed: {error}\n{notes}")
-    print(f"{'Verified' if args.check else 'Built'} {manifest['version']} with adapters {manifest['adapter_version']}: "
+    print(f"{'Verified' if args.check else 'Built'} {manifest['version']} with adapters {manifest['adapter_version']} "
+          f"and browsers {manifest['browser_adapter_version']}: "
           f"{len(manifest['downloads'])} download choices, {len(manifest['files'])} payload files")
     return 0
