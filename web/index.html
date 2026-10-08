@@ -87,6 +87,18 @@ preserve_native_scaling = True</code></pre>
         <p id="package-choice-status" class="muted" role="status">Choose a target to see its package and matching local guide.</p>
         <div id="package-choice-result" class="chooser-result" hidden></div>
       </div>
+      <div id="local-package-checker" class="paper package-checker" aria-labelledby="local-package-heading" hidden>
+        <h3 id="local-package-heading">Identify a package you already have</h3>
+        <p>Select one local theme package to compare its SHA-256 with the references captured in this preview. The filename does not determine a match. The file is read on your device and is not uploaded, stored or installed.</p>
+        <p id="local-package-bound" class="muted"></p>
+        <label for="local-package-file">Local package file</label>
+        <input id="local-package-file" type="file" aria-describedby="local-package-bound local-package-limits">
+        <div class="checker-actions"><button id="local-package-clear" type="button">Clear selected file</button></div>
+        <p id="local-package-selection"></p>
+        <p id="local-package-status" role="status">Select a package file to identify its matching local guides.</p>
+        <div id="local-package-result" class="checker-result" hidden></div>
+        <p id="local-package-limits" class="muted">A match identifies bytes matching this preview's captured SHA-256 reference. It does not authenticate the reference or file origin, establish a signature or native compatibility, or replace installation and restoration checks. Source archives and the complete preview kit have separate checksums and are outside this package check.</p>
+      </div>
       <nav class="platform-links" aria-label="Download platform"><a href="#chrome-downloads">Google Chrome</a><a href="#equicord-downloads">Equibop with Equicord</a><a href="#firefox-downloads">Firefox</a><a href="#edge-downloads">Microsoft Edge</a><a href="#brave-downloads">Brave</a><a href="#vivaldi-downloads">Vivaldi</a><a href="#opera-gx-downloads">Opera GX</a><a href="#vencord-downloads">Vencord</a><a href="#betterdiscord-downloads">BetterDiscord</a></nav>
       <div id="chrome-downloads" class="platform-group"><h3>Google Chrome</h3><p>Native browser colors. Chrome retains its own interface font and website styling.</p><div class="download-grid">{{CHROME_CARDS}}</div></div>
       <div id="equicord-downloads" class="platform-group" data-shared-limits="client-mod-limits"><h3>Equibop with Equicord</h3><p>Local CSS using installed Inter 400, 600 and 700 with genuine italics. Code, icons and language fallbacks retain their own fonts.</p><div class="download-grid">{{EQUICORD_CARDS}}</div></div>

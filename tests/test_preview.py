@@ -112,6 +112,57 @@ class PreviewTests(unittest.TestCase):
                 record = next(entry for entry in manifest['files'] if entry['path'] == path)
                 self.assertIn(record['sha256'], package)
 
+    def test_local_package_checker_uses_only_verified_card_sizes_and_existing_guide_hashes(self):
+        files = preview_files(ROOT, self.artifacts)
+        manifest = json.loads(files['downloads/artifact-manifest.json'])
+        records = {item['path']: item for item in manifest['files']}
+        with zipfile.ZipFile(io.BytesIO(files[PORTABLE_ARCHIVE])) as archive:
+            pages = (files['index.html'].decode(), archive.read('index.html').decode())
+        for page in pages:
+            cards = re.findall(r'<article id="([^"]+)" class="download-card" data-package-bytes="(\d+)".*?</article>',
+                               page, re.DOTALL)
+            self.assertEqual(len(cards), len(manifest['downloads']))
+            route_hashes = {}
+            sizes = []
+            for item in manifest['downloads']:
+                card_id = f'{item["platform"]}-paired' if item['platform'] == 'opera-gx' else f'{item["platform"]}-{item["name"].lower()}'
+                record = records[item['path']]
+                self.assertIn((card_id, str(record['bytes'])), cards)
+                sizes.append(record['bytes'])
+                for appearance in ('Clair', 'Obscur') if item['platform'] == 'opera-gx' else (item['name'],):
+                    anchor = guide_anchor(item['platform'], appearance)
+                    guide = re.search(rf'<div[^>]+id="{anchor}".*?</div>', page, re.DOTALL).group()
+                    self.assertIn(f'href="downloads/{item["path"]}"', guide)
+                    self.assertIn(f'<code>{record["sha256"]}</code>', guide)
+                    route_hashes[anchor] = record['sha256']
+            self.assertEqual(max(sizes), 14037)
+            self.assertEqual(len(route_hashes), 18)
+            self.assertEqual(len(set(route_hashes.values())), 13)
+            self.assertEqual({anchor for anchor, digest in route_hashes.items()
+                              if digest == route_hashes['guide-chrome-clair']},
+                             {'guide-chrome-clair', 'guide-edge-clair', 'guide-brave-clair'})
+            self.assertEqual({anchor for anchor, digest in route_hashes.items()
+                              if digest == route_hashes['guide-opera-gx-clair']},
+                             {'guide-opera-gx-clair', 'guide-opera-gx-obscur'})
+
+    def test_local_package_checker_is_hidden_until_initialized_with_static_manual_fallback(self):
+        files = preview_files(ROOT, self.artifacts)
+        with zipfile.ZipFile(io.BytesIO(files[PORTABLE_ARCHIVE])) as archive:
+            pages = (files['index.html'].decode(), archive.read('index.html').decode())
+        for page in pages:
+            checker = re.search(r'<div id="local-package-checker"[^>]+>', page).group()
+            self.assertIn(' hidden', checker)
+            control = re.search(r'<input id="local-package-file"[^>]+>', page).group()
+            self.assertIn('type="file"', control)
+            self.assertNotIn('multiple', control)
+            self.assertNotIn('accept=', control)
+            self.assertIn('role="status"', re.search(r'<p id="local-package-status"[^>]+>', page).group())
+            self.assertIn('does not authenticate the reference or file origin', page)
+            self.assertEqual(page.count('class="download-card"'), 17)
+            self.assertEqual(page.count('class="package-hash"'), 18)
+            self.assertIn('downloads/SHA256SUMS', page)
+            self.assertIn('<noscript>', page)
+
     def test_source_archive_contains_rebuild_inputs_without_runtime_state(self):
         with zipfile.ZipFile(io.BytesIO(preview_files(ROOT, self.artifacts)['source.zip'])) as archive:
             names = set(archive.namelist())
