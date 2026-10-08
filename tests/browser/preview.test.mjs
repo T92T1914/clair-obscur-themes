@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { before, after, test } from 'node:test';
 import { chromium, webkit } from 'playwright';
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, readFile, writeFile, mkdir, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile, mkdir, rename, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -25,9 +25,12 @@ function run(args) {
 before(async () => {
   temp = await mkdtemp(path.join(tmpdir(), 'clair-obscur-browser-'));
   const artifacts = path.join(temp, 'artifacts');
-  site = path.join(temp, 'site');
+  const generated = path.join(temp, 'generated', 'site');
+  site = path.join(temp, 'relocated', 'preview');
   run(['build.py', '--output', artifacts]);
-  run(['preview.py', '--artifacts', artifacts, '--output', site]);
+  run(['preview.py', '--artifacts', artifacts, '--output', generated]);
+  await mkdir(path.dirname(site));
+  await rename(generated, site);
   server = http.createServer(async (request, response) => {
     const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
     const target = path.resolve(site, '.' + (pathname === '/' ? '/index.html' : pathname));
@@ -51,7 +54,7 @@ before(async () => {
     chromiumSandbox: true, args: ['--mute-audio', '--disable-gpu'],
   };
   browser = await (engine === 'webkit' ? webkit : chromium).launch(launchOptions);
-  results.environment = { engine, browser: browser.version(), channel: launchOptions.channel, requestedLaunch: launchOptions, node: process.version, platform: process.platform, renderer: 'isolated headless page', nativeChromeFrameVerified: false, equibopVerified: false };
+  results.environment = { engine, browser: browser.version(), channel: launchOptions.channel, requestedLaunch: launchOptions, node: process.version, platform: process.platform, renderer: 'isolated headless page', relocatedPreview: true, nativeChromeFrameVerified: false, equibopVerified: false };
   let versionSession;
   try {
     versionSession = await browser.newBrowserCDPSession();
@@ -384,6 +387,68 @@ test('static delivery remains usable without JavaScript and internal links resol
     assert.deepEqual(consoleErrors, []);
     results.scenarios.push({ name: 'no-JavaScript palette comparison, grouped downloads and anchor navigation', status: 'passed' });
   } finally { await context.close(); }
+});
+
+test('relocated local guides cover every appearance by keyboard without external network or script', async () => {
+  for (const javaScriptEnabled of [true, false]) {
+    for (const width of [320, 390]) {
+      const { context, page, network, consoleErrors } = await pageFor({ javaScriptEnabled, viewport: { width, height: 844 } });
+      try {
+        const manifest = await (await context.request.get(origin + '/downloads/artifact-manifest.json')).json();
+        const records = new Map(manifest.files.map(item => [item.path, item]));
+        const links = page.locator('#downloads .guide-link');
+        assert.equal(await links.count(), 18, 'Two appearance links for the one paired Opera GX package');
+        const appearances = javaScriptEnabled ? ['Obscur', 'Clair'] : ['Obscur'];
+        for (const appearance of appearances) {
+          if (javaScriptEnabled) {
+            await page.getByRole('button', { name: appearance, exact: true }).focus();
+            await page.keyboard.press('Enter');
+            assert.equal(await page.locator('html').getAttribute('data-theme'), appearance);
+          }
+          for (const item of manifest.downloads) {
+            const names = item.platform === 'opera-gx' ? ['Clair', 'Obscur'] : [item.name];
+            const card = page.locator(`#${item.platform}-${item.platform === 'opera-gx' ? 'paired' : item.name.toLowerCase()}`);
+            await card.locator('a[download]').focus();
+            for (const name of names) {
+              // Tab moves from the exact download to its locally bundled guide.
+              await page.keyboard.press('Tab');
+              const anchor = `guide-${item.platform}-${name.toLowerCase()}`;
+              assert.equal(await page.evaluate(() => document.activeElement.getAttribute('href')), '#' + anchor);
+              await page.keyboard.press('Enter');
+              assert.equal(new URL(page.url()).hash, '#' + anchor);
+              const packageSection = page.locator('#' + anchor);
+              assert.ok(await packageSection.isVisible());
+              assert.equal(await page.evaluate(() => document.activeElement.id), anchor);
+              assert.equal(await packageSection.locator('a[download]').getAttribute('href'), 'downloads/' + item.path);
+              assert.ok((await packageSection.textContent()).includes('Package ' + item.version));
+              assert.ok((await packageSection.textContent()).includes(records.get(item.path).sha256));
+              const guide = page.locator('#guide-' + item.platform);
+              for (const heading of ['Prerequisites and status', 'Install', 'Switch', 'Remove and restore', 'Fonts', 'Troubleshooting']) {
+                assert.equal(await guide.getByRole('heading', { name: heading, exact: true }).count(), 1);
+              }
+              const bounds = await guide.evaluate(node => ({ left: node.getBoundingClientRect().left, right: node.getBoundingClientRect().right, width: innerWidth }));
+              assert.ok(bounds.left >= -1 && bounds.right <= bounds.width + 1, JSON.stringify(bounds));
+              // Resume from this card for the second appearance of the paired file.
+              await card.locator(`a.guide-link[href="#${anchor}"]`).focus();
+            }
+          }
+          const geometry = await page.evaluate(() => ({ width: innerWidth, document: document.documentElement.scrollWidth }));
+          assert.ok(geometry.document <= geometry.width + 1, JSON.stringify(geometry));
+        }
+        for (const client of ['vencord', 'betterdiscord']) {
+          const fontLink = page.locator(`#guide-${client} a[href="#guide-client-fonts"]`);
+          await fontLink.focus();
+          await page.keyboard.press('Enter');
+          assert.equal(new URL(page.url()).hash, '#guide-client-fonts');
+          assert.match(await page.locator('#guide-client-fonts').textContent(), /system sans-serif fallbacks/);
+        }
+        assert.ok(network.every(url => url.startsWith(origin + '/')), 'Essential guidance cannot require external requests');
+        assert.deepEqual(consoleErrors, []);
+        assert.deepEqual(failures, []);
+        results.scenarios.push({ name: 'relocated complete local target/appearance guides', status: 'passed', width, javaScriptEnabled, pageAppearances: appearances, guideAppearances: 18, externalNetwork: 'blocked', nativeAppsVerified: false });
+      } finally { await context.close(); }
+    }
+  }
 });
 
 test('new desktop browser choices remain distinct and readable on a phone', async () => {

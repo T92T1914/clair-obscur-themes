@@ -15,6 +15,7 @@ from themeforge.build import (
     _safe_destination, _verify_owned, _zip_bytes, build_release,
 )
 from themeforge.equicord import FACES
+from themeforge.guides import guide_anchor, render_guides
 from themeforge.legal import normalize_license
 from themeforge.tokens import load
 
@@ -139,11 +140,15 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
         label, kind = labels[platform], kinds[platform]
         version = download['version']
         record = next(r for r in manifest['files'] if r['path'] == path)
+        appearances = ('Clair', 'Obscur') if platform == 'opera-gx' else (name,)
+        guide_links = ' '.join(
+            f'<a class="guide-link" href="#{guide_anchor(platform, appearance)}">'
+            f'{appearance} installation, switching and removal</a>' for appearance in appearances)
         groups[platform].append(
             f'<article id="{platform}-{"paired" if platform == "opera-gx" else name.lower()}" class="download-card"><p class="eyebrow">Preview {version}</p>'
             f'<h4>{name}</h4><a class="button" download href="downloads/{path}">'
             f'Download {name} for {label}</a><small>{kind}, {record["bytes"]:,} bytes. '
-            'Native acceptance pending.</small></article>'
+            f'Native acceptance pending.</small><p>{guide_links}</p></article>'
         )
     sources = source_files(root)
     if _digest(_json_bytes(json.loads(sources['tokens.json'].decode('utf-8')))) != tokens_digest:
@@ -174,7 +179,8 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
                               else f'Based on {revision_link} with local source changes.')
     text = (files['index.html'].decode().replace('{{VERSION}}', html.escape(version))
             .replace('{{RELEASE_URL}}', html.escape(release_url, quote=True))
-            .replace('{{SOURCE_DESCRIPTION}}', source_description))
+            .replace('{{SOURCE_DESCRIPTION}}', source_description)
+            .replace('{{LOCAL_GUIDES}}', render_guides(sources['docs/installation.md'], manifest)))
     for platform, cards in groups.items():
         text = text.replace('{{' + platform.upper().replace('-', '_') + '_CARDS}}', '\n'.join(cards))
     files['index.html'] = text.encode()

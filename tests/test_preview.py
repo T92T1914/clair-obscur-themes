@@ -1,6 +1,8 @@
 import hashlib
+from html.parser import HTMLParser
 import io
 import json
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -12,6 +14,21 @@ import zipfile
 
 from preview import ROOT, build_preview, preview_files, source_files, source_identity
 from themeforge.build import build_release
+from themeforge.guides import GUIDE_HEADINGS, JOURNEY_HEADINGS, guide_anchor, render_guides
+
+
+class PageLinks(HTMLParser):
+    def __init__(self, text):
+        super().__init__()
+        self.ids, self.links = [], []
+        self.feed(text)
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if 'id' in attrs:
+            self.ids.append(attrs['id'])
+        if tag == 'a':
+            self.links.append(attrs)
 
 
 class PreviewTests(unittest.TestCase):
@@ -53,6 +70,70 @@ class PreviewTests(unittest.TestCase):
         (self.artifacts / 'equicord' / 'Clair.theme.css').write_text('changed')
         with self.assertRaisesRegex(ValueError, 'changed'):
             preview_files(ROOT, self.artifacts)
+
+    def test_all_download_appearances_have_complete_local_guides_and_exact_packages(self):
+        files = preview_files(ROOT, self.artifacts)
+        page = files['index.html'].decode()
+        parsed = PageLinks(page)
+        manifest = json.loads(files['downloads/artifact-manifest.json'])
+        records = {item['path']: item for item in manifest['files']}
+        self.assertEqual(len(parsed.ids), len(set(parsed.ids)), 'Duplicate page anchors')
+        for platform, heading in GUIDE_HEADINGS.items():
+            body = re.search(rf'<article[^>]+id="guide-{platform}".*?</article>', page, re.DOTALL).group()
+            self.assertIn(heading.replace('&', '&amp;'), body)
+            for required in JOURNEY_HEADINGS:
+                self.assertIn(f'<h4>{required}</h4>', body)
+        for item in manifest['downloads']:
+            appearances = ('Clair', 'Obscur') if item['platform'] == 'opera-gx' else (item['name'],)
+            for appearance in appearances:
+                anchor = guide_anchor(item['platform'], appearance)
+                self.assertIn(anchor, parsed.ids)
+                self.assertTrue(any(link.get('class') == 'guide-link' and link['href'] == '#' + anchor
+                                    for link in parsed.links))
+                package = re.search(rf'<div[^>]+id="{anchor}".*?</div>', page, re.DOTALL).group()
+                self.assertIn(f'Package {item["version"]}.', package)
+                self.assertIn(f'href="downloads/{item["path"]}"', package)
+                self.assertIn(records[item['path']]['sha256'], package)
+        self.assertIn('installation-only native evidence', page)
+        self.assertIn('Full client coverage', page)
+        self.assertIn('unsigned static-theme candidates', page)
+        self.assertIn('Upload Theme', page)
+        self.assertIn('userscript does not support Themes', page)
+        self.assertIn('one paired candidate', page)
+
+    def test_relocated_static_guides_have_resolvable_local_links_without_script(self):
+        generated, relocated = self.base / 'generated', self.base / 'relocated' / 'preview'
+        build_preview(ROOT, self.artifacts, generated)
+        relocated.parent.mkdir()
+        generated.rename(relocated)
+        page = (relocated / 'index.html').read_text(encoding='utf-8')
+        parsed = PageLinks(page)
+        self.assertIn('instructions remain available below', page)
+        self.assertIn('without JavaScript or a network connection', page)
+        for link in parsed.links:
+            href = link.get('href', '')
+            if href.startswith('#'):
+                self.assertIn(href[1:], parsed.ids)
+            elif not href.startswith('https://'):
+                target = (relocated / href).resolve()
+                self.assertTrue(target.is_relative_to(relocated.resolve()), href)
+                self.assertTrue(target.is_file(), href)
+        self.assertIn('id="guide-client-fonts"', page)
+        self.assertNotIn('{{', page)
+
+    def test_guide_renderer_escapes_text_and_refuses_active_or_file_links(self):
+        source = (ROOT / 'docs/installation.md').read_bytes()
+        manifest = json.loads((self.artifacts / 'artifact-manifest.json').read_bytes())
+        marker = b'Use standard desktop Google Chrome.'
+        escaped = render_guides(source.replace(marker, b'Use <script>alert(1)</script> as plain text.'), manifest)
+        self.assertIn('&lt;script&gt;alert(1)&lt;/script&gt;', escaped)
+        self.assertNotIn('<script>', escaped)
+        for scheme in (b'javascript:alert', b'file:///private', b'data:text/plain,test'):
+            with self.subTest(scheme=scheme):
+                changed = source.replace(marker, b'Use [an unsupported link](' + scheme + b').')
+                with self.assertRaisesRegex(ValueError, 'Unsupported installation-guide link'):
+                    render_guides(changed, manifest)
+        self.assertEqual(render_guides(source, manifest), render_guides(source.replace(b'\n', b'\r\n'), manifest))
 
     def test_source_download_rebuilds_identical_themes_in_an_isolated_directory(self):
         isolated = self.base / 'source'
@@ -176,6 +257,33 @@ class PreviewTokenSnapshotTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Token snapshot'):
                 build_preview(self.root, self.artifacts, self.output)
         self.assertFalse(self.output.exists())
+
+    def test_guide_and_source_archive_use_one_captured_document_even_after_live_edit(self):
+        path = self.root / 'docs' / 'installation.md'
+        captured = path.read_bytes().replace(b'Use standard desktop Google Chrome.', b'Captured Chrome prerequisite.')
+        path.write_bytes(captured)
+
+        def change_after_capture(root):
+            sources = source_files(root)
+            path.write_bytes(captured.replace(b'Captured Chrome prerequisite.', b'Later live Chrome prerequisite.'))
+            return sources
+
+        with patch('preview.source_files', side_effect=change_after_capture):
+            files = preview_files(self.root, self.artifacts)
+        self.assertIn(b'Captured Chrome prerequisite.', files['index.html'])
+        self.assertNotIn(b'Later live Chrome prerequisite.', files['index.html'])
+        with zipfile.ZipFile(io.BytesIO(files['source.zip'])) as archive:
+            self.assertEqual(archive.read('docs/installation.md'), captured)
+
+    def test_missing_or_incomplete_guide_is_refused_before_output(self):
+        path = self.root / 'docs' / 'installation.md'
+        original = path.read_bytes()
+        for changed in (original.replace(b'## Brave\n', b'## Removed Brave\n'),
+                        original.replace(b'### Troubleshooting\n', b'### Details\n', 1)):
+            path.write_bytes(changed)
+            with self.assertRaisesRegex(ValueError, 'Missing installation guide|Incomplete installation guide'):
+                build_preview(self.root, self.artifacts, self.output)
+            self.assertFalse(self.output.exists())
 
     def test_token_change_during_source_capture_cannot_publish_unmatched_source(self):
         def change_before_capture(root):

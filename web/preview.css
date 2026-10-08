@@ -58,6 +58,11 @@ details p { padding-top: .75rem; }
 .platform-links { display: flex; flex-wrap: wrap; gap: 1rem 2rem; margin-block: 1.5rem; }
 .platform-group { scroll-margin-top: 1rem; margin-top: 2.5rem; }
 .download-card small { display: block; margin-top: .75rem; color: var(--muted); }
+.guide-link { display: block; margin-top: .75rem; }
+.local-guide { margin-block: 1.5rem; scroll-margin-top: 1rem; }
+.guide-package { margin-block: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--divider); scroll-margin-top: 1rem; }
+.local-guide p, .local-guide li { overflow-wrap: anywhere; }
+.package-hash { font-size: .875rem; }
 .limits { max-width: 70ch; }
 li { padding-left: .2rem; margin-bottom: .7rem; }
 ol { padding-left: 1.3rem; }
