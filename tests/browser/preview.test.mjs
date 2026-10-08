@@ -389,6 +389,58 @@ test('static delivery remains usable without JavaScript and internal links resol
   } finally { await context.close(); }
 });
 
+async function waitForGuideDestination(page, anchor, timeout = 2000) {
+  // Keyboard dispatch can finish before the fragment navigation is observed.
+  // Neither a matching URL alone nor repaired focus proves the keyboard path.
+  await page.waitForURL(url => url.hash === '#' + anchor, { timeout, waitUntil: 'commit' });
+  const focused = await page.waitForFunction(id => document.activeElement?.id === id, anchor, { timeout });
+  await focused.dispose();
+}
+
+test('guide destination wait admits delayed navigation and focus without an immediate-read assumption', async () => {
+  const { context, page } = await pageFor();
+  try {
+    await page.setContent('<a id="trigger" href="#destination">Guide</a><section id="destination" tabindex="-1">Destination</section>');
+    // Hold the fixture transition behind explicit releases, not a timer.
+    await page.locator('#trigger').evaluate(node => node.addEventListener('click', event => event.preventDefault()));
+    await page.locator('#trigger').focus();
+    await page.keyboard.press('Enter');
+    assert.throws(() => assert.equal(new URL(page.url()).hash, '#destination'), { code: 'ERR_ASSERTION' });
+    let settled = false;
+    const destination = waitForGuideDestination(page, 'destination').then(
+      () => { settled = true; return { error: null }; },
+      error => ({ error }),
+    );
+    await page.evaluate(() => history.pushState(null, '', '#destination'));
+    await page.waitForURL(url => url.hash === '#destination', { timeout: 2000, waitUntil: 'commit' });
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'trigger');
+    assert.equal(settled, false, 'Correct fragment without destination focus must remain pending');
+    await page.locator('#destination').focus();
+    const outcome = await destination;
+    if (outcome.error) throw outcome.error;
+    assert.equal(new URL(page.url()).hash, '#destination');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'destination');
+  } finally { await context.close(); }
+});
+
+test('guide destination wait rejects absent navigation, a wrong fragment and wrong focus', async () => {
+  for (const scenario of ['absent navigation', 'wrong fragment', 'wrong focus']) {
+    const { context, page } = await pageFor();
+    try {
+      await page.setContent('<a id="trigger" href="#destination">Guide</a><section id="destination" tabindex="-1">Destination</section>');
+      await page.locator('#trigger').focus();
+      if (scenario === 'wrong fragment') {
+        await page.evaluate(() => history.pushState(null, '', '#other'));
+        await page.locator('#destination').focus();
+      } else if (scenario === 'wrong focus') {
+        await page.evaluate(() => history.pushState(null, '', '#destination'));
+      }
+      await assert.rejects(waitForGuideDestination(page, 'destination', 250), { name: 'TimeoutError' }, scenario);
+      assert.equal(await page.evaluate(() => document.activeElement.id), scenario === 'wrong fragment' ? 'destination' : 'trigger');
+    } finally { await context.close(); }
+  }
+});
+
 test('relocated local guides cover every appearance by keyboard without external network or script', async () => {
   for (const javaScriptEnabled of [true, false]) {
     for (const width of [320, 390]) {
@@ -415,6 +467,7 @@ test('relocated local guides cover every appearance by keyboard without external
               const anchor = `guide-${item.platform}-${name.toLowerCase()}`;
               assert.equal(await page.evaluate(() => document.activeElement.getAttribute('href')), '#' + anchor);
               await page.keyboard.press('Enter');
+              await waitForGuideDestination(page, anchor);
               assert.equal(new URL(page.url()).hash, '#' + anchor);
               const packageSection = page.locator('#' + anchor);
               assert.ok(await packageSection.isVisible());
@@ -439,7 +492,9 @@ test('relocated local guides cover every appearance by keyboard without external
           const fontLink = page.locator(`#guide-${client} a[href="#guide-client-fonts"]`);
           await fontLink.focus();
           await page.keyboard.press('Enter');
+          await waitForGuideDestination(page, 'guide-client-fonts');
           assert.equal(new URL(page.url()).hash, '#guide-client-fonts');
+          assert.equal(await page.evaluate(() => document.activeElement.id), 'guide-client-fonts');
           assert.match(await page.locator('#guide-client-fonts').textContent(), /system sans-serif fallbacks/);
         }
         assert.ok(network.every(url => url.startsWith(origin + '/')), 'Essential guidance cannot require external requests');
