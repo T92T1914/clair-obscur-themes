@@ -5,7 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdtemp, readFile, writeFile, mkdir, rename, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import http from 'node:http';
 import crypto from 'node:crypto';
 import { assertRenderedFace } from './font-evidence.mjs';
@@ -504,6 +504,201 @@ test('relocated local guides cover every appearance by keyboard without external
       } finally { await context.close(); }
     }
   }
+});
+
+test('portable kit downloads, extracts and relocates into a complete offline file page', { timeout: 90000 }, async () => {
+  const archiveName = 'Clair-Obscur-portable-preview.zip';
+  const archivePath = path.join(temp, archiveName);
+  const checksumPath = path.join(temp, 'portable-SHA256SUMS');
+  const extracted = path.join(temp, 'downloaded-kit');
+  const relocated = path.join(temp, 'moved-kit', 'preview');
+  const { context, page } = await pageFor({ viewport: { width: 390, height: 844 } });
+  let publicManifest;
+  const downloadNames = {};
+  try {
+    publicManifest = await (await context.request.get(origin + '/site-manifest.json')).json();
+    for (const [selector, destination] of [['#portable-preview', archivePath], ['#portable-checksums', checksumPath]]) {
+      const [download] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }), page.locator(selector).click()]);
+      assert.equal(await download.failure(), null);
+      const suggested = download.suggestedFilename();
+      // Chrome may add .txt to an extensionless text/plain checksum response.
+      const acceptedNames = selector === '#portable-checksums'
+        ? ['portable-SHA256SUMS', 'portable-SHA256SUMS.txt'] : [archiveName];
+      assert.ok(acceptedNames.includes(suggested), suggested);
+      downloadNames[selector] = suggested;
+      await download.saveAs(destination);
+      assert.equal(page.url(), origin + '/');
+    }
+  } finally { await context.close(); }
+  const archiveBytes = await readFile(archivePath);
+  const checksum = await readFile(checksumPath, 'utf8');
+  const digest = crypto.createHash('sha256').update(archiveBytes).digest('hex');
+  assert.equal(checksum, `${digest}  ${archiveName}\n`);
+  if (evidence) {
+    await writeFile(path.join(evidence, archiveName), archiveBytes);
+    await writeFile(path.join(evidence, 'portable-SHA256SUMS'), checksum);
+  }
+  assert.deepEqual(publicManifest.distribution.portable_kit, {
+    archive: archiveName, checksums: 'portable-SHA256SUMS', sha256: digest, bytes: archiveBytes.length,
+  });
+  // Consume only the actual clicked download. Check ownership and hashes
+  // before extracting, then move that complete directory before opening it.
+  run(['-c', [
+    'import hashlib,json,pathlib,stat,sys,zipfile',
+    'archive_path,output=map(pathlib.Path,sys.argv[1:])',
+    'with zipfile.ZipFile(archive_path) as archive:',
+    ' names=archive.namelist()',
+    ' assert names==sorted(set(names)) and archive.testzip() is None',
+    ' for info in archive.infolist():',
+    '  name=pathlib.PurePosixPath(info.filename)',
+    '  assert not name.is_absolute() and ".." not in name.parts and "\\\\" not in info.filename',
+    '  assert stat.S_ISREG(info.external_attr >> 16)',
+    ' manifest=json.loads(archive.read("site-manifest.json"))',
+    ' assert set(manifest["files"])==set(names)-{"site-manifest.json"}',
+    ' assert "Clair-Obscur-portable-preview.zip" not in names and "portable-SHA256SUMS" not in names',
+    ' for name,digest in manifest["files"].items():',
+    '  assert hashlib.sha256(archive.read(name)).hexdigest()==digest',
+    ' archive.extractall(output)',
+  ].join('\n'), archivePath, extracted]);
+  await mkdir(path.dirname(relocated));
+  await rename(extracted, relocated);
+  const inner = JSON.parse(await readFile(path.join(relocated, 'site-manifest.json'), 'utf8'));
+  const packages = JSON.parse(await readFile(path.join(relocated, 'downloads', 'artifact-manifest.json'), 'utf8'));
+  const records = new Map(packages.files.map(item => [item.path, item]));
+  assert.deepEqual(inner.source, publicManifest.source);
+  assert.deepEqual(inner.release, publicManifest.release);
+  assert.deepEqual(inner.distribution, { kind: 'portable-kit' });
+  assert.equal(packages.downloads.length, 17);
+  assert.equal(new Set(packages.downloads.map(item => item.path)).size, 13);
+  const requests = [], errors = [], journeys = [], packageJourneys = [];
+  let closedContexts = 0;
+  async function filePage(options) {
+    const localContext = await browser.newContext({ serviceWorkers: 'block', ...options });
+    try {
+      const localPage = await localContext.newPage();
+      localPage.on('request', request => requests.push(request.url()));
+      localPage.on('pageerror', error => errors.push(String(error)));
+      localPage.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+      await localContext.route('**/*', route => {
+        if (new URL(route.request().url()).protocol !== 'file:') return route.abort();
+        return route.continue();
+      });
+      await localPage.goto(pathToFileURL(path.join(relocated, 'index.html')).href);
+      await localPage.evaluate(() => document.fonts.ready);
+      return { localContext, localPage };
+    } catch (error) { await localContext.close(); closedContexts++; throw error; }
+  }
+  for (const javaScriptEnabled of [true, false]) {
+    for (const width of [320, 390]) {
+      const { localContext, localPage } = await filePage({ javaScriptEnabled, viewport: { width, height: 844 } });
+      try {
+        assert.match(await localPage.locator('#portable-delivery').textContent(), /extracted portable preview/);
+        assert.equal(await localPage.locator('#portable-preview, #portable-checksums').count(), 0);
+        assert.equal(await localPage.locator('#downloads .download-card').count(), 17);
+        for (const [appearance, background] of [['Obscur', 'rgb(9, 9, 9)'], ['Clair', 'rgb(248, 247, 243)']]) {
+          assert.equal(await localPage.locator(`[data-palette="${appearance}"]`).evaluate(node => getComputedStyle(node).backgroundColor), background);
+          if (javaScriptEnabled) {
+            await localPage.getByRole('button', { name: appearance, exact: true }).focus();
+            await localPage.keyboard.press('Enter');
+            assert.equal(await localPage.locator('html').getAttribute('data-theme'), appearance);
+          }
+        }
+        if (javaScriptEnabled) {
+          await localPage.locator('#sample-button').focus();
+          await localPage.keyboard.press('Enter');
+          assert.match(await localPage.locator('#control-status').textContent(), /Control activated/);
+        }
+        let guideAppearances = 0;
+        for (const item of packages.downloads) {
+          const card = localPage.locator(`#${item.platform}-${item.platform === 'opera-gx' ? 'paired' : item.name.toLowerCase()}`);
+          await card.locator('a[download]').focus();
+          for (const name of item.platform === 'opera-gx' ? ['Clair', 'Obscur'] : [item.name]) {
+            const anchor = `guide-${item.platform}-${name.toLowerCase()}`;
+            await localPage.keyboard.press('Tab');
+            assert.equal(await localPage.evaluate(() => document.activeElement.getAttribute('href')), '#' + anchor);
+            await localPage.keyboard.press('Enter');
+            await waitForGuideDestination(localPage, anchor);
+            const section = localPage.locator('#' + anchor);
+            assert.ok(await section.isVisible());
+            assert.ok((await section.textContent()).includes(records.get(item.path).sha256));
+            assert.equal(await section.locator('.local-package-path code').textContent(), 'downloads/' + item.path);
+            const guide = localPage.locator('#guide-' + item.platform);
+            for (const heading of ['Prerequisites and status', 'Install', 'Switch', 'Remove and restore', 'Fonts', 'Troubleshooting']) {
+              assert.equal(await guide.getByRole('heading', { name: heading, exact: true }).count(), 1);
+            }
+            await card.locator(`a.guide-link[href="#${anchor}"]`).focus();
+            guideAppearances++;
+          }
+        }
+        assert.equal(guideAppearances, 18);
+        const geometry = await localPage.evaluate(() => ({ width: innerWidth, document: document.documentElement.scrollWidth }));
+        assert.ok(geometry.document <= geometry.width + 1, JSON.stringify(geometry));
+        journeys.push({ javaScriptEnabled, width, guideAppearances, scriptControls: javaScriptEnabled ? 'passed' : 'not applicable' });
+      } finally { await localContext.close(); closedContexts++; }
+    }
+    // Preserve deliberate palette journeys below Chromium's download burst
+    // threshold. Use every included choice in both modes. CSS opens as local
+    // text in Chrome, while these archive types produce actual downloads.
+    for (const name of ['Clair', 'Obscur', 'Clair and Obscur']) {
+      const { localContext, localPage } = await filePage({ javaScriptEnabled, viewport: { width: 390, height: 844 } });
+      try {
+        for (const item of packages.downloads.filter(item => item.name === name)) {
+          const link = localPage.locator(`#${item.platform}-downloads a[download][href="downloads/${item.path}"]`);
+          assert.match(await link.textContent(), /^Open included /);
+          const included = await readFile(path.join(relocated, 'downloads', ...item.path.split('/')));
+          const expected = records.get(item.path);
+          assert.equal(included.length, expected.bytes);
+          assert.equal(crypto.createHash('sha256').update(included).digest('hex'), expected.sha256);
+          await link.focus();
+          let method, matchingGuide = null;
+          try {
+            if (item.path.endsWith('.css')) {
+              const localUrl = pathToFileURL(path.join(relocated, 'downloads', ...item.path.split('/'))).href;
+              await Promise.all([localPage.waitForURL(localUrl, { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+              assert.equal(await localPage.locator('pre').textContent(), included.toString('utf8'));
+              await localPage.goBack();
+              assert.equal(await localPage.locator('#portable-delivery').count(), 1);
+              matchingGuide = `guide-${item.platform}-${item.name.toLowerCase()}`;
+              await localPage.locator(`#${item.platform}-${item.name.toLowerCase()} a.guide-link[href="#${matchingGuide}"]`).focus();
+              await localPage.keyboard.press('Enter');
+              await waitForGuideDestination(localPage, matchingGuide);
+              assert.ok(await localPage.locator('#' + matchingGuide).isVisible());
+              await localPage.goBack();
+              await localPage.waitForURL(pathToFileURL(path.join(relocated, 'index.html')).href, { timeout: 2000, waitUntil: 'commit' });
+              method = 'opened included CSS as exact text, returned and reached matching guide';
+            } else {
+              const [download] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+              assert.equal(await download.failure(), null);
+              assert.equal(download.suggestedFilename(), path.basename(item.path));
+              const chunks = [];
+              for await (const chunk of await download.createReadStream()) chunks.push(chunk);
+              assert.equal(crypto.createHash('sha256').update(Buffer.concat(chunks)).digest('hex'), expected.sha256);
+              method = 'saved included archive';
+            }
+          }
+          catch (error) {
+            failures.push({ scenario: 'portable included package', javaScriptEnabled, platform: item.platform,
+              path: item.path, pageUrl: localPage.url(), requests, errors, error: error.message });
+            throw new Error(`Portable ${item.platform} ${item.name} journey failed (${item.path}): ${error.message}`, { cause: error });
+          }
+          assert.equal(localPage.url(), pathToFileURL(path.join(relocated, 'index.html')).href);
+          packageJourneys.push({ javaScriptEnabled, platform: item.platform, path: item.path, sha256: expected.sha256, method, matchingGuide });
+        }
+      } finally { await localContext.close(); closedContexts++; }
+    }
+  }
+  assert.equal(packageJourneys.length, 34);
+  assert.equal(packageJourneys.filter(item => item.method === 'saved included archive').length, 22);
+  assert.equal(packageJourneys.filter(item => item.method === 'opened included CSS as exact text, returned and reached matching guide').length, 12);
+  assert.ok(requests.every(url => new URL(url).protocol === 'file:'), 'The extracted consumer must not request network resources');
+  assert.deepEqual(errors, []);
+  if (evidence) {
+    await writeFile(path.join(evidence, 'portable-site-manifest.json'), JSON.stringify(inner, null, 2) + '\n');
+  }
+  results.scenarios.push({ name: 'actual downloaded and relocated offline portable kit', status: 'passed',
+    archive: archiveName, sha256: digest, bytes: archiveBytes.length, downloadNames, source: inner.source,
+    protocol: 'file:', network: 'all external requests blocked', requests, errors, journeys, packageJourneys,
+    closedContexts, nativeAppsVerified: false });
 });
 
 test('new desktop browser choices remain distinct and readable on a phone', async () => {

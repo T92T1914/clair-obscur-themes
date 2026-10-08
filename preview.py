@@ -22,6 +22,17 @@ from themeforge.tokens import load
 ROOT = Path(__file__).resolve().parent
 WEB_ASSETS = frozenset({'index.html', 'preview.css', 'preview.js'})
 REPOSITORY_URL = 'https://github.com/T92T1914/clair-obscur-themes'
+PORTABLE_ARCHIVE = 'Clair-Obscur-portable-preview.zip'
+PORTABLE_CHECKSUMS = 'portable-SHA256SUMS'
+
+
+def site_manifest(files: dict[str, bytes], source: dict, release: dict, distribution: dict) -> bytes:
+    """Hash the actual directory members without a self-referential digest."""
+    return _json_bytes({
+        'schema_version': 2, 'generator': 'clair-obscur-preview',
+        'source': source, 'release': release, 'distribution': distribution,
+        'files': {name: _digest(data) for name, data in sorted(files.items())},
+    })
 
 
 def read_source(root: Path, path: Path) -> bytes:
@@ -216,13 +227,47 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
     files['release-SHA256SUMS'] = ''.join(
         f'{digest}  {name}\n' for name, digest in sorted(release_hashes.items())
     ).encode()
-    files['site-manifest.json'] = (json.dumps({
-        'schema_version': 2, 'generator': 'clair-obscur-preview',
-        'source': {**identity, 'archive': 'source.zip', 'sha256': source_digest},
-        'release': {'version': version, 'source_url': f'{release_url}/source.zip',
-                    'checksums_url': f'{release_url}/release-SHA256SUMS'},
-        'files': {name: hashlib.sha256(data).hexdigest() for name, data in sorted(files.items())},
-    }, indent=2, sort_keys=True) + '\n').encode()
+    source = {**identity, 'archive': 'source.zip', 'sha256': source_digest}
+    release = {'version': version, 'source_url': f'{release_url}/source.zip',
+               'checksums_url': f'{release_url}/release-SHA256SUMS'}
+    # Finish the extracted directory before hashing its external archive. Its
+    # own page has no download link to an archive deliberately absent inside it.
+    portable = dict(files)
+    portable_text = text.replace('{{PORTABLE_DELIVERY}}',
+        '<p id="portable-delivery" class="muted">This is the extracted portable preview. '
+        'Open <code>index.html</code> and keep the complete directory together when moving it. '
+        'Theme files are already included at the local paths shown beside each package. '
+        'Use those files for the target procedure. A browser may save a local archive but '
+        'display a CSS file instead of downloading another copy. Return to this page after viewing it. '
+        'Palette specimens and target procedures remain local. '
+        'Online references need a network connection. '
+        '<a href="site-manifest.json">Portable directory manifest</a>.</p>')
+    for path in sorted({item['path'] for item in manifest['downloads']}):
+        local_path = html.escape('downloads/' + path, quote=True)
+        pattern = rf'(<a\b[^>]*\bdownload\b[^>]*href="{re.escape(local_path)}"[^>]*>)([^<]*)(</a>)'
+        portable_text = re.sub(pattern, lambda match: (
+            match[1] + match[2].replace('Download ', 'Open included ', 1) + match[3]
+            + f'<small class="local-package-path">Included file: <code>{local_path}</code>.</small>'
+        ), portable_text)
+    portable['index.html'] = portable_text.encode()
+    portable['site-manifest.json'] = site_manifest(portable, source, release, {'kind': 'portable-kit'})
+    files[PORTABLE_ARCHIVE] = _zip_bytes(portable)
+    portable_digest = _digest(files[PORTABLE_ARCHIVE])
+    files[PORTABLE_CHECKSUMS] = f'{portable_digest}  {PORTABLE_ARCHIVE}\n'.encode()
+    files['index.html'] = text.replace('{{PORTABLE_DELIVERY}}',
+        f'<p id="portable-delivery" class="muted"><a id="portable-preview" href="{PORTABLE_ARCHIVE}" download>'
+        'Download the portable preview kit</a> <span aria-hidden="true">/</span> '
+        f'<a id="portable-checksums" href="{PORTABLE_CHECKSUMS}" download>Kit checksum</a>. '
+        'Extract the complete ZIP, then open <code>index.html</code>. Keep the extracted directory '
+        'together when moving it. The specimens, theme files and target procedures work offline. '
+        'The kit follows the current preview source and does not change theme package versions '
+        'or the original release.</p>').encode()
+    files['site-manifest.json'] = site_manifest(files, source, release, {
+        'kind': 'published-preview', 'portable_kit': {
+            'archive': PORTABLE_ARCHIVE, 'checksums': PORTABLE_CHECKSUMS,
+            'sha256': portable_digest, 'bytes': len(files[PORTABLE_ARCHIVE]),
+        },
+    })
     return files
 
 
@@ -255,7 +300,7 @@ def main():
     except (ValueError, OSError) as error:
         notes = ''.join(f'{note}\n' for note in getattr(error, '__notes__', ()))
         parser.exit(1, f'Preview build failed: {error}\n{notes}')
-    print('Built static specimen, platform download choices and source archive')
+    print('Built static specimen, platform downloads, source archive and portable preview kit')
 
 
 if __name__ == '__main__':
