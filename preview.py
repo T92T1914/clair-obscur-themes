@@ -191,6 +191,9 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
     text = (files['index.html'].decode().replace('{{VERSION}}', html.escape(version))
             .replace('{{RELEASE_URL}}', html.escape(release_url, quote=True))
             .replace('{{SOURCE_DESCRIPTION}}', source_description)
+            .replace('{{TARGET_OPTIONS}}', '\n'.join(
+                f'<option value="{html.escape(platform, quote=True)}">{html.escape(label)}</option>'
+                for platform, label in labels.items() if groups[platform]))
             .replace('{{LOCAL_GUIDES}}', render_guides(sources['docs/installation.md'], manifest)))
     for platform, cards in groups.items():
         text = text.replace('{{' + platform.upper().replace('-', '_') + '_CARDS}}', '\n'.join(cards))
