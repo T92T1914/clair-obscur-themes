@@ -397,6 +397,131 @@ async function waitForGuideDestination(page, anchor, timeout = 2000) {
   await focused.dispose();
 }
 
+async function checkPackageChooser(page, manifest, { delivery, textScale = 100 }) {
+  const requests = [], downloads = [], routes = [];
+  const onRequest = request => requests.push(request.url());
+  const onDownload = download => downloads.push(download.suggestedFilename());
+  page.on('request', onRequest);
+  page.on('download', onDownload);
+  try {
+    assert.ok(await page.locator('#package-chooser').isVisible());
+    assert.equal(await page.locator('#package-target').inputValue(), '');
+    assert.equal(await page.locator('#package-appearance').inputValue(), 'Obscur');
+    assert.ok(await page.locator('#package-choice-result').isHidden());
+    // Exercise native selects with actual keyboard input before the matrix.
+    await page.locator('#package-target').focus();
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Shift+Tab');
+    assert.equal(await page.locator('#package-target').evaluate(node => getComputedStyle(node).outlineWidth), '2px');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Tab');
+    assert.equal(await page.locator('#package-target').inputValue(), 'chrome');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Tab');
+    assert.equal(await page.locator('#package-appearance').inputValue(), 'Clair');
+    const selectedHref = await page.locator('#package-choice-file').getAttribute('href');
+    for (const readingAppearance of ['Obscur', 'Clair']) {
+      await page.getByRole('button', { name: readingAppearance, exact: true }).focus();
+      await page.keyboard.press('Enter');
+      assert.equal(await page.locator('#package-appearance').inputValue(), 'Clair');
+      assert.equal(await page.locator('#package-target').inputValue(), 'chrome');
+      assert.equal(await page.locator('#package-choice-file').getAttribute('href'), selectedHref);
+    }
+    const records = new Map(manifest.files.map(item => [item.path, item]));
+    for (const target of [...new Set(manifest.downloads.map(item => item.platform))]) {
+      for (const appearance of ['Clair', 'Obscur']) {
+        const item = manifest.downloads.find(item => item.platform === target && (target === 'opera-gx' || item.name === appearance));
+        const record = records.get(item.path);
+        const readingBefore = await page.locator('html').getAttribute('data-theme');
+        await page.locator('#package-target').selectOption(target);
+        await page.locator('#package-appearance').selectOption(appearance);
+        assert.equal(await page.locator('html').getAttribute('data-theme'), readingBefore);
+        const result = page.locator('#package-choice-result');
+        assert.ok(await result.isVisible());
+        assert.equal(await page.locator('#package-choice-file').getAttribute('href'), 'downloads/' + item.path);
+        assert.match(await page.locator('#package-choice-file').textContent(), delivery === 'portable' ? /^Open included / : /^Download /);
+        assert.equal(await result.locator('.package-choice-path code').textContent(), 'downloads/' + item.path);
+        const identity = await result.textContent();
+        assert.ok(identity.includes('Package ' + item.version));
+        assert.ok(identity.includes(record.sha256));
+        assert.ok(identity.includes('Native acceptance pending'));
+        assert.ok(identity.includes(await page.locator(`#${target}-downloads > p`).first().textContent()));
+        if (target === 'opera-gx') assert.match(identity, /pairs Clair Light with Obscur Dark/);
+        if (['equicord', 'vencord', 'betterdiscord'].includes(target)) assert.match(identity, /not Discord-endorsed/);
+        assert.match(await page.locator('#package-choice-status').textContent(), new RegExp('Selected ' + appearance));
+        const anchor = `guide-${target}-${appearance.toLowerCase()}`;
+        assert.equal(await page.locator('#package-choice-guide').getAttribute('href'), '#' + anchor);
+        await page.locator('#package-choice-guide').focus();
+        await page.keyboard.press('Enter');
+        await waitForGuideDestination(page, anchor);
+        assert.ok(await page.locator('#' + anchor).isVisible());
+        const geometry = await page.evaluate(() => ({ width: innerWidth, document: document.documentElement.scrollWidth }));
+        assert.ok(geometry.document <= geometry.width + 1, JSON.stringify({ textScale, ...geometry }));
+        routes.push({ target, appearance, path: item.path, guide: anchor, sha256: record.sha256 });
+      }
+    }
+    assert.equal(routes.length, 18);
+    assert.equal(new Set(routes.map(route => route.path)).size, 13);
+    assert.deepEqual(downloads, [], 'Selection and guide routing cannot start downloads');
+    assert.deepEqual(requests, [], 'Selection and local guide routing cannot request resources');
+    await page.locator('#package-target').selectOption('');
+    assert.ok(await page.locator('#package-choice-result').isHidden());
+    assert.equal(await page.locator('#package-choice-file, #package-choice-guide').count(), 0);
+    assert.match(await page.locator('#package-choice-status').textContent(), /Choose a target/);
+    assert.equal(await page.locator('#downloads .download-card').count(), 17);
+    return { delivery, textScale, routes, nativeSelectKeyboard: 'passed', readingAppearanceIndependent: true,
+      selectionRequests: requests, selectionDownloads: downloads, explicitTargetReset: 'passed' };
+  } finally { page.off('request', onRequest); page.off('download', onDownload); }
+}
+
+test('explicit target and package appearance chooser preserves every route and static fallback', async () => {
+  for (const width of [320, 390]) {
+    for (const textScale of [100, 200]) {
+      const { context, page, consoleErrors } = await pageFor({ viewport: { width, height: 844 } });
+      try {
+        if (textScale === 200) await page.evaluate(() => document.documentElement.style.fontSize = '200%');
+        const manifest = await (await context.request.get(origin + '/downloads/artifact-manifest.json')).json();
+        const routing = await checkPackageChooser(page, manifest, { delivery: 'public', textScale });
+        assert.deepEqual(consoleErrors, []);
+        results.scenarios.push({ name: 'explicit public target/package-appearance chooser', status: 'passed', width, ...routing });
+      } finally { await context.close(); }
+    }
+  }
+  const { context, page, consoleErrors } = await pageFor({ viewport: { width: 390, height: 844 } });
+  try {
+    const manifest = await (await context.request.get(origin + '/downloads/artifact-manifest.json')).json();
+    for (const [target, appearance] of [['chrome', 'Clair'], ['equicord', 'Obscur']]) {
+      await page.locator('#package-target').selectOption(target);
+      await page.locator('#package-appearance').selectOption(appearance);
+      const item = manifest.downloads.find(item => item.platform === target && item.name === appearance);
+      await page.locator('#package-choice-file').focus();
+      const [download] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }), page.keyboard.press('Enter')]);
+      assert.equal(await download.failure(), null);
+      const chunks = [];
+      for await (const chunk of await download.createReadStream()) chunks.push(chunk);
+      const record = manifest.files.find(record => record.path === item.path);
+      assert.equal(crypto.createHash('sha256').update(Buffer.concat(chunks)).digest('hex'), record.sha256);
+      const anchor = `guide-${target}-${appearance.toLowerCase()}`;
+      await page.locator('#package-choice-guide').focus();
+      await page.keyboard.press('Enter');
+      await waitForGuideDestination(page, anchor);
+    }
+    assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: 'chooser public archive and CSS downloads with keyboard guide return', status: 'passed', choices: 2 });
+  } finally { await context.close(); }
+  const fallback = await pageFor({ javaScriptEnabled: false, viewport: { width: 320, height: 844 } });
+  try {
+    assert.ok(await fallback.page.locator('#package-chooser').isHidden());
+    assert.equal(await fallback.page.locator('#downloads .download-card').count(), 17);
+    assert.equal(await fallback.page.locator('#downloads .guide-link').count(), 18);
+    await fallback.page.locator('#edge-clair .guide-link').focus();
+    await fallback.page.keyboard.press('Enter');
+    await waitForGuideDestination(fallback.page, 'guide-edge-clair');
+    assert.deepEqual(fallback.consoleErrors, []);
+    results.scenarios.push({ name: 'chooser progressive enhancement keeps no-script catalog', status: 'passed', width: 320 });
+  } finally { await fallback.context.close(); }
+});
+
 test('guide destination wait admits delayed navigation and focus without an immediate-read assumption', async () => {
   const { context, page } = await pageFor();
   try {
@@ -570,7 +695,7 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
   assert.deepEqual(inner.distribution, { kind: 'portable-kit' });
   assert.equal(packages.downloads.length, 17);
   assert.equal(new Set(packages.downloads.map(item => item.path)).size, 13);
-  const requests = [], errors = [], journeys = [], packageJourneys = [];
+  const requests = [], errors = [], journeys = [], packageJourneys = [], chooserJourneys = [];
   let closedContexts = 0;
   async function filePage(options) {
     const localContext = await browser.newContext({ serviceWorkers: 'block', ...options });
@@ -595,6 +720,11 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
         assert.match(await localPage.locator('#portable-delivery').textContent(), /extracted portable preview/);
         assert.equal(await localPage.locator('#portable-preview, #portable-checksums').count(), 0);
         assert.equal(await localPage.locator('#downloads .download-card').count(), 17);
+        if (javaScriptEnabled) {
+          chooserJourneys.push({ width, ...await checkPackageChooser(localPage, packages, { delivery: 'portable' }) });
+        } else {
+          assert.ok(await localPage.locator('#package-chooser').isHidden());
+        }
         for (const [appearance, background] of [['Obscur', 'rgb(9, 9, 9)'], ['Clair', 'rgb(248, 247, 243)']]) {
           assert.equal(await localPage.locator(`[data-palette="${appearance}"]`).evaluate(node => getComputedStyle(node).backgroundColor), background);
           if (javaScriptEnabled) {
@@ -690,6 +820,35 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
   assert.equal(packageJourneys.length, 34);
   assert.equal(packageJourneys.filter(item => item.method === 'saved included archive').length, 22);
   assert.equal(packageJourneys.filter(item => item.method === 'opened included CSS as exact text, returned and reached matching guide').length, 12);
+  const chosen = await filePage({ javaScriptEnabled: true, viewport: { width: 390, height: 844 } });
+  try {
+    for (const [target, appearance] of [['chrome', 'Obscur'], ['equicord', 'Clair']]) {
+      await chosen.localPage.locator('#package-target').selectOption(target);
+      await chosen.localPage.locator('#package-appearance').selectOption(appearance);
+      const item = packages.downloads.find(item => item.platform === target && item.name === appearance);
+      const included = await readFile(path.join(relocated, 'downloads', ...item.path.split('/')));
+      await chosen.localPage.locator('#package-choice-file').focus();
+      if (item.path.endsWith('.css')) {
+        const fileUrl = pathToFileURL(path.join(relocated, 'downloads', ...item.path.split('/'))).href;
+        await Promise.all([chosen.localPage.waitForURL(fileUrl, { timeout: 5000 }), chosen.localPage.keyboard.press('Enter')]);
+        assert.equal(await chosen.localPage.locator('pre').textContent(), included.toString('utf8'));
+        await chosen.localPage.goBack();
+        await chosen.localPage.locator('#package-target').selectOption(target);
+        await chosen.localPage.locator('#package-appearance').selectOption(appearance);
+      } else {
+        const [download] = await Promise.all([chosen.localPage.waitForEvent('download', { timeout: 5000 }), chosen.localPage.keyboard.press('Enter')]);
+        assert.equal(await download.failure(), null);
+        const chunks = [];
+        for await (const chunk of await download.createReadStream()) chunks.push(chunk);
+        assert.deepEqual(Buffer.concat(chunks), included);
+      }
+      const anchor = `guide-${target}-${appearance.toLowerCase()}`;
+      await chosen.localPage.locator('#package-choice-guide').focus();
+      await chosen.localPage.keyboard.press('Enter');
+      await waitForGuideDestination(chosen.localPage, anchor);
+      chooserJourneys.push({ target, appearance, path: item.path, method: item.path.endsWith('.css') ? 'opened included CSS and returned to matching guide' : 'saved included archive and reached matching guide' });
+    }
+  } finally { await chosen.localContext.close(); closedContexts++; }
   assert.ok(requests.every(url => new URL(url).protocol === 'file:'), 'The extracted consumer must not request network resources');
   assert.deepEqual(errors, []);
   if (evidence) {
@@ -697,7 +856,7 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
   }
   results.scenarios.push({ name: 'actual downloaded and relocated offline portable kit', status: 'passed',
     archive: archiveName, sha256: digest, bytes: archiveBytes.length, downloadNames, source: inner.source,
-    protocol: 'file:', network: 'all external requests blocked', requests, errors, journeys, packageJourneys,
+    protocol: 'file:', network: 'all external requests blocked', requests, errors, journeys, packageJourneys, chooserJourneys,
     closedContexts, nativeAppsVerified: false });
 });
 

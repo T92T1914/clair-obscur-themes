@@ -21,6 +21,7 @@ class PageLinks(HTMLParser):
     def __init__(self, text):
         super().__init__()
         self.ids, self.links = [], []
+        self.select_options, self._select = {}, None
         self.feed(text)
 
     def handle_starttag(self, tag, attrs):
@@ -29,6 +30,15 @@ class PageLinks(HTMLParser):
             self.ids.append(attrs['id'])
         if tag == 'a':
             self.links.append(attrs)
+        if tag == 'select':
+            self._select = attrs.get('id')
+            self.select_options[self._select] = []
+        if tag == 'option' and self._select is not None:
+            self.select_options[self._select].append(attrs)
+
+    def handle_endtag(self, tag):
+        if tag == 'select':
+            self._select = None
 
 
 class PreviewTests(unittest.TestCase):
@@ -48,6 +58,59 @@ class PreviewTests(unittest.TestCase):
         release = json.loads(first['downloads/artifact-manifest.json'])
         for entry in release['files']:
             self.assertEqual(hashlib.sha256(first['downloads/' + entry['path']]).hexdigest(), entry['sha256'])
+
+    def test_chooser_has_explicit_target_and_independent_package_appearance_in_both_deliveries(self):
+        files = preview_files(ROOT, self.artifacts)
+        manifest = json.loads(files['downloads/artifact-manifest.json'])
+        targets = {item['platform'] for item in manifest['downloads']}
+        with zipfile.ZipFile(io.BytesIO(files[PORTABLE_ARCHIVE])) as archive:
+            pages = (files['index.html'], archive.read('index.html'))
+        for page_bytes in pages:
+            page = page_bytes.decode()
+            parsed = PageLinks(page)
+            options = parsed.select_options['package-target']
+            self.assertEqual(options[0]['value'], '')
+            self.assertIn('selected', options[0])
+            self.assertEqual({option['value'] for option in options[1:]}, targets)
+            self.assertEqual(len(options), len(targets) + 1)
+            self.assertEqual([option['value'] for option in options if 'selected' in option], [''])
+            appearances = parsed.select_options['package-appearance']
+            self.assertEqual({option['value'] for option in appearances}, {'Clair', 'Obscur'})
+            self.assertEqual([option['value'] for option in appearances if 'selected' in option], ['Obscur'])
+            chooser = re.search(r'<div id="package-chooser"[^>]+>', page).group()
+            self.assertIn(' hidden', chooser)
+            self.assertIn('Package appearance stays independent', page)
+            self.assertEqual(page.count('class="download-card"'), 17)
+            self.assertEqual(len([link for link in parsed.links if link.get('class') == 'guide-link']), 18)
+            self.assertNotIn('{{', page)
+
+    def test_chooser_catalog_preserves_alias_and_paired_routes_from_the_verified_manifest(self):
+        files = preview_files(ROOT, self.artifacts)
+        manifest = json.loads(files['downloads/artifact-manifest.json'])
+        routes = {}
+        for item in manifest['downloads']:
+            for appearance in ('Clair', 'Obscur') if item['platform'] == 'opera-gx' else (item['name'],):
+                anchor = f'guide-{item["platform"]}-{appearance.lower()}'
+                routes[item['platform'], appearance] = item['path'], anchor
+        self.assertEqual(len(routes), 18)
+        self.assertEqual(len({value[0] for value in routes.values()}), 13)
+        for appearance in ('Clair', 'Obscur'):
+            for alias in ('edge', 'brave'):
+                self.assertEqual(routes[alias, appearance][0], routes['chrome', appearance][0])
+                self.assertNotEqual(routes[alias, appearance][1], routes['chrome', appearance][1])
+        self.assertEqual(routes['opera-gx', 'Clair'][0], routes['opera-gx', 'Obscur'][0])
+        self.assertNotEqual(routes['opera-gx', 'Clair'][1], routes['opera-gx', 'Obscur'][1])
+        with zipfile.ZipFile(io.BytesIO(files[PORTABLE_ARCHIVE])) as archive:
+            pages = (files['index.html'].decode(), archive.read('index.html').decode())
+        for page in pages:
+            for (platform, appearance), (path, anchor) in routes.items():
+                card_id = f'{platform}-paired' if platform == 'opera-gx' else f'{platform}-{appearance.lower()}'
+                card = re.search(rf'<article id="{card_id}".*?</article>', page, re.DOTALL).group()
+                self.assertIn(f'href="downloads/{path}"', card)
+                self.assertIn(f'class="guide-link" href="#{anchor}"', card)
+                package = re.search(rf'<div[^>]+id="{anchor}".*?</div>', page, re.DOTALL).group()
+                record = next(entry for entry in manifest['files'] if entry['path'] == path)
+                self.assertIn(record['sha256'], package)
 
     def test_source_archive_contains_rebuild_inputs_without_runtime_state(self):
         with zipfile.ZipFile(io.BytesIO(preview_files(ROOT, self.artifacts)['source.zip'])) as archive:
