@@ -18,7 +18,10 @@ const evidence = process.env.THEME_EVIDENCE_DIR;
 const python = process.platform === 'win32' ? ['py', '-3.11', '-X', 'utf8'] : ['python3'];
 
 function run(args) {
-  const result = spawnSync(python[0], [...python.slice(1), ...args], { cwd: root, encoding: 'utf8', windowsHide: true });
+  const result = spawnSync(python[0], [...python.slice(1), ...args], {
+    cwd: root, encoding: 'utf8', windowsHide: true, timeout: 30000, maxBuffer: 4 * 1024 * 1024,
+  });
+  assert.ifError(result.error);
   assert.equal(result.status, 0, result.stdout + result.stderr);
 }
 
@@ -75,7 +78,7 @@ after(async () => {
 });
 
 async function pageFor(options = {}) {
-  const { missingFont = false, ...contextOptions } = options;
+  const { missingFont = false, setup, ...contextOptions } = options;
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, ...contextOptions });
   const page = await context.newPage();
   const network = [], consoleErrors = [];
@@ -96,6 +99,7 @@ async function pageFor(options = {}) {
       await route.fulfill({ contentType: 'text/css', body: original.replace('"Clair Obscur Inter", Inter,', '"Clair Obscur Inter",') });
     });
   }
+  if (setup) await setup(context, page);
   await page.goto(origin);
   await page.evaluate(() => document.fonts.ready);
   return { context, page, network, consoleErrors };
@@ -368,6 +372,7 @@ test('static delivery remains usable without JavaScript and internal links resol
   const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
   try {
     assert.equal(await page.locator('#downloads .download-card a[download]').count(), 17);
+    assert.ok(await page.locator('#local-package-checker').isHidden());
     assert.match(await page.locator('#downloads .status').textContent(), /preview builds/);
     assert.match(await page.locator('.hero .status').textContent(), /Full native acceptance remains open/);
     const acceptance = page.getByRole('link', { name: 'dated acceptance record', exact: true });
@@ -396,6 +401,354 @@ async function waitForGuideDestination(page, anchor, timeout = 2000) {
   const focused = await page.waitForFunction(id => document.activeElement?.id === id, anchor, { timeout });
   await focused.dispose();
 }
+
+async function packageCheckerState(page) {
+  return page.evaluate(() => {
+    function storageEntries(name) {
+      try { return Object.entries(window[name]).sort(([a], [b]) => a.localeCompare(b)); }
+      catch (error) { return { unavailable: error.name }; }
+    }
+    return { reading: document.documentElement.dataset.theme,
+      target: document.querySelector('#package-target').value,
+      appearance: document.querySelector('#package-appearance').value,
+      local: storageEntries('localStorage'), session: storageEntries('sessionStorage'), cookie: document.cookie };
+  });
+}
+
+async function waitForPackageState(page, state) {
+  const done = await page.waitForFunction(expected => document.querySelector('#local-package-checker').dataset.state === expected,
+    state, { timeout: 2000 });
+  await done.dispose();
+}
+
+async function checkLocalPackageIdentification(page, manifest, payloads, { delivery, textScale = 100 }) {
+  const requests = [], downloads = [], identified = [], guides = new Set();
+  const onRequest = request => requests.push(request.url());
+  const onDownload = download => downloads.push(download.suggestedFilename());
+  page.on('request', onRequest);
+  page.on('download', onDownload);
+  try {
+    assert.ok(await page.locator('#local-package-checker').isVisible());
+    await waitForPackageState(page, 'idle');
+    assert.equal(await page.locator('#local-package-status').getAttribute('role'), 'status');
+    const bound = Math.max(...manifest.downloads.map(item => manifest.files.find(record => record.path === item.path).bytes));
+    assert.match(await page.locator('#local-package-bound').textContent(), new RegExp(bound.toLocaleString('en-US')));
+    await page.locator('#package-target').selectOption('brave');
+    await page.locator('#package-appearance').selectOption('Clair');
+    await page.getByRole('button', { name: 'Clair', exact: true }).click();
+    const before = await packageCheckerState(page);
+    const input = page.locator('#local-package-file');
+    await input.focus();
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'local-package-clear');
+    await page.keyboard.press('Shift+Tab');
+    assert.equal(await input.evaluate(node => getComputedStyle(node).outlineWidth), '2px');
+    for (const { item, file } of payloads) {
+      const bytes = await readFile(file);
+      const record = manifest.files.find(record => record.path === item.path);
+      const expectedHash = crypto.createHash('sha256').update(bytes).digest('hex');
+      assert.equal(expectedHash, record.sha256);
+      const expected = manifest.downloads.filter(choice => manifest.files.find(record => record.path === choice.path).sha256 === expectedHash)
+        .flatMap(choice => (choice.platform === 'opera-gx' ? ['Clair', 'Obscur'] : [choice.name])
+          .map(appearance => ({ choice, anchor: `guide-${choice.platform}-${appearance.toLowerCase()}` })));
+      await input.focus();
+      const url = page.url();
+      await input.setInputFiles(file);
+      await waitForPackageState(page, 'matched');
+      assert.equal(page.url(), url, 'Identification must not navigate');
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'local-package-file');
+      assert.equal(await page.locator('.local-file-hash code').textContent(), expectedHash);
+      const matches = page.locator('#local-package-result .identified-package');
+      assert.equal(await matches.count(), expected.length);
+      assert.deepEqual((await matches.locator('.guide-link').evaluateAll(links => links.map(link => link.getAttribute('href')))).sort(),
+        expected.map(reference => '#' + reference.anchor).sort());
+      for (const { choice, anchor } of expected) {
+        const match = matches.filter({ has: page.locator(`a.guide-link[href="#${anchor}"]`) });
+        const identity = await match.textContent();
+        assert.ok(identity.includes('Package ' + choice.version));
+        assert.ok(identity.includes(record.sha256));
+        assert.equal(await match.locator('.identified-package-path code').textContent(), 'downloads/' + choice.path);
+        assert.match(identity, /Native acceptance pending/);
+        assert.ok(identity.includes(await page.locator(`#${choice.platform}-downloads > p`).first().textContent()));
+        if (['equicord', 'vencord', 'betterdiscord'].includes(choice.platform)) assert.match(identity, /not Discord-endorsed/);
+        const link = match.locator('.guide-link');
+        await link.focus();
+        await page.keyboard.press('Enter');
+        await waitForGuideDestination(page, anchor);
+        assert.ok(await page.locator('#' + anchor).isVisible());
+        guides.add(anchor);
+      }
+      const geometry = await page.evaluate(() => ({ width: innerWidth, document: document.documentElement.scrollWidth }));
+      assert.ok(geometry.document <= geometry.width + 1, JSON.stringify({ textScale, ...geometry }));
+      assert.deepEqual(await packageCheckerState(page), before);
+      identified.push({ path: item.path, sha256: expectedHash, guides: expected.map(reference => reference.anchor) });
+    }
+    assert.equal(identified.length, 13);
+    assert.equal(guides.size, 18);
+    const chrome = payloads.find(payload => payload.item.platform === 'chrome' && payload.item.name === 'Clair');
+    const renamed = path.join(temp, `identification-${delivery}-renamed.bin`);
+    await writeFile(renamed, await readFile(chrome.file));
+    await input.focus();
+    const url = page.url();
+    await input.setInputFiles(renamed);
+    await waitForPackageState(page, 'matched');
+    assert.equal(await page.locator('#local-package-result .identified-package').count(), 3);
+    const exact = await readFile(chrome.file);
+    await input.setInputFiles({ name: '<img src=x onerror="throw 1">.bin', mimeType: 'application/octet-stream', buffer: exact });
+    await waitForPackageState(page, 'matched');
+    assert.match(await page.locator('#local-package-selection').textContent(), /<img src=x/);
+    assert.equal(await page.locator('#local-package-selection img').count(), 0);
+    const changed = Buffer.from(exact);
+    changed[0] ^= 1;
+    for (const bytes of [changed, Buffer.from('an unrelated local file'), Buffer.alloc(0), Buffer.alloc(bound, 19)]) {
+      await input.setInputFiles({ name: 'unknown-package.zip', mimeType: 'application/octet-stream', buffer: bytes });
+      await waitForPackageState(page, 'no-match');
+      assert.equal(await page.locator('.local-file-hash code').textContent(), crypto.createHash('sha256').update(bytes).digest('hex'));
+      assert.equal(await page.locator('#local-package-result .identified-package').count(), 0);
+      assert.match(await page.locator('#local-package-status').textContent(), /computed SHA-256 matches no package referenced/);
+    }
+    assert.equal(page.url(), url);
+    assert.deepEqual(await packageCheckerState(page), before);
+    await page.locator('#local-package-clear').focus();
+    await page.keyboard.press('Enter');
+    await waitForPackageState(page, 'idle');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'local-package-clear');
+    assert.equal(await input.evaluate(node => node.files.length), 0);
+    assert.ok(await page.locator('#local-package-result').isHidden());
+    assert.equal(await page.locator('#local-package-result').textContent(), '');
+    assert.equal(await page.locator('#local-package-selection').textContent(), '');
+    assert.equal(await page.locator('#downloads .download-card').count(), 17);
+    assert.deepEqual(await packageCheckerState(page), before);
+    assert.deepEqual(requests, [], 'Reading, hashing, rendering and guide routing must not request resources');
+    assert.deepEqual(downloads, [], 'Identification must not start downloads');
+    return { delivery, textScale, identified, routes: guides.size, renamed: 'same bytes matched all Chrome aliases',
+      changed: 'same size with a changed byte computed no match', unknown: 'small, empty and bound-sized computed no match',
+      filename: 'plain text', storage: 'unchanged', requests, downloads, focus: 'preserved', clear: 'passed' };
+  } finally {
+    page.off('request', onRequest);
+    page.off('download', onDownload);
+  }
+}
+
+test('actual public package downloads identify all captured guides locally without filename inference', async () => {
+  const payloads = [];
+  let manifest;
+  for (const name of ['Clair', 'Obscur', 'Clair and Obscur']) {
+    const { context, page, consoleErrors } = await pageFor();
+    try {
+      manifest = await (await context.request.get(origin + '/downloads/artifact-manifest.json')).json();
+      const distinct = manifest.downloads.filter((item, index, items) => items.findIndex(choice => choice.path === item.path) === index);
+      for (const item of distinct.filter(item => item.name === name)) {
+        const file = path.join(temp, 'identified-public', ...item.path.split('/'));
+        await mkdir(path.dirname(file), { recursive: true });
+        const link = page.locator(`#${item.platform}-downloads a.button[download][href="downloads/${item.path}"]`);
+        const [download] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }), link.click()]);
+        assert.equal(await download.failure(), null);
+        await download.saveAs(file);
+        assert.equal(page.url(), origin + '/');
+        payloads.push({ item, file });
+      }
+      assert.deepEqual(consoleErrors, []);
+    } finally { await context.close(); }
+  }
+  assert.equal(payloads.length, 13);
+  for (const width of [320, 390]) {
+    for (const textScale of [100, 200]) {
+      const { context, page, consoleErrors } = await pageFor({ viewport: { width, height: 844 } });
+      try {
+        await page.evaluate(scale => document.documentElement.style.fontSize = scale + '%', textScale);
+        const identified = await checkLocalPackageIdentification(page, manifest, payloads, { delivery: 'public', textScale });
+        assert.deepEqual(consoleErrors, []);
+        results.scenarios.push({ name: 'actual public package identification', status: 'passed', width, ...identified });
+      } finally { await context.close(); }
+    }
+  }
+});
+
+test('local package failures remain uncomputed and late work cannot replace a new selection or Clear', async () => {
+  const { context, page, consoleErrors } = await pageFor({ viewport: { width: 320, height: 844 } });
+  const requests = [], downloads = [];
+  try {
+    const manifest = await (await context.request.get(origin + '/downloads/artifact-manifest.json')).json();
+    const item = manifest.downloads.find(item => item.platform === 'chrome' && item.name === 'Clair');
+    const exact = await readFile(path.join(site, 'downloads', ...item.path.split('/')));
+    const record = manifest.files.find(record => record.path === item.path);
+    const bound = Math.max(...manifest.downloads.map(item => manifest.files.find(record => record.path === item.path).bytes));
+    page.on('request', request => requests.push(request.url()));
+    page.on('download', download => downloads.push(download.suggestedFilename()));
+    await page.evaluate(() => {
+      const originalRead = File.prototype.arrayBuffer;
+      const subtle = crypto.subtle;
+      const originalHash = subtle.digest.bind(subtle);
+      const controls = { reads: 0, hashes: 0, holdRead: false, holdHash: false, rejectRead: false, rejectHash: false,
+        pendingReads: [], pendingHashes: [] };
+      window.packageFixture = controls;
+      File.prototype.arrayBuffer = function () {
+        controls.reads++;
+        if (controls.rejectRead) return Promise.reject(new Error('Controlled read rejection'));
+        if (controls.holdRead) {
+          controls.holdRead = false;
+          return new Promise((resolve, reject) => controls.pendingReads.push({
+            resolve: () => originalRead.call(this).then(resolve, reject), reject: () => reject(new Error('Controlled stale read rejection')) }));
+        }
+        return originalRead.call(this);
+      };
+      subtle.digest = function (algorithm, bytes) {
+        controls.hashes++;
+        if (controls.rejectHash) return Promise.reject(new Error('Controlled hash rejection'));
+        if (controls.holdHash) {
+          controls.holdHash = false;
+          return new Promise((resolve, reject) => controls.pendingHashes.push({
+            resolve: () => originalHash(algorithm, bytes).then(resolve, reject), reject: () => reject(new Error('Controlled stale hash rejection')) }));
+        }
+        return originalHash(algorithm, bytes);
+      };
+    });
+    const input = page.locator('#local-package-file');
+    await input.focus();
+    const before = await packageCheckerState(page), url = page.url();
+    const matched = () => input.setInputFiles({ name: 'current-package.bin', mimeType: 'application/octet-stream', buffer: exact });
+    const snapshot = () => page.locator('#local-package-checker').evaluate(node => ({
+      state: node.dataset.state, status: node.querySelector('#local-package-status').textContent,
+      result: node.querySelector('#local-package-result').textContent, hidden: node.querySelector('#local-package-result').hidden,
+      selection: node.querySelector('#local-package-selection').textContent }));
+    const settle = () => page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    async function waitPending(kind) {
+      const waiting = await page.waitForFunction(name => window.packageFixture[name].length === 1, kind, { timeout: 2000 });
+      await waiting.dispose();
+    }
+    async function startPending(kind) {
+      await page.evaluate(name => window.packageFixture[name] = true, kind === 'pendingReads' ? 'holdRead' : 'holdHash');
+      await input.setInputFiles({ name: 'older-package.bin', mimeType: 'application/octet-stream', buffer: Buffer.from('older bytes') });
+      await waitPending(kind);
+      await waitForPackageState(page, 'checking');
+      assert.ok(await page.locator('#local-package-result').isHidden());
+      assert.equal(await page.locator('#local-package-result').textContent(), '');
+      assert.ok(await input.isEnabled());
+      assert.ok(await page.locator('#local-package-clear').isEnabled());
+    }
+    async function release(kind, method) {
+      await page.evaluate(async ({ kind, method }) => {
+        await window.packageFixture[kind].shift()[method]();
+      }, { kind, method });
+      await settle();
+    }
+    const checks = [];
+    // Superseded success and rejection in both await phases must stay silent.
+    for (const kind of ['pendingReads', 'pendingHashes']) {
+      for (const method of ['resolve', 'reject']) {
+        await startPending(kind);
+        await matched();
+        await waitForPackageState(page, 'matched');
+        assert.equal(await page.locator('.local-file-hash code').textContent(), record.sha256);
+        const current = await snapshot();
+        const hashes = await page.evaluate(() => window.packageFixture.hashes);
+        await release(kind, method);
+        assert.deepEqual(await snapshot(), current);
+        assert.equal(await page.evaluate(() => window.packageFixture.hashes), hashes,
+          'An obsolete read must not start another hash');
+        checks.push({ kind, method, replacement: 'matched selection', status: 'passed' });
+      }
+    }
+    for (const replacement of ['oversize', 'clear', 'empty-selection']) {
+      await startPending('pendingReads');
+      const reads = await page.evaluate(() => window.packageFixture.reads);
+      if (replacement === 'oversize') {
+        await input.setInputFiles({ name: 'complete-kit.zip', mimeType: 'application/zip', buffer: Buffer.alloc(bound + 1) });
+        await waitForPackageState(page, 'size-rejected');
+        assert.equal(await page.evaluate(() => window.packageFixture.reads), reads);
+        assert.match(await page.locator('#local-package-status').textContent(), /not read and no digest was computed/);
+      } else if (replacement === 'clear') {
+        await page.locator('#local-package-clear').focus();
+        await page.keyboard.press('Enter');
+        await waitForPackageState(page, 'idle');
+        assert.equal(await page.evaluate(() => document.activeElement.id), 'local-package-clear');
+      } else {
+        await input.setInputFiles([]);
+        await waitForPackageState(page, 'idle');
+      }
+      const current = await snapshot();
+      const hashes = await page.evaluate(() => window.packageFixture.hashes);
+      await release('pendingReads', 'resolve');
+      assert.deepEqual(await snapshot(), current);
+      assert.equal(await page.evaluate(() => window.packageFixture.hashes), hashes);
+      checks.push({ kind: 'pendingReads', method: 'resolve', replacement, status: 'passed' });
+    }
+    // The Clear generation also owns a pending hash and its later rejection.
+    for (const method of ['resolve', 'reject']) {
+      await startPending('pendingHashes');
+      await page.locator('#local-package-clear').click();
+      await waitForPackageState(page, 'idle');
+      const current = await snapshot();
+      await release('pendingHashes', method);
+      assert.deepEqual(await snapshot(), current);
+      checks.push({ kind: 'pendingHashes', method, replacement: 'Clear', status: 'passed' });
+    }
+    for (const [fixture, state, message] of [['rejectRead', 'read-failed', /No digest was computed/],
+      ['rejectHash', 'hash-failed', /No digest comparison was made/]]) {
+      await matched();
+      await waitForPackageState(page, 'matched');
+      await page.evaluate(name => window.packageFixture[name] = true, fixture);
+      await input.setInputFiles({ name: 'failure.bin', mimeType: 'application/octet-stream', buffer: exact });
+      await waitForPackageState(page, state);
+      assert.match(await page.locator('#local-package-status').textContent(), message);
+      assert.ok(await page.locator('#local-package-result').isHidden());
+      assert.equal(await page.locator('#local-package-result').textContent(), '');
+      await page.evaluate(name => window.packageFixture[name] = false, fixture);
+      await matched();
+      await waitForPackageState(page, 'matched');
+      checks.push({ failure: state, recovery: 'matched', status: 'passed' });
+    }
+    await page.evaluate(() => {
+      window.savedCrypto = Object.getOwnPropertyDescriptor(window, 'crypto');
+      Object.defineProperty(window, 'crypto', { configurable: true, value: undefined });
+    });
+    const reads = await page.evaluate(() => window.packageFixture.reads);
+    await matched();
+    await waitForPackageState(page, 'unavailable');
+    assert.match(await page.locator('#local-package-status').textContent(), /No digest was computed/);
+    assert.equal(await page.evaluate(() => window.packageFixture.reads), reads);
+    assert.ok(await page.locator('#local-package-result').isHidden());
+    await page.evaluate(() => {
+      if (window.savedCrypto) Object.defineProperty(window, 'crypto', window.savedCrypto);
+      else delete window.crypto;
+    });
+    await matched();
+    await waitForPackageState(page, 'matched');
+    await input.focus();
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'local-package-file');
+    assert.equal(page.url(), url);
+    assert.deepEqual(await packageCheckerState(page), before);
+    assert.deepEqual(requests, []);
+    assert.deepEqual(downloads, []);
+    assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: 'local package controlled failures and stale async ownership', status: 'passed',
+      checks, oversize: 'rejected before read', cryptoUnavailable: 'no read, recovered', requests, downloads });
+  } finally { await context.close(); }
+});
+
+test('incomplete captured package metadata is unavailable rather than a computed no match', async () => {
+  for (const defect of ['size', 'hash', 'route']) {
+    const { context, page, consoleErrors } = await pageFor({ setup: async (_context, fixturePage) => {
+      await fixturePage.route('**/preview.js', async route => {
+        const script = await readFile(path.join(site, 'preview.js'), 'utf8');
+        const change = defect === 'size' ? 'document.querySelector("#chrome-clair").dataset.packageBytes = "-1";'
+          : defect === 'hash' ? 'document.querySelector("#guide-chrome-clair .package-hash code").textContent = "not a digest";'
+            : 'document.querySelector("#chrome-clair .guide-link").remove();';
+        await route.fulfill({ contentType: 'text/javascript', body: change + '\n' + script });
+      });
+    } });
+    try {
+      await waitForPackageState(page, 'unavailable');
+      assert.ok(await page.locator('#local-package-file').isDisabled());
+      assert.match(await page.locator('#local-package-status').textContent(), /references are incomplete. No digest was computed/);
+      assert.equal(await page.locator('#local-package-result').textContent(), '');
+      assert.ok(await page.locator('#local-package-result').isHidden());
+      assert.deepEqual(consoleErrors, []);
+      results.scenarios.push({ name: 'invalid local package reference fixture', status: 'passed', defect, result: 'unavailable, uncomputed' });
+    } finally { await context.close(); }
+  }
+});
 
 async function checkPackageChooser(page, manifest, { delivery, textScale = 100 }) {
   const requests = [], downloads = [], routes = [];
@@ -512,6 +865,7 @@ test('explicit target and package appearance chooser preserves every route and s
   const fallback = await pageFor({ javaScriptEnabled: false, viewport: { width: 320, height: 844 } });
   try {
     assert.ok(await fallback.page.locator('#package-chooser').isHidden());
+    assert.ok(await fallback.page.locator('#local-package-checker').isHidden());
     assert.equal(await fallback.page.locator('#downloads .download-card').count(), 17);
     assert.equal(await fallback.page.locator('#downloads .guide-link').count(), 18);
     await fallback.page.locator('#edge-clair .guide-link').focus();
@@ -695,7 +1049,9 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
   assert.deepEqual(inner.distribution, { kind: 'portable-kit' });
   assert.equal(packages.downloads.length, 17);
   assert.equal(new Set(packages.downloads.map(item => item.path)).size, 13);
-  const requests = [], errors = [], journeys = [], packageJourneys = [], chooserJourneys = [];
+  const requests = [], errors = [], journeys = [], packageJourneys = [], chooserJourneys = [], identificationJourneys = [];
+  const includedPayloads = packages.downloads.filter((item, index, items) => items.findIndex(choice => choice.path === item.path) === index)
+    .map(item => ({ item, file: path.join(relocated, 'downloads', ...item.path.split('/')) }));
   let closedContexts = 0;
   async function filePage(options) {
     const localContext = await browser.newContext({ serviceWorkers: 'block', ...options });
@@ -722,8 +1078,15 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
         assert.equal(await localPage.locator('#downloads .download-card').count(), 17);
         if (javaScriptEnabled) {
           chooserJourneys.push({ width, ...await checkPackageChooser(localPage, packages, { delivery: 'portable' }) });
+          for (const textScale of [100, 200]) {
+            await localPage.evaluate(scale => document.documentElement.style.fontSize = scale + '%', textScale);
+            identificationJourneys.push({ width, ...await checkLocalPackageIdentification(localPage, packages, includedPayloads,
+              { delivery: 'portable', textScale }) });
+          }
+          await localPage.evaluate(() => document.documentElement.style.fontSize = '100%');
         } else {
           assert.ok(await localPage.locator('#package-chooser').isHidden());
+          assert.ok(await localPage.locator('#local-package-checker').isHidden());
         }
         for (const [appearance, background] of [['Obscur', 'rgb(9, 9, 9)'], ['Clair', 'rgb(248, 247, 243)']]) {
           assert.equal(await localPage.locator(`[data-palette="${appearance}"]`).evaluate(node => getComputedStyle(node).backgroundColor), background);
@@ -856,7 +1219,7 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
   }
   results.scenarios.push({ name: 'actual downloaded and relocated offline portable kit', status: 'passed',
     archive: archiveName, sha256: digest, bytes: archiveBytes.length, downloadNames, source: inner.source,
-    protocol: 'file:', network: 'all external requests blocked', requests, errors, journeys, packageJourneys, chooserJourneys,
+    protocol: 'file:', network: 'all external requests blocked', requests, errors, journeys, packageJourneys, chooserJourneys, identificationJourneys,
     closedContexts, nativeAppsVerified: false });
 });
 

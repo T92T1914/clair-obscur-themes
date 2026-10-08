@@ -156,7 +156,7 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
             f'<a class="guide-link" href="#{guide_anchor(platform, appearance)}">'
             f'{appearance} installation, switching and removal</a>' for appearance in appearances)
         groups[platform].append(
-            f'<article id="{platform}-{"paired" if platform == "opera-gx" else name.lower()}" class="download-card"><p class="eyebrow">Preview {version}</p>'
+            f'<article id="{platform}-{"paired" if platform == "opera-gx" else name.lower()}" class="download-card" data-package-bytes="{record["bytes"]}"><p class="eyebrow">Preview {version}</p>'
             f'<h4>{name}</h4><a class="button" download href="downloads/{path}">'
             f'Download {name} for {label}</a><small>{kind}, {record["bytes"]:,} bytes. '
             f'Native acceptance pending.</small><p>{guide_links}</p></article>'
