@@ -3,7 +3,7 @@ from html.parser import HTMLParser
 import io
 import json
 import re
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import shutil
 import subprocess
 import sys
@@ -12,7 +12,7 @@ import unittest
 from unittest.mock import patch
 import zipfile
 
-from preview import ROOT, build_preview, preview_files, source_files, source_identity
+from preview import PORTABLE_ARCHIVE, PORTABLE_CHECKSUMS, ROOT, build_preview, preview_files, source_files, source_identity
 from themeforge.build import build_release
 from themeforge.guides import GUIDE_HEADINGS, JOURNEY_HEADINGS, guide_anchor, render_guides
 
@@ -56,6 +56,79 @@ class PreviewTests(unittest.TestCase):
             self.assertEqual(archive.read('README.md'), (ROOT / 'README.md').read_bytes())
             self.assertFalse(any(n.startswith(('node_modules/', '.git/', 'outputs/', 'dist/')) for n in names))
             self.assertFalse(any(n.endswith(('.ttf', '.woff2', '.icc', '.icm')) for n in names))
+
+    def test_portable_archive_has_safe_deterministic_members_and_complete_hash_coverage(self):
+        files = preview_files(ROOT, self.artifacts)
+        public = json.loads(files['site-manifest.json'])
+        archive_bytes = files[PORTABLE_ARCHIVE]
+        digest = hashlib.sha256(archive_bytes).hexdigest()
+        self.assertEqual(files[PORTABLE_CHECKSUMS], f'{digest}  {PORTABLE_ARCHIVE}\n'.encode())
+        self.assertEqual(public['distribution']['portable_kit'], {
+            'archive': PORTABLE_ARCHIVE, 'checksums': PORTABLE_CHECKSUMS,
+            'sha256': digest, 'bytes': len(archive_bytes),
+        })
+        self.assertEqual(set(public['files']), set(files) - {'site-manifest.json'})
+        with zipfile.ZipFile(io.BytesIO(archive_bytes)) as archive:
+            names = archive.namelist()
+            self.assertEqual(names, sorted(set(names)))
+            self.assertEqual(set(names), set(files) - {PORTABLE_ARCHIVE, PORTABLE_CHECKSUMS})
+            self.assertIsNone(archive.testzip())
+            for info in archive.infolist():
+                member = PurePosixPath(info.filename)
+                self.assertFalse(member.is_absolute())
+                self.assertNotIn('..', member.parts)
+                self.assertNotIn('\\', info.filename)
+                self.assertEqual(info.date_time, (1980, 1, 1, 0, 0, 0))
+                self.assertEqual(info.create_system, 3)
+                self.assertEqual(info.external_attr >> 16, 0o100644)
+                self.assertEqual(info.compress_type, zipfile.ZIP_STORED)
+            inner = json.loads(archive.read('site-manifest.json'))
+            self.assertEqual(inner['distribution'], {'kind': 'portable-kit'})
+            self.assertEqual(inner['source'], public['source'])
+            self.assertEqual(inner['release'], public['release'])
+            self.assertEqual(set(inner['files']), set(names) - {'site-manifest.json'})
+            for name, expected in inner['files'].items():
+                self.assertEqual(hashlib.sha256(archive.read(name)).hexdigest(), expected)
+                if name != 'index.html':
+                    self.assertEqual(archive.read(name), files[name])
+
+    def test_downloaded_kit_relocates_with_resolvable_local_links_and_distinct_delivery_text(self):
+        files = preview_files(ROOT, self.artifacts)
+        extracted = self.base / 'extracted'
+        with zipfile.ZipFile(io.BytesIO(files[PORTABLE_ARCHIVE])) as archive:
+            archive.extractall(extracted)
+        relocated = self.base / 'moved' / 'preview'
+        relocated.parent.mkdir()
+        extracted.rename(relocated)
+        page = (relocated / 'index.html').read_text(encoding='utf-8')
+        parsed = PageLinks(page)
+        self.assertIn('This is the extracted portable preview', page)
+        self.assertNotIn('id="portable-preview"', page)
+        self.assertNotIn(PORTABLE_ARCHIVE, page)
+        self.assertNotIn(PORTABLE_CHECKSUMS, page)
+        self.assertIn('id="portable-preview"', files['index.html'].decode())
+        self.assertIn('id="portable-checksums"', files['index.html'].decode())
+        self.assertIn('display a CSS file instead of downloading another copy', page)
+        self.assertIn('Open included Clair for Google Chrome', page)
+        for link in parsed.links:
+            href = link.get('href', '')
+            if href.startswith('#'):
+                self.assertIn(href[1:], parsed.ids)
+            elif not href.startswith('https://'):
+                target = (relocated / href).resolve()
+                self.assertTrue(target.is_relative_to(relocated.resolve()), href)
+                self.assertTrue(target.is_file(), href)
+        release = json.loads((relocated / 'downloads/artifact-manifest.json').read_bytes())
+        self.assertEqual(len(release['downloads']), 17)
+        self.assertEqual(len({item['path'] for item in release['downloads']}), 13)
+        for item in release['downloads']:
+            self.assertIn(f'<code>downloads/{item["path"]}</code>', page)
+        self.assertEqual(len([anchor for anchor in parsed.ids
+                              if any(anchor == guide_anchor(item['platform'], name)
+                                     for item in release['downloads']
+                                     for name in (('Clair', 'Obscur') if item['platform'] == 'opera-gx'
+                                                  else (item['name'],)))]), 18)
+        self.assertNotIn('{{', page)
 
     def test_preview_refuses_to_overwrite_foreign_or_changed_files(self):
         output = self.base / 'site'
