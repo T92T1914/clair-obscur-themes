@@ -50,6 +50,7 @@ def source_files(root: Path) -> dict[str, bytes]:
     """Package reviewed source categories, never a broad workspace archive."""
     paths = [root / name for name in (
         'README.md', 'AGENTS.md', 'LICENSE', 'CHANGELOG.md', 'tokens.json', 'build.py', 'preview.py',
+        'verify_preview.py',
         'package.json', 'package-lock.json', '.gitignore', '.gitattributes',
     )]
     for folder, endings in (
@@ -213,6 +214,8 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
     for name in ('SHA256SUMS', 'artifact-manifest.json'):
         files[f'downloads/{name}'] = snapshot[name]
     files['LICENSE'] = sources['LICENSE']
+    files['verify_preview.py'] = sources['verify_preview.py']
+    files['portable-verification.md'] = sources['docs/portable-verification.md']
     files['source.zip'] = _zip_bytes(sources)
     source_digest = hashlib.sha256(files['source.zip']).hexdigest()
     files['source-SHA256SUMS'] = f'{source_digest}  source.zip\n'.encode()
@@ -244,6 +247,10 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
         'display a CSS file instead of downloading another copy. Return to this page after viewing it. '
         'Palette specimens and target procedures remain local. '
         'Online references need a network connection. '
+        'Optional directory verification needs Python 3.11 or later: '
+        '<code>python -I -S -B &quot;verify_<wbr>preview.<wbr>py&quot; &quot;.&quot;</code>. '
+        'Read <a href="portable-verification.md">portable verification instructions</a> '
+        'for named discrepancies and the limits of included-manifest consistency. '
         '<a href="site-manifest.json">Portable directory manifest</a>.</p>')
     for path in sorted({item['path'] for item in manifest['downloads']}):
         local_path = html.escape('downloads/' + path, quote=True)
@@ -263,6 +270,10 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
         f'<a id="portable-checksums" href="{PORTABLE_CHECKSUMS}" download>Kit checksum</a>. '
         'Extract the complete ZIP, then open <code>index.html</code>. Keep the extracted directory '
         'together when moving it. The specimens, theme files and target procedures work offline. '
+        'Python is optional and needed only for directory verification. '
+        'The included <code>verify_<wbr>preview.<wbr>py</code> command needs Python 3.11 or later. '
+        '<a href="portable-verification.md">Portable verification instructions</a> explain '
+        'how to check an extracted copy against its included manifest. '
         'The kit follows the current preview source and does not change theme package versions '
         'or the original release.</p>').encode()
     files['site-manifest.json'] = site_manifest(files, source, release, {
