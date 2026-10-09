@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import html
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -86,9 +87,21 @@ def source_identity(root: Path, sources: dict[str, bytes], expected_revision: st
             raise ValueError('Expected revision requires a Git checkout')
         return {'revision': None, 'state': 'unavailable'}
 
+    environment = {
+        key: value for key, value in os.environ.items()
+        if not key.upper().startswith('GIT_')
+    }
+    environment.update(GIT_TERMINAL_PROMPT='0', GCM_INTERACTIVE='Never')
+
     def git(*arguments: str) -> bytes:
         try:
-            result = subprocess.run(['git', '-C', str(root), *arguments], capture_output=True, timeout=15)
+            result = subprocess.run(
+                ['git', '--no-optional-locks', '--no-replace-objects',
+                 '-c', 'core.fsmonitor=false', '-c', 'core.untrackedCache=false',
+                 '-C', str(root), *arguments],
+                capture_output=True, timeout=15, env=environment,
+                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0),
+            )
         except (OSError, subprocess.TimeoutExpired) as error:
             raise ValueError('Cannot inspect the source Git checkout') from error
         if result.returncode != 0:

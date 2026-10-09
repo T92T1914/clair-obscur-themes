@@ -2,6 +2,7 @@ import hashlib
 from html.parser import HTMLParser
 import io
 import json
+import os
 import re
 from pathlib import Path, PurePosixPath
 import shutil
@@ -668,3 +669,164 @@ class SourceIdentityTests(unittest.TestCase):
     def test_expected_revision_cannot_be_a_floating_ref(self):
         with self.assertRaisesRegex(ValueError, 'complete lowercase Git commit ID'):
             source_identity(self.root, self.sources, 'main')
+
+    def context_checkout(self, root, message):
+        if shutil.which('git') is None:
+            self.skipTest('Git is unavailable for the source context fixture')
+        root.mkdir()
+        (root / 'README.md').write_bytes(self.sources['README.md'])
+        environment = {
+            key: value for key, value in os.environ.items()
+            if not key.upper().startswith('GIT_')
+        }
+        environment.update(GIT_TERMINAL_PROMPT='0', GCM_INTERACTIVE='Never')
+        hooks = root / 'unused-hooks'
+        prefix = [
+            'git', '--no-optional-locks', '--no-replace-objects',
+            '-c', 'core.fsmonitor=false', '-c', 'core.untrackedCache=false',
+            '-c', f'core.hooksPath={hooks}', '-c', 'core.autocrlf=false',
+            '-c', f'core.attributesFile={os.devnull}',
+            '-c', 'user.name=Preview fixture',
+            '-c', 'user.email=preview@example.invalid', '-C', str(root),
+        ]
+        commands = [
+            ['init', '--quiet', '--template='],
+            ['config', '--local', 'core.fsmonitor', 'false'],
+            ['config', '--local', 'core.untrackedCache', 'false'],
+            ['config', '--local', 'core.hooksPath', str(hooks)],
+            ['add', 'README.md'],
+            ['commit', '--quiet', '--no-gpg-sign', '-m', message],
+            ['rev-parse', '--verify', 'HEAD'],
+        ]
+        for arguments in commands:
+            result = subprocess.run(
+                [*prefix, *arguments], capture_output=True, timeout=15,
+                env=environment,
+                creationflags=(subprocess.CREATE_NO_WINDOW
+                               if sys.platform == 'win32' else 0),
+            )
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+        return result.stdout.decode('ascii').strip()
+
+    def context_snapshot(self, roots):
+        return {
+            (str(root), name): (
+                (root / name).read_bytes(), (root / name).stat().st_mtime_ns,
+            )
+            for root in roots for name in ('README.md', '.git/config')
+        }
+
+    def test_foreign_git_context_cannot_replace_selected_source_identity(self):
+        selected, foreign = self.root / 'selected', self.root / 'foreign'
+        selected_revision = self.context_checkout(selected, 'Selected fixture')
+        foreign_revision = self.context_checkout(foreign, 'Foreign fixture')
+        self.assertNotEqual(selected_revision, foreign_revision)
+        self.assertEqual((selected / 'README.md').read_bytes(),
+                         (foreign / 'README.md').read_bytes())
+        before = self.context_snapshot((selected, foreign))
+        parent_environment = dict(os.environ)
+        routing = {
+            'GIT_DIR': str(foreign / '.git'), 'GIT_WORK_TREE': str(foreign),
+            'GIT_INDEX_FILE': str(foreign / '.git/index'),
+            'GIT_CONFIG_COUNT': '2',
+            'GIT_CONFIG_KEY_0': 'core.fsmonitor', 'GIT_CONFIG_VALUE_0': 'false',
+            'GIT_CONFIG_KEY_1': 'core.untrackedCache',
+            'GIT_CONFIG_VALUE_1': 'false',
+        }
+        expected = {'revision': selected_revision, 'state': 'clean'}
+        run_git = subprocess.run
+
+        def hidden_git(*arguments, **keywords):
+            if sys.platform == 'win32':
+                keywords['creationflags'] = (
+                    keywords.get('creationflags', 0) | subprocess.CREATE_NO_WINDOW
+                )
+            return run_git(*arguments, **keywords)
+
+        with (
+            patch.dict(os.environ, routing),
+            patch('preview.subprocess.run', side_effect=hidden_git),
+        ):
+            injected_environment = dict(os.environ)
+            with self.subTest(expectation='selected identity without constraint'):
+                self.assertEqual(source_identity(selected, self.sources), expected)
+            with self.subTest(expectation='selected expected revision succeeds'):
+                self.assertEqual(
+                    source_identity(selected, self.sources, selected_revision),
+                    expected,
+                )
+            with self.subTest(expectation='foreign expected revision is refused'):
+                with self.assertRaisesRegex(ValueError, 'differs from the expected'):
+                    source_identity(selected, self.sources, foreign_revision)
+            self.assertTrue(dict(os.environ) == injected_environment,
+                            'Source identity mutated the calling environment')
+        self.assertTrue(dict(os.environ) == parent_environment,
+                        'Fixture did not restore the calling environment')
+        self.assertEqual(self.context_snapshot((selected, foreign)), before)
+
+    def test_git_child_has_scoped_environment_and_noninteractive_arguments(self):
+        (self.root / '.git').mkdir()
+        revision = 'a' * 40
+        data = self.sources['README.md']
+        digest = hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data)
+        tree = f'100644 blob {digest.hexdigest()}\tREADME.md\0'.encode()
+        replies = [
+            subprocess.CompletedProcess([], 0, stdout, b'')
+            for stdout in (revision.encode(), tree, b'', revision.encode())
+        ]
+        overrides = {
+            'GIT_DIR': 'foreign-context', 'GIT_WORK_TREE': 'foreign-worktree',
+            'GIT_INDEX_FILE': 'foreign-index', 'GIT_CONFIG_COUNT': '1',
+            'GIT_CONFIG_KEY_0': 'core.fsmonitor',
+            'GIT_CONFIG_VALUE_0': 'monitor-must-not-run',
+            'GIT_TRACE': 'trace-must-not-open',
+            'gIt_TrAcE2': 'trace2-must-not-open',
+            'GIT_EXEC_PATH': 'foreign-executables', 'GIT_OPTIONAL_LOCKS': '1',
+            'THEMES_SOURCE_CONTEXT_FIXTURE': 'preserved',
+        }
+        parent_environment = dict(os.environ)
+        with patch.dict(os.environ, overrides):
+            injected_environment = dict(os.environ)
+            with patch('preview.subprocess.run', side_effect=replies) as run:
+                self.assertEqual(source_identity(self.root, self.sources, revision),
+                                 {'revision': revision, 'state': 'clean'})
+            self.assertTrue(dict(os.environ) == injected_environment,
+                            'Source identity mutated the calling environment')
+        self.assertTrue(dict(os.environ) == parent_environment,
+                        'Fixture did not restore the calling environment')
+        self.assertEqual(run.call_count, 4)
+        prefix = [
+            'git', '--no-optional-locks', '--no-replace-objects',
+            '-c', 'core.fsmonitor=false', '-c', 'core.untrackedCache=false',
+            '-C', str(self.root),
+        ]
+        reads = [
+            ['rev-parse', '--verify', 'HEAD'], ['ls-tree', '-rz', revision],
+            ['status', '--porcelain', '--untracked-files=no'],
+            ['rev-parse', '--verify', 'HEAD'],
+        ]
+        for call, arguments in zip(run.call_args_list, reads):
+            with self.subTest(read=arguments[0]):
+                self.assertEqual(call.args[0], [*prefix, *arguments])
+                self.assertTrue(call.kwargs.get('capture_output'))
+                self.assertEqual(call.kwargs.get('timeout'), 15)
+                self.assertEqual(
+                    call.kwargs.get('creationflags', 0),
+                    subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0,
+                )
+                environment = call.kwargs.get('env')
+                self.assertTrue(isinstance(environment, dict),
+                                'Git child lacks a copied scoped environment')
+                self.assertEqual(
+                    {key.upper() for key in environment
+                     if key.upper().startswith('GIT_')},
+                    {'GIT_TERMINAL_PROMPT'},
+                )
+                self.assertTrue(environment.get('GIT_TERMINAL_PROMPT') == '0',
+                                'Git child may prompt for credentials')
+                self.assertTrue(environment.get('GCM_INTERACTIVE') == 'Never',
+                                'Git credential manager may prompt')
+                self.assertTrue(
+                    environment.get('THEMES_SOURCE_CONTEXT_FIXTURE') == 'preserved',
+                    'Ordinary caller environment was discarded',
+                )
