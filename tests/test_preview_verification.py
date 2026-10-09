@@ -11,7 +11,7 @@ import sys
 import tempfile
 from types import SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 import zipfile
 
 import verify_preview as verifier
@@ -71,10 +71,16 @@ class KitFixture(unittest.TestCase):
         self.write_manifest()
 
     def cleanup_owned(self):
-        target = Path(self.temporary.name).absolute()
+        named_target = Path(self.temporary.name).absolute()
+        metadata = named_target.lstat()
+        if (stat.S_ISLNK(metadata.st_mode)
+                or getattr(metadata, 'st_file_attributes', 0)
+                & getattr(stat, 'FILE_ATTRIBUTE_REPARSE_POINT', 0x400)):
+            raise AssertionError('Temporary cleanup root changed')
+        target = named_target.resolve()
         if target == self.temp_root or not target.is_relative_to(self.temp_root):
             raise AssertionError('Temporary cleanup escaped its designated root')
-        if target.is_symlink() or target.resolve() != self.base:
+        if target != self.base:
             raise AssertionError('Temporary cleanup root changed')
         self.temporary.cleanup()
 
@@ -109,6 +115,52 @@ class KitFixture(unittest.TestCase):
             cwd=self.base, capture_output=True, timeout=15,
             creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0),
         )
+
+
+class FixtureCleanupTests(KitFixture):
+    def test_cleanup_accepts_named_alias_only_for_the_admitted_resolved_base(self):
+        named = self.temp_root.parent / 'themes-temp-alias' / self.base.name
+        self.assertFalse(named.is_relative_to(self.temp_root))
+        temporary = SimpleNamespace(name=str(named), cleanup=Mock())
+        fixture = SimpleNamespace(
+            temp_root=self.temp_root, base=self.base, temporary=temporary,
+        )
+        # Model two names for the same ordinary owned directory. This does not
+        # depend on an available native alias or claim the CI alias's cause.
+        metadata = self.base.lstat()
+        with patch.object(Path, 'lstat', return_value=metadata), \
+                patch.object(Path, 'resolve', return_value=self.base):
+            KitFixture.cleanup_owned(fixture)
+        temporary.cleanup.assert_called_once_with()
+
+    def test_cleanup_refuses_escaped_changed_or_linked_targets_before_deletion(self):
+        named = self.base
+        ordinary = SimpleNamespace(st_mode=stat.S_IFDIR | 0o700, st_file_attributes=0)
+        linked = SimpleNamespace(st_mode=stat.S_IFLNK | 0o700, st_file_attributes=0)
+        reparse = SimpleNamespace(st_mode=stat.S_IFDIR | 0o700,
+                                  st_file_attributes=0x400)
+        cases = (
+            ('outside', ordinary, self.temp_root.parent / 'outside-themes-cleanup',
+             'escaped its designated root'),
+            ('root', ordinary, self.temp_root, 'escaped its designated root'),
+            ('changed', ordinary, self.base.parent / 'another-themes-cleanup',
+             'root changed'),
+            ('symlink', linked, self.base, 'root changed'),
+            ('reparse', reparse, self.base, 'root changed'),
+        )
+        for label, metadata, resolved, message in cases:
+            with self.subTest(label=label):
+                temporary = SimpleNamespace(name=str(named), cleanup=Mock())
+                fixture = SimpleNamespace(
+                    temp_root=self.temp_root, base=self.base, temporary=temporary,
+                )
+                with patch.object(Path, 'lstat', return_value=metadata), \
+                        patch.object(Path, 'resolve', return_value=resolved) as resolve:
+                    with self.assertRaisesRegex(AssertionError, message):
+                        KitFixture.cleanup_owned(fixture)
+                temporary.cleanup.assert_not_called()
+                if label in ('symlink', 'reparse'):
+                    resolve.assert_not_called()
 
 
 class VerificationComparisonTests(KitFixture):
