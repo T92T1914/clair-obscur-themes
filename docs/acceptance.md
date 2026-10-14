@@ -33,7 +33,7 @@ No Vivaldi or Opera GX native schema validator was run. The tests enforce the pr
 | Clair and Obscur for Chrome | Native color-theme generators and package validation are implemented. Obscur installed through Load unpacked in an isolated ordinary Chrome profile | Install Clair, complete both native interface checks, then verify switching, rollback and cleanup |
 | Clair and Obscur for Equicord | Both themes loaded in Equibop, applied on matching native bases, retained the native palette on opposite bases and restored the baseline after testing | Complete the uninspected host surfaces, typography and interaction checks listed below |
 | Local application versions | Chrome 153.0.8010.53 and Equibop 3.3.1.0 were identified. The observed Equibop client/runtime builds are recorded below | Results apply only to the recorded versions, configuration and inspected scope |
-| Rendered Inter faces | Normal per-user Windows installation restored all six faces in strict headless checks, with zero skips. Actual Equibop rendered Regular and Bold in both variants | Check persistence after the next normal restart before any repair. Verify the other four native faces and code/language fallback |
+| Rendered Inter faces | All six installed faces rendered in an October 14 later-boot headless check before font intervention in that task. The September native Equibop checks identified Regular and Bold in both variants | Verify the other four native faces and native code/language fallback. The later-boot result does not establish continuous or permanent persistence |
 | Native restoration | Disabling each Equicord theme returned its native palette, and the original Equibop configuration was restored | Chrome restoration and test-profile cleanup remain incomplete |
 | Physical display and comfort | User-reported baseline is recorded in the design document | Physical viewing, captured-media comparison and subjective comfort remain **not verified** |
 
@@ -61,9 +61,30 @@ The separate diagnostic reproduced the same pattern after that restart: generate
 
 After that failure, Windows Explorer's normal per-user **Install** operation was used on the same six official, hash-verified TTF files. This installation did not use **Install for all users**, scripted resource activation, cache deletion or service restarts. Fresh isolated Chrome 153.0.8010.53 processes then passed the required six-face check and the missing-font control at revision `4db349fa349ae3a46b20a6befbf8d99187834f90`, both with zero skips. Each expected PostScript face rendered a positive glyph count. A separate diagnostic using published artifact revision `303c5dbdc54430d5a3d57dbd574ed230eb9a8c4a` resolved all six faces through generated aliases, ordinary family selection, full names and PostScript names. The direct-byte control still rendered all six faces, and the intentionally missing font still used system fallback.
 
-This establishes current-session availability after native installation. Persistence after that installation remains **not verified**. The next normal Windows restart must be checked before any repair or activation. The earlier restart failure remains evidence of the session activation's limit, and its cause is still unresolved. Microsoft documents [temporary resource loading](https://learn.microsoft.com/en-us/windows/win32/gdi/font-installation-and-deletion) separately from its [normal font installation procedure](https://support.microsoft.com/en-us/windows/experience/personalization/manage-fonts-in-windows).
+This establishes current-session availability after native installation. At that stage, persistence after the installation remained **not verified**, and the next normal Windows restart still needed a check before any repair or activation. The earlier restart failure remains evidence of the session activation's limit, and its cause is still unresolved. Microsoft documents [temporary resource loading](https://learn.microsoft.com/en-us/windows/win32/gdi/font-installation-and-deletion) separately from its [normal font installation procedure](https://support.microsoft.com/en-us/windows/experience/personalization/manage-fonts-in-windows).
 
-The latest required installed-font check passed. The partial native Equibop typography results below do not establish all six faces or restart persistence. Native Chrome acceptance remains open. The published 0.1.1 theme files are unchanged.
+The September 24 required installed-font check passed. The partial native Equibop typography results below do not establish all six native faces. Native Chrome acceptance remains open. The published 0.1.1 theme files are unchanged.
+
+### Later-boot installed-font observation
+
+On October 14, 2026, the existing strict installed-face and missing-font checks ran against source revision `b799eef4cc4f715fc4c2ae0f8a2059cf205d9e6a` in isolated headless ordinary Chrome 155.0.8059.79 on Windows. The recorded Windows boot occurred after the September 24 installation session. No font installation, resource activation, cache repair, service restart or forced computer restart preceded the checks in this continuation. All six installed files still matched both the official Inter 4.1 preparation hashes and the retained post-install file hashes.
+
+Both selected tests passed with zero skips. Each expected installed face rendered a positive glyph count:
+
+| Installed face | Glyph count |
+| --- | ---: |
+| `Inter-Regular` | 157 |
+| `Inter-SemiBold` | 29 |
+| `Inter-Bold` | 26 |
+| `Inter-Italic` | 41 |
+| `Inter-SemiBoldItalic` | 16 |
+| `Inter-BoldItalic` | 12 |
+
+The code specimen used Consolas for 13 glyphs. The deliberately unavailable local-font control used Segoe UI for 157 glyphs, with no network font request. These are installed-font and fallback observations in the existing webpage specimen. They do not establish Chrome frame typography or the remaining native Equibop faces.
+
+The first attempt stopped at a Windows temporary-output rename refusal before browser launch and font collection. The unchanged-source retry used task-owned temporary storage and completed both tests. The initial failure remains retained separately from the successful font result.
+
+This establishes installed-face availability after a later Windows boot, before intervention in this task. It does not establish an uninterrupted history without intervening installation or activation, identify the cause of the older restart failures, or prove permanent persistence. The September failures remain part of the investigation. Theme package bytes and all native application acceptance gaps remain unchanged by this check.
 
 ## Partial native Equibop results
 
