@@ -31,10 +31,10 @@ No Vivaldi or Opera GX native schema validator was run. The tests enforce the pr
 | Item | Established | Remaining gate |
 | --- | --- | --- |
 | Clair and Obscur for Chrome | Native color-theme generators and package validation are implemented. Obscur installed through Load unpacked in an isolated ordinary Chrome profile | Install Clair, complete both native interface checks, then verify switching, rollback and cleanup |
-| Clair and Obscur for Equicord | Both themes loaded in Equibop, applied on matching native bases, retained the native palette on opposite bases and restored the baseline after testing | Complete the uninspected host surfaces, typography and interaction checks listed below |
-| Local application versions | Chrome 153.0.8010.53 and Equibop 3.3.1.0 were identified. The observed Equibop client/runtime builds are recorded below | Results apply only to the recorded versions, configuration and inspected scope |
-| Rendered Inter faces | All six installed faces rendered in an October 14 later-boot headless check before font intervention in that task. The September native Equibop checks identified Regular and Bold in both variants | Verify the other four native faces and native code/language fallback. The later-boot result does not establish continuous or permanent persistence |
-| Native restoration | Disabling each Equicord theme returned its native palette, and the original Equibop configuration was restored | Chrome restoration and test-profile cleanup remain incomplete |
+| Clair and Obscur for Equicord | Both themes loaded in Equibop, applied on matching native bases, retained the native palette on opposite bases and restored the recorded configuration. October 14 checks added ordinary client surfaces, larger text and a smaller Clair window | Complete the uninspected host surfaces, typography and interaction checks listed below |
+| Local application versions | September checks identified Chrome 153.0.8010.53 and Equibop 3.3.1.0. October checks identified Chrome 155.0.8059.79 and a newer Equicord client build, recorded below | Results apply only to the recorded versions, configuration and inspected scope |
+| Rendered Inter faces | All six installed faces rendered in the October 14 later-boot headless check. September native checks identified Regular and Bold in both variants. October native checks identified Regular and Bold on Obscur and SemiBold and SemiBold Italic on Clair | Verify Regular Italic, Bold Italic, complete face coverage across both variants and native code/language fallback. The later-boot result does not establish continuous or permanent persistence |
+| Native restoration | September and October Equibop checks restored their respective recorded appearance, theme, sync, FontLoader and QuickCSS state | Chrome restoration and test-profile cleanup remain incomplete |
 | Physical display and comfort | User-reported baseline is recorded in the design document | Physical viewing, captured-media comparison and subjective comfort remain **not verified** |
 
 The identified application versions are Windows test targets. Other operating systems, Discord clients and browser derivatives are not covered by a native compatibility claim. Obscur's installation confirmation does not establish complete Chrome acceptance. Detailed private environment and capture records stay outside the public source.
@@ -99,19 +99,42 @@ The actual client's embedded DevTools **Rendered Fonts** view identified these l
 | Obscur | `Inter-Regular`, 169 glyphs | `Inter-Bold`, 6 glyphs |
 | Clair | `Inter-Regular`, 169 glyphs | `Inter-Bold`, 5 glyphs |
 
-SemiBold and all three italic faces remain uninspected in the native client. Native code and language fallback also remain unverified. The headless six-face pass does not fill those gaps.
+At that stage, SemiBold and all three italic faces remained uninspected in the native client. Native code and language fallback were also unverified. The headless six-face pass did not fill those gaps.
 
 Both opposite-mode gates were exercised. Clair enabled on Dark retained the native dark palette, and Obscur enabled on Light retained the native light palette. Switching from Clair to Obscur worked. Disabling each theme returned its corresponding native palette.
 
 Restoration completed after the checks. The original theme and native appearance returned, and the saved appearance settings matched the baseline. QuickCSS, FontLoader settings and original theme files remained unchanged. The original sync choices were restored, settings were closed and the client was minimized through its native control. Display settings were not changed.
 
-These are partial native results. Channel lists, ordinary message history, search results, popouts, extended keyboard/interaction states, increased text size or zoom, smaller windows and physical viewing remain outside this inspection. Full native Equibop acceptance remains open.
+These are partial native results. Channel lists, ordinary message history, search results, popouts, extended keyboard/interaction states, increased text size or zoom, smaller windows and physical viewing were outside that September inspection. Full native Equibop acceptance remains open.
+
+### October 14 native continuation
+
+Agent-operated checks at source revision `f2cdbed8950a8e3b2bc4502c8bbd7b0ce96667e1` used Equibop 3.3.1.0, Stable 636431 (`a5d0242`), Equicord `e0e85c8d4` Standalone, Electron 43.7.1 and Chromium 150.0.7871.250. The installed 0.1.1 CSS remained unchanged. The native client's embedded DevTools Rendered Fonts view identified these actual local faces:
+
+| Appearance | Native surface | Rendered face | Glyphs |
+| --- | --- | --- | ---: |
+| Obscur on Dark | Open Themes Folder button | `Inter-Regular` | 18 |
+| Obscur on Dark | Obscur theme card title | `Inter-Bold` | 6 |
+| Clair on Light | Accessibility example-message header descendants | `Inter-SemiBold` | 12 |
+| Clair on Light | The same header descendants | `Inter-SemiBoldItalic` | 7 |
+
+These are four observed faces across the listed appearances, not all six faces in each variant. The host's 500-weight Theme Management heading separately rendered Inter Regular for 16 glyphs.
+
+Both matching appearances and opposite native bases remained readable in the inspected settings. Switching from Obscur to Clair and back worked through the actual theme controls, with each outgoing theme disabled before the other was enabled. Clair's native chat text was increased from 16 px to 20 px, then restored to 16 px. The message grew and its link wrapped. Other enlarged-preview controls were not independently exercised. Default density, chat display, message spacing and 100% zoom were preserved.
+
+Clair's channel list, ordinary messages, reply and mention blocks, member list and composer were inspected in a 1440 by 2512 maximized window and a 1283 by 735 smaller window. The native search filter/history popover was inspected without entering or submitting a query. The restored Obscur view also showed the original channel, message, member and composer surfaces. No message was sent or edited, and the preexisting composer draft was preserved. Search results, popouts and complete keyboard-focus coverage remain unverified.
+
+Restoration returned the original Obscur-enabled configuration, Sync with computer selection and synchronization setting. The recorded appearance fields, FontLoader fields and QuickCSS hash matched their fresh baseline. Text size returned to 16 px, the original maximized channel view returned, and settings, search popover and DevTools were closed. This establishes restoration of the recorded state, not byte identity of the entire client settings file. Fonts and display settings were not changed.
+
+Regular Italic, Bold Italic, complete face coverage across both variants, native code and language fallback, independent restart behavior and other unvisited surfaces remain unverified. The earlier partial results remain valid within their original scope. Full native Equibop acceptance remains open.
 
 ## Native Chrome installation result
 
 On September 24, 2026, ordinary Chrome 153.0.8010.53 installed the Obscur 0.1.1 package through **Load unpacked** in a new isolated profile. Chrome's native infobar confirmed **Installed theme "Obscur"**. The everyday profile was not used or modified.
 
 This establishes installation only. The native session was interrupted before the remaining browser-interface checks, Clair installation, switching, **Reset to default** and cleanup. The isolated test window remained open with Obscur installed at the end of the recorded run. Restoration is **not verified**. Chrome's native interface font remains outside the theme's control.
+
+On October 14, 2026, the retained isolated profile was reopened in ordinary Chrome 155.0.8059.79. Its actual Profile Path was confirmed on `chrome://version` before any theme change. The controller then stopped navigation to Appearance because it could not determine the current browser URL with enough confidence to enforce policy. No new theme installation, switching, reset or settings change was performed. Current theme identity, Developer mode and cleanup remain unverified. The test Chrome and task-owned file-browser windows were left open at that stop. The September installation remains historical evidence, and the controller block is not a product defect.
 
 ## Evidence levels
 
