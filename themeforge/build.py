@@ -15,7 +15,7 @@ import tempfile
 import zipfile
 
 from .chrome import build_theme
-from .equicord import render_theme
+from .equicord import render_clair_native_focus, render_theme
 from .discord_clients import CLIENTS, render_client_theme
 from .firefox import COLOR_TOKENS as FIREFOX_COLORS, theme_manifest as firefox_manifest
 from .vivaldi import COLOR_TOKENS as VIVALDI_COLORS, theme_id as vivaldi_id, theme_settings as vivaldi_settings
@@ -33,6 +33,8 @@ SHA = re.compile(r"[0-9a-f]{64}\Z")
 # New adapters have their own version until a deliberate family release.
 PORTABILITY_VERSION = "0.2.0"
 BROWSER_VERSION = "0.3.0"
+CLAIR_EQUICORD_FOCUS_VERSION = "0.1.2"
+CLAIR_EQUICORD_FOCUS_PATH = "equicord/Clair-Equicord-0.1.2.theme.css"
 
 
 def _digest(payload: bytes) -> str:
@@ -152,6 +154,7 @@ def _review_payloads(files: dict[str, bytes]) -> None:
     """Enforce the pure-theme boundary before producing any release archive."""
     expected = {f"chrome/{name}/{file}" for name in ("clair", "obscur") for file in ("manifest.json", "icon128.png", "LICENSE.txt")}
     expected |= {f"equicord/{name}.theme.css" for name in ("Clair", "Obscur")}
+    expected.add(CLAIR_EQUICORD_FOCUS_PATH)
     expected |= {f"firefox/{name}/{file}" for name in ("clair", "obscur") for file in ("manifest.json", "LICENSE.txt")}
     expected |= {f"{client}/{name}-{label}.theme.css" for client, label in CLIENTS.items() for name in ("Clair", "Obscur")}
     expected |= {f"vivaldi/{name}/settings.json" for name in ("clair", "obscur")}
@@ -261,6 +264,9 @@ def _generate(document: dict, stage: Path) -> dict:
             target = stage / client / f"{name}-{label}.theme.css"
             target.parent.mkdir(exist_ok=True)
             target.write_bytes(render_client_theme(client, name, document["themes"][name], PORTABILITY_VERSION).encode("utf-8"))
+    (stage / CLAIR_EQUICORD_FOCUS_PATH).write_bytes(
+        render_clair_native_focus(document["themes"]["Clair"]).encode("utf-8")
+    )
     # Vivaldi's documented color-only ZIP contains one JSON file. Its original
     # source grant remains alongside the unpacked settings and in the preview.
     (stage / "vivaldi" / "LICENSE.txt").write_text(license_text(), encoding="utf-8", newline="\n")
@@ -278,7 +284,9 @@ def _generate(document: dict, stage: Path) -> dict:
         files[path] = _zip_bytes(native)
         downloads.extend([
             {"name": name, "platform": "chrome", "path": path, "kind": "native-theme-zip", "version": version},
-            {"name": name, "platform": "equicord", "path": f"equicord/{name}.theme.css", "kind": "local-theme-css", "version": version},
+            {"name": name, "platform": "equicord",
+             "path": CLAIR_EQUICORD_FOCUS_PATH if name == "Clair" else f"equicord/{name}.theme.css",
+             "kind": "local-theme-css", "version": CLAIR_EQUICORD_FOCUS_VERSION if name == "Clair" else version},
         ])
         # Edge uses the original Chromium artifact. An alias is not a native pass.
         downloads.append({"name": name, "platform": "edge", "path": path,

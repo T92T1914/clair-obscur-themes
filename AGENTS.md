@@ -3,6 +3,7 @@
 Build a shared original theme family for native browsers and local client CSS. Preserve Chrome and Equicord 0.1.1 and Firefox, Vencord and BetterDiscord 0.2.0 while developing the browser candidates described in docs/platform-portability.md. Atlas is a read-only design reference. Keep fonts, application integration, public previews and physical display evidence distinct.
 
 - Edit shared tokens and generators, then rebuild. Generated packages contain no scripts, remote imports, analytics, font binaries or private machine data.
+- Clair Equicord 0.1.2 is a separate native focus-color correction. Retain the original Clair and Obscur 0.1.1 CSS bytes and all other accepted packages. The correction keeps the host's ring geometry and forced-color behavior.
 - New adapters have their own explicit version. Edge and Brave aliases reuse exact Chrome bytes. Vivaldi uses settings JSON, while Opera GX uses a paired light/dark color-hint payload. Never label local format or component checks as native acceptance. No signature bypass or store submission is implied.
 - Preserve native scaling, appropriate monospace and language/icon fallbacks. Use installed Inter 400, 600, 700 and genuine italics where supported. Native Chrome theme APIs cannot change its UI font.
 - The primary reference is a user-reported PG32UCDMR, 4K/240 Hz, dark room, Windows HDR on, SDR brightness 0 and Auto HDR off. Do not change display settings, calibration, profiles or application security to satisfy a theme check.

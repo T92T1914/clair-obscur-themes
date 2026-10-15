@@ -285,3 +285,17 @@ def render_theme(name: str, tokens: Mapping[str, str], version: str) -> str:
 }}
 """)
     return "".join(parts)
+
+
+def render_clair_native_focus(tokens: Mapping[str, str]) -> str:
+    """Render Clair 0.1.2 with a visible native focus overlay color.
+
+    The low selector specificity preserves the host's forced-color override.
+    Ring geometry and input handling remain with the host.
+    """
+    return render_theme("Clair", tokens, "0.1.2") + """
+/* Override the host's inline adaptive color without replacing its focus ring. */
+:where(.theme-light) .focus-rings-ring {
+  --__adaptive-focus-ring-color: var(--co-focus) !important;
+}
+"""

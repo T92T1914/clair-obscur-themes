@@ -1257,11 +1257,14 @@ test('Equicord CSS consumes host variables only on its matching native base', as
   try {
     const palettes = JSON.parse(await readFile(path.join(root, 'tokens.json'), 'utf8')).themes;
     const color = hex => `rgb(${[1, 3, 5].map(offset => parseInt(hex.slice(offset, offset + 2), 16)).join(', ')})`;
-    for (const [name, mode, background, text] of [
-      ['Obscur', 'dark', 'rgb(9, 9, 9)', 'rgb(244, 244, 244)'],
-      ['Clair', 'light', 'rgb(248, 247, 243)', 'rgb(36, 36, 36)'],
+    for (const [name, mode, background, text, filename, nativeFocusRepair] of [
+      ['Obscur', 'dark', 'rgb(9, 9, 9)', 'rgb(244, 244, 244)', 'Obscur.theme.css', false],
+      ['Clair', 'light', 'rgb(248, 247, 243)', 'rgb(36, 36, 36)', 'Clair.theme.css', false],
+      ['Clair', 'light', 'rgb(248, 247, 243)', 'rgb(36, 36, 36)', 'Clair-Equicord-0.1.2.theme.css', true],
     ]) {
-      const css = await (await context.request.get(`${origin}/downloads/equicord/${name}.theme.css`)).text();
+      const response = await context.request.get(`${origin}/downloads/equicord/${filename}`);
+      assert.equal(response.status(), 200, filename);
+      const css = await response.text();
       // Deliberate host-contract fixture. It is not Discord markup or app acceptance.
       await page.setContent(`<html class="theme-${mode}"><head><style>
         body { background:var(--background-primary,#abcdef); color:var(--text-normal,#123456); font-family:var(--font-primary,Arial); }
@@ -1273,10 +1276,42 @@ test('Equicord CSS consumes host variables only on its matching native base', as
         #secondary:hover { background:var(--control-secondary-background-hover); color:var(--control-secondary-text-hover); }
         #mention { display:block; background:var(--mention-background); color:var(--mention-foreground); }
         #mention:hover { background:var(--background-mentioned-hover); }
+        .native-control { position:relative; width:44px; height:24px; margin:16px; }
+        #native-slider { width:100%; height:100%; background:#eee; }
+        .focus-rings-ring {
+          display:none; position:absolute; inset:0; box-sizing:border-box;
+          box-shadow:0 0 0 4px var(--__adaptive-focus-ring-color,var(--focus-primary,#00b0f4));
+          border-radius:var(--__adaptive-focus-ring-radius,4px); pointer-events:none;
+        }
+        .native-control:focus-within .focus-rings-ring { display:block; }
+        .enable-forced-colors .focus-rings-ring {
+          forced-color-adjust:none; --__adaptive-focus-ring-color:CanvasText!important;
+          border:2px solid Canvas;
+        }
+        #system-colors { color:CanvasText; background:Canvas; }
       </style></head><body><p id="message-content-fixture">Regular <strong>bold</strong> <em>italic</em> <code>code</code></p>
       <button id="primary" class="vc-btn-base vc-btn-medium">Host control</button><button id="secondary">Secondary control</button>
       <a id="mention" href="#fixture">Mention</a>
-      <span class="switch">Off</span><span class="switch checked">On<span class="vc-switch-indicator">Indicator</span></span></body></html>`);
+      <span class="switch">Off</span><span class="switch checked">On<span class="vc-switch-indicator">Indicator</span></span>
+      <div class="native-control"><div id="native-slider" role="slider" tabindex="0" aria-valuemin="12" aria-valuemax="24" aria-valuenow="16" aria-label="Fixture text size"></div>
+        <div id="native-ring" class="focus-rings-ring" style="--__adaptive-focus-ring-color:rgba(255,255,255,0.7);--__adaptive-focus-ring-radius:9px"></div></div>
+      <span id="system-colors">System color reference</span></body></html>`);
+      // Color, radius, pointer and forced-color rules model the inspected host.
+      // Position and size are deliberate fixture geometry, not native evidence.
+      const nativeRing = () => page.locator('#native-ring').evaluate(node => {
+        const style = getComputedStyle(node), box = node.getBoundingClientRect();
+        const parentBox = node.parentElement.getBoundingClientRect();
+        return {
+          shadow:style.boxShadow, adaptiveColor:style.getPropertyValue('--__adaptive-focus-ring-color').trim(),
+          display:style.display, forcedColorAdjust:style.forcedColorAdjust,
+          border:{ width:style.borderTopWidth, style:style.borderTopStyle, color:style.borderTopColor },
+          geometry:{ width:box.width, height:box.height, x:box.x - parentBox.x, y:box.y - parentBox.y,
+            position:style.position, radius:style.borderRadius, pointerEvents:style.pointerEvents },
+        };
+      });
+      await page.locator('#native-slider').focus();
+      const originalNativeRing = await nativeRing();
+      assert.equal(originalNativeRing.shadow, 'rgba(255, 255, 255, 0.7) 0px 0px 0px 4px');
       await page.addStyleTag({ content: css });
       await page.evaluate(() => document.fonts.ready);
       await page.mouse.move(1270, 890);
@@ -1315,9 +1350,36 @@ test('Equicord CSS consumes host variables only on its matching native base', as
       await page.locator('.checked').evaluate(node => node.classList.add('vc-switch-focusVisible'));
       assert.equal(await page.locator('.vc-switch-indicator').evaluate(node => getComputedStyle(node).outlineColor), color(expected.focus));
       assert.equal(await page.locator('.vc-switch-indicator').evaluate(node => getComputedStyle(node).outlineWidth), '2px');
+      await page.locator('#native-slider').focus();
+      const nativeFocus = await nativeRing();
+      assert.equal(nativeFocus.display, 'block');
+      assert.equal(await page.locator(':focus').getAttribute('id'), 'native-slider');
+      assert.equal(nativeFocus.shadow, nativeFocusRepair ? `${color(expected.focus)} 0px 0px 0px 4px` : originalNativeRing.shadow);
+      assert.deepEqual(nativeFocus.geometry, originalNativeRing.geometry);
+      assert.equal(nativeFocus.geometry.radius, '9px');
+      assert.equal(nativeFocus.geometry.pointerEvents, 'none');
+      const hitTarget = await page.locator('#native-slider').evaluate(node => {
+        const box = node.getBoundingClientRect();
+        return document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2)?.id;
+      });
+      assert.equal(hitTarget, 'native-slider', 'The overlay must not capture the control hit target');
+      await page.emulateMedia({ forcedColors:'active' });
+      await page.evaluate(() => document.documentElement.classList.add('enable-forced-colors'));
+      const forcedNativeFocus = await nativeRing();
+      const systemColors = await page.locator('#system-colors').evaluate(node => ({
+        text:getComputedStyle(node).color, canvas:getComputedStyle(node).backgroundColor,
+      }));
+      assert.equal(forcedNativeFocus.adaptiveColor, 'CanvasText', 'The host important system-color rule must win');
+      assert.equal(forcedNativeFocus.forcedColorAdjust, 'none');
+      assert.equal(forcedNativeFocus.shadow, `${systemColors.text} 0px 0px 0px 4px`);
+      assert.deepEqual(forcedNativeFocus.border, { width:'2px', style:'solid', color:systemColors.canvas });
+      assert.deepEqual(forcedNativeFocus.geometry, originalNativeRing.geometry);
+      await page.emulateMedia({ forcedColors:'none' });
       await page.evaluate(value => document.documentElement.className = `theme-${value}`, mode === 'dark' ? 'light' : 'dark');
       assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(171, 205, 239)');
-      results.scenarios.push({ name: `${name} Equicord host-contract fixture`, status: 'passed', rendered, focus,
+      assert.deepEqual(await nativeRing(), originalNativeRing, 'The opposite appearance must retain its native ring baseline');
+      results.scenarios.push({ name: `${filename} Equicord host-contract fixture`, status: 'passed', rendered, focus,
+        nativeFocus:{ original:originalNativeRing, candidate:nativeFocus, forced:forcedNativeFocus, nativeFocusRepair, hitTarget },
         pairedStates: 'primary, secondary and mention default/hover; separate keyboard and switch-class focus',
         oppositeBase: 'retains fixture native baseline', nativeAppVerified: false });
     }

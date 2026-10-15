@@ -32,9 +32,14 @@ FontLoader and similar plugins can override font variables. The inspected upstre
 | `.vc-switch-*` and `--switch-*` | Equicord toggles | Confirmed in the installed Equicord renderer CSS and current upstream. Host owns checkmarks, position and disabled behavior. |
 | `.vc-btn-*` and `--control-primary-*`, `--control-secondary-*` | Equicord settings buttons | Current upstream contract. Small and medium text buttons use actual 600 weight. Native danger/positive filled-button pairs remain intact. |
 | `:focus-visible` | Visible keyboard focus | Existing native focus remains. The theme adds a two-pixel outline to semantic controls. |
+| `.focus-rings-ring` in Clair 0.1.2 | Native adaptive ring color | Changes only `--__adaptive-focus-ring-color`. Low selector specificity retains the host's stronger important forced-color rule. The original 0.1.1 packages do not include this correction. |
 | Forced colors and reduced motion media queries | System colors and no toggle transition | Not proof that every Discord animation or every OS accessibility setting is covered. |
 
 Status, role and user-content colors are not globally converted to the family palette. Semantic feedback retains separate success, warning and error tokens. Essential controls use borders and native checkmarks as well as color. Code syntax highlighting remains host-owned and must be checked with the matching base mode.
+
+The October 14 native comparison reproduced pale focus rings on Clair 0.1.1's chat-size slider and off switch. Disabling Clair restored clear blue rings on the same native Light controls, and enabling it again reproduced the loss. The loaded host ring stylesheet used an adaptive color before `--focus-primary`. Its loaded color-selection code chose translucent white for sufficiently saturated ancestor colors without explicit theme options. HSL saturation can be high for a nearly white warm surface, which is consistent with this observed failure. The correction supplies Clair's existing focus token to that ring without replacing the ring implementation.
+
+The inspected loaded assets were [the ring stylesheet](https://discord.com/assets/193433.6c7be9d5d6e8b51f.css) and [the adaptive color implementation](https://discord.com/assets/413758.1ce7d69dfa82669c.js). These records came from the running client's read-only Sources view. Direct acquisition of the separately inspected slider stylesheet was unavailable. The actual before/after native result and remaining coverage are recorded in [acceptance](acceptance.md).
 
 ## Source inspection
 

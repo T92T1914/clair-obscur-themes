@@ -1,5 +1,11 @@
 # Changes
 
+## Clair Equicord 0.1.2 candidate
+
+- Keep native keyboard-focus rings visible on Clair's warm light surfaces. The original 0.1.1 file reproduced pale slider and switch rings in the recorded Equibop client, while the same native Light controls without Clair had clear blue rings.
+- Correct only the existing ring's color variable. Preserve the host's dimensions, placement, input behavior and stronger forced-color rule.
+- Retain the original Chrome and Equicord 0.1.1 packages and all other accepted package bytes. The existing Clair Equicord download choice uses the separately named successor.
+
 ## Unreleased platform candidates
 
 - Generate color-only Firefox 0.2.0 static themes, with manual browser appearance and the system website preference preserved.
