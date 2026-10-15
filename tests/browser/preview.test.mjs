@@ -523,7 +523,19 @@ async function assertTextSpacing(page, baseline) {
       counts.admitted++;
     }
     if (getComputedStyle(document.documentElement).fontSize !== rootFontSize || innerWidth !== width) errors.push('spacing changed the root font size or viewport');
-    return { errors: [...new Set(errors)], counts, minimumRatios, nativeSelectLineHeight, width: innerWidth, documentWidth: document.documentElement.scrollWidth };
+    const overflow = [];
+    if (document.documentElement.scrollWidth > innerWidth + 1) {
+      for (const node of document.querySelectorAll('body *')) {
+        const box = node.getBoundingClientRect();
+        if (box.width && !node.closest('pre, .skip') && (box.left < -1 || box.right > innerWidth + 1 || node.scrollWidth > node.clientWidth + 1)) {
+          overflow.push({ element: label(node), text: node.textContent.trim().slice(0, 90),
+            left: box.left, right: box.right, width: box.width, scrollWidth: node.scrollWidth,
+            clientWidth: node.clientWidth, font: getComputedStyle(node).fontFamily });
+        }
+      }
+    }
+    return { errors: [...new Set(errors)], counts, minimumRatios, nativeSelectLineHeight, width: innerWidth,
+      documentWidth: document.documentElement.scrollWidth, overflow: overflow.slice(0, 12) };
   }, baseline);
   assert.deepEqual(observed.errors, [], observed.errors.slice(0, 12).join('\n'));
   assert.equal(observed.counts.retained, baseline.nodes.length);
