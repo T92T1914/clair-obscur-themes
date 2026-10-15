@@ -1,6 +1,6 @@
 # Install, switch and remove
 
-Each target below has its own prerequisites, installation, switching, removal, font and troubleshooting guidance. Read [platform portability](platform-portability.md) before testing them. The original Chrome and Equicord instructions below remain applicable to their unchanged 0.1.1 files. No native app installation or settings change is performed by the builder.
+Each target below has its own prerequisites, installation, switching, removal, font and troubleshooting guidance. Read [platform portability](platform-portability.md) before testing them. The original Chrome and Equicord 0.1.1 files remain available unchanged. Clair Equicord 0.1.2 is a separate correction for native focus visibility, with the same installation and restoration procedure. No native app installation or settings change is performed by the builder.
 
 These are local preview packages. Native Chrome and Equibop acceptance is still pending as described in [acceptance.md](acceptance.md). Keep a recoverable record of existing theme choices before changing them. Do not copy an authenticated browser profile, replace QuickCSS or remove unrelated plugins to try a theme.
 
@@ -10,7 +10,9 @@ These are local preview packages. Native Chrome and Equibop acceptance is still 
 | --- | --- | --- |
 | Chrome extracted development theme | `dist/chrome/clair/` | `dist/chrome/obscur/` |
 | Chrome ZIP | `dist/artifacts/Clair-Chrome-0.1.1.zip` | `dist/artifacts/Obscur-Chrome-0.1.1.zip` |
-| Equicord local CSS | `dist/equicord/Clair.theme.css` | `dist/equicord/Obscur.theme.css` |
+| Equicord local CSS | `dist/equicord/Clair-Equicord-0.1.2.theme.css` | `dist/equicord/Obscur.theme.css` |
+
+The original Clair Equicord 0.1.1 file remains at `dist/equicord/Clair.theme.css` and its historical release URL. Use one Clair file at a time. The preview's existing Clair Equicord choice selects 0.1.2 and records its own hash and version.
 
 Use the hashes from the same build as the package. The Chrome ZIP contains `manifest.json`, its icon and the complete MIT grant in `LICENSE.txt`. Each standalone Equicord CSS file carries the same grant in a separate comment after its loader metadata. Retain these notices when sharing a package. A Chrome ZIP is not a signed store installation or evidence of Chrome Web Store approval.
 
@@ -23,7 +25,7 @@ python build.py --tokens tokens.json --output dist
 python build.py --tokens tokens.json --output dist --check
 ```
 
-The first command generates thirteen distinct download files for seventeen choices. The second regenerates into a temporary staging directory and compares every output byte without rewriting `dist`. Both commands operate on files only. Neither installs a theme, opens an application or publishes anything.
+The build offers seventeen choices backed by thirteen distinct selected download files. It also retains the original Clair Equicord 0.1.1 payload beside its successor. The second command regenerates into a temporary staging directory and compares every output byte without rewriting `dist`. Both commands operate on files only. Neither installs a theme, opens an application or publishes anything.
 
 The output includes `dist/artifact-manifest.json` and `dist/SHA256SUMS`. Keep them with their corresponding artifacts. The builder rejects an output tree containing foreign, modified or incomplete files instead of overwriting them. If a check reports a difference after a source edit, build into a new output directory and inspect the change. Do not manually patch generated CSS or manifests.
 
@@ -33,7 +35,7 @@ An interruption while switching the generated directory restores the previous bu
 
 ### Prerequisites and status
 
-Use an already installed Equibop client with Equicord's local theme loader. The unchanged 0.1.1 files have limited native Clair and Obscur loading, mode-gate and restoration evidence. Full client coverage, four native font faces, restart persistence and physical reading acceptance remain open. No client installation is part of this guide.
+Use an already installed Equibop client with Equicord's local theme loader. The unchanged 0.1.1 files have limited native Clair and Obscur loading, mode-gate and restoration evidence. Full client coverage, complete native face and fallback coverage, restart persistence and physical reading acceptance remain open. No client installation is part of this guide.
 
 ### Install
 

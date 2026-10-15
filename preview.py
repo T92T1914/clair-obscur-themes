@@ -12,7 +12,7 @@ import subprocess
 import tempfile
 
 from themeforge.build import (
-    _cleanup_scope, _digest, _inventory, _json_bytes, _linked, _output_lock, _retire_stage,
+    CLAIR_EQUICORD_FOCUS_PATH, _cleanup_scope, _digest, _inventory, _json_bytes, _linked, _output_lock, _retire_stage,
     _safe_destination, _verify_owned, _zip_bytes, build_release,
 )
 from themeforge.equicord import FACES
@@ -192,6 +192,8 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
     for path in ('vivaldi/LICENSE.txt', 'opera-gx/LICENSE.txt'):
         if snapshot[path] != license_bytes:
             raise ValueError('Source license differs from the browser candidate grants')
+    if license_comment not in snapshot[CLAIR_EQUICORD_FOCUS_PATH]:
+        raise ValueError('Source license differs from the verified Clair focus package grant')
     identity = source_identity(root, sources, expected_revision)
     version = document['version']
     release_url = f'{REPOSITORY_URL}/releases/download/v{version}'

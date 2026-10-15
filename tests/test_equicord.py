@@ -4,7 +4,9 @@ import re
 from pathlib import Path
 import unittest
 
-from themeforge.equicord import FACES, HOST_TOKENS, TOKEN_NAMES, render_theme
+from themeforge.equicord import (
+    FACES, HOST_TOKENS, TOKEN_NAMES, render_clair_native_focus, render_theme,
+)
 
 
 def palette():
@@ -13,6 +15,33 @@ def palette():
 
 
 class EquicordThemeTests(unittest.TestCase):
+    def test_clair_native_focus_candidate_extends_only_its_versioned_base(self):
+        css = render_clair_native_focus(palette())
+        base = render_theme("Clair", palette(), "0.1.2")
+        suffix = """
+/* Override the host's inline adaptive color without replacing its focus ring. */
+:where(.theme-light) .focus-rings-ring {
+  --__adaptive-focus-ring-color: var(--co-focus) !important;
+}
+"""
+        self.assertEqual(css, base + suffix)
+        header = dict(re.findall(r"^ \* @(\w+) (.+)$", css, re.MULTILINE))
+        self.assertEqual(header["name"], "Clair")
+        self.assertEqual(header["version"], "0.1.2")
+        self.assertEqual(css.count("--__adaptive-focus-ring-color:"), 1)
+        self.assertNotIn(".focus-rings-ring", render_theme("Clair", palette(), "0.1.1"))
+        self.assertNotIn(".focus-rings-ring", render_theme("Obscur", palette(), "0.1.1"))
+
+    def test_clair_native_focus_candidate_keeps_source_validation(self):
+        broken = palette()
+        del broken["canvas"]
+        with self.assertRaisesRegex(ValueError, "Missing theme tokens: canvas"):
+            render_clair_native_focus(broken)
+        for bad in ("red", "#fff", "#ffffff; background:red", None, 123):
+            with self.subTest(value=bad):
+                with self.assertRaisesRegex(ValueError, "Token focus"):
+                    render_clair_native_focus({**palette(), "focus": bad})
+
     def test_complete_license_follows_the_loader_metadata_in_its_own_comment(self):
         canonical = (Path(__file__).resolve().parents[1] / "LICENSE").read_text(encoding="utf-8")
         for name in ("Clair", "Obscur"):

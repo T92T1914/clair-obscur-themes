@@ -60,6 +60,45 @@ class PreviewTests(unittest.TestCase):
         for entry in release['files']:
             self.assertEqual(hashlib.sha256(first['downloads/' + entry['path']]).hexdigest(), entry['sha256'])
 
+    def test_clair_equicord_chooser_uses_corrected_package_without_replacing_original(self):
+        files = preview_files(ROOT, self.artifacts)
+        manifest = json.loads(files['downloads/artifact-manifest.json'])
+        corrected = 'equicord/Clair-Equicord-0.1.2.theme.css'
+        original = 'equicord/Clair.theme.css'
+        record = next(item for item in manifest['downloads']
+                      if item['platform'] == 'equicord' and item['name'] == 'Clair')
+        self.assertEqual(record['path'], corrected)
+        self.assertEqual(record['version'], '0.1.2')
+        self.assertEqual(len(manifest['downloads']), 17)
+        self.assertEqual(len({item['path'] for item in manifest['downloads']}), 13)
+        self.assertEqual(len(manifest['files']), 30)
+        with zipfile.ZipFile(io.BytesIO(files[PORTABLE_ARCHIVE])) as archive:
+            for delivery in (files, {path: archive.read(path) for path in archive.namelist()}):
+                page = delivery['index.html'].decode()
+                card = re.search(r'<article id="equicord-clair".*?</article>', page, re.DOTALL).group()
+                self.assertIn('Preview 0.1.2', card)
+                self.assertIn(f'href="downloads/{corrected}"', card)
+                self.assertNotIn(f'href="downloads/{original}"', card)
+                guide = re.search(r'<div[^>]+id="guide-equicord-clair".*?</div>', page, re.DOTALL).group()
+                self.assertIn('Package 0.1.2.', guide)
+                self.assertIn(f'href="downloads/{corrected}"', guide)
+                self.assertEqual(hashlib.sha256(delivery['downloads/' + original]).hexdigest(),
+                                 '0f3337db8fc9ea35ff52e36e0d1028d242f1af30e2c1edd144af11939173f847')
+                self.assertIn('@version 0.1.2', delivery['downloads/' + corrected].decode())
+                release = 'https://github.com/T92T1914/clair-obscur-themes/releases/download/v0.1.1'
+                self.assertIn(f'id="released-source" href="{release}/source.zip"', page)
+                self.assertIn(f'id="released-checksums" href="{release}/release-SHA256SUMS"', page)
+
+    def test_corrected_clair_package_retains_source_license_snapshot(self):
+        snapshot = {path.relative_to(self.artifacts).as_posix(): path.read_bytes()
+                    for path in self.artifacts.rglob('*') if path.is_file()}
+        corrected = 'equicord/Clair-Equicord-0.1.2.theme.css'
+        snapshot[corrected] = snapshot[corrected].replace(
+            b'Permission is hereby granted', b'Permission was omitted')
+        with patch('preview._verify_owned', return_value=snapshot):
+            with self.assertRaisesRegex(ValueError, 'Source license differs.*Clair focus'):
+                preview_files(ROOT, self.artifacts)
+
     def test_chooser_has_explicit_target_and_independent_package_appearance_in_both_deliveries(self):
         files = preview_files(ROOT, self.artifacts)
         manifest = json.loads(files['downloads/artifact-manifest.json'])
