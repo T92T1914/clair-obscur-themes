@@ -421,6 +421,306 @@ async function waitForPackageState(page, state) {
   await done.dispose();
 }
 
+// These are user spacing overrides, not new design defaults. The separate
+// Japanese and Arabic samples retain their writing-system-specific spacing.
+const textSpacingOverride = `
+  body :is(a, p, h1, h2, h3, h4, blockquote, span, strong, b, em, mark, code, pre, label, button, input, select, option, summary, small, li):not(:lang(ja), :lang(ar)) {
+    line-height: 1.5 !important;
+    letter-spacing: .12em !important;
+    word-spacing: .16em !important;
+  }
+  p:not(:lang(ja), :lang(ar)) { margin-block-end: 2em !important; }
+`;
+const spacingPackages = {
+  Clair: { path: 'equicord/Clair-Equicord-0.1.2.theme.css', version: '0.1.2',
+    sha256: '0d2184455e281c2e8cd9d5791006a7cc1939a3a5553253c7a6e45b5991bd8054' },
+  Obscur: { path: 'equicord/Obscur.theme.css', version: '0.1.1',
+    sha256: 'b2fc01e87f749c1138ca5635eb77f1463d2bcb2eac6d5de898bb8d840741d1dd' },
+};
+
+async function spacingContentBaseline(page) {
+  return page.evaluate(() => {
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    for (let node; (node = walker.nextNode());) {
+      const parent = node.parentElement;
+      if (!node.textContent.trim() || parent.closest('script, style, noscript, option, legend, .skip, #package-chooser, #local-package-checker, #appearance-status, #control-status')) continue;
+      const range = document.createRange(); range.selectNodeContents(node);
+      if (!range.getClientRects().length || getComputedStyle(parent).visibility !== 'visible') continue;
+      const steps = [];
+      for (let part = node; part !== document.body; part = part.parentNode) {
+        steps.unshift([...part.parentNode.childNodes].indexOf(part));
+      }
+      const style = getComputedStyle(parent);
+      nodes.push({ steps, text: node.textContent,
+        typography: [style.fontSize, style.fontFamily, style.fontWeight, style.fontStyle],
+        languageSpacing: parent.matches(':lang(ja), :lang(ar)')
+          ? [style.lineHeight, style.letterSpacing, style.wordSpacing, style.marginBlockEnd] : null });
+    }
+    return { nodes, rootFontSize: getComputedStyle(document.documentElement).fontSize, width: innerWidth };
+  });
+}
+
+async function assertTextSpacing(page, baseline) {
+  const observed = await page.evaluate(({ nodes, rootFontSize, width }) => {
+    const errors = [], nativeSelectLineHeight = [], counts = { retained: 0, admitted: 0, paragraphs: 0 };
+    const minimumRatios = { lineHeight: Infinity, letterSpacing: Infinity, wordSpacing: Infinity, paragraph: Infinity };
+    const label = node => node.id || node.tagName.toLowerCase();
+    function inspectText(node) {
+      const parent = node.parentElement, range = document.createRange();
+      range.selectNodeContents(node);
+      const rects = [...range.getClientRects()];
+      if (!rects.length || rects.every(rect => !rect.width || !rect.height)) errors.push(`text unavailable: ${label(parent)}`);
+      for (let ancestor = parent; ancestor; ancestor = ancestor.parentElement) {
+        const style = getComputedStyle(ancestor), box = ancestor.getBoundingClientRect();
+        if (style.visibility !== 'visible' || style.display === 'none' || Number(style.opacity) === 0) errors.push(`text unavailable: ${label(ancestor)}`);
+        // Intentionally scrollable code remains available through its own pane.
+        for (const rect of rects) {
+          if (['hidden', 'clip'].includes(style.overflowX) && (rect.left < box.left - 1 || rect.right > box.right + 1)) errors.push(`text clipped horizontally: ${label(ancestor)}`);
+          if (['hidden', 'clip'].includes(style.overflowY) && (rect.top < box.top - 1 || rect.bottom > box.bottom + 1)) errors.push(`text clipped vertically: ${label(ancestor)}`);
+        }
+      }
+    }
+    for (const expected of nodes) {
+      const node = expected.steps.reduce((parent, index) => parent?.childNodes[index], document.body);
+      if (!node || node.nodeType !== Node.TEXT_NODE || node.textContent !== expected.text) { errors.push('retained text changed or disappeared'); continue; }
+      inspectText(node);
+      const style = getComputedStyle(node.parentElement);
+      const typography = [style.fontSize, style.fontFamily, style.fontWeight, style.fontStyle];
+      if (JSON.stringify(typography) !== JSON.stringify(expected.typography)) errors.push(`non-spacing typography changed: ${label(node.parentElement)}`);
+      if (expected.languageSpacing && JSON.stringify(expected.languageSpacing) !== JSON.stringify([style.lineHeight, style.letterSpacing, style.wordSpacing, style.marginBlockEnd])) errors.push(`writing-system sample spacing changed: ${label(node.parentElement)}`);
+      counts.retained++;
+    }
+    const elements = new Set(document.querySelectorAll('button, input:not([type="checkbox"]), select, summary'));
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    for (let node; (node = walker.nextNode());) {
+      const parent = node.parentElement;
+      if (!node.textContent.trim() || parent.closest('script, style, noscript, option, legend, .skip')) continue;
+      const range = document.createRange(); range.selectNodeContents(node);
+      const requiredResult = parent.closest('#package-choice-result:not([hidden]), #local-package-result:not([hidden])');
+      if (!requiredResult && (!range.getClientRects().length || getComputedStyle(parent).visibility !== 'visible')) continue;
+      inspectText(node);
+      elements.add(parent);
+    }
+    for (const node of elements) {
+      if (node.matches(':lang(ja), :lang(ar)') || !node.getClientRects().length) continue;
+      const style = getComputedStyle(node), size = parseFloat(style.fontSize);
+      for (const [property, minimum] of [['lineHeight', 1.5], ['letterSpacing', .12], ['wordSpacing', .16]]) {
+        if (node.tagName === 'SELECT' && property === 'lineHeight' && style.lineHeight === 'normal') {
+          nativeSelectLineHeight.push({ id: node.id, fontSize: style.fontSize, computed: style.lineHeight,
+            letterSpacing: style.letterSpacing, wordSpacing: style.wordSpacing,
+            scope: 'unverified native select metric; not admitted as 1.5' });
+          continue;
+        }
+        minimumRatios[property] = Math.min(minimumRatios[property], parseFloat(style[property]) / size);
+        if (!(parseFloat(style[property]) + .02 >= size * minimum)) errors.push(`spacing admission ${property}: ${label(node)} = ${style[property]}`);
+      }
+      if (node.tagName === 'P') {
+        minimumRatios.paragraph = Math.min(minimumRatios.paragraph, parseFloat(style.marginBlockEnd) / size);
+        if (!(parseFloat(style.marginBlockEnd) + .02 >= size * 2)) errors.push(`spacing admission paragraph: ${label(node)} = ${style.marginBlockEnd}`);
+        counts.paragraphs++;
+      }
+      counts.admitted++;
+    }
+    if (getComputedStyle(document.documentElement).fontSize !== rootFontSize || innerWidth !== width) errors.push('spacing changed the root font size or viewport');
+    return { errors: [...new Set(errors)], counts, minimumRatios, nativeSelectLineHeight, width: innerWidth, documentWidth: document.documentElement.scrollWidth };
+  }, baseline);
+  assert.deepEqual(observed.errors, [], observed.errors.slice(0, 12).join('\n'));
+  assert.equal(observed.counts.retained, baseline.nodes.length);
+  assert.ok(observed.counts.retained > 150 && observed.counts.paragraphs > 50, 'Admit the real page, not an empty specimen');
+  assert.ok(observed.documentWidth <= observed.width + 1, JSON.stringify(observed));
+  return observed;
+}
+
+async function spacingKeyboardFocus(page, locator) {
+  await locator.focus();
+  await page.keyboard.press('Tab'); await page.keyboard.press('Shift+Tab');
+  assert.ok(await locator.evaluate(node => document.activeElement === node));
+  assert.ok(await locator.isVisible());
+  assert.equal(await locator.evaluate(node => getComputedStyle(node).outlineWidth), '2px');
+}
+
+async function chooseSpacingPackage(page, appearance) {
+  const target = page.locator('#package-target');
+  await spacingKeyboardFocus(page, target);
+  await page.keyboard.press('Home');
+  await page.keyboard.press('ArrowDown'); await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Tab');
+  assert.equal(await target.inputValue(), 'equicord');
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'package-appearance');
+  await page.keyboard.press('Home');
+  if (appearance === 'Clair') await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Tab');
+  assert.equal(await page.locator('#package-appearance').inputValue(), appearance);
+  assert.ok(await page.locator('#package-choice-result').isVisible(), 'chooser did not render the selected package');
+  const expected = spacingPackages[appearance];
+  assert.equal(await page.locator('#package-choice-file').getAttribute('href'), 'downloads/' + expected.path);
+  assert.equal(await page.locator('#package-choice-guide').getAttribute('href'), '#guide-equicord-' + appearance.toLowerCase());
+  const text = await page.locator('#package-choice-result').innerText();
+  assert.ok(text.includes('Package ' + expected.version) && text.includes(expected.sha256));
+  assert.match(await page.locator('#package-choice-status').innerText(), new RegExp('Selected ' + appearance));
+  return expected;
+}
+
+async function assertSpacingIdentity(page, locator, appearance, expected, { chooser = false } = {}) {
+  const normalized = text => text.replace(/\s+/g, ' ').trim();
+  const visible = normalized(await locator.innerText());
+  const excerpts = [`${appearance} for Equibop ${chooser ? '+' : 'with'} Equicord`, 'Package ' + expected.version,
+    'downloads/' + expected.path, expected.sha256,
+    await page.locator('#equicord-downloads > p').first().textContent(),
+    await page.locator('#equicord-' + appearance.toLowerCase() + ' small').first().textContent(),
+    await page.locator('#client-mod-limits').textContent()];
+  for (const excerpt of excerpts) assert.ok(visible.includes(normalized(excerpt)), `required package text unavailable: ${excerpt}`);
+}
+
+async function spacingPackageJourney(page, appearance, baseline) {
+  const expected = await chooseSpacingPackage(page, appearance);
+  const assertAppearance = async () => assert.equal(await page.locator('html').getAttribute('data-theme'), appearance);
+  await assertAppearance();
+  await assertSpacingIdentity(page, page.locator('#package-choice-result'), appearance, expected, { chooser: true });
+  await assertTextSpacing(page, baseline);
+  await spacingKeyboardFocus(page, page.locator('#package-choice-guide'));
+  await page.keyboard.press('Enter');
+  await waitForGuideDestination(page, 'guide-equicord-' + appearance.toLowerCase());
+  const guide = page.locator('#guide-equicord-' + appearance.toLowerCase());
+  assert.ok((await guide.innerText()).includes(expected.sha256));
+  await guide.locator('a[href="#guide-equicord-procedure"]').focus();
+  await page.keyboard.press('Enter'); await waitForGuideDestination(page, 'guide-equicord-procedure');
+  const procedure = page.locator('#guide-equicord-procedure');
+  for (const heading of ['Install', 'Switch', 'Remove and restore']) assert.ok(await procedure.getByRole('heading', { name: heading, exact: true }).isVisible());
+  assert.match(await procedure.innerText(), /Open Themes Folder/);
+  await assertTextSpacing(page, baseline); await assertAppearance();
+  await spacingKeyboardFocus(page, page.locator('#package-choice-file'));
+  const [saved] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }), page.keyboard.press('Enter')]);
+  assert.equal(await saved.failure(), null); assert.equal(saved.suggestedFilename(), path.basename(expected.path));
+  const chunks = []; for await (const chunk of await saved.createReadStream()) chunks.push(chunk);
+  const bytes = Buffer.concat(chunks);
+  assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'), expected.sha256);
+  const input = page.locator('#local-package-file');
+  await spacingKeyboardFocus(page, input);
+  await input.setInputFiles({ name: path.basename(expected.path), mimeType: 'text/css', buffer: bytes });
+  await waitForPackageState(page, 'matched');
+  assert.equal(await page.locator('.local-file-hash code').textContent(), expected.sha256);
+  assert.equal(await page.locator('#local-package-result .identified-package').count(), 1);
+  assert.equal(await page.locator('#local-package-result .guide-link').getAttribute('href'), '#guide-equicord-' + appearance.toLowerCase());
+  await assertSpacingIdentity(page, page.locator('#local-package-result .identified-package'), appearance, expected);
+  await assertTextSpacing(page, baseline); await assertAppearance();
+  const changed = Buffer.from(bytes); changed[0] ^= 1;
+  await input.setInputFiles({ name: path.basename(expected.path), mimeType: 'text/css', buffer: changed });
+  await waitForPackageState(page, 'no-match');
+  assert.equal(await page.locator('.local-file-hash code').textContent(), crypto.createHash('sha256').update(changed).digest('hex'));
+  assert.equal(await page.locator('#local-package-result .identified-package').count(), 0);
+  await assertTextSpacing(page, baseline);
+  await spacingKeyboardFocus(page, page.locator('#local-package-clear'));
+  await page.keyboard.press('Enter'); await waitForPackageState(page, 'idle');
+  assert.equal(await input.evaluate(node => node.files.length), 0);
+  assert.ok(await page.locator('#local-package-result').isHidden());
+  await assertAppearance();
+  assert.equal(await page.locator('#package-target').inputValue(), 'equicord');
+  assert.equal(await page.locator('#package-appearance').inputValue(), appearance);
+  return { path: expected.path, sha256: expected.sha256, guide: 'guide-equicord-' + appearance.toLowerCase(),
+    keyboardSelection: true, actualDownload: true, matchedAndChangedBytes: true, clear: true };
+}
+
+test('text spacing alone preserves content and the keyboard package journey in both appearances', async () => {
+  for (const appearance of ['Obscur', 'Clair']) {
+    const { context, page, consoleErrors } = await pageFor();
+    try {
+      await page.getByRole('button', { name: appearance, exact: true }).focus(); await page.keyboard.press('Enter');
+      const baseline = await spacingContentBaseline(page);
+      assert.equal(baseline.rootFontSize, '16px'); assert.equal(baseline.width, 1280);
+      await page.addStyleTag({ content: textSpacingOverride });
+      const admission = await assertTextSpacing(page, baseline);
+      const journey = await spacingPackageJourney(page, appearance, baseline);
+      assert.deepEqual(consoleErrors, []);
+      results.scenarios.push({ name: 'text spacing only', appearance, status: 'passed', admission, journey,
+        scope: 'four spacing overrides at unchanged default typography; English text, not native application or full WCAG acceptance' });
+    } finally { await context.close(); }
+  }
+});
+
+test('text spacing with narrow layout and enlarged fallback text is separate additional stress', async () => {
+  for (const scenario of [{ width: 390, scale: 100, missingFont: false }, { width: 320, scale: 200, missingFont: true }]) {
+    for (const appearance of ['Obscur', 'Clair']) {
+      const { context, page, consoleErrors } = await pageFor({ viewport: { width: scenario.width, height: 844 }, missingFont: scenario.missingFont });
+      try {
+        if (scenario.scale === 200) await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+        await page.getByRole('button', { name: appearance, exact: true }).focus(); await page.keyboard.press('Enter');
+        const baseline = await spacingContentBaseline(page);
+        assert.equal(baseline.rootFontSize, scenario.scale === 200 ? '32px' : '16px');
+        await page.addStyleTag({ content: textSpacingOverride });
+        const admission = await assertTextSpacing(page, baseline);
+        const journey = await spacingPackageJourney(page, appearance, baseline);
+        assert.deepEqual(consoleErrors, []);
+        results.scenarios.push({ name: 'text spacing additional responsive stress', appearance, ...scenario, status: 'passed', admission, journey,
+          scope: 'narrow viewport and optional root-font enlargement, not browser zoom or spacing-only conformance' });
+      } finally { await context.close(); }
+    }
+  }
+});
+
+test('text spacing keeps the no-script catalog and keyboard installation routes readable', async () => {
+  const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false });
+  try {
+    const baseline = await spacingContentBaseline(page);
+    // Loading CSS does not depend on page script or a script-driven style-load
+    // promise. Preserve the real script-disabled route throughout this check.
+    await page.route('**/preview.css', async route => route.fulfill({ contentType: 'text/css',
+      body: await readFile(path.join(site, 'preview.css'), 'utf8') + textSpacingOverride }));
+    await page.reload();
+    const admission = await assertTextSpacing(page, baseline);
+    assert.ok(await page.locator('#package-chooser').isHidden());
+    assert.ok(await page.locator('#local-package-checker').isHidden());
+    for (const appearance of ['Obscur', 'Clair']) {
+      assert.ok(await page.locator(`[data-palette="${appearance}"]`).isVisible());
+      const expected = spacingPackages[appearance], card = page.locator('#equicord-' + appearance.toLowerCase());
+      await spacingKeyboardFocus(page, card.locator('.guide-link')); await page.keyboard.press('Enter');
+      await waitForGuideDestination(page, 'guide-equicord-' + appearance.toLowerCase());
+      assert.ok((await page.locator('#guide-equicord-' + appearance.toLowerCase()).innerText()).includes(expected.sha256));
+      await spacingKeyboardFocus(page, card.locator('a[download]'));
+      const [saved] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }), page.keyboard.press('Enter')]);
+      const chunks = []; for await (const chunk of await saved.createReadStream()) chunks.push(chunk);
+      assert.equal(await saved.failure(), null);
+      assert.equal(crypto.createHash('sha256').update(Buffer.concat(chunks)).digest('hex'), expected.sha256);
+    }
+    await assertTextSpacing(page, baseline);
+    assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: 'text spacing no-script static routes', status: 'passed', admission,
+      scope: 'default reading appearance and both static palettes, not an operable no-script appearance switch' });
+  } finally { await context.close(); }
+});
+
+test('text spacing qualification rejects a missing override, clipped prose and an inert chooser', async () => {
+  for (const fault of ['word-spacing', 'clipped-prose', 'inert-chooser']) {
+    const { context, page } = await pageFor({ setup: async context => {
+      if (fault !== 'inert-chooser') return;
+      const source = await readFile(path.join(site, 'preview.js'), 'utf8');
+      const listener = "target.addEventListener('change', updatePackageChoice);";
+      assert.equal(source.split(listener).length, 2, 'The controlled fault must target the real listener');
+      await context.route('**/preview.js', route => route.fulfill({ contentType: 'text/javascript', body: source.replace(listener, '') }));
+    } });
+    try {
+      const baseline = await spacingContentBaseline(page);
+      await page.addStyleTag({ content: fault === 'word-spacing' ? textSpacingOverride.replace('word-spacing: .16em !important;', '') : textSpacingOverride });
+      if (fault === 'word-spacing') await assert.rejects(assertTextSpacing(page, baseline), /spacing admission wordSpacing/);
+      if (fault === 'clipped-prose') {
+        await chooseSpacingPackage(page, 'Obscur');
+        const clipping = await page.addStyleTag({ content: '#package-choice-result p { height: 1px !important; overflow: hidden !important; }' });
+        await assert.rejects(assertTextSpacing(page, baseline), /text clipped vertically/);
+        await clipping.evaluate(node => node.remove());
+        await page.addStyleTag({ content: '#package-choice-result .package-choice-path { display: none !important; }' });
+        await assert.rejects(assertTextSpacing(page, baseline), /text unavailable/);
+        await assert.rejects(assertSpacingIdentity(page, page.locator('#package-choice-result'), 'Obscur', spacingPackages.Obscur, { chooser: true }), /required package text unavailable/);
+      }
+      if (fault === 'inert-chooser') {
+        await assertTextSpacing(page, baseline);
+        await assert.rejects(chooseSpacingPackage(page, 'Obscur'), /chooser did not render/);
+      }
+      results.scenarios.push({ name: 'text spacing controlled oracle failure', fault, status: 'rejected as expected', scope: 'disposable harness fault, not a product defect' });
+    } finally { await context.close(); }
+  }
+});
+
 async function checkLocalPackageIdentification(page, manifest, payloads, { delivery, textScale = 100 }) {
   const requests = [], downloads = [], identified = [], guides = new Set();
   const onRequest = request => requests.push(request.url());

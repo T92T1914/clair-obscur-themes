@@ -150,6 +150,14 @@ After the candidate was disabled, the original installed Clair bytes were restor
 
 Bold Italic, complete face coverage across both variants, native code and syntax, exact language-fallback faces, independent normal-restart behavior and other unvisited surfaces remain unverified. The focus correction and additional observations do not establish complete native Equibop acceptance.
 
+## October 15 preview text-spacing qualification
+
+The existing isolated preview harness now applies all four SC 1.4.12 spacing overrides together to English text and checks their computed values. Both appearances retain their ordinary typography in the spacing-only 1280-pixel case. The checks preserve the captured static text, inspect clipping ancestors and repeat admission on generated chooser and file-identification content. The user path selects a package with the keyboard, reaches the matching package and installation/removal procedure with destination focus, acquires the intended CSS and verifies its fixed accepted SHA-256, identifies those bytes locally, rejects a changed byte and clears the selection. The current Clair route remains the separate 0.1.2 file and Obscur remains 0.1.1. No preview style or theme package correction was needed in the exercised cases.
+
+The separate responsive cases use 390 pixels with ordinary text and 320 pixels with 200% root-font enlargement and intentionally unavailable local Inter. Those combinations are additional stress, not a spacing-only or browser-zoom result. A script-disabled case retains the default reading appearance, both static palette specimens and keyboard guide/download routes. The Japanese and Arabic samples retain their previous spacing and are outside the English metric qualification.
+
+Controlled harness faults demonstrate rejection of a missing word-spacing override, clipped result text, a hidden displayed path and an inert chooser handler. These are deliberately changed fixtures, not observed product defects. Chromium's native selects reported line height as `normal` despite the requested override. That metric remains unverified, while the other resolved spacing properties, surrounding labels and keyboard selection are checked. The suite does not force a different native appearance or assume that `normal` meets 1.5. The result supports the exercised preview content and operations, not complete SC 1.4.12 conformance, native application acceptance or a screen-reader certification.
+
 ## Native Chrome installation result
 
 On September 24, 2026, ordinary Chrome 153.0.8010.53 installed the Obscur 0.1.1 package through **Load unpacked** in a new isolated profile. Chrome's native infobar confirmed **Installed theme "Obscur"**. The everyday profile was not used or modified.
