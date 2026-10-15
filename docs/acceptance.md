@@ -30,14 +30,14 @@ No Vivaldi or Opera GX native schema validator was run. The tests enforce the pr
 
 | Item | Established | Remaining gate |
 | --- | --- | --- |
-| Clair and Obscur for Chrome | Native color-theme generators and package validation are implemented. Obscur installed through Load unpacked in September, and its appearance was identified in the retained isolated Chrome 155 profile in October | Clair installation, both native interface journeys, switching, removal and cleanup remain pending |
+| Clair and Obscur for Chrome | Both 0.1.1 themes have native installation evidence. Clair installed in the retained isolated Chrome 155 profile on October 15, with limited native appearance, font-settings, New Tab and tab-state observations | Complete both native interface journeys, return switching, removal and cleanup |
 | Clair and Obscur for Equicord | Both original themes loaded in Equibop, passed the inspected mode gates and restored the recorded configuration. The current Clair route selects the separate 0.1.2 candidate, which showed clear focus at five inspected native Tab stops and displayed populated search results | Complete the remaining host surfaces and per-appearance typography and interaction checks listed below |
 | Local application versions | September checks identified Chrome 153.0.8010.53 and Equibop 3.3.1.0. October checks identified Chrome 155.0.8059.79 and a newer Equicord client build, recorded below | Results apply only to the recorded versions, configuration and inspected scope |
-| Rendered Inter faces | All six installed faces rendered in the October 14 later-boot headless check. Earlier native face results remain scoped below. The Clair 0.1.2 candidate additionally rendered local Regular Italic for 121 glyphs in an existing search result | Verify Bold Italic, complete current face coverage across both variants and native code/language fallback. The later-boot result does not establish continuous or permanent persistence |
+| Rendered Inter faces | All six installed faces rendered in the October 14 later-boot headless check. Dated native Clair 0.1.2 observations now cover Regular, SemiBold, Bold, Regular Italic and SemiBold Italic. Obscur coverage remains scoped below | Verify Bold Italic, complete current face coverage across both variants and native code/language fallback. The later-boot result does not establish continuous or permanent persistence |
 | Native restoration | Equibop checks restored their recorded appearance, theme, sync, FontLoader and QuickCSS state. The candidate trial restored original installed CSS bytes and preserved the conversation current at cleanup | Chrome restoration and test-profile cleanup remain incomplete. Earlier selected-conversation, scroll-position and search-history identity are not claimed |
 | Physical display and comfort | User-reported baseline is recorded in the design document | Physical viewing, captured-media comparison and subjective comfort remain **not verified** |
 
-The identified application versions are Windows test targets. Other operating systems, Discord clients and browser derivatives are not covered by a native compatibility claim. Obscur's installation confirmation does not establish complete Chrome acceptance. Detailed private environment and capture records stay outside the public source.
+The identified application versions are Windows test targets. Other operating systems, Discord clients and browser derivatives are not covered by a native compatibility claim. The installation confirmations do not establish complete Chrome acceptance. Detailed private environment and capture records stay outside the public source.
 
 The strict font assertion remains enabled with `THEME_REQUIRE_INTER=1`. Ordinary CI skips that assertion when the required local faces are unavailable and tests fallback separately. A skipped font assertion is not a passed typography check. Each expected PostScript face must have a positive glyph count in its own specimen. A family declaration or an expected face with zero glyphs does not pass.
 
@@ -150,6 +150,19 @@ After the candidate was disabled, the original installed Clair bytes were restor
 
 Bold Italic, complete face coverage across both variants, native code and syntax, exact language-fallback faces, independent normal-restart behavior and other unvisited surfaces remain unverified. The focus correction and additional observations do not establish complete native Equibop acceptance.
 
+### October 15 current Clair typography and restoration
+
+Agent-operated checks at source revision `06608e221317dec5bf6fe891cad3b1884531231b` used the same Equibop client, Stable 636431 (`a5d0242`), Equicord `e0e85c8d4` Standalone, Electron 43.7.1 and Chromium 150.0.7871.250. The installed Clair Equicord 0.1.2 candidate retained SHA-256 `0d2184455e281c2e8cd9d5791006a7cc1939a3a5553253c7a6e45b5991bd8054`. Under Clair on native Light, the client's Elements and Rendered Fonts views identified four local faces. The Accessibility header entries aggregate its descendants. Its parent's computed 400 normal style does not establish those descendants' weight or style.
+
+| Native surface | Local rendered face | Glyphs | Computed observation |
+| --- | --- | ---: | --- |
+| Text Readability heading | `Inter-Regular` | 16 | Selected heading: 400 normal, 24 px |
+| Accessibility example header descendants | `Inter-SemiBold` | 12 | Parent: 400 normal, 16 px |
+| Accessibility example header descendants | `Inter-SemiBoldItalic` | 7 | Parent: 400 normal, 16 px |
+| Clair theme-card title | `Inter-Bold` | 5 | Selected title: 700 normal, 16 px |
+
+The candidate was disabled and the original installed Clair 0.1.1 bytes restored. Both original installed CSS hashes, the empty QuickCSS hash, eight recorded theme settings fields and two FontLoader fields matched the fresh baseline. Native controls confirmed Obscur on, Clair off, Sync with computer selected, cross-device sync on, Same as Device off and application to other profiles off. Chat text remained at 16 px with Default density and display, 16 px message-group spacing, 100% saturation and high contrast off. DevTools and settings were closed, and the client was minimized. No conversation navigation, composer change, restart, font repair or display change was performed in this continuation. Exact scrolling and whole settings-file byte identity are not claimed. Together with the October 14 Regular Italic observation, these results give five faces scoped native evidence under Clair 0.1.2. Regular Italic was not repeated on October 15. Bold Italic, complete per-appearance coverage, native code and exact language fallback remain unverified.
+
 ## October 15 preview text-spacing qualification
 
 The existing isolated preview harness now applies all four SC 1.4.12 spacing overrides together to English text and checks their computed values. Both appearances retain their ordinary typography in the spacing-only 1280-pixel case. The checks preserve the captured static text, inspect clipping ancestors and repeat admission on generated chooser and file-identification content. The user path selects a package with the keyboard, reaches the matching package and installation/removal procedure with destination focus, acquires the intended CSS and verifies its fixed accepted SHA-256, identifies those bytes locally, rejects a changed byte and clears the selection. The current Clair route remains the separate 0.1.2 file and Obscur remains 0.1.1.
@@ -169,6 +182,10 @@ On October 14, 2026, the retained isolated profile was reopened in ordinary Chro
 ### October 14 Chrome retry
 
 After a fresh user instruction to try again, supported native control identified the exact retained isolated profile in ordinary Chrome 155.0.8059.79. Appearance showed Obscur, Device appearance, Medium text and 100% zoom. Native font settings were inspected without alteration, and Developer mode was on in the extensions view. A later action again encountered a URL-confidence stop, and that turn ended. These are profile and settings observations, not a completed native browser journey. Clair installation, both complete theme journeys, switching, removal and cleanup remain pending. No new installation or complete restoration is claimed by this retry record.
+
+### October 15 Clair installation
+
+On Windows 11 26H2 build 26300.9550, agent-operated checks in ordinary Chrome 155.0.8059.79 reconfirmed the exact retained isolated profile before changing its theme. The fresh baseline showed Obscur, Device appearance, Medium text, 100% zoom and Developer mode on. The separate hash-verified Clair 0.1.1 package then loaded through the native folder chooser. Chrome displayed `Extension loaded` and `Installed theme "Clair"`, and the frame changed light. Stored theme identity and source matched the prepared package. Inspection under Clair covered New Tab, active and inactive tabs, native Appearance and Fonts settings, with Light selected and the browser-owned font choices unchanged. Clicking the existing public Themes preview shortcut then triggered the URL-confidence stop. Navigation completion is unverified, and no further input followed that stop. Return switching, removal, both complete interface journeys and owned-window cleanup remain incomplete. The last observed theme and mode were Clair 0.1.1 and Light. This installation does not establish general controller recovery or complete native Chrome acceptance.
 
 ## Evidence levels
 
