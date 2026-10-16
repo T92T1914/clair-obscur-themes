@@ -74,7 +74,10 @@ function batteryFormatting(logger as Test.Logger) as Lang.Boolean {
     Test.assertEqual(FaceModel.formatBattery(null), "--%");
     Test.assertEqual(FaceModel.formatBattery(true), "--%");
     Test.assertEqual(FaceModel.formatBattery("50"), "--%");
-    Test.assertEqual(FaceModel.formatBattery(Math.sqrt(-1)), "--%");
+    Test.assertEqualMessage(FaceModel.formatBattery(Math.sqrt(-1)), "--%",
+        "Float NaN battery must use the invalid-data placeholder before numeric conversion");
+    Test.assertEqualMessage(FaceModel.formatBattery(Math.sqrt(-1).toDouble()), "--%",
+        "Double NaN battery must use the invalid-data placeholder before numeric conversion");
     return true;
 }
 

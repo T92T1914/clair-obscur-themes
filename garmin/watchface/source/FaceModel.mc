@@ -128,7 +128,10 @@ module FaceModel {
     }
 
     function boundedBattery(value as Lang.Numeric) as Lang.String {
-        // Separate bounded checks reject NaN without coercing Boolean or String values.
+        // NaN can pass ordered comparisons on the target runtime, so reject it first.
+        if (value != value) {
+            return "--%";
+        }
         if (!(value >= 0)) {
             return "--%";
         }
