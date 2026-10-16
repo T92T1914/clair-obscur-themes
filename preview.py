@@ -25,6 +25,17 @@ WEB_ASSETS = frozenset({'index.html', 'preview.css', 'preview.js'})
 REPOSITORY_URL = 'https://github.com/T92T1914/clair-obscur-themes'
 PORTABLE_ARCHIVE = 'Clair-Obscur-portable-preview.zip'
 PORTABLE_CHECKSUMS = 'portable-SHA256SUMS'
+GARMIN_SOURCE_FILES = (
+    'garmin/build.py', 'garmin/watchface/manifest.xml', 'garmin/watchface/monkey.jungle',
+    'garmin/watchface/resources/settings/properties.xml',
+    'garmin/watchface/resources/settings/settings.xml',
+    'garmin/watchface/resources/strings/strings.xml',
+    'garmin/watchface/source/ClairObscurApp.mc',
+    'garmin/watchface/source/ClairObscurView.mc',
+    'garmin/watchface/source/FaceModel.mc', 'garmin/watchface/source/FaceSettings.mc',
+    'garmin/watchface/source/GeneratedPalette.mc',
+    'garmin/watchface/tests/FaceModelTests.mc',
+)
 
 
 def site_manifest(files: dict[str, bytes], source: dict, release: dict, distribution: dict) -> bytes:
@@ -54,6 +65,9 @@ def source_files(root: Path) -> dict[str, bytes]:
         'verify_preview.py',
         'package.json', 'package-lock.json', '.gitignore', '.gitattributes',
     )]
+    # Only the reviewed project files belong in the public source snapshot.
+    # SDKs, keys, compiled programs and debug XML stay outside this inventory.
+    paths.extend(root / name for name in GARMIN_SOURCE_FILES)
     for folder, endings in (
         ('themeforge', {'.py'}), ('tests', {'.py', '.mjs'}),
         ('web', {'.html', '.css', '.js'}), ('docs', {'.md'}),

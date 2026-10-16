@@ -415,6 +415,38 @@ class PreviewTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Linked source directories'):
                 source_files(ROOT)
 
+    def test_watch_source_export_is_complete_and_excludes_private_build_inputs(self):
+        captured = source_files(ROOT)
+        required = {
+            'garmin/build.py', 'garmin/watchface/manifest.xml', 'garmin/watchface/monkey.jungle',
+            'garmin/watchface/resources/settings/properties.xml',
+            'garmin/watchface/resources/settings/settings.xml',
+            'garmin/watchface/resources/strings/strings.xml',
+            'garmin/watchface/source/ClairObscurApp.mc',
+            'garmin/watchface/source/ClairObscurView.mc',
+            'garmin/watchface/source/FaceModel.mc', 'garmin/watchface/source/FaceSettings.mc',
+            'garmin/watchface/source/GeneratedPalette.mc',
+            'garmin/watchface/tests/FaceModelTests.mc',
+        }
+        self.assertEqual({name for name in captured if name.startswith('garmin/')}, required)
+        extracted = self.base / 'watch-source'
+        with zipfile.ZipFile(io.BytesIO(preview_files(ROOT, self.artifacts)['source.zip'])) as archive:
+            archive.extractall(extracted)
+            for name in required:
+                self.assertEqual(archive.read(name), (ROOT / name).read_bytes())
+        for name in ('garmin/developer_key.der', 'garmin/watchface/bin/watch.prg',
+                     'garmin/watchface/bin/watch.prg.debug.xml', 'garmin/sdk/private.xml'):
+            path = extracted / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b'private fixture, never publish')
+        repackaged = source_files(extracted)
+        self.assertEqual(repackaged, captured)
+        result = subprocess.run(
+            [sys.executable, '-m', 'unittest', 'discover', '-s', 'tests', '-p', 'test_garmin.py', '-v'],
+            cwd=extracted, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=60,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_release_checksums_verify_flat_downloads_including_source(self):
         files = preview_files(ROOT, self.artifacts)
         manifest = json.loads(files['downloads/artifact-manifest.json'])

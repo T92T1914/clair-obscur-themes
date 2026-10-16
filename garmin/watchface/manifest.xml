@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iq:manifest xmlns:iq="http://www.garmin.com/xml/connectiq" version="3">
+    <iq:application id="358023fe938b4d0dafa59913baf7ceec" type="watchface"
+        name="@Strings.AppName" entry="ClairObscurApp" minApiLevel="6.0.0">
+        <iq:products>
+            <iq:product id="fenix9pro47mm" />
+        </iq:products>
+        <iq:permissions />
+        <iq:languages>
+            <iq:language>eng</iq:language>
+        </iq:languages>
+        <iq:barrels />
+    </iq:application>
+</iq:manifest>
