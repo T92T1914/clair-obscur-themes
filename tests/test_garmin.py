@@ -181,7 +181,7 @@ class GarminAodGeometryTests(unittest.TestCase):
 
 
 class GarminActiveBandGeometryTests(unittest.TestCase):
-    """Review actual declared bands against round geometry and vendor font data."""
+    """Source geometry and requested font sizes, not measured Garmin font fit."""
 
     @classmethod
     def setUpClass(cls):
@@ -191,15 +191,28 @@ class GarminActiveBandGeometryTests(unittest.TestCase):
         for name, edge, value in re.findall(
                 r"^    const ([A-Z]+)_(TOP|BOTTOM|WIDTH) = (\d+);$", model, re.MULTILINE):
             cls.bands.setdefault(name, {})[edge] = int(value)
-        view = (source / "ClairObscurView.mc").read_text(encoding="utf-8")
+        cls.view = (source / "ClairObscurView.mc").read_text(encoding="utf-8")
         cls.fonts = {}
-        for fonts, role in re.findall(
-                r"drawActiveBand\(dc,\s*\w+,\s*\[([^]]+)\],\s*FaceModel\.([A-Z]+)_WIDTH,",
-                view, re.MULTILINE):
-            cls.fonts[role] = re.findall(r"Graphics\.(FONT_[A-Z_]+)", fonts)
+        declarations = re.findall(
+            r'_(\w+)Fonts\s*=\s*fonts\("([A-Za-z]+)",\s*\[([\d, ]+)\],\s*'
+            r'Graphics\.(FONT_[A-Z_]+),\s*scale\);', cls.view)
+        for role, face, sizes, fallback in declarations:
+            if role in cls.fonts:
+                raise AssertionError("Duplicate active font candidate declaration")
+            cls.fonts[role] = {"face": face, "sizes": [int(size) for size in sizes.split(",")],
+                               "fallback": fallback}
+        cls.line_bindings = re.findall(
+            r"_(\w+)Fonts,\s*FaceModel\.([A-Z]+)_WIDTH,\s*"
+            r"FaceModel\.([A-Z]+)_TOP,\s*FaceModel\.([A-Z]+)_BOTTOM\);", cls.view)
+        cls.slots = [(name, int(left), int(width)) for name, left, width in re.findall(
+            r"drawSlot\(dc,\s*(left|right),\s*(\d+),\s*(\d+),\s*text,\s*muted,\s*canvas\);",
+            cls.view)]
+        cls.row_caps = {role: int(height) for role, height in re.findall(
+            r'pickFont\(dc,\s*data\["(label|detail)"\],\s*_\1Fonts,\s*width,\s*(\d+)\);',
+            cls.view)}
 
     def test_four_separate_bands_fit_inside_the_round_display(self):
-        order = ["HEADER", "TIME", "DATE", "BATTERY"]
+        order = ["CALENDAR", "TIME", "DATA", "BATTERY"]
         self.assertEqual(set(self.bands), set(order))
         previous_bottom = 0
         for name in order:
@@ -216,20 +229,69 @@ class GarminActiveBandGeometryTests(unittest.TestCase):
                                              (2 * y + 1 - 454) ** 2, 454 ** 2)
             previous_bottom = band["BOTTOM"]
 
-    def test_candidate_fonts_have_height_room_at_documented_scale_extremes(self):
-        # Exact target's public font-size table and installed simulator scale
-        # range. These are metadata checks, not executed getFontHeight results.
-        documented_sizes = {"FONT_XTINY": 37, "FONT_TINY": 47, "FONT_SMALL": 53,
-                            "FONT_MEDIUM": 61, "FONT_LARGE": 71, "FONT_NUMBER_HOT": 173}
-        self.assertEqual(set(self.fonts), {"HEADER", "TIME", "DATE", "BATTERY"})
-        for name, fonts in self.fonts.items():
-            self.assertTrue(fonts, name)
-            self.assertLessEqual(set(fonts), set(documented_sizes))
+    def test_native_font_requests_bind_to_the_actual_single_line_bands(self):
+        self.assertEqual(set(self.fonts), {"clock", "calendar", "value", "label", "detail", "battery"})
+        for role, candidates in self.fonts.items():
+            with self.subTest(role=role):
+                self.assertIn(candidates["face"], {"BionicBold", "RobotoMedium", "RobotoCondensedRegular"})
+                self.assertTrue(candidates["sizes"])
+                self.assertTrue(all(size > 0 for size in candidates["sizes"]))
+                self.assertEqual(candidates["sizes"], sorted(set(candidates["sizes"]), reverse=True))
+                self.assertIn(candidates["fallback"], {"FONT_XTINY", "FONT_LARGE"})
+        self.assertEqual(self.line_bindings, [
+            ("calendar", "CALENDAR", "CALENDAR", "CALENDAR"),
+            ("clock", "TIME", "TIME", "TIME"),
+            ("battery", "BATTERY", "BATTERY", "BATTERY"),
+        ])
+        # Installed target scale limits bound the requested vector font sizes.
+        # A size request does not establish actual Dc.getFontHeight or text width.
+        for role, name, _, _ in self.line_bindings:
             available_height = self.bands[name]["BOTTOM"] - self.bands[name]["TOP"]
             for scale_percent in (80, 100, 135):
                 with self.subTest(band=name, scale_percent=scale_percent):
-                    self.assertTrue(any(math.ceil(documented_sizes[font] * scale_percent / 100)
-                                        <= available_height for font in fonts))
+                    self.assertTrue(all(math.ceil(size * scale_percent / 100) <= available_height
+                                        for size in self.fonts[role]["sizes"]))
+
+    def test_two_clipped_data_slots_have_a_gap_inside_the_actual_data_band(self):
+        self.assertEqual(self.slots, [("left", 77, 140), ("right", 237, 140)])
+        data = self.bands["DATA"]
+        data_left = (454 - data["WIDTH"]) // 2
+        previous_right = data_left
+        for name, left, width in self.slots:
+            with self.subTest(slot=name):
+                self.assertGreater(width, 0)
+                self.assertGreaterEqual(left, previous_right)
+                self.assertGreaterEqual(left, data_left)
+                self.assertLessEqual(left + width, data_left + data["WIDTH"])
+            previous_right = left + width
+        self.assertEqual(self.slots[1][1] - (self.slots[0][1] + self.slots[0][2]), 20)
+        self.assertIn("var height = FaceModel.DATA_BOTTOM - FaceModel.DATA_TOP;", self.view)
+        self.assertIn("dc.setClip(x, FaceModel.DATA_TOP, width, height);", self.view)
+        self.assertEqual(re.findall(
+            r"var (left|right) = FaceData\.readSlot\(FaceSettings\.readSlot\(([01])\), moment\.value\(\)\);",
+            self.view), [("left", "0"), ("right", "1")])
+
+    def test_scaled_data_font_requests_leave_room_for_all_three_rows(self):
+        self.assertEqual(self.row_caps, {"label": 34, "detail": 28})
+        gaps = re.findall(r"y \+= dc\.getFontHeight\((label|value)\) \+ (\d+);", self.view)
+        self.assertEqual(gaps, [("label", "3"), ("value", "3")])
+        total_gap = sum(int(gap) for _, gap in gaps)
+        self.assertIn("var available = height - dc.getFontHeight(label) - dc.getFontHeight(detail) - 6;",
+                      self.view)
+        self.assertIn('var value = pickFont(dc, data["value"], _valueFonts, width, available);',
+                      self.view)
+        self.assertEqual(total_gap, 6)
+        available_height = self.bands["DATA"]["BOTTOM"] - self.bands["DATA"]["TOP"]
+        for scale_percent in (80, 100, 135):
+            # Independent arithmetic checks the largest requested size in each
+            # row. Runtime metrics, font availability and fitting still require
+            # actual target execution; a vector size is not a measured glyph box.
+            requested = {role: math.ceil(max(self.fonts[role]["sizes"]) * scale_percent / 100)
+                         for role in ("label", "value", "detail")}
+            with self.subTest(scale_percent=scale_percent):
+                self.assertLessEqual(requested["label"], self.row_caps["label"])
+                self.assertLessEqual(requested["detail"], self.row_caps["detail"])
+                self.assertLessEqual(sum(requested.values()) + total_gap, available_height)
 
     def test_hot_numeric_font_cannot_be_admitted_by_width_alone(self):
         time = self.bands["TIME"]
@@ -238,7 +300,10 @@ class GarminActiveBandGeometryTests(unittest.TestCase):
         plausible_width = 300
         self.assertLessEqual(plausible_width, time["WIDTH"])
         self.assertGreater(173, time["BOTTOM"] - time["TOP"])
-        self.assertNotIn("FONT_NUMBER_HOT", self.fonts["TIME"])
+        self.assertNotEqual("FONT_NUMBER_HOT", self.fonts["clock"]["fallback"])
+        self.assertRegex(self.view,
+                         r"dc\.getTextWidthInPixels\(text, candidates\[i\]\) <= width &&\s*"
+                         r"dc\.getFontHeight\(candidates\[i\]\) <= height")
 
 
 class GarminSettingsResourcesTests(unittest.TestCase):
@@ -265,6 +330,39 @@ class GarminSettingsResourcesTests(unittest.TestCase):
         self.assertEqual(entries, [(0, "Clair"), (1, "Obscur")])
         # This checks the resource binding, not persistence or menu activation.
         self.assertEqual(dict(entries)[int(appearance[0].text)], "Obscur")
+
+    def test_both_numeric_data_slots_resolve_unique_choices_and_distinct_defaults(self):
+        resources = ROOT / "garmin/watchface/resources"
+        properties = ET.parse(resources / "settings/properties.xml").getroot()
+        settings = ET.parse(resources / "settings/settings.xml").getroot()
+        string_elements = ET.parse(resources / "strings/strings.xml").getroot().findall("string")
+        strings = {element.get("id"): element.text for element in string_elements}
+        self.assertEqual(len(strings), len(string_elements), "Resource string IDs must be unique")
+        for name, default, title, label in (("leftData", 0, "Left data", "Weather"),
+                                            ("rightData", 1, "Right data", "Steps")):
+            with self.subTest(slot=name):
+                prop = properties.findall(f"property[@id='{name}']")
+                self.assertEqual(len(prop), 1)
+                self.assertEqual(prop[0].get("type"), "number")
+                self.assertEqual(prop[0].text.strip(), str(default))
+                selection = settings.findall(f"setting[@propertyKey='@Properties.{name}']")
+                self.assertEqual(len(selection), 1)
+                title_reference = selection[0].get("title")
+                self.assertTrue(title_reference.startswith("@Strings."))
+                self.assertEqual(strings[title_reference.removeprefix("@Strings.")], title)
+                config = selection[0].find("settingConfig")
+                self.assertIsNotNone(config)
+                self.assertEqual(config.get("type"), "list")
+                entries = []
+                for entry in config.findall("listEntry"):
+                    self.assertRegex(entry.get("value"), r"^[012]$")
+                    self.assertTrue(entry.text.startswith("@Strings."))
+                    entries.append((int(entry.get("value")), strings[entry.text.removeprefix("@Strings.")]))
+                self.assertEqual(entries, [(0, "Weather"), (1, "Steps"), (2, "Body Battery")])
+                self.assertEqual(len({value for value, _ in entries}), len(entries))
+                # Resource identity and defaults only, not native menu or phone
+                # activation, observed data availability or persistence.
+                self.assertEqual(dict(entries)[int(prop[0].text)], label)
 
 
 if __name__ == "__main__":

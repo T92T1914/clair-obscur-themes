@@ -34,8 +34,11 @@ GARMIN_SOURCE_FILES = (
     'garmin/watchface/resources/drawables/launcher.svg',
     'garmin/watchface/source/ClairObscurApp.mc',
     'garmin/watchface/source/ClairObscurView.mc',
+    'garmin/watchface/source/FaceData.mc',
     'garmin/watchface/source/FaceModel.mc', 'garmin/watchface/source/FaceSettings.mc',
     'garmin/watchface/source/GeneratedPalette.mc',
+    'garmin/watchface/tests/FaceDataTests.mc',
+    'garmin/watchface/tests/FaceLayoutTests.mc',
     'garmin/watchface/tests/FaceModelTests.mc',
 )
 

@@ -426,11 +426,24 @@ class PreviewTests(unittest.TestCase):
             'garmin/watchface/resources/drawables/launcher.svg',
             'garmin/watchface/source/ClairObscurApp.mc',
             'garmin/watchface/source/ClairObscurView.mc',
+            'garmin/watchface/source/FaceData.mc',
             'garmin/watchface/source/FaceModel.mc', 'garmin/watchface/source/FaceSettings.mc',
             'garmin/watchface/source/GeneratedPalette.mc',
+            'garmin/watchface/tests/FaceDataTests.mc',
+            'garmin/watchface/tests/FaceLayoutTests.mc',
             'garmin/watchface/tests/FaceModelTests.mc',
         }
         self.assertEqual({name for name in captured if name.startswith('garmin/')}, required)
+        # A new authored Monkey C module must receive an explicit packaging
+        # review. The production allowlist never broadens to SDK or key files.
+        compiler_sources = {
+            path.relative_to(ROOT).as_posix()
+            for directory in ('source', 'tests')
+            for path in (ROOT / 'garmin/watchface' / directory).glob('*.mc')
+            if path.is_file()
+        }
+        self.assertEqual({name for name in captured if name.startswith('garmin/') and name.endswith('.mc')},
+                         compiler_sources)
         extracted = self.base / 'watch-source'
         with zipfile.ZipFile(io.BytesIO(preview_files(ROOT, self.artifacts)['source.zip'])) as archive:
             archive.extractall(extracted)
