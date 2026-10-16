@@ -6,18 +6,36 @@ module FaceModel {
     const AOD_MAX_WIDTH = 192;
     const AOD_MAX_HEIGHT = 64;
     const AOD_SHIFT = 16;
-    const HEADER_TOP = 70;
-    const HEADER_BOTTOM = 140;
-    const HEADER_WIDTH = 300;
-    const TIME_TOP = 150;
-    const TIME_BOTTOM = 260;
-    const TIME_WIDTH = 374;
-    const DATE_TOP = 280;
-    const DATE_BOTTOM = 350;
-    const DATE_WIDTH = 350;
-    const BATTERY_TOP = 360;
-    const BATTERY_BOTTOM = 425;
-    const BATTERY_WIDTH = 200;
+    const CALENDAR_TOP = 55;
+    const CALENDAR_BOTTOM = 105;
+    const CALENDAR_WIDTH = 270;
+    const TIME_TOP = 113;
+    const TIME_BOTTOM = 267;
+    const TIME_WIDTH = 380;
+    const DATA_TOP = 278;
+    const DATA_BOTTOM = 390;
+    const DATA_WIDTH = 300;
+    const BATTERY_TOP = 395;
+    const BATTERY_BOTTOM = 427;
+    const BATTERY_WIDTH = 172;
+
+    function fontScale(value as Lang.Object or Null) as Lang.Float {
+        if (!(value instanceof Lang.Float) && !(value instanceof Lang.Double) &&
+                !(value instanceof Lang.Number)) { return 1.0; }
+        var scale = value as Lang.Numeric;
+        if (scale != scale || !(scale >= 0.8) || !(scale <= 1.35)) { return 1.0; }
+        return scale.toFloat();
+    }
+
+    function shortDate(day as Lang.Number, month as Lang.Number,
+            weekday as Lang.Number) as Lang.String {
+        if (day < 1 || day > 31 || month < 1 || month > 12 ||
+                weekday < 1 || weekday > 7) { return "--- -- ---"; }
+        var weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+        var months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+            "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+        return weekdays[weekday - 1] + " " + day.format("%d") + " " + months[month - 1];
+    }
 
     function integerValue(value as Lang.Object or Null) as Lang.Number or Null {
         if (value instanceof Lang.Number) {
@@ -128,7 +146,10 @@ module FaceModel {
     }
 
     function boundedBattery(value as Lang.Numeric) as Lang.String {
-        // Separate bounded checks reject NaN without coercing Boolean or String values.
+        // NaN can pass ordered comparisons on the target runtime, so reject it first.
+        if (value != value) {
+            return "--%";
+        }
         if (!(value >= 0)) {
             return "--%";
         }

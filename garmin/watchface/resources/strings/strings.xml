@@ -4,4 +4,9 @@
     <string id="ClairLabel">Clair</string>
     <string id="ObscurLabel">Obscur</string>
     <string id="SelectedLabel">Selected</string>
+    <string id="LeftDataTitle">Left data</string>
+    <string id="RightDataTitle">Right data</string>
+    <string id="WeatherLabel">Weather</string>
+    <string id="StepsLabel">Steps</string>
+    <string id="BodyBatteryLabel">Body Battery</string>
 </strings>

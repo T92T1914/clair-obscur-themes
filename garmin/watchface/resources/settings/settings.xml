@@ -5,4 +5,18 @@
             <listEntry value="1">@Strings.ObscurLabel</listEntry>
         </settingConfig>
     </setting>
+    <setting propertyKey="@Properties.leftData" title="@Strings.LeftDataTitle">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.WeatherLabel</listEntry>
+            <listEntry value="1">@Strings.StepsLabel</listEntry>
+            <listEntry value="2">@Strings.BodyBatteryLabel</listEntry>
+        </settingConfig>
+    </setting>
+    <setting propertyKey="@Properties.rightData" title="@Strings.RightDataTitle">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.WeatherLabel</listEntry>
+            <listEntry value="1">@Strings.StepsLabel</listEntry>
+            <listEntry value="2">@Strings.BodyBatteryLabel</listEntry>
+        </settingConfig>
+    </setting>
 </settings>
