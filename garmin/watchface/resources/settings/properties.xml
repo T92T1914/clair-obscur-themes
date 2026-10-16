@@ -1,4 +1,4 @@
 <properties>
     <property id="appVersion" type="string">0.1.0</property>
-    <property id="appearance" type="string">Obscur</property>
+    <property id="appearance" type="number">1</property>
 </properties>

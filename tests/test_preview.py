@@ -422,6 +422,8 @@ class PreviewTests(unittest.TestCase):
             'garmin/watchface/resources/settings/properties.xml',
             'garmin/watchface/resources/settings/settings.xml',
             'garmin/watchface/resources/strings/strings.xml',
+            'garmin/watchface/resources/drawables/drawables.xml',
+            'garmin/watchface/resources/drawables/launcher.svg',
             'garmin/watchface/source/ClairObscurApp.mc',
             'garmin/watchface/source/ClairObscurView.mc',
             'garmin/watchface/source/FaceModel.mc', 'garmin/watchface/source/FaceSettings.mc',

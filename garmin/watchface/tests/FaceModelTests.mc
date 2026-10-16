@@ -1,10 +1,11 @@
 using Toybox.Application;
+using Toybox.Lang;
 using Toybox.Math;
 using Toybox.System;
 using Toybox.Test;
 
 (:test)
-function clockFormatting(logger) {
+function clockFormatting(logger as Test.Logger) as Lang.Boolean {
     var hours24 = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
         "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"];
     var hours12 = ["12", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
@@ -23,6 +24,13 @@ function clockFormatting(logger) {
     Test.assertEqual(FaceModel.period(0, false), "AM");
     Test.assertEqual(FaceModel.period(12, false), "PM");
     Test.assertEqual(FaceModel.period(23, true), "");
+    Test.assertEqual(FaceModel.formatActiveTime(0, 5, false), "12:05 AM");
+    Test.assertEqual(FaceModel.formatActiveTime(12, 0, false), "12:00 PM");
+    Test.assertEqual(FaceModel.formatActiveTime(13, 9, false), "1:09 PM");
+    Test.assertEqual(FaceModel.formatActiveTime(23, 59, false), "11:59 PM");
+    Test.assertEqual(FaceModel.formatActiveTime(23, 59, true), "23:59");
+    Test.assertEqual(FaceModel.formatActiveTime(24, 0, false), "--:--");
+    Test.assertEqual(FaceModel.formatActiveTime(5, 60, false), "--:--");
     Test.assertEqual(FaceModel.formatTime(24, 0, true), "--:--");
     Test.assertEqual(FaceModel.formatTime(5, 60, true), "--:--");
     Test.assertEqual(FaceModel.formatTime(-1, 0, true), "--:--");
@@ -34,7 +42,7 @@ function clockFormatting(logger) {
 }
 
 (:test)
-function gregorianFormatting(logger) {
+function gregorianFormatting(logger as Test.Logger) as Lang.Boolean {
     Test.assertEqual(FaceModel.formatDate(16, 10, 2026), "2026-10-16");
     Test.assertEqual(FaceModel.formatDate(29, 2, 2024), "2024-02-29");
     Test.assertEqual(FaceModel.formatDate(29, 2, 2000), "2000-02-29");
@@ -56,7 +64,7 @@ function gregorianFormatting(logger) {
 }
 
 (:test)
-function batteryFormatting(logger) {
+function batteryFormatting(logger as Test.Logger) as Lang.Boolean {
     Test.assertEqual(FaceModel.formatBattery(0), "0%");
     Test.assertEqual(FaceModel.formatBattery(100), "100%");
     Test.assertEqual(FaceModel.formatBattery(99.9), "99%");
@@ -71,23 +79,34 @@ function batteryFormatting(logger) {
 }
 
 (:test)
-function appearanceValidation(logger) {
+function appearanceValidation(logger as Test.Logger) as Lang.Boolean {
     Test.assertEqual(FaceModel.sanitizeAppearance("Clair"), "Clair");
     Test.assertEqual(FaceModel.sanitizeAppearance("Obscur"), "Obscur");
     Test.assertEqual(FaceModel.sanitizeAppearance("clair"), "Obscur");
     Test.assertEqual(FaceModel.sanitizeAppearance(null), "Obscur");
     Test.assertEqual(FaceModel.sanitizeAppearance(1), "Obscur");
     Test.assert(!FaceModel.isAppearance("unknown"));
+    Test.assertEqual(FaceSettings.appearanceFromProperty(0), "Clair");
+    Test.assertEqual(FaceSettings.appearanceFromProperty(1), "Obscur");
+    Test.assertEqual(FaceSettings.appearanceFromProperty(2), "Obscur");
+    Test.assertEqual(FaceSettings.appearanceFromProperty(-1), "Obscur");
+    Test.assertEqual(FaceSettings.appearanceFromProperty(null), "Obscur");
+    Test.assertEqual(FaceSettings.appearanceFromProperty(false), "Obscur");
+    Test.assertEqual(FaceSettings.appearanceFromProperty(0.0), "Obscur");
+    Test.assertEqual(FaceSettings.appearanceFromProperty("0"), "Obscur");
+    Test.assertEqual(FaceSettings.appearanceFromProperty("Clair"), "Obscur");
     return true;
 }
 
 (:test)
-function declaredPropertyPersistence(logger) {
+function declaredPropertyPersistence(logger as Test.Logger) as Lang.Boolean {
     var before = Application.Properties.getValue("appearance");
     try {
         FaceSettings.saveAppearance("Clair");
+        Test.assertEqual(Application.Properties.getValue("appearance"), 0);
         Test.assertEqual(FaceSettings.readAppearance(), "Clair");
         FaceSettings.saveAppearance("Obscur");
+        Test.assertEqual(Application.Properties.getValue("appearance"), 1);
         Test.assertEqual(FaceSettings.readAppearance(), "Obscur");
         Test.assert(!FaceSettings.saveAppearance("unknown"));
         Test.assertEqual(FaceSettings.readAppearance(), "Obscur");
@@ -100,15 +119,15 @@ function declaredPropertyPersistence(logger) {
 }
 
 (:test)
-function powerAndGeometryContract(logger) {
+function powerAndGeometryContract(logger as Test.Logger) as Lang.Boolean {
     Test.assertEqual(FaceModel.drawMode(false, System.DISPLAY_MODE_HIGH_POWER), :active);
     Test.assertEqual(FaceModel.drawMode(true, System.DISPLAY_MODE_HIGH_POWER), :aod);
     Test.assertEqual(FaceModel.drawMode(false, System.DISPLAY_MODE_LOW_POWER), :aod);
     Test.assertEqual(FaceModel.drawMode(true, System.DISPLAY_MODE_OFF), :off);
     Test.assertEqual(FaceModel.drawMode(false, null), :aod);
-    Test.assert(FaceModel.aodFits(144, 64));
-    Test.assert(!FaceModel.aodFits(145, 64));
-    Test.assert(!FaceModel.aodFits(144, 65));
+    Test.assert(FaceModel.aodFits(192, 64));
+    Test.assert(!FaceModel.aodFits(193, 64));
+    Test.assert(!FaceModel.aodFits(192, 65));
     Test.assert(!FaceModel.aodFits(0, 10));
     Test.assert(!FaceModel.aodFits(10.5, 10));
     var first = FaceModel.aodOffset(0);
@@ -120,5 +139,28 @@ function powerAndGeometryContract(logger) {
     var wrap = FaceModel.aodOffset(9);
     Test.assertEqual(wrap[0], -16);
     Test.assertEqual(wrap[1], -16);
+    return true;
+}
+
+(:test)
+function activeBandAdmission(logger as Test.Logger) as Lang.Boolean {
+    Test.assert(FaceModel.fitsActiveBand(374, 110, 374, 150, 260));
+    Test.assert(FaceModel.fitsActiveBand(180, 96, 374, 150, 260));
+    // The exact target's173px FONT_NUMBER_HOT height cannot enter the110px time band.
+    Test.assert(!FaceModel.fitsActiveBand(180, 173, 374, 150, 260));
+    Test.assert(!FaceModel.fitsActiveBand(375, 96, 374, 150, 260));
+    Test.assert(!FaceModel.fitsActiveBand(180, 111, 374, 150, 260));
+    Test.assert(!FaceModel.fitsActiveBand(180, 0, 374, 150, 260));
+    Test.assert(!FaceModel.fitsActiveBand(0, 96, 374, 150, 260));
+    Test.assert(!FaceModel.fitsActiveBand(180.0, 96, 374, 150, 260));
+    Test.assert(!FaceModel.fitsActiveBand(180, true, 374, 150, 260));
+    Test.assert(!FaceModel.fitsActiveBand(180, 96, 374, 260, 150));
+    Test.assert(!FaceModel.fitsActiveBand(180, 96, 374, -1, 150));
+    Test.assert(!FaceModel.fitsActiveBand(180, 80, 374, 400, 480));
+    // Conservative scaled-height controls are not actual runtime font observations.
+    Test.assert(FaceModel.fitsActiveBand(300, 64, 300, 70, 140));
+    Test.assert(FaceModel.fitsActiveBand(350, 64, 350, 280, 350));
+    Test.assert(FaceModel.fitsActiveBand(200, 64, 200, 360, 425));
+    Test.assert(!FaceModel.fitsActiveBand(200, 66, 200, 360, 425));
     return true;
 }

@@ -69,7 +69,8 @@ class GarminBuildFailureTests(unittest.TestCase):
             child = execute.call_args.kwargs["env"]
             self.assertNotIn("_JAVA_OPTIONS", child)
             self.assertNotIn("JDK_JAVA_OPTIONS", child)
-            self.assertEqual(child["JAVA_TOOL_OPTIONS"], "-Djava.awt.headless=true")
+            self.assertEqual(child["JAVA_TOOL_OPTIONS"],
+                             "-Djava.awt.headless=true -Xmx1g -XX:ActiveProcessorCount=2")
             self.assertEqual({key: os.environ[key] for key in overrides}, overrides)
 
     def test_previous_output_is_never_overwritten_or_compiled_into(self):

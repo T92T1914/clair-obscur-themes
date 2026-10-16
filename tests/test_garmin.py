@@ -2,10 +2,12 @@
 
 import copy
 import json
+import math
 from pathlib import Path
 import re
 import tempfile
 import unittest
+import xml.etree.ElementTree as ET
 
 from themeforge.garmin import main, render_palette
 
@@ -176,6 +178,93 @@ class GarminAodGeometryTests(unittest.TestCase):
         size = self.constants["DISPLAY_SIZE"]
         self.assertLess(wrong_box_area * 10, size * size)
         self.assertGreaterEqual(wrong_box_area * 10, self.round_pixels)
+
+
+class GarminActiveBandGeometryTests(unittest.TestCase):
+    """Review actual declared bands against round geometry and vendor font data."""
+
+    @classmethod
+    def setUpClass(cls):
+        source = ROOT / "garmin/watchface/source"
+        model = (source / "FaceModel.mc").read_text(encoding="utf-8")
+        cls.bands = {}
+        for name, edge, value in re.findall(
+                r"^    const ([A-Z]+)_(TOP|BOTTOM|WIDTH) = (\d+);$", model, re.MULTILINE):
+            cls.bands.setdefault(name, {})[edge] = int(value)
+        view = (source / "ClairObscurView.mc").read_text(encoding="utf-8")
+        cls.fonts = {}
+        for fonts, role in re.findall(
+                r"drawActiveBand\(dc,\s*\w+,\s*\[([^]]+)\],\s*FaceModel\.([A-Z]+)_WIDTH,",
+                view, re.MULTILINE):
+            cls.fonts[role] = re.findall(r"Graphics\.(FONT_[A-Z_]+)", fonts)
+
+    def test_four_separate_bands_fit_inside_the_round_display(self):
+        order = ["HEADER", "TIME", "DATE", "BATTERY"]
+        self.assertEqual(set(self.bands), set(order))
+        previous_bottom = 0
+        for name in order:
+            band = self.bands[name]
+            self.assertEqual(set(band), {"TOP", "BOTTOM", "WIDTH"})
+            self.assertGreater(band["BOTTOM"], band["TOP"])
+            self.assertGreater(band["WIDTH"], 0)
+            self.assertGreaterEqual(band["TOP"], previous_bottom)
+            left = (454 - band["WIDTH"]) // 2
+            for x in (left, left + band["WIDTH"] - 1):
+                for y in (band["TOP"], band["BOTTOM"] - 1):
+                    with self.subTest(band=name, corner=(x, y)):
+                        self.assertLessEqual((2 * x + 1 - 454) ** 2 +
+                                             (2 * y + 1 - 454) ** 2, 454 ** 2)
+            previous_bottom = band["BOTTOM"]
+
+    def test_candidate_fonts_have_height_room_at_documented_scale_extremes(self):
+        # Exact target's public font-size table and installed simulator scale
+        # range. These are metadata checks, not executed getFontHeight results.
+        documented_sizes = {"FONT_XTINY": 37, "FONT_TINY": 47, "FONT_SMALL": 53,
+                            "FONT_MEDIUM": 61, "FONT_LARGE": 71, "FONT_NUMBER_HOT": 173}
+        self.assertEqual(set(self.fonts), {"HEADER", "TIME", "DATE", "BATTERY"})
+        for name, fonts in self.fonts.items():
+            self.assertTrue(fonts, name)
+            self.assertLessEqual(set(fonts), set(documented_sizes))
+            available_height = self.bands[name]["BOTTOM"] - self.bands[name]["TOP"]
+            for scale_percent in (80, 100, 135):
+                with self.subTest(band=name, scale_percent=scale_percent):
+                    self.assertTrue(any(math.ceil(documented_sizes[font] * scale_percent / 100)
+                                        <= available_height for font in fonts))
+
+    def test_hot_numeric_font_cannot_be_admitted_by_width_alone(self):
+        time = self.bands["TIME"]
+        # The initial width-only selection would accept this horizontal fit even
+        # though the target's documented HOT height overlaps following content.
+        plausible_width = 300
+        self.assertLessEqual(plausible_width, time["WIDTH"])
+        self.assertGreater(173, time["BOTTOM"] - time["TOP"])
+        self.assertNotIn("FONT_NUMBER_HOT", self.fonts["TIME"])
+
+
+class GarminSettingsResourcesTests(unittest.TestCase):
+    def test_one_numeric_property_matches_both_labeled_choices_and_dark_default(self):
+        resources = ROOT / "garmin/watchface/resources"
+        properties = ET.parse(resources / "settings/properties.xml").getroot()
+        appearance = properties.findall("property[@id='appearance']")
+        self.assertEqual(len(appearance), 1)
+        self.assertEqual(appearance[0].get("type"), "number")
+        self.assertEqual(appearance[0].text.strip(), "1")
+        settings = ET.parse(resources / "settings/settings.xml").getroot()
+        selection = settings.findall("setting[@propertyKey='@Properties.appearance']")
+        self.assertEqual(len(selection), 1)
+        config = selection[0].find("settingConfig")
+        self.assertIsNotNone(config)
+        self.assertEqual(config.get("type"), "list")
+        strings = {element.get("id"): element.text for element in
+                   ET.parse(resources / "strings/strings.xml").getroot().findall("string")}
+        entries = []
+        for entry in config.findall("listEntry"):
+            self.assertRegex(entry.get("value"), r"^[01]$")
+            self.assertTrue(entry.text.startswith("@Strings."))
+            entries.append((int(entry.get("value")), strings[entry.text.removeprefix("@Strings.")]))
+        self.assertEqual(entries, [(0, "Clair"), (1, "Obscur")])
+        # This checks the resource binding, not persistence or menu activation.
+        self.assertEqual(dict(entries)[int(appearance[0].text)], "Obscur")
 
 
 if __name__ == "__main__":

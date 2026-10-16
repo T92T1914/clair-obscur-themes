@@ -1,4 +1,5 @@
 using Toybox.Application;
+using Toybox.Lang;
 using Toybox.WatchUi;
 
 class ClairObscurApp extends Application.AppBase {
@@ -6,24 +7,24 @@ class ClairObscurApp extends Application.AppBase {
         AppBase.initialize();
     }
 
-    function getInitialView() {
+    function getInitialView() as [WatchUi.Views] or [WatchUi.Views, WatchUi.InputDelegates] {
         return [new ClairObscurView()];
     }
 
     // The host invokes this watch-face configuration entry point on supported devices.
-    function getSettingsView() {
+    function getSettingsView() as [WatchUi.Views] or [WatchUi.Views, WatchUi.InputDelegates] or Null {
         return [FaceSettings.makeMenu(), new AppearanceMenuDelegate()];
     }
 
-    function onSettingsChanged() {
+    function onSettingsChanged() as Void {
         WatchUi.requestUpdate();
     }
 
-    function onDeviceSettingChanged(setting, value) {
+    function onDeviceSettingChanged(setting as Lang.Symbol, value as Lang.Object) as Void {
         WatchUi.requestUpdate();
     }
 
-    function onDisplayModeChanged() {
+    function onDisplayModeChanged() as Void {
         WatchUi.requestUpdate();
     }
 }

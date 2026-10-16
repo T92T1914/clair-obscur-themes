@@ -1,8 +1,8 @@
 <settings>
     <setting propertyKey="@Properties.appearance" title="@Strings.AppearanceTitle">
         <settingConfig type="list">
-            <listEntry value="Clair">@Strings.ClairLabel</listEntry>
-            <listEntry value="Obscur">@Strings.ObscurLabel</listEntry>
+            <listEntry value="0">@Strings.ClairLabel</listEntry>
+            <listEntry value="1">@Strings.ObscurLabel</listEntry>
         </settingConfig>
     </setting>
 </settings>
