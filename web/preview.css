@@ -61,6 +61,13 @@ details p { padding-top: .75rem; }
 .icon-pair figure { margin: 0; min-width: 0; text-align: center; }
 .icon-pair img { display: block; width: min(100%, 7rem); height: auto; aspect-ratio: 1; margin-inline: auto; }
 .icon-pair figcaption { overflow-wrap: anywhere; }
+.terminal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 25rem), 1fr)); gap: 1rem; }
+.terminal-palette { border: 1px solid var(--border); border-radius: .6rem; padding: 1rem; min-width: 0; }
+.terminal-swatches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.terminal-slot { min-width: 0; }
+.terminal-slot p { margin-bottom: .25rem; }
+.terminal-slot code { display: block; padding: .35em .5em; overflow-wrap: anywhere; }
+.terminal-slot small { display: block; overflow-wrap: anywhere; }
 .palette { background: var(--canvas); color: var(--text); }
 .platform-links { display: flex; flex-wrap: wrap; gap: 1rem 2rem; margin-block: 1.5rem; }
 .platform-group { scroll-margin-top: 1rem; margin-top: 2.5rem; }

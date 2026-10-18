@@ -28,6 +28,7 @@
       <a class="button" href="#downloads">Choose your platform</a>
       <a class="secondary-link" href="#installation">Installation and removal</a>
       <a id="icon-gallery-link" class="secondary-link" href="#icons">Browse the matching app icons</a>
+      <a id="terminal-preview-link" class="secondary-link" href="#terminal">Windows Terminal colors</a>
       <noscript><p>Page controls need JavaScript. Both palette specimens, downloads and installation instructions remain available below.</p></noscript>
     </section>
 
@@ -137,6 +138,15 @@ node tools/export-icons.mjs --input outputs/samsung-icons-svg-01 --output output
         <p>Use fresh output directories. The exporter produces every drawing at 512 and 1024 pixels and preserves existing output. The SVG artwork ZIP above is a separate viewing download; generate the exporter's exact input from source with the first command.</p>
         <p>Actual image assignment depends on the installed One UI, Theme Park and launcher versions. Keep your current icon theme before trying individual PNG assignment. Check cover and inner screens, icon masks, cropping and app labels, then verify switching and restoration. There is no bulk ZIP importer or icon-pack APK. Launcher labels and fonts remain phone settings, and Inter availability on the phone is unverified.</p>
       </details>
+    </section>
+
+    <section id="terminal" aria-labelledby="terminal-heading">
+      <h2 id="terminal-heading">Windows Terminal colors</h2>
+      <p>The separate 0.1.0 candidate supplies two complete color schemes for Windows Terminal's supported JSON fragment route. It leaves your shell, keyboard actions, fonts, size and profile settings under your control. Native installation, rendering, restart persistence and restoration remain unverified.</p>
+      <p><a id="terminal-download" class="button" href="{{TERMINAL_ARCHIVE}}" download>Download both Windows Terminal schemes</a> <a id="terminal-checksums" class="secondary-link" href="terminal/SHA256SUMS" download>Terminal package checksums</a></p>
+      <p><a id="terminal-guide" href="terminal/installation.md">Installation, switching and restoration guide (Markdown)</a>. Read the guide before copying the single scheme fragment. Record your existing settings and stop if its file or scheme names already exist.</p>
+      <p class="muted">These labeled ANSI color specimens are webpage samples, not native Terminal screenshots. The ordinary and bright slots show their default background or an explicitly labeled black/white partner. Neutral slots preserve useful black/white background pairs. Applications can choose other colored backgrounds, reverse video or their own true-color output. Those combinations need separate checks. Your terminal keeps its appropriate monospace font and glyph fallback.</p>
+      <div class="terminal-grid">{{TERMINAL_SPECIMENS}}</div>
     </section>
 
     <section id="limits" class="limits" aria-labelledby="limits-heading">
