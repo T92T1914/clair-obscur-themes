@@ -2,11 +2,11 @@
 
 Two appearances with native browser and self-contained client CSS candidates. Clair uses warm paper surfaces and dark text. Obscur uses near-black layers, clear text and restrained blue emphasis. Both come from the visual identity of [Tornado Atlas](https://github.com/T92T1914/tornado-atlas), with the host application's layout and scaling left in place.
 
-This is an experimental preview. Both themes have passed limited native Equibop checks for loading, matching and opposite appearance modes, switching and restoration. Obscur also installed in an isolated ordinary Chrome profile. Full interface and typography acceptance remains open, including Clair's Chrome installation and Chrome switching, restoration and cleanup. The webpage specimen is not a screenshot of either application's interface. See the [compatibility and acceptance record](docs/acceptance.md) for the inspected surfaces and remaining checks.
+This is an experimental preview. Both themes have limited native Equibop evidence for loading, matching and opposite appearances, switching and scoped restoration. Obscur and Clair 0.1.1 each installed in the retained isolated ordinary Chrome profile, with only the recorded interface surfaces inspected. Complete native interface and typography coverage, Chrome switching, removal and cleanup remain open. The webpage specimen is not a screenshot of either application's interface. See the [compatibility and acceptance record](docs/acceptance.md) for the observed surfaces and remaining checks.
 
 ## Choose your theme
 
-Open the [live preview and downloads](https://t92t1914.github.io/clair-obscur-themes/) to compare Clair and Obscur and choose a package for your application. The page includes installation and restoration steps, source and checksums. All downloads are labeled as previews while native acceptance remains open. Chrome and Equicord 0.1.1 and Firefox, Vencord and BetterDiscord 0.2.0 retain their accepted bytes. New Vivaldi and Opera GX adapters are 0.3.0 candidates. Edge and Brave reuse the original Chrome ZIP. [Platform contracts and remaining acceptance](docs/platform-portability.md).
+Open the [live preview and downloads](https://t92t1914.github.io/clair-obscur-themes/) to compare Clair and Obscur and choose a package for your application. The page includes installation and restoration steps, source and checksums. All downloads are labeled as previews while native acceptance remains open. The original Chrome and Equicord 0.1.1 files and Firefox, Vencord and BetterDiscord 0.2.0 retain their accepted bytes. The current Clair Equicord choice is a separate 0.1.2 focus correction. New Vivaldi and Opera GX adapters are 0.3.0 candidates. Edge and Brave reuse the original Chrome ZIP. [Platform contracts and remaining acceptance](docs/platform-portability.md).
 
 | Application | Clair | Obscur | Typography |
 | --- | --- | --- | --- |
@@ -24,7 +24,7 @@ The Chrome downloads are native color themes, not replacement browsers or websit
 
 ## Build and try the preview
 
-Python 3.11 or newer builds thirteen distinct download files. Seventeen platform choices include the exact Chrome ZIPs reused for Edge and Brave. The Vivaldi settings ZIPs are separate from the paired Opera GX mod candidate. From this project directory:
+Python 3.11 or newer builds seventeen platform choices with thirteen distinct selected downloads, plus the retained original Clair Equicord file. Edge and Brave reuse the exact Chrome ZIPs. The Vivaldi settings ZIPs are separate from the paired Opera GX mod candidate. From this project directory:
 
 ```powershell
 python build.py
@@ -40,7 +40,8 @@ Reviewed changes merged into `main` publish the checked preview automatically af
 | --- | --- |
 | Clair for Chrome | `dist/artifacts/Clair-Chrome-0.1.1.zip` |
 | Obscur for Chrome | `dist/artifacts/Obscur-Chrome-0.1.1.zip` |
-| Clair for Equicord | `dist/equicord/Clair.theme.css` |
+| Current Clair for Equicord | `dist/equicord/Clair-Equicord-0.1.2.theme.css` |
+| Original Clair for Equicord | `dist/equicord/Clair.theme.css` |
 | Obscur for Equicord | `dist/equicord/Obscur.theme.css` |
 | Firefox candidates | `dist/artifacts/Clair-Firefox-0.2.0.xpi` and `dist/artifacts/Obscur-Firefox-0.2.0.xpi` |
 | Vencord candidates | `dist/vencord/Clair-Vencord.theme.css` and `dist/vencord/Obscur-Vencord.theme.css` |
@@ -49,7 +50,7 @@ Reviewed changes merged into `main` publish the checked preview automatically af
 | Opera GX paired candidate | `dist/artifacts/Clair-Obscur-OperaGX-0.3.0.zip` |
 | Integrity records | `dist/SHA256SUMS` and `dist/artifact-manifest.json` |
 
-Start with Obscur in a separate Chrome test profile or a recoverable Equicord configuration, then give Clair the same checks. In Chrome, extract the ZIP and use **Load unpacked** in `chrome://extensions`. In Equibop, use Equicord's **Open Themes Folder** control and copy the CSS there. Do not paste it over QuickCSS or install another Discord client.
+Use a separate Chrome test profile or a recoverable Equicord configuration for either appearance, and keep the remaining native checks in view. In Chrome, extract the ZIP and use **Load unpacked** in `chrome://extensions`. In Equibop, use Equicord's **Open Themes Folder** control and copy the CSS there. Do not paste it over QuickCSS or install another Discord client.
 
 The [installation and removal guide](docs/installation.md) covers the exact steps, theme conflicts, Inter, switching and restoration. Chrome uses **Settings > Appearance > Reset to default** for removal. Equicord restoration means disabling the candidate and restoring the appearance and theme selections recorded before the test. No monitor, HDR or color-profile changes are required.
 
@@ -59,9 +60,17 @@ The [installation and removal guide](docs/installation.md) covers the exact step
 
 The browser specimen exercises readable components, local font resolution, keyboard interaction, larger text and fallback behavior. It uses an isolated headless browser profile. Those tests help find mistakes in the supplied CSS and preview, but they cannot certify Chrome's tab strip, Equibop's full interface or physical HDR appearance.
 
-Inter verification checks the actual rendered Regular, SemiBold and Bold faces and their genuine italic counterparts. Windows' normal per-user installation has now restored all six faces, and the latest strict checks passed with zero skips. Actual Equibop settings text rendered Inter Regular and Bold under both themes. The other four faces and native code/language fallback remain unverified. An earlier session activation failed after the next normal restart. Persistence after the native installation remains unverified until another normal restart is checked before any repair. The [acceptance record](docs/acceptance.md#installed-font-investigation) preserves these results and the remaining native-application checks. A readable fallback is a separate result, not a passed Inter check. The released theme files are unchanged.
+Inter verification checks rendered Regular, SemiBold and Bold faces and their genuine italic counterparts. Strict isolated checks observed all six installed faces after a later Windows boot, before font intervention in that continuation. Native Equibop evidence remains narrower. Clair 0.1.2 has scoped observations for five faces, while Bold Italic, complete coverage across both appearances, native code and exact language fallback remain unverified. Earlier restart failures remain in the record, and the later boot observation does not prove permanent persistence. The [acceptance record](docs/acceptance.md#installed-font-investigation) separates these observations and their remaining limits. A readable fallback is a separate result, not a passed Inter check.
 
 See [development and verification](docs/development.md) for reproducible commands, [design](docs/design.md) for the color and typography choices, and [research](research/research.md) for the source-backed concerns behind the native checks. The [publication guide](docs/publication.md) separates a downloadable preview, native acceptance and store approval.
+
+## Watch and phone candidates
+
+The shared palette also supports a [Garmin watch face candidate](docs/garmin-watchface.md)
+and [original phone icon artwork](docs/samsung-icons.md). The watch face targets
+`fenix9pro47mm`, with selectable information fields and a separate time only
+always on view. Simulator checks cover the stated behavior on that target.
+Physical watch acceptance and phone import remain untested.
 
 ## Report a problem
 
