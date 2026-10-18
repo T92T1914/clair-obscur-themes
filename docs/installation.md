@@ -69,7 +69,7 @@ If the theme is missing, confirm the downloaded file still ends in `.theme.css`,
 
 ### Prerequisites and status
 
-Use standard desktop Google Chrome. Obscur 0.1.1 has installation-only native evidence. Clair installation, both interface journeys, switching, Reset to default and test-profile cleanup remain incomplete. The local ZIPs are development candidates, without Chrome Web Store approval.
+Use standard desktop Google Chrome. Obscur and Clair 0.1.1 have scoped native installation evidence. Both complete interface journeys, switching, Reset to default and test-profile cleanup remain incomplete. The local ZIPs are development candidates, without Chrome Web Store approval. See the [dated acceptance record](acceptance.md#october-15-clair-installation) for the inspected surfaces and remaining limits.
 
 Use a [separate local test profile](https://support.google.com/chrome/answer/2364824?hl=en) in standard Google Chrome for the first installation. Add it from the profile menu, continue without signing in and keep sync off. Do not import or copy data from the everyday profile. Record the test profile's initial appearance. This isolates the theme change from existing browser choices.
 
