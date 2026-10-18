@@ -69,6 +69,7 @@ def source_files(root: Path) -> dict[str, bytes]:
         'README.md', 'AGENTS.md', 'LICENSE', 'CHANGELOG.md', 'tokens.json', 'build.py', 'preview.py',
         'verify_preview.py',
         'package.json', 'package-lock.json', '.gitignore', '.gitattributes',
+        'tools/export-icons.mjs',
     )]
     # Only the reviewed project files belong in the public source snapshot.
     # SDKs, keys, compiled programs and debug XML stay outside this inventory.

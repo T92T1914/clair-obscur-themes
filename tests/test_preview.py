@@ -462,6 +462,24 @@ class PreviewTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_icon_export_command_is_in_the_source_snapshot(self):
+        captured = source_files(ROOT)
+        name = 'tools/export-icons.mjs'
+        self.assertEqual(captured[name], (ROOT / name).read_bytes())
+        extracted = self.base / 'icon-export-source'
+        with zipfile.ZipFile(io.BytesIO(preview_files(ROOT, self.artifacts)['source.zip'])) as archive:
+            archive.extractall(extracted)
+            self.assertEqual(archive.read(name), captured[name])
+        # Tools remain explicitly selected. A neighboring private helper must
+        # not become public merely because the directory now exists.
+        (extracted / 'tools/private-helper.mjs').write_bytes(b'private fixture')
+        self.assertEqual(source_files(extracted), captured)
+        result = subprocess.run(
+            [sys.executable, '-m', 'themeforge.icons', '--output', str(self.base / 'extracted-icons')],
+            cwd=extracted, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=30,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_release_checksums_verify_flat_downloads_including_source(self):
         files = preview_files(ROOT, self.artifacts)
         manifest = json.loads(files['downloads/artifact-manifest.json'])
