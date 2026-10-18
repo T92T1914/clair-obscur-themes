@@ -27,6 +27,7 @@
       <p class="status"><strong>Preview {{VERSION}}.</strong> Both Equibop themes have limited native checks and verified restoration. Obscur installed in isolated Chrome. Full native acceptance remains open.</p>
       <a class="button" href="#downloads">Choose your platform</a>
       <a class="secondary-link" href="#installation">Installation and removal</a>
+      <a id="icon-gallery-link" class="secondary-link" href="#icons">Browse the matching app icons</a>
       <noscript><p>Page controls need JavaScript. Both palette specimens, downloads and installation instructions remain available below.</p></noscript>
     </section>
 
@@ -123,12 +124,27 @@ preserve_native_scaling = True</code></pre>
       {{LOCAL_GUIDES}}
     </section>
 
+    <section id="icons" aria-labelledby="icons-heading">
+      <h2 id="icons-heading">Matching app icons</h2>
+      <p>Choose by function: 24 original drawings, each shown in Clair and Obscur. Both appearances stay visible while you change the page appearance. These are the unchanged 0.1.0 SVG masters, with functional labels to help you choose a symbol.</p>
+      <p><a id="icon-artwork-download" class="button" href="{{ICON_ARCHIVE}}" download>Download both appearances as SVG artwork</a> <a id="icon-artwork-checksums" class="secondary-link" href="{{ICON_CHECKSUMS}}" download>SVG artwork ZIP checksum</a></p>
+      <p class="muted">The ZIP contains 48 SVG drawings, their identity manifest and the MIT license. It contains no PNGs, fonts, app-brand logos or installer. This gallery is an artwork preview, not a Samsung launcher screenshot.</p>
+      <div class="icon-gallery">{{ICON_GALLERY}}</div>
+      <details id="icon-png-instructions"><summary>Need PNG images for a phone?</summary>
+        <p>The <a href="#current-source">current source snapshot</a> includes the existing PNG exporter and <code>docs/samsung-icons.md</code>. From that extracted source, generate a fresh SVG directory, then export it with the project's pinned Playwright dependency and headless Google Chrome:</p>
+        <pre tabindex="0" aria-label="Generate SVG masters and export PNG images"><code>python -m themeforge.icons --output outputs/samsung-icons-svg-01
+node tools/export-icons.mjs --input outputs/samsung-icons-svg-01 --output outputs/samsung-icons-png-01</code></pre>
+        <p>Use fresh output directories. The exporter produces every drawing at 512 and 1024 pixels and preserves existing output. The SVG artwork ZIP above is a separate viewing download; generate the exporter's exact input from source with the first command.</p>
+        <p>Actual image assignment depends on the installed One UI, Theme Park and launcher versions. Keep your current icon theme before trying individual PNG assignment. Check cover and inner screens, icon masks, cropping and app labels, then verify switching and restoration. There is no bulk ZIP importer or icon-pack APK. Launcher labels and fonts remain phone settings, and Inter availability on the phone is unverified.</p>
+      </details>
+    </section>
+
     <section id="limits" class="limits" aria-labelledby="limits-heading">
       <h2 id="limits-heading">What the evidence covers</h2>
       <p>The shared palette is checked against its actual text and control-state pairings. Browser fixtures test local font selection, layout, keyboard controls, fallback and package downloads. These checks do not certify every surface in either host.</p>
       <p>Chrome retains its own interface font and controls. The design target is a 4K OLED desktop with Windows HDR enabled, but the theme uses ordinary sRGB colors. It does not change brightness, calibration, color profiles or recording behavior. Screenshots do not establish physical luminance or reading comfort.</p>
-      <p>Windows' normal Inter installation passed the strict six-face checks in fresh processes. Persistence after a later normal restart is still unverified. Actual Equibop settings supplied Inter Regular and Bold under both appearances, and the original configuration was restored. The other four faces, native code and language fallback, and broader client coverage remain open.</p>
-      <p>Obscur installed through Load unpacked in isolated ordinary Chrome. Clair installation, browser-interface checks, switching, Reset to default and test-profile cleanup are incomplete. Physical reading acceptance remains unverified for both appearances. See the <a href="https://github.com/T92T1914/clair-obscur-themes/blob/main/docs/acceptance.md" rel="noreferrer">dated acceptance record</a> for the inspected scope.</p>
+      <p>All six installed Inter faces rendered in the webpage specimen after a later Windows boot on October 14, 2026, before intervention in that task. This does not establish permanent persistence. Native current-Clair Equibop evidence covers Regular, Semibold, Semibold Italic and Bold on October 15, plus the separate October 14 Italic observation. Bold Italic, native code and language/icon fallback, complete appearance coverage and persistence after an independently normal client restart remain open. Recorded scoped restoration passed; whole-session restoration was not established.</p>
+      <p>Obscur and later Clair installed through Load unpacked in isolated Chrome. Its last reported state on October 15, 2026 was Clair 0.1.1 with Light selected. Remaining browser-interface checks, switching, Reset to default and test-profile cleanup are incomplete after the controller's URL-confidence stop. Physical reading acceptance remains unverified for both appearances. See the <a href="https://github.com/T92T1914/clair-obscur-themes/blob/main/docs/acceptance.md" rel="noreferrer">dated acceptance record</a> for the inspected scope.</p>
     </section>
   </main>
   <footer><p>Clair &amp; Obscur {{VERSION}}. <a href="https://github.com/T92T1914/clair-obscur-themes" rel="noreferrer">Source and installation guide</a>. Original theme code under the <a href="LICENSE">MIT license</a>.</p><p><a href="https://github.com/T92T1914/tornado-atlas" rel="noreferrer">Palette lineage: Tornado Atlas</a>. No affiliation with Google, Discord or Equicord is implied.</p></footer>

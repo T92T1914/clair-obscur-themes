@@ -17,6 +17,7 @@ from themeforge.build import (
 )
 from themeforge.equicord import FACES
 from themeforge.guides import guide_anchor, render_guides
+from themeforge.icons import render_icons
 from themeforge.legal import normalize_license
 from themeforge.tokens import load
 
@@ -25,6 +26,8 @@ WEB_ASSETS = frozenset({'index.html', 'preview.css', 'preview.js'})
 REPOSITORY_URL = 'https://github.com/T92T1914/clair-obscur-themes'
 PORTABLE_ARCHIVE = 'Clair-Obscur-portable-preview.zip'
 PORTABLE_CHECKSUMS = 'portable-SHA256SUMS'
+ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.1.0.zip'
+ICON_CHECKSUMS = 'icons/SVG-SHA256SUMS'
 GARMIN_SOURCE_FILES = (
     'garmin/build.py', 'garmin/watchface/manifest.xml', 'garmin/watchface/monkey.jungle',
     'garmin/watchface/resources/settings/properties.xml',
@@ -214,6 +217,33 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
             raise ValueError('Source license differs from the browser candidate grants')
     if license_comment not in snapshot[CLAIR_EQUICORD_FOCUS_PATH]:
         raise ValueError('Source license differs from the verified Clair focus package grant')
+    icon_files = render_icons(document)
+    icon_manifest = json.loads(icon_files['manifest.json'])
+    icon_license_comment = b'<!--\n' + license_bytes + b'\n-->'
+    for path, payload in icon_files.items():
+        if path.endswith('.svg') and icon_license_comment not in payload:
+            raise ValueError('Source license differs from the generated icon grant')
+        files[f'icons/{path}'] = payload
+    icon_files['LICENSE.txt'] = sources['LICENSE']
+    files['icons/LICENSE.txt'] = sources['LICENSE']
+    files[ICON_ARCHIVE] = _zip_bytes(icon_files)
+    files[ICON_CHECKSUMS] = (
+        f'{_digest(files[ICON_ARCHIVE])}  {Path(ICON_ARCHIVE).name}\n'.encode()
+    )
+    icon_cards = []
+    for function in icon_manifest['functions']:
+        label = function.replace('-', ' ')
+        figures = ''.join(
+            f'<figure><img src="icons/{appearance}/{html.escape(function, quote=True)}.svg" '
+            f'alt="{html.escape(appearance + " " + label + " icon", quote=True)}" '
+            f'width="512" height="512" decoding="async">'
+            f'<figcaption>{appearance}</figcaption></figure>'
+            for appearance in ('Clair', 'Obscur')
+        )
+        icon_cards.append(
+            f'<article class="icon-card" data-icon-function="{html.escape(function, quote=True)}">'
+            f'<h3>{html.escape(label.title())}</h3><div class="icon-pair">{figures}</div></article>'
+        )
     identity = source_identity(root, sources, expected_revision)
     version = document['version']
     release_url = f'{REPOSITORY_URL}/releases/download/v{version}'
@@ -227,6 +257,9 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
     text = (files['index.html'].decode().replace('{{VERSION}}', html.escape(version))
             .replace('{{RELEASE_URL}}', html.escape(release_url, quote=True))
             .replace('{{SOURCE_DESCRIPTION}}', source_description)
+            .replace('{{ICON_GALLERY}}', '\n'.join(icon_cards))
+            .replace('{{ICON_ARCHIVE}}', ICON_ARCHIVE)
+            .replace('{{ICON_CHECKSUMS}}', ICON_CHECKSUMS)
             .replace('{{TARGET_OPTIONS}}', '\n'.join(
                 f'<option value="{html.escape(platform, quote=True)}">{html.escape(label)}</option>'
                 for platform, label in labels.items() if groups[platform]))

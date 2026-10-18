@@ -4,6 +4,8 @@ The 0.1.0 icon generator creates 24 original functional drawings in both Clair a
 
 ## Artwork and exports
 
+The public preview's **Matching app icons** gallery shows every function in both appearances, with visible labels and an SVG artwork ZIP. The same gallery and download are included in the portable preview and remain available without JavaScript or a network connection. The ZIP contains the 48 unchanged SVG masters, their original generator manifest and the project license. Its separate checksum identifies the actual ZIP bytes. It is a vector-artwork download, separate from the prepared PNG package and the PNG export command below.
+
 `themeforge/icons.py` consumes the existing validated `tokens.json`. Each appearance uses `panel` for the tile, `text` for the main drawing and `accent` for emphasis. The two appearances share geometry. Each 512 by 512 SVG has a rounded 448-pixel tile, a transparent outer margin and 12-pixel strokes. The drawings use local vector primitives, with no scripts, remote assets or fonts. Each SVG includes the project's MIT license.
 
 The prepared raster exports contain 96 transparent PNGs: every master at 512 and 1024 pixels, plus two labeled contact sheets. Those dimensions and the rounded tile are project design choices. They are not documented Samsung import requirements or a guarantee of the phone's final mask. Function labels appear on the contact sheets and in SVG accessibility metadata. They are separate from the icon drawing and do not replace launcher app labels.
