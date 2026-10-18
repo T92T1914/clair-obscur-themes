@@ -480,6 +480,24 @@ class PreviewTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_vscode_candidate_builds_from_the_actual_source_snapshot(self):
+        extracted = self.base / 'vscode-source'
+        with zipfile.ZipFile(io.BytesIO(preview_files(ROOT, self.artifacts)['source.zip'])) as archive:
+            archive.extractall(extracted)
+            self.assertEqual(archive.read('themeforge/vscode.py'), (ROOT / 'themeforge/vscode.py').read_bytes())
+        output = self.base / 'extracted-vscode'
+        result = subprocess.run(
+            [sys.executable, '-m', 'themeforge.vscode', '--output', str(output)],
+            cwd=extracted, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=30,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        package = json.loads((output / 'extension/package.json').read_bytes())
+        self.assertEqual(package['version'], '0.1.0')
+        self.assertEqual([item['label'] for item in package['contributes']['themes']], ['Clair', 'Obscur'])
+        with zipfile.ZipFile(output / 'Clair-Obscur-VSCode-0.1.0.vsix') as archive:
+            self.assertIsNone(archive.testzip())
+            self.assertEqual(archive.read('extension/package.json'), (output / 'extension/package.json').read_bytes())
+
     def test_release_checksums_verify_flat_downloads_including_source(self):
         files = preview_files(ROOT, self.artifacts)
         manifest = json.loads(files['downloads/artifact-manifest.json'])
