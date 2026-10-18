@@ -18,6 +18,7 @@ from themeforge.build import (
 from themeforge.equicord import FACES
 from themeforge.guides import guide_anchor, render_guides
 from themeforge.icons import render_icons
+from themeforge.terminal import ANSI_FIELDS, ARCHIVE as TERMINAL_ARCHIVE, FRAGMENT as TERMINAL_FRAGMENT, render_terminal
 from themeforge.legal import normalize_license
 from themeforge.tokens import load
 
@@ -245,6 +246,31 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
             f'<h3>{html.escape(label.title())}</h3><div class="icon-pair">{figures}</div></article>'
         )
     identity = source_identity(root, sources, expected_revision)
+    terminal_files = render_terminal(document)
+    if terminal_files['LICENSE.txt'] != license_bytes:
+        raise ValueError('Source license differs from the generated Terminal grant')
+    files.update({f'terminal/{name}': payload for name, payload in terminal_files.items()})
+    files['terminal/installation.md'] = sources['docs/windows-terminal.md']
+    terminal_cards = []
+    foreground_exceptions = json.loads(terminal_files['manifest.json'])['foreground_exceptions']
+    for name, scheme in zip(('Clair', 'Obscur'), json.loads(terminal_files[TERMINAL_FRAGMENT])['schemes']):
+        samples = []
+        for index, field in enumerate(ANSI_FIELDS):
+            label = ('Bright ' + field[6:].lower()) if field.startswith('bright') else field.title()
+            partner = ('black' if name == 'Clair' else 'white') if field in foreground_exceptions[name] else None
+            background = scheme[partner] if partner else scheme['background']
+            context = f'on {partner}' if partner else 'on default'
+            samples.append(
+                f'<div class="terminal-slot" data-ansi="{field}"><p>{index}: {label}</p>'
+                f'<code style="color:{scheme[field]};background:{background}">Aa 0123</code>'
+                f'<small>{context}</small></div>'
+            )
+        terminal_cards.append(
+            f'<article class="terminal-palette" data-palette="{name}" '
+            f'style="background:{scheme["background"]};color:{scheme["foreground"]}">'
+            f'<h3>{name}</h3><p>Scheme: <code>{html.escape(scheme["name"])}</code></p>'
+            f'<div class="terminal-swatches">{"".join(samples)}</div></article>'
+        )
     version = document['version']
     release_url = f'{REPOSITORY_URL}/releases/download/v{version}'
     if identity['revision'] is None:
@@ -260,6 +286,8 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
             .replace('{{ICON_GALLERY}}', '\n'.join(icon_cards))
             .replace('{{ICON_ARCHIVE}}', ICON_ARCHIVE)
             .replace('{{ICON_CHECKSUMS}}', ICON_CHECKSUMS)
+            .replace('{{TERMINAL_SPECIMENS}}', '\n'.join(terminal_cards))
+            .replace('{{TERMINAL_ARCHIVE}}', f'terminal/{TERMINAL_ARCHIVE}')
             .replace('{{TARGET_OPTIONS}}', '\n'.join(
                 f'<option value="{html.escape(platform, quote=True)}">{html.escape(label)}</option>'
                 for platform, label in labels.items() if groups[platform]))

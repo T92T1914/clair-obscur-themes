@@ -23,6 +23,14 @@ const iconFunctions = [
 ];
 const iconArchive = 'icons/Clair-Obscur-SVG-Icons-0.1.0.zip';
 const iconPaths = iconFunctions.flatMap(functionName => ['Clair', 'Obscur'].map(appearance => `icons/${appearance}/${functionName}.svg`));
+const terminalFragment = 'Clair-Obscur-Windows-Terminal-0.1.0.json';
+const terminalArchive = 'Clair-Obscur-Windows-Terminal-0.1.0.zip';
+const terminalAnsi = [
+  ['black', 'Black'], ['red', 'Red'], ['green', 'Green'], ['yellow', 'Yellow'],
+  ['blue', 'Blue'], ['purple', 'Purple'], ['cyan', 'Cyan'], ['white', 'White'],
+  ['brightBlack', 'Bright black'], ['brightRed', 'Bright red'], ['brightGreen', 'Bright green'], ['brightYellow', 'Bright yellow'],
+  ['brightBlue', 'Bright blue'], ['brightPurple', 'Bright purple'], ['brightCyan', 'Bright cyan'], ['brightWhite', 'Bright white'],
+];
 
 function run(args) {
   const result = spawnSync(python[0], [...python.slice(1), ...args], {
@@ -388,7 +396,7 @@ test('static delivery remains usable without JavaScript and internal links resol
     assert.equal(await acceptance.getAttribute('href'), 'https://github.com/T92T1914/clair-obscur-themes/blob/main/docs/acceptance.md');
     assert.doesNotMatch(await page.content(), /\{\{[A-Z_]+\}\}/);
     for (const [name, background] of [['Obscur', 'rgb(9, 9, 9)'], ['Clair', 'rgb(248, 247, 243)']]) {
-      const card = page.locator(`[data-palette="${name}"]`);
+      const card = page.locator(`.palette[data-palette="${name}"]`);
       assert.equal(await card.evaluate(node => getComputedStyle(node).backgroundColor), background);
     }
     const unresolved = await page.evaluate(() => [...document.querySelectorAll('a[href^="#"]')]
@@ -533,6 +541,190 @@ test('icon gallery qualification rejects one missing image and recovers without 
     assert.deepEqual(await checkIconGallery(page), iconPaths);
     results.scenarios.push({ name: 'controlled missing gallery image', status: 'rejected and recovered',
       scope: 'disposable missing-resource fault, not a product defect' });
+  } finally { await context.close(); }
+});
+
+
+function assertTerminalFragment(document) {
+  assert.deepEqual(Object.keys(document), ['schemes']);
+  assert.ok(Array.isArray(document.schemes));
+  assert.equal(document.schemes.length, 2);
+  const fields = ['name', 'background', 'foreground', 'cursorColor', 'selectionBackground', ...terminalAnsi.map(([field]) => field)];
+  for (const [index, appearance] of ['Clair', 'Obscur'].entries()) {
+    const scheme = document.schemes[index];
+    assert.deepEqual(Object.keys(scheme).sort(), [...fields].sort());
+    assert.equal(scheme.name, `Clair Obscur - ${appearance}`);
+    for (const field of fields.filter(field => field !== 'name')) assert.match(scheme[field], /^#[a-f0-9]{6}$/i);
+  }
+}
+
+function terminalRgb(hex) {
+  return `rgb(${[1, 3, 5].map(offset => parseInt(hex.slice(offset, offset + 2), 16)).join(', ')})`;
+}
+
+async function checkTerminalSpecimens(page, document) {
+  assertTerminalFragment(document);
+  assert.equal(await page.locator('#terminal').getAttribute('aria-labelledby'), 'terminal-heading');
+  assert.equal(await page.locator('#terminal-heading').textContent(), 'Windows Terminal colors');
+  assert.equal(await page.locator('#terminal-download').getAttribute('href'), 'terminal/' + terminalArchive);
+  assert.equal(await page.locator('#terminal-checksums').getAttribute('href'), 'terminal/SHA256SUMS');
+  assert.equal(await page.locator('#terminal-guide').getAttribute('href'), 'terminal/installation.md');
+  const observed = await page.locator('#terminal article.terminal-palette').evaluateAll(cards => {
+    function textLayout(node) {
+      if (!node) return { missing: true };
+      const box = node.getBoundingClientRect(), style = getComputedStyle(node);
+      const range = document.createRange(); range.selectNodeContents(node);
+      const rects = [...range.getClientRects()].filter(rect => rect.width > 0 && rect.height > 0);
+      const clippedBy = [];
+      for (let ancestor = node.parentElement; ancestor; ancestor = ancestor.parentElement) {
+        const parentStyle = getComputedStyle(ancestor), parent = ancestor.getBoundingClientRect();
+        if (parentStyle.visibility !== 'visible' || parentStyle.display === 'none' || Number(parentStyle.opacity) === 0) clippedBy.push('hidden ancestor');
+        if (['hidden', 'clip', 'scroll', 'auto'].includes(parentStyle.overflowY)
+            && rects.some(rect => rect.top < parent.top - 1 || rect.bottom > parent.bottom + 1)) clippedBy.push('vertical clipping');
+        if (['hidden', 'clip', 'scroll', 'auto'].includes(parentStyle.overflowX)
+            && rects.some(rect => rect.left < parent.left - 1 || rect.right > parent.right + 1)) clippedBy.push('horizontal clipping');
+      }
+      return { text: node.textContent, width: box.width, height: box.height, left: box.left, right: box.right,
+        clientWidth: node.clientWidth, scrollWidth: node.scrollWidth, display: style.display, visibility: style.visibility,
+        opacity: style.opacity, fontSize: style.fontSize, color: style.color, background: style.backgroundColor,
+        rects: rects.map(rect => ({ left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom })),
+        clippedBy, viewport: innerWidth };
+    }
+    return cards.map(card => ({
+      appearance: card.dataset.palette, background: getComputedStyle(card).backgroundColor, color: getComputedStyle(card).color,
+      heading: textLayout(card.querySelector('h3')), name: textLayout(card.querySelector(':scope > p > code')),
+      slots: [...card.querySelectorAll('.terminal-slot')].map(slot => ({
+        field: slot.dataset.ansi, label: textLayout(slot.querySelector('p')),
+        sample: textLayout(slot.querySelector('code')), context: textLayout(slot.querySelector('small')),
+      })),
+    }));
+  });
+  assert.equal(observed.length, 2, 'Both static Terminal appearances must remain available');
+  for (const [index, appearance] of ['Clair', 'Obscur'].entries()) {
+    const card = observed[index], scheme = document.schemes[index];
+    assert.equal(card.appearance, appearance);
+    assert.equal(card.heading.text, appearance);
+    assert.equal(card.name.text, scheme.name);
+    assert.equal(card.background, terminalRgb(scheme.background));
+    assert.equal(card.color, terminalRgb(scheme.foreground));
+    assert.deepEqual(card.slots.map(slot => slot.field), terminalAnsi.map(([field]) => field));
+    for (const [slotIndex, [field, label]] of terminalAnsi.entries()) {
+      const slot = card.slots[slotIndex];
+      const partner = appearance === 'Clair' && ['white', 'brightWhite'].includes(field) ? 'black'
+        : appearance === 'Obscur' && ['black', 'brightBlack'].includes(field) ? 'white' : null;
+      assert.equal(slot.label.text, `${slotIndex}: ${label}`);
+      assert.equal(slot.sample.text, 'Aa 0123');
+      assert.equal(slot.context.text, partner ? 'on ' + partner : 'on default');
+      assert.equal(slot.sample.color, terminalRgb(scheme[field]), `${appearance} ${field} foreground`);
+      assert.equal(slot.sample.background, terminalRgb(partner ? scheme[partner] : scheme.background), `${appearance} ${field} background`);
+    }
+    for (const node of [card.heading, card.name, ...card.slots.flatMap(slot => [slot.label, slot.sample, slot.context])]) {
+      assert.ok(!node.missing && node.text.length > 0 && node.width > 0 && node.height > 0, JSON.stringify(node));
+      assert.equal(node.visibility, 'visible'); assert.notEqual(node.display, 'none');
+      assert.ok(Number(node.opacity) > 0);
+      assert.ok(node.left >= -1 && node.right <= node.viewport + 1, JSON.stringify(node));
+      if (node.clientWidth > 0) assert.ok(node.scrollWidth <= node.clientWidth + 1, JSON.stringify(node));
+      assert.ok(node.rects.length > 0, 'Retain rendered text rather than an empty colored box');
+      assert.ok(node.rects.every(rect => rect.left >= -1 && rect.right <= node.viewport + 1), JSON.stringify(node));
+      assert.deepEqual(node.clippedBy, [], JSON.stringify(node));
+    }
+  }
+  const last = page.locator('#terminal .terminal-palette').last().locator('.terminal-slot').last().locator('small');
+  await last.scrollIntoViewIfNeeded();
+  assert.ok(await last.evaluate(node => {
+    const box = node.getBoundingClientRect(); return box.top >= -1 && box.bottom <= innerHeight + 1;
+  }), 'The final labeled sample must remain reachable by scrolling');
+  assert.equal(await page.locator('#downloads .download-card').count(), 17);
+  return observed;
+}
+
+async function verifyTerminalDownloads(archiveBytes, checksumBytes, siteRoot) {
+  const terminalRoot = path.join(siteRoot, 'terminal');
+  assert.deepEqual(archiveBytes, await readFile(path.join(terminalRoot, terminalArchive)));
+  assert.deepEqual(checksumBytes, await readFile(path.join(terminalRoot, 'SHA256SUMS')));
+  const pairs = checksumBytes.toString('utf8').trimEnd().split('\n').map(line => {
+    const match = /^([a-f0-9]{64})  ([A-Za-z0-9._-]+)$/.exec(line);
+    assert.ok(match, 'Each checksum must identify one generated local file'); return match.slice(1);
+  });
+  assert.deepEqual(pairs.map(([, name]) => name).sort(), [terminalFragment, terminalArchive, 'LICENSE.txt', 'manifest.json'].sort());
+  for (const [digest, name] of pairs) assert.equal(crypto.createHash('sha256').update(await readFile(path.join(terminalRoot, name))).digest('hex'), digest);
+  const fragment = JSON.parse(await readFile(path.join(terminalRoot, terminalFragment), 'utf8'));
+  assertTerminalFragment(fragment);
+  const archivePath = path.join(temp, `terminal-acquired-${crypto.createHash('sha256').update(archiveBytes).digest('hex')}.zip`);
+  await writeFile(archivePath, archiveBytes);
+  run(['-c', [
+    'import pathlib,stat,sys,zipfile',
+    'archive_path,terminal_root=map(pathlib.Path,sys.argv[1:])',
+    `expected={${JSON.stringify(terminalFragment)},"LICENSE.txt"}`,
+    'with zipfile.ZipFile(archive_path) as archive:',
+    ' names=archive.namelist()',
+    ' assert names==sorted(expected) and archive.testzip() is None',
+    ' for info in archive.infolist():',
+    '  name=pathlib.PurePosixPath(info.filename)',
+    '  assert not name.is_absolute() and ".." not in name.parts and "\\\\" not in info.filename',
+    '  assert stat.S_ISREG(info.external_attr >> 16)',
+    '  assert archive.read(info.filename)==(terminal_root/info.filename).read_bytes()',
+  ].join('\n'), archivePath, terminalRoot]);
+  return { sha256: crypto.createHash('sha256').update(archiveBytes).digest('hex'), bytes: archiveBytes.length, schemes: fragment.schemes.map(scheme => scheme.name) };
+}
+
+test('Windows Terminal specimens show exact package colors and all labels at phone and enlarged fallback sizes', async () => {
+  const fragment = JSON.parse(await readFile(path.join(site, 'terminal', terminalFragment), 'utf8'));
+  for (const scenario of [{ width: 390, enlarged: false }, { width: 320, enlarged: true }]) {
+    const { context, page, consoleErrors } = await pageFor({ viewport: { width: scenario.width, height: 844 }, missingFont: scenario.enlarged });
+    try {
+      if (scenario.enlarged) await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+      assert.equal(await page.locator('html').evaluate(node => getComputedStyle(node).fontSize), scenario.enlarged ? '32px' : '16px');
+      for (const appearance of ['Obscur', 'Clair']) {
+        await page.getByRole('button', { name: appearance, exact: true }).click();
+        assert.equal(await page.locator('html').getAttribute('data-theme'), appearance);
+        const specimens = await checkTerminalSpecimens(page, fragment);
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+        results.scenarios.push({ name: 'complete Terminal color-table specimens', ...scenario, pageAppearance: appearance,
+          appearances: specimens.map(card => card.appearance), labeledSlots: 32, nativeTerminalVerified: false, status: 'passed' });
+      }
+      assert.deepEqual(consoleErrors, []);
+    } finally { await context.close(); }
+  }
+});
+
+test('Windows Terminal no-script sequential keyboard journey acquires the exact ZIP, checksums and captured guide', async () => {
+  const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
+  try {
+    const fragment = JSON.parse(await readFile(path.join(site, 'terminal', terminalFragment), 'utf8'));
+    await checkTerminalSpecimens(page, fragment);
+    await page.reload();
+    let tabs = 0;
+    while (await page.evaluate(() => document.activeElement?.id) !== 'terminal-preview-link' && tabs < 40) {
+      await page.keyboard.press('Tab'); tabs++;
+    }
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'terminal-preview-link');
+    await page.keyboard.press('Enter');
+    await page.waitForURL(url => url.hash === '#terminal');
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'terminal-download');
+    const [archive] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }), page.keyboard.press('Enter')]);
+    assert.equal(await archive.failure(), null);
+    assert.equal(archive.suggestedFilename(), terminalArchive);
+    const archiveChunks = []; for await (const chunk of await archive.createReadStream()) archiveChunks.push(chunk);
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'terminal-checksums');
+    const [checksums] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }), page.keyboard.press('Enter')]);
+    assert.equal(await checksums.failure(), null);
+    const checksumChunks = []; for await (const chunk of await checksums.createReadStream()) checksumChunks.push(chunk);
+    const acquisition = await verifyTerminalDownloads(Buffer.concat(archiveChunks), Buffer.concat(checksumChunks), site);
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'terminal-guide');
+    const guideUrl = origin + '/terminal/installation.md';
+    const [guideResponse] = await Promise.all([page.waitForResponse(response => response.url() === guideUrl), page.keyboard.press('Enter')]);
+    await page.waitForURL(guideUrl);
+    assert.equal(guideResponse.status(), 200);
+    assert.deepEqual(await guideResponse.body(), await readFile(path.join(site, 'terminal', 'installation.md')));
+    assert.deepEqual(await readFile(path.join(site, 'terminal', 'installation.md')), await readFile(path.join(root, 'docs', 'windows-terminal.md')));
+    assert.match(await page.locator('body').innerText(), /Windows Terminal colors/);
+    assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: 'Terminal sequential no-script acquisition and guide', status: 'passed', tabs,
+      ...acquisition, guide: 'exact captured repository Markdown', nativeTerminalVerified: false });
   } finally { await context.close(); }
 });
 
@@ -826,7 +1018,7 @@ test('text spacing keeps the no-script catalog and keyboard installation routes 
     assert.ok(await page.locator('#package-chooser').isHidden());
     assert.ok(await page.locator('#local-package-checker').isHidden());
     for (const appearance of ['Obscur', 'Clair']) {
-      assert.ok(await page.locator(`[data-palette="${appearance}"]`).isVisible());
+      assert.ok(await page.locator(`.palette[data-palette="${appearance}"]`).isVisible());
       const expected = spacingPackages[appearance], card = page.locator('#equicord-' + appearance.toLowerCase());
       await spacingKeyboardFocus(page, card.locator('.guide-link')); await page.keyboard.press('Enter');
       await waitForGuideDestination(page, 'guide-equicord-' + appearance.toLowerCase());
@@ -1503,7 +1695,8 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
   assert.deepEqual(inner.distribution, { kind: 'portable-kit' });
   assert.equal(packages.downloads.length, 17);
   assert.equal(new Set(packages.downloads.map(item => item.path)).size, 13);
-  const requests = [], errors = [], journeys = [], packageJourneys = [], chooserJourneys = [], identificationJourneys = [], iconJourneys = [];
+  const requests = [], errors = [], journeys = [], packageJourneys = [], chooserJourneys = [], identificationJourneys = [], iconJourneys = [], terminalJourneys = [];
+  const terminalDocument = JSON.parse(await readFile(path.join(relocated, 'terminal', terminalFragment), 'utf8'));
   const includedPayloads = packages.downloads.filter((item, index, items) => items.findIndex(choice => choice.path === item.path) === index)
     .map(item => ({ item, file: path.join(relocated, 'downloads', ...item.path.split('/')) }));
   let closedContexts = 0;
@@ -1545,6 +1738,46 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
         assert.equal(iconDigest, inner.files[iconArchive]);
         assert.equal(await readFile(path.join(relocated, 'icons', 'SVG-SHA256SUMS'), 'utf8'), `${iconDigest}  ${path.basename(iconArchive)}\n`);
         iconJourneys.push({ javaScriptEnabled, width, decoded: decodedIcons.length, sha256: iconDigest, method: 'saved included SVG archive' });
+        const terminalSpecimens = await checkTerminalSpecimens(localPage, terminalDocument);
+        await localPage.locator('#terminal-download').focus();
+        const [terminalZip] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+        assert.equal(await terminalZip.failure(), null);
+        assert.equal(terminalZip.suggestedFilename(), terminalArchive);
+        const terminalChunks = []; for await (const chunk of await terminalZip.createReadStream()) terminalChunks.push(chunk);
+        await localPage.keyboard.press('Tab');
+        assert.equal(await localPage.evaluate(() => document.activeElement.id), 'terminal-checksums');
+        const terminalSumUrl = pathToFileURL(path.join(relocated, 'terminal', 'SHA256SUMS')).href;
+        let terminalSumText;
+        try {
+          // Like the included CSS routes below, an extensionless local text
+          // file opens in the browser. Qualify that actual consumer behavior.
+          await Promise.all([localPage.waitForURL(terminalSumUrl, { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+          terminalSumText = await localPage.locator('pre').textContent();
+          assert.equal(terminalSumText, await readFile(path.join(relocated, 'terminal', 'SHA256SUMS'), 'utf8'));
+        } catch (error) {
+          failures.push({ scenario: 'portable Terminal checksum activation', javaScriptEnabled, width,
+            pageUrl: localPage.url(), error: error.message, observation: await localPage.evaluate(() => ({
+              focusedId: document.activeElement?.id, focusedHref: document.activeElement?.getAttribute('href'),
+              bodyText: document.body?.innerText.slice(0, 2400), title: document.title,
+            })) });
+          throw error;
+        }
+        const terminalAcquisition = await verifyTerminalDownloads(Buffer.concat(terminalChunks), Buffer.from(terminalSumText, 'utf8'), relocated);
+        assert.equal(terminalAcquisition.sha256, inner.files['terminal/' + terminalArchive]);
+        await localPage.goBack();
+        await localPage.locator('#terminal-checksums').focus();
+        await localPage.keyboard.press('Tab');
+        assert.equal(await localPage.evaluate(() => document.activeElement.id), 'terminal-guide');
+        const terminalGuideUrl = pathToFileURL(path.join(relocated, 'terminal', 'installation.md')).href;
+        await Promise.all([localPage.waitForURL(terminalGuideUrl), localPage.keyboard.press('Enter')]);
+        const terminalGuide = await readFile(path.join(relocated, 'terminal', 'installation.md'), 'utf8');
+        assert.equal((await localPage.locator('body').textContent()).trim(), terminalGuide.trim());
+        assert.equal(crypto.createHash('sha256').update(terminalGuide).digest('hex'), inner.files['terminal/installation.md']);
+        await localPage.goBack();
+        await localPage.evaluate(() => document.fonts.ready);
+        terminalJourneys.push({ javaScriptEnabled, width, ...terminalAcquisition, appearances: terminalSpecimens.map(card => card.appearance),
+          labeledSlots: 32, checksums: 'opened exact included plaintext and returned', guide: 'opened exact included Markdown and returned',
+          method: 'focused archive control, keyboard ZIP acquisition and exact local text routes' });
         if (javaScriptEnabled) {
           chooserJourneys.push({ width, ...await checkPackageChooser(localPage, packages, { delivery: 'portable' }) });
           for (const textScale of [100, 200]) {
@@ -1558,7 +1791,7 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
           assert.ok(await localPage.locator('#local-package-checker').isHidden());
         }
         for (const [appearance, background] of [['Obscur', 'rgb(9, 9, 9)'], ['Clair', 'rgb(248, 247, 243)']]) {
-          assert.equal(await localPage.locator(`[data-palette="${appearance}"]`).evaluate(node => getComputedStyle(node).backgroundColor), background);
+          assert.equal(await localPage.locator(`.palette[data-palette="${appearance}"]`).evaluate(node => getComputedStyle(node).backgroundColor), background);
           if (javaScriptEnabled) {
             await localPage.getByRole('button', { name: appearance, exact: true }).focus();
             await localPage.keyboard.press('Enter');
@@ -1689,7 +1922,7 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
   }
   results.scenarios.push({ name: 'actual downloaded and relocated offline portable kit', status: 'passed',
     archive: archiveName, sha256: digest, bytes: archiveBytes.length, downloadNames, source: inner.source,
-    protocol: 'file:', network: 'all external requests blocked', requests, errors, journeys, packageJourneys, chooserJourneys, identificationJourneys, iconJourneys,
+    protocol: 'file:', network: 'all external requests blocked', requests, errors, journeys, packageJourneys, chooserJourneys, identificationJourneys, iconJourneys, terminalJourneys,
     closedContexts, nativeAppsVerified: false });
 });
 

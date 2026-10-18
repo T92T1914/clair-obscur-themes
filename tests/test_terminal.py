@@ -1,0 +1,386 @@
+"""Schemes-only Windows Terminal packaging, not native terminal acceptance."""
+
+import copy
+import hashlib
+import io
+import json
+import os
+from pathlib import Path
+import re
+import tempfile
+import unittest
+from unittest.mock import patch
+import zipfile
+
+from themeforge import terminal
+from themeforge.tokens import contrast, luminance, validate
+
+
+ROOT = Path(__file__).resolve().parents[1]
+FRAGMENT = "Clair-Obscur-Windows-Terminal-0.1.0.json"
+ARCHIVE = "Clair-Obscur-Windows-Terminal-0.1.0.zip"
+ANSI = ("black", "red", "green", "yellow", "blue", "purple", "cyan", "white",
+        "brightBlack", "brightRed", "brightGreen", "brightYellow", "brightBlue",
+        "brightPurple", "brightCyan", "brightWhite")
+CORE = {"background": "code", "foreground": "text", "selectionBackground": "selected", "cursorColor": "focus"}
+FOREGROUND_EXCEPTIONS = {"Clair": ("white", "brightWhite"), "Obscur": ("black", "brightBlack")}
+# These expectations deliberately do not import the implementation's mappings.
+EXPECTED = {
+    "Clair": {
+        "black": "#242424", "red": "#a32e32", "green": "#276548", "yellow": "#805100",
+        "blue": "#365f78", "purple": "#744b88", "cyan": "#256971", "white": "#fdfcf8",
+        "brightBlack": "#595854", "brightRed": "#b33b3f", "brightGreen": "#387555",
+        "brightYellow": "#8e6112", "brightBlue": "#476f88", "brightPurple": "#805794",
+        "brightCyan": "#2c7178", "brightWhite": "#ffffff",
+    },
+    "Obscur": {
+        "black": "#151515", "red": "#f2a3a3", "green": "#8ecb9b", "yellow": "#e3bf79",
+        "blue": "#b3c8d8", "purple": "#c3a4dc", "cyan": "#8acbd0", "white": "#bcbcbc",
+        "brightBlack": "#494949", "brightRed": "#ffb8b8", "brightGreen": "#a6e0b3",
+        "brightYellow": "#f4d391", "brightBlue": "#c2d7e6", "brightPurple": "#d7bcec",
+        "brightCyan": "#a7dfe3", "brightWhite": "#f4f4f4",
+    },
+}
+
+
+def snapshot(root):
+    return {path.relative_to(root).as_posix(): path.read_bytes()
+            for path in root.rglob("*") if path.is_file()}
+
+
+class TerminalThemeTests(unittest.TestCase):
+    def setUp(self):
+        self.document = json.loads((ROOT / "tokens.json").read_text(encoding="utf-8"))
+
+    def test_fragment_is_only_two_named_schemes_with_closed_color_fields(self):
+        files = terminal.render_terminal(self.document)
+        fragment = json.loads(files[FRAGMENT])
+        self.assertEqual(set(fragment), {"schemes"})
+        self.assertEqual(len(fragment["schemes"]), 2)
+        for name, scheme in zip(("Clair", "Obscur"), fragment["schemes"]):
+            self.assertEqual(scheme["name"], f"Clair Obscur - {name}")
+            self.assertEqual(set(scheme), {"name", *CORE, *ANSI})
+            self.assertEqual(len(scheme), 21)
+            self.assertEqual(scheme, terminal.color_scheme(name, self.document))
+            for field, value in scheme.items():
+                if field != "name":
+                    self.assertRegex(value, r"^#[0-9a-f]{6}$", (name, field))
+        # A color fragment must not become an application/profile/font policy.
+        self.assertNotRegex(files[FRAGMENT].decode(),
+            r"profiles|defaults|commandline|font|startingDirectory|tabTitle|actions|keybindings|theme")
+
+    def test_palette_roles_fixed_extras_and_default_background_contrast(self):
+        for name in ("Clair", "Obscur"):
+            scheme = terminal.color_scheme(name, self.document)
+            palette = self.document["themes"][name]
+            for field, role in CORE.items():
+                self.assertEqual(scheme[field], palette[role], (name, field))
+            self.assertEqual({field: scheme[field] for field in ANSI}, EXPECTED[name])
+            self.assertEqual(len({scheme[field] for field in ANSI}), 16)
+            qualified = set(ANSI) - set(FOREGROUND_EXCEPTIONS[name])
+            self.assertEqual(len(qualified), 14)
+            for field in qualified:
+                self.assertGreaterEqual(contrast(scheme[field], scheme["background"]), 4.5, (name, field))
+                self.assertGreaterEqual(contrast(scheme[field], palette["canvas"]), 4.5, (name, field, "canvas"))
+            for field in FOREGROUND_EXCEPTIONS[name]:
+                self.assertLess(contrast(scheme[field], scheme["background"]), 4.5, (name, field))
+            for white in ("white", "brightWhite"):
+                for black in ("black", "brightBlack"):
+                    self.assertGreaterEqual(contrast(scheme[white], scheme[black]), 4.5, (name, white, black))
+            for normal in ANSI[:8]:
+                bright = "bright" + normal[0].upper() + normal[1:]
+                self.assertGreater(luminance(scheme[bright]), luminance(scheme[normal]), (name, normal))
+            self.assertGreaterEqual(contrast(scheme["foreground"], scheme["background"]), 4.5)
+            self.assertGreaterEqual(contrast(scheme["foreground"], scheme["selectionBackground"]), 4.5)
+            self.assertGreaterEqual(contrast(scheme["cursorColor"], scheme["background"]), 3)
+        # The rejected initial candidate made every ANSI foreground contrast with
+        # the default background, but broke explicitly paired neutral output.
+        # These witnesses prevent that optimization from silently returning.
+        for foreground, background in (("#bcbcbc", "#858585"), ("#595854", "#242424")):
+            self.assertLess(contrast(foreground, background), 4.5)
+
+    def test_render_is_deterministic_does_not_mutate_and_tracks_shared_role_changes(self):
+        before = copy.deepcopy(self.document)
+        reordered = dict(reversed(list(self.document.items())))
+        reordered["themes"] = {name: dict(reversed(list(values.items())))
+                               for name, values in reversed(list(self.document["themes"].items()))}
+        original = terminal.render_terminal(self.document)
+        self.assertEqual(terminal.render_terminal(reordered), original)
+        self.assertEqual(self.document, before)
+        changed = copy.deepcopy(self.document)
+        changed["version"] = "2.3.4"
+        changed["themes"]["Clair"]["text"] = "#202020"
+        updated = terminal.render_terminal(changed)
+        schemes = json.loads(updated[FRAGMENT])["schemes"]
+        self.assertEqual(schemes[0]["foreground"], "#202020")
+        self.assertEqual(schemes[0]["black"], "#202020")
+        self.assertEqual(schemes[1], json.loads(original[FRAGMENT])["schemes"][1])
+        self.assertEqual(json.loads(updated["manifest.json"])["token_version"], "2.3.4")
+        self.assertEqual(json.loads(updated["manifest.json"])["version"], "0.1.0")
+
+    def test_archive_manifest_license_and_checksums_identify_actual_bytes(self):
+        files = terminal.render_terminal(self.document)
+        self.assertEqual(set(files), {FRAGMENT, "LICENSE.txt", ARCHIVE, "manifest.json", "SHA256SUMS"})
+        with zipfile.ZipFile(io.BytesIO(files[ARCHIVE])) as archive:
+            self.assertEqual(set(archive.namelist()), {FRAGMENT, "LICENSE.txt"})
+            self.assertEqual(len(archive.infolist()), 2)
+            self.assertIsNone(archive.testzip())
+            for info in archive.infolist():
+                self.assertEqual(archive.read(info.filename), files[info.filename])
+                self.assertEqual(info.date_time, (1980, 1, 1, 0, 0, 0))
+                self.assertEqual(info.compress_type, zipfile.ZIP_STORED)
+                self.assertNotIn("..", info.filename.split("/"))
+        self.assertEqual(files["LICENSE.txt"],
+            (ROOT / "LICENSE").read_text(encoding="utf-8").replace("\r\n", "\n").rstrip("\n").encode() + b"\n")
+        manifest = json.loads(files["manifest.json"])
+        self.assertEqual(manifest["generator"], "themeforge.terminal")
+        self.assertEqual(manifest["schema_version"], 1)
+        self.assertEqual(manifest["version"], "0.1.0")
+        self.assertEqual(manifest["token_schema"], 1)
+        self.assertEqual(manifest["token_version"], "0.1.1")
+        self.assertEqual(manifest["native_acceptance"], "unverified")
+        self.assertEqual(manifest["archive"], ARCHIVE)
+        self.assertEqual(manifest["fragment"], FRAGMENT)
+        self.assertEqual(manifest["schemes"],
+                         {name: f"Clair Obscur - {name}" for name in ("Clair", "Obscur")})
+        self.assertEqual(manifest["foreground_exceptions"],
+                         {name: list(fields) for name, fields in FOREGROUND_EXCEPTIONS.items()})
+        for name, scheme in zip(("Clair", "Obscur"), json.loads(files[FRAGMENT])["schemes"]):
+            expected_ratios = {field: round(contrast(scheme[field], scheme["background"]), 6)
+                               for field in ANSI}
+            self.assertEqual(manifest["default_background_contrast"][name], expected_ratios)
+            expected_pairs = {f"{white}/{black}": round(contrast(scheme[white], scheme[black]), 6)
+                              for white in ("white", "brightWhite") for black in ("black", "brightBlack")}
+            self.assertEqual(manifest["neutral_pair_contrast"][name], expected_pairs)
+        canonical = (json.dumps(self.document, sort_keys=True, indent=2, ensure_ascii=True) + "\n").encode()
+        self.assertEqual(manifest["tokens_sha256"], hashlib.sha256(canonical).hexdigest())
+        self.assertEqual({record["path"] for record in manifest["files"]}, {FRAGMENT, "LICENSE.txt", ARCHIVE})
+        self.assertEqual(len(manifest["files"]), 3)
+        for record in manifest["files"]:
+            self.assertEqual(record["bytes"], len(files[record["path"]]))
+            self.assertEqual(record["sha256"], hashlib.sha256(files[record["path"]]).hexdigest())
+        expected = "".join(f"{hashlib.sha256(payload).hexdigest()}  {path}\n"
+                           for path, payload in sorted(files.items()) if path != "SHA256SUMS")
+        self.assertEqual(files["SHA256SUMS"], expected.encode("ascii"))
+
+    def test_invalid_and_adapter_contrast_breaking_tokens_fail_before_output(self):
+        invalid = [None, [], {**self.document, "schema_version": True},
+                   {**self.document, "version": None}, {**self.document, "themes": None}]
+        missing = copy.deepcopy(self.document)
+        del missing["themes"]["Clair"]["focus"]
+        invalid.append(missing)
+        bad_color = copy.deepcopy(self.document)
+        bad_color["themes"]["Clair"]["accent"] = "url(https://invalid.example/)"
+        invalid.append(bad_color)
+        terminal_failure = copy.deepcopy(self.document)
+        terminal_failure["themes"]["Clair"]["code"] = "#dad8cf"
+        validate(terminal_failure)  # A valid shared palette can still fail this adapter.
+        self.assertLess(contrast("#476f88", "#dad8cf"), 4.5)
+        invalid.append(terminal_failure)
+        for role, color in (("muted", "#f4f4f4"), ("error", "#fffefc")):
+            invalid_ansi = copy.deepcopy(self.document)
+            invalid_ansi["themes"]["Obscur"][role] = color
+            validate(invalid_ansi)
+            # The first aliases white/brightWhite, the second reverses red intensity.
+            invalid.append(invalid_ansi)
+        for document in invalid:
+            with self.subTest(document=document), tempfile.TemporaryDirectory() as temporary:
+                output = Path(temporary) / "terminal"
+                with self.assertRaises(ValueError):
+                    terminal.build_terminal(document, output)
+                self.assertFalse(output.exists())
+        with self.assertRaises(ValueError):
+            terminal.color_scheme("other", self.document)
+
+    def test_fresh_build_and_exact_check_preserve_output_without_replacement(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "terminal"
+            result = terminal.build_terminal(self.document, output)
+            self.assertEqual(result["version"], "0.1.0")
+            before = snapshot(output)
+            self.assertEqual(before, terminal.render_terminal(self.document))
+            terminal.build_terminal(self.document, output, check=True)
+            with self.assertRaises(ValueError):
+                terminal.build_terminal(self.document, output)
+            self.assertEqual(snapshot(output), before)
+            for name in ("empty", "foreign"):
+                foreign = Path(temporary) / name
+                foreign.mkdir()
+                if name == "foreign":
+                    (foreign / "keep.txt").write_bytes(b"preserve exact bytes")
+                previous = snapshot(foreign)
+                for check in (False, True):
+                    with self.assertRaises(ValueError):
+                        terminal.build_terminal(self.document, foreign, check=check)
+                    self.assertEqual(snapshot(foreign), previous)
+            existing_file = Path(temporary) / "file"
+            existing_file.write_bytes(b"leave file intact")
+            with self.assertRaises(ValueError):
+                terminal.build_terminal(self.document, existing_file)
+            self.assertEqual(existing_file.read_bytes(), b"leave file intact")
+            missing = Path(temporary) / "missing"
+            with self.assertRaises(ValueError):
+                terminal.build_terminal(self.document, missing, check=True)
+            self.assertFalse(missing.exists())
+
+    def test_changed_missing_extra_and_empty_directory_check_fail_without_repair(self):
+        for mutation in ("changed", "missing", "extra-file", "extra-dir", "manifest", "checksum"):
+            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as temporary:
+                output = Path(temporary) / "terminal"
+                terminal.build_terminal(self.document, output)
+                fragment = output / FRAGMENT
+                if mutation == "changed": fragment.write_bytes(fragment.read_bytes() + b" ")
+                elif mutation == "missing": fragment.unlink()
+                elif mutation == "extra-file": (output / "keep.txt").write_bytes(b"preserve")
+                elif mutation == "extra-dir": (output / "keep").mkdir()
+                elif mutation == "manifest": (output / "manifest.json").write_bytes(b"{}\n")
+                else: (output / "SHA256SUMS").write_bytes(b"\n")
+                before = snapshot(output)
+                with self.assertRaises(ValueError):
+                    terminal.build_terminal(self.document, output, check=True)
+                self.assertEqual(snapshot(output), before)
+                if mutation == "extra-dir": self.assertTrue((output / "keep").is_dir())
+
+    def test_root_managed_and_linked_destinations_are_refused(self):
+        with tempfile.TemporaryDirectory() as temporary, patch.object(terminal, "ROOT", Path(temporary)):
+            base = Path(temporary)
+            for target in (base / "dist", base / "dist/terminal", Path(base.anchor)):
+                with self.subTest(target=target), self.assertRaises(ValueError):
+                    terminal.build_terminal(self.document, target)
+            self.assertFalse((base / "dist").exists())
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            destination = base / "target"
+            destination.mkdir()
+            (destination / "keep.txt").write_bytes(b"unchanged")
+            link = base / "link"
+            if os.name == "nt":
+                import _winapi
+                _winapi.CreateJunction(str(destination), str(link))
+            else:
+                link.symlink_to(destination, target_is_directory=True)
+            with self.assertRaisesRegex(ValueError, "symlinks or reparse"):
+                terminal.build_terminal(self.document, link / "terminal")
+            self.assertEqual(snapshot(destination), {"keep.txt": b"unchanged"})
+
+    def test_injected_file_is_not_overwritten_and_partial_output_is_retained(self):
+        original_open = Path.open
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "partial"
+            fragment = output / FRAGMENT
+            injected = False
+            def open_with_injection(path, *args, **kwargs):
+                nonlocal injected
+                if path == fragment and args and args[0] == "xb" and not injected:
+                    injected = True
+                    with original_open(path, "wb") as stream:
+                        stream.write(b"external write must remain exact")
+                return original_open(path, *args, **kwargs)
+            with patch.object(Path, "open", open_with_injection):
+                with self.assertRaises(FileExistsError):
+                    terminal.build_terminal(self.document, output)
+            self.assertTrue(injected)
+            self.assertEqual(fragment.read_bytes(), b"external write must remain exact")
+            before = snapshot(output)
+            with self.assertRaises(ValueError):
+                terminal.build_terminal(self.document, output)
+            with self.assertRaises(ValueError):
+                terminal.build_terminal(self.document, output, check=True)
+            self.assertEqual(snapshot(output), before)
+
+    def test_write_interruption_retains_partial_evidence_and_refuses_replacement(self):
+        original_open = Path.open
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "partial"
+            failure = output / "LICENSE.txt"
+            def open_with_failure(path, *args, **kwargs):
+                if path == failure and args and args[0] == "xb":
+                    raise OSError("retained simulated write interruption")
+                return original_open(path, *args, **kwargs)
+            with patch.object(Path, "open", open_with_failure):
+                with self.assertRaisesRegex(OSError, "write interruption"):
+                    terminal.build_terminal(self.document, output)
+            before = snapshot(output)
+            self.assertEqual(before.get(FRAGMENT), terminal.render_terminal(self.document)[FRAGMENT])
+            self.assertNotIn("manifest.json", before)
+            self.assertNotIn("SHA256SUMS", before)
+            with self.assertRaises(ValueError):
+                terminal.build_terminal(self.document, output)
+            with self.assertRaises(ValueError):
+                terminal.build_terminal(self.document, output, check=True)
+            self.assertEqual(snapshot(output), before)
+
+
+class TerminalPreviewTests(unittest.TestCase):
+    def setUp(self):
+        from themeforge.build import build_release
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.base = Path(self.temporary.name)
+        self.artifacts = self.base / "artifacts"
+        self.document = json.loads((ROOT / "tokens.json").read_text(encoding="utf-8"))
+        build_release(ROOT / "tokens.json", self.artifacts)
+
+    def test_public_and_portable_deliver_exact_terminal_package_guide_and_labeled_colors(self):
+        from preview import PORTABLE_ARCHIVE, preview_files
+        files = preview_files(ROOT, self.artifacts)
+        expected_files = {f"terminal/{name}": payload
+                          for name, payload in terminal.render_terminal(self.document).items()}
+        expected_files["terminal/installation.md"] = (ROOT / "docs/windows-terminal.md").read_bytes()
+        with zipfile.ZipFile(io.BytesIO(files[PORTABLE_ARCHIVE])) as portable:
+            deliveries = (files, {path: portable.read(path) for path in portable.namelist()})
+        for delivery in deliveries:
+            with self.subTest(distribution=json.loads(delivery["site-manifest.json"])["distribution"]["kind"]):
+                self.assertEqual({path: payload for path, payload in delivery.items()
+                                  if path.startswith("terminal/")}, expected_files)
+                manifest = json.loads(delivery["site-manifest.json"])
+                for path, payload in expected_files.items():
+                    self.assertEqual(manifest["files"][path], hashlib.sha256(payload).hexdigest())
+                page = delivery["index.html"].decode()
+                self.assertNotIn("{{", page)
+                self.assertIn(f'href="terminal/{ARCHIVE}" download', page)
+                self.assertIn('href="terminal/SHA256SUMS" download', page)
+                self.assertIn('href="terminal/installation.md"', page)
+                cards = re.findall(r'<article class="terminal-palette" data-palette="([^"]+)"[^>]*>(.*?)</article>',
+                                   page, re.DOTALL)
+                self.assertEqual([name for name, _ in cards], ["Clair", "Obscur"])
+                for name, card in cards:
+                    self.assertIn(f"Clair Obscur - {name}", card)
+                    samples = re.findall(r'<div class="terminal-slot" data-ansi="([^"]+)"><p>[^<]+</p>'
+                                         r'<code style="([^"]+)">Aa 0123</code><small>([^<]+)</small></div>', card)
+                    self.assertEqual([field for field, _, _ in samples], list(ANSI))
+                    for field, style, context in samples:
+                        partner = ("black" if name == "Clair" else "white") if field in FOREGROUND_EXCEPTIONS[name] else None
+                        background = EXPECTED[name][partner] if partner else self.document["themes"][name]["code"]
+                        self.assertEqual(style, f"color:{EXPECTED[name][field]};background:{background}")
+                        self.assertEqual(context, f"on {partner}" if partner else "on default")
+
+    def test_terminal_preview_preserves_all_desktop_downloads_and_original_icon_payloads(self):
+        from preview import ICON_ARCHIVE, ICON_CHECKSUMS, PORTABLE_ARCHIVE, preview_files
+        from themeforge.icons import render_icons
+        desktop = snapshot(self.artifacts)
+        self.assertEqual(len(desktop), 32)
+        icons = render_icons(self.document)
+        original_svg = {path: payload for path, payload in icons.items() if path.endswith(".svg")}
+        self.assertEqual(len(original_svg), 48)
+        token_bytes = (ROOT / "tokens.json").read_bytes()
+        files = preview_files(ROOT, self.artifacts)
+        with zipfile.ZipFile(io.BytesIO(files[PORTABLE_ARCHIVE])) as portable:
+            deliveries = (files, {path: portable.read(path) for path in portable.namelist()})
+        for delivery in deliveries:
+            self.assertEqual({path.removeprefix("downloads/"): payload for path, payload in delivery.items()
+                              if path.startswith("downloads/")}, desktop)
+            self.assertEqual({path.removeprefix("icons/"): payload for path, payload in delivery.items()
+                              if path.startswith("icons/") and path.endswith(".svg")}, original_svg)
+            # Immutable 0.1.0 identity checked against both the retained PR38
+            # preview archive and its delivered user download, independently.
+            original_archive_hash = "040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34"
+            self.assertEqual(hashlib.sha256(delivery[ICON_ARCHIVE]).hexdigest(), original_archive_hash)
+            self.assertEqual(delivery[ICON_CHECKSUMS],
+                             f"{original_archive_hash}  {Path(ICON_ARCHIVE).name}\n".encode())
+        self.assertEqual(snapshot(self.artifacts), desktop)
+        self.assertEqual((ROOT / "tokens.json").read_bytes(), token_bytes)
+
+
+if __name__ == "__main__":
+    unittest.main()
