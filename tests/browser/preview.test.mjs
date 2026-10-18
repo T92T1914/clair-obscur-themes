@@ -16,6 +16,13 @@ const results = { environment: {}, scenarios: [], fonts: {}, metrics: {} };
 const failures = [];
 const evidence = process.env.THEME_EVIDENCE_DIR;
 const python = process.platform === 'win32' ? ['py', '-3.11', '-X', 'utf8'] : ['python3'];
+const iconFunctions = [
+  'phone', 'messages', 'contacts', 'camera', 'gallery', 'settings', 'calendar', 'clock',
+  'files', 'notes', 'mail', 'browser', 'maps', 'music', 'video', 'store', 'wallet',
+  'calculator', 'weather', 'health', 'fitness', 'voice-recorder', 'home', 'search',
+];
+const iconArchive = 'icons/Clair-Obscur-SVG-Icons-0.1.0.zip';
+const iconPaths = iconFunctions.flatMap(functionName => ['Clair', 'Obscur'].map(appearance => `icons/${appearance}/${functionName}.svg`));
 
 function run(args) {
   const result = spawnSync(python[0], [...python.slice(1), ...args], {
@@ -40,7 +47,7 @@ before(async () => {
     if (!target.startsWith(site + path.sep)) { response.writeHead(403).end(); return; }
     try {
       const body = await readFile(target);
-      const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json', '.png': 'image/png', '.zip': 'application/zip', '.xpi': 'application/x-xpinstall' };
+      const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml', '.zip': 'application/zip', '.xpi': 'application/x-xpinstall' };
       response.writeHead(200, { 'Content-Type': types[path.extname(target)] || 'text/plain', 'Cache-Control': 'no-store' });
       response.end(body);
     } catch { response.writeHead(404).end(); }
@@ -124,7 +131,8 @@ test('both appearances work at desktop and phone widths without horizontal overf
         results.scenarios.push({ name, viewport: width, measurements, status: 'passed' });
         if (evidence && width !== 2560) await page.screenshot({ path: path.join(evidence, `${name.toLowerCase()}-${width}-specimen.png`), fullPage: true });
       }
-      assert.equal(new Set(network).size, 4, 'HTML, two CSS files and script only');
+      assert.deepEqual([...new Set(network)].sort(), [origin + '/', ...['tokens.css', 'preview.css', 'preview.js', ...iconPaths].map(file => origin + '/' + file)].sort(),
+        'The page requests only its four original local assets and the 48 declared local SVGs');
       assert.deepEqual(consoleErrors, []);
     } finally { await context.close(); }
   }
@@ -394,6 +402,140 @@ test('static delivery remains usable without JavaScript and internal links resol
   } finally { await context.close(); }
 });
 
+async function checkIconGallery(page) {
+  assert.equal(await page.locator('#icons').getAttribute('aria-labelledby'), 'icons-heading');
+  assert.equal(await page.locator('#icons-heading').textContent(), 'Matching app icons');
+  assert.equal(await page.locator('#icon-artwork-download').getAttribute('href'), iconArchive);
+  assert.equal(await page.locator('#icon-artwork-checksums').getAttribute('href'), 'icons/SVG-SHA256SUMS');
+  const cards = await page.locator('#icons article.icon-card').evaluateAll(nodes => Promise.all(nodes.map(async card => ({
+    functionName: card.dataset.iconFunction, label: card.querySelector('h3')?.textContent,
+    pairs: card.querySelectorAll('.icon-pair').length,
+    figures: await Promise.all([...card.querySelectorAll('.icon-pair figure')].map(async figure => {
+      const node = figure.querySelector('img');
+      if (!node) return { missingImage: true };
+      let decode = true;
+      try { await node.decode(); } catch { decode = false; }
+      const box = node.getBoundingClientRect(), style = getComputedStyle(node);
+      return { path: node.getAttribute('src'), alt: node.getAttribute('alt'), caption: figure.querySelector('figcaption')?.textContent,
+        declaredWidth: node.getAttribute('width'), declaredHeight: node.getAttribute('height'),
+        decode, naturalWidth: node.naturalWidth, naturalHeight: node.naturalHeight,
+        width: box.width, height: box.height, left: box.left, right: box.right, viewport: innerWidth,
+        display: style.display, visibility: style.visibility };
+    })),
+  }))));
+  assert.deepEqual(cards.map(card => card.functionName), iconFunctions);
+  const decoded = [];
+  for (const card of cards) {
+    const functionName = card.functionName;
+    const words = functionName.replaceAll('-', ' ');
+    assert.equal(card.label, words.replace(/\b[a-z]/g, letter => letter.toUpperCase()));
+    assert.equal(card.pairs, 1);
+    assert.equal(card.figures.length, 2);
+    for (const [index, appearance] of ['Clair', 'Obscur'].entries()) {
+      const observation = card.figures[index];
+      assert.equal(observation.caption, appearance);
+      assert.equal(observation.path, `icons/${appearance}/${functionName}.svg`);
+      assert.equal(observation.alt, `${appearance} ${words} icon`);
+      assert.equal(observation.declaredWidth, '512');
+      assert.equal(observation.declaredHeight, '512');
+      assert.ok(observation.decode, `Icon not decoded: ${observation.path}`);
+      assert.equal(observation.naturalWidth, 512); assert.equal(observation.naturalHeight, 512);
+      assert.ok(observation.width > 0 && observation.height > 0, JSON.stringify(observation));
+      assert.equal(observation.visibility, 'visible'); assert.notEqual(observation.display, 'none');
+      assert.ok(observation.left >= -1 && observation.right <= observation.viewport + 1, JSON.stringify(observation));
+      decoded.push(observation.path);
+    }
+  }
+  assert.equal(await page.locator('#downloads .download-card').count(), 17);
+  assert.equal(await page.locator('#downloads .guide-link').count(), 18);
+  return decoded;
+}
+
+test('icon gallery decodes every unchanged appearance at phone widths and enlarged fallback text', async () => {
+  for (const scenario of [{ width: 390, enlarged: false }, { width: 320, enlarged: true }]) {
+    const { context, page, consoleErrors } = await pageFor({ viewport: { width: scenario.width, height: 844 }, missingFont: scenario.enlarged });
+    try {
+      if (scenario.enlarged) await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+      for (const appearance of ['Obscur', 'Clair']) {
+        await page.getByRole('button', { name: appearance, exact: true }).click();
+        assert.equal(await page.locator('html').getAttribute('data-theme'), appearance);
+        const decoded = await checkIconGallery(page);
+        assert.deepEqual(decoded, iconPaths);
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+        results.scenarios.push({ name: 'complete paired icon gallery', ...scenario, appearance,
+          decoded, nativePhoneVerified: false, status: 'passed' });
+      }
+      assert.deepEqual(consoleErrors, []);
+    } finally { await context.close(); }
+  }
+});
+
+test('no-script keyboard navigation acquires the exact icon ZIP and checksum', async () => {
+  const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
+  try {
+    await checkIconGallery(page);
+    let tabs = 0;
+    while (await page.evaluate(() => document.activeElement?.id) !== 'icon-gallery-link' && tabs < 40) {
+      await page.keyboard.press('Tab'); tabs++;
+    }
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-gallery-link');
+    await page.keyboard.press('Enter');
+    await page.waitForURL(url => url.hash === '#icons');
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-download');
+    const [download] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
+    assert.equal(await download.failure(), null);
+    assert.equal(download.suggestedFilename(), path.basename(iconArchive));
+    const archivePath = path.join(temp, 'keyboard-icons.zip');
+    await download.saveAs(archivePath);
+    const bytes = await readFile(archivePath);
+    assert.deepEqual(bytes, await readFile(path.join(site, ...iconArchive.split('/'))));
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-checksums');
+    const [checksumDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
+    assert.equal(await checksumDownload.failure(), null);
+    const chunks = []; for await (const chunk of await checksumDownload.createReadStream()) chunks.push(chunk);
+    const digest = crypto.createHash('sha256').update(bytes).digest('hex');
+    assert.equal(Buffer.concat(chunks).toString('utf8'), `${digest}  ${path.basename(iconArchive)}\n`);
+    run(['-c', [
+      'import hashlib,json,pathlib,sys,zipfile',
+      'archive_path,site=map(pathlib.Path,sys.argv[1:])',
+      `functions=${JSON.stringify(iconFunctions)}`,
+      'expected={f"{appearance}/{function}.svg" for appearance in ("Clair","Obscur") for function in functions}',
+      'with zipfile.ZipFile(archive_path) as archive:',
+      ' assert len(archive.namelist())==50 and set(archive.namelist())==expected|{"manifest.json","LICENSE.txt"}',
+      ' assert archive.testzip() is None',
+      ' for name in expected|{"manifest.json","LICENSE.txt"}:',
+      '  assert archive.read(name)==(site/"icons"/name).read_bytes()',
+      ' manifest=json.loads(archive.read("manifest.json"))',
+      ' assert manifest["functions"]==functions and len(manifest["files"])==48',
+      ' for record in manifest["files"]:',
+      '  assert hashlib.sha256(archive.read(record["path"])).hexdigest()==record["sha256"]',
+    ].join('\n'), archivePath, site]);
+    assert.equal(new URL(page.url()).hash, '#icons');
+    assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: 'no-script icon artwork keyboard acquisition', status: 'passed', tabs,
+      sha256: digest, files: 50, nativePhoneVerified: false });
+  } finally { await context.close(); }
+});
+
+test('icon gallery qualification rejects one missing image and recovers without hiding its label', async () => {
+  const { context, page } = await pageFor({ setup: async pageContext => {
+    await pageContext.route('**/icons/Clair/phone.svg', route => route.fulfill({ status: 404, contentType: 'image/svg+xml', body: '' }));
+  } });
+  try {
+    await assert.rejects(checkIconGallery(page), /Icon not decoded: icons\/Clair\/phone\.svg/);
+    const failed = page.locator('#icons [data-icon-function="phone"] img').first();
+    assert.equal(await failed.getAttribute('alt'), 'Clair phone icon');
+    assert.equal(await page.locator('#icons [data-icon-function="phone"] h3').textContent(), 'Phone');
+    await context.unroute('**/icons/Clair/phone.svg');
+    await page.reload();
+    assert.deepEqual(await checkIconGallery(page), iconPaths);
+    results.scenarios.push({ name: 'controlled missing gallery image', status: 'rejected and recovered',
+      scope: 'disposable missing-resource fault, not a product defect' });
+  } finally { await context.close(); }
+});
+
 async function waitForGuideDestination(page, anchor, timeout = 2000) {
   // Keyboard dispatch can finish before the fragment navigation is observed.
   // Neither a matching URL alone nor repaired focus proves the keyboard path.
@@ -424,7 +566,7 @@ async function waitForPackageState(page, state) {
 // These are user spacing overrides, not new design defaults. The separate
 // Japanese and Arabic samples retain their writing-system-specific spacing.
 const textSpacingOverride = `
-  body :is(a, p, h1, h2, h3, h4, blockquote, span, strong, b, em, mark, code, pre, label, button, input, select, option, summary, small, li):not(:lang(ja), :lang(ar)) {
+  body :is(a, p, h1, h2, h3, h4, blockquote, span, strong, b, em, mark, code, pre, label, button, input, select, option, summary, small, li, figcaption):not(:lang(ja), :lang(ar)) {
     line-height: 1.5 !important;
     letter-spacing: .12em !important;
     word-spacing: .16em !important;
@@ -1361,7 +1503,7 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
   assert.deepEqual(inner.distribution, { kind: 'portable-kit' });
   assert.equal(packages.downloads.length, 17);
   assert.equal(new Set(packages.downloads.map(item => item.path)).size, 13);
-  const requests = [], errors = [], journeys = [], packageJourneys = [], chooserJourneys = [], identificationJourneys = [];
+  const requests = [], errors = [], journeys = [], packageJourneys = [], chooserJourneys = [], identificationJourneys = [], iconJourneys = [];
   const includedPayloads = packages.downloads.filter((item, index, items) => items.findIndex(choice => choice.path === item.path) === index)
     .map(item => ({ item, file: path.join(relocated, 'downloads', ...item.path.split('/')) }));
   let closedContexts = 0;
@@ -1388,6 +1530,21 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
         assert.match(await localPage.locator('#portable-delivery').textContent(), /extracted portable preview/);
         assert.equal(await localPage.locator('#portable-preview, #portable-checksums').count(), 0);
         assert.equal(await localPage.locator('#downloads .download-card').count(), 17);
+        const decodedIcons = await checkIconGallery(localPage);
+        for (const relative of decodedIcons) {
+          const bytes = await readFile(path.join(relocated, ...relative.split('/')));
+          assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'), inner.files[relative]);
+        }
+        await localPage.locator('#icon-artwork-download').focus();
+        const [iconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+        assert.equal(await iconDownload.failure(), null);
+        assert.equal(iconDownload.suggestedFilename(), path.basename(iconArchive));
+        const iconChunks = []; for await (const chunk of await iconDownload.createReadStream()) iconChunks.push(chunk);
+        const iconBytes = Buffer.concat(iconChunks), iconDigest = crypto.createHash('sha256').update(iconBytes).digest('hex');
+        assert.deepEqual(iconBytes, await readFile(path.join(relocated, ...iconArchive.split('/'))));
+        assert.equal(iconDigest, inner.files[iconArchive]);
+        assert.equal(await readFile(path.join(relocated, 'icons', 'SVG-SHA256SUMS'), 'utf8'), `${iconDigest}  ${path.basename(iconArchive)}\n`);
+        iconJourneys.push({ javaScriptEnabled, width, decoded: decodedIcons.length, sha256: iconDigest, method: 'saved included SVG archive' });
         if (javaScriptEnabled) {
           chooserJourneys.push({ width, ...await checkPackageChooser(localPage, packages, { delivery: 'portable' }) });
           for (const textScale of [100, 200]) {
@@ -1493,6 +1650,7 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
     }
   }
   assert.equal(packageJourneys.length, 34);
+  assert.equal(iconJourneys.length, 4);
   assert.equal(packageJourneys.filter(item => item.method === 'saved included archive').length, 22);
   assert.equal(packageJourneys.filter(item => item.method === 'opened included CSS as exact text, returned and reached matching guide').length, 12);
   const chosen = await filePage({ javaScriptEnabled: true, viewport: { width: 390, height: 844 } });
@@ -1531,7 +1689,7 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
   }
   results.scenarios.push({ name: 'actual downloaded and relocated offline portable kit', status: 'passed',
     archive: archiveName, sha256: digest, bytes: archiveBytes.length, downloadNames, source: inner.source,
-    protocol: 'file:', network: 'all external requests blocked', requests, errors, journeys, packageJourneys, chooserJourneys, identificationJourneys,
+    protocol: 'file:', network: 'all external requests blocked', requests, errors, journeys, packageJourneys, chooserJourneys, identificationJourneys, iconJourneys,
     closedContexts, nativeAppsVerified: false });
 });
 
