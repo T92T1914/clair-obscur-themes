@@ -2299,13 +2299,18 @@ test('relocated local guides cover every appearance by keyboard without external
   }
 });
 
-test('portable kit downloads, extracts and relocates into a complete offline file page', { timeout: 90000 }, async () => {
+for (const javaScriptEnabled of [true, false]) test(`portable kit downloads, extracts and relocates into a complete offline file page (${javaScriptEnabled ? 'scripted' : 'no-script'})`, { timeout: 90000 }, async () => {
+  const mode = javaScriptEnabled ? 'scripted' : 'no-script';
+  const modeTemp = path.join(temp, `portable-${mode}`);
+  await mkdir(modeTemp);
+  const modeEvidence = evidence && path.join(evidence, `portable-${mode}`);
+  if (modeEvidence) await mkdir(modeEvidence);
   const archiveName = 'Clair-Obscur-portable-preview.zip';
-  const archivePath = path.join(temp, archiveName);
-  const checksumPath = path.join(temp, 'portable-SHA256SUMS');
-  const extracted = path.join(temp, 'downloaded-kit');
-  const relocated = path.join(temp, 'moved-kit', 'preview');
-  const { context, page } = await pageFor({ viewport: { width: 390, height: 844 } });
+  const archivePath = path.join(modeTemp, archiveName);
+  const checksumPath = path.join(modeTemp, 'portable-SHA256SUMS');
+  const extracted = path.join(modeTemp, 'downloaded-kit');
+  const relocated = path.join(modeTemp, 'moved-kit', 'preview');
+  const { context, page } = await pageFor({ javaScriptEnabled, viewport: { width: 390, height: 844 } });
   let publicManifest;
   const downloadNames = {};
   try {
@@ -2327,9 +2332,9 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
   const checksum = await readFile(checksumPath, 'utf8');
   const digest = crypto.createHash('sha256').update(archiveBytes).digest('hex');
   assert.equal(checksum, `${digest}  ${archiveName}\n`);
-  if (evidence) {
-    await writeFile(path.join(evidence, archiveName), archiveBytes);
-    await writeFile(path.join(evidence, 'portable-SHA256SUMS'), checksum);
+  if (modeEvidence) {
+    await writeFile(path.join(modeEvidence, archiveName), archiveBytes);
+    await writeFile(path.join(modeEvidence, 'portable-SHA256SUMS'), checksum);
   }
   assert.deepEqual(publicManifest.distribution.portable_kit, {
     archive: archiveName, checksums: 'portable-SHA256SUMS', sha256: digest, bytes: archiveBytes.length,
@@ -2384,285 +2389,289 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
       return { localContext, localPage };
     } catch (error) { await localContext.close(); closedContexts++; throw error; }
   }
-  for (const javaScriptEnabled of [true, false]) {
-    for (const width of [320, 390]) {
-      const { localContext, localPage } = await filePage({ javaScriptEnabled, viewport: { width, height: 844 } });
+  for (const width of [320, 390]) {
+    const { localContext, localPage } = await filePage({ javaScriptEnabled, viewport: { width, height: 844 } });
+    try {
+      assert.match(await localPage.locator('#portable-delivery').textContent(), /extracted portable preview/);
+      assert.equal(await localPage.locator('#portable-preview, #portable-checksums').count(), 0);
+      assert.equal(await localPage.locator('#downloads .download-card').count(), 17);
+      const decodedIcons = await checkIconGallery(localPage);
+      for (const relative of decodedIcons) {
+        const bytes = await readFile(path.join(relocated, ...relative.split('/')));
+        assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'), inner.files[relative]);
+      }
+      await localPage.locator('#icon-artwork-download').focus();
+      const [iconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await iconDownload.failure(), null);
+      assert.equal(iconDownload.suggestedFilename(), path.basename(iconArchive));
+      const iconChunks = []; for await (const chunk of await iconDownload.createReadStream()) iconChunks.push(chunk);
+      const iconBytes = Buffer.concat(iconChunks), iconDigest = crypto.createHash('sha256').update(iconBytes).digest('hex');
+      assert.deepEqual(iconBytes, await readFile(path.join(relocated, ...iconArchive.split('/'))));
+      assert.equal(iconDigest, inner.files[iconArchive]);
+      assert.equal(await readFile(path.join(relocated, 'icons', 'SVG-SHA256SUMS'), 'utf8'), iconChecksums(iconDigest));
+      await localPage.locator('#icon-artwork-broad-download').focus();
+      const [broadIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await broadIconDownload.failure(), null);
+      assert.equal(broadIconDownload.suggestedFilename(), path.basename(broadIconArchive));
+      const broadChunks = []; for await (const chunk of await broadIconDownload.createReadStream()) broadChunks.push(chunk);
+      const broadIconBytes = Buffer.concat(broadChunks);
+      assert.deepEqual(broadIconBytes, await readFile(path.join(relocated, ...broadIconArchive.split('/'))));
+      assert.equal(crypto.createHash('sha256').update(broadIconBytes).digest('hex'), broadIconDigest);
+      assert.equal(inner.files[broadIconArchive], broadIconDigest);
+      await localPage.locator('#icon-artwork-companion-download').focus();
+      const [companionIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await companionIconDownload.failure(), null);
+      assert.equal(companionIconDownload.suggestedFilename(), path.basename(companionIconArchive));
+      const companionChunks = []; for await (const chunk of await companionIconDownload.createReadStream()) companionChunks.push(chunk);
+      const companionIconBytes = Buffer.concat(companionChunks);
+      assert.deepEqual(companionIconBytes, await readFile(path.join(relocated, ...companionIconArchive.split('/'))));
+      assert.equal(crypto.createHash('sha256').update(companionIconBytes).digest('hex'), companionIconDigest);
+      assert.equal(inner.files[companionIconArchive], companionIconDigest);
+      await localPage.locator('#icon-artwork-monochrome-download').focus();
+      const [monochromeIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await monochromeIconDownload.failure(), null);
+      assert.equal(monochromeIconDownload.suggestedFilename(), path.basename(monochromeIconArchive));
+      const monochromeChunks = []; for await (const chunk of await monochromeIconDownload.createReadStream()) monochromeChunks.push(chunk);
+      const monochromeIconBytes = Buffer.concat(monochromeChunks);
+      assert.deepEqual(monochromeIconBytes, await readFile(path.join(relocated, ...monochromeIconArchive.split('/'))));
+      assert.equal(crypto.createHash('sha256').update(monochromeIconBytes).digest('hex'), monochromeIconDigest);
+      assert.equal(inner.files[monochromeIconArchive], monochromeIconDigest);
+      await localPage.locator('#icon-artwork-third-app-download').focus();
+      const [thirdAppIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await thirdAppIconDownload.failure(), null);
+      assert.equal(thirdAppIconDownload.suggestedFilename(), path.basename(thirdAppIconArchive));
+      const thirdChunks = []; for await (const chunk of await thirdAppIconDownload.createReadStream()) thirdChunks.push(chunk);
+      const thirdAppIconBytes = Buffer.concat(thirdChunks);
+      assert.deepEqual(thirdAppIconBytes, await readFile(path.join(relocated, ...thirdAppIconArchive.split('/'))));
+      assert.equal(crypto.createHash('sha256').update(thirdAppIconBytes).digest('hex'), thirdAppIconDigest);
+      assert.equal(inner.files[thirdAppIconArchive], thirdAppIconDigest);
+      await localPage.locator('#icon-artwork-second-app-download').focus();
+      const [secondAppIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await secondAppIconDownload.failure(), null);
+      assert.equal(secondAppIconDownload.suggestedFilename(), path.basename(secondAppIconArchive));
+      const secondAppIconChunks = []; for await (const chunk of await secondAppIconDownload.createReadStream()) secondAppIconChunks.push(chunk);
+      const secondAppIconBytes = Buffer.concat(secondAppIconChunks);
+      assert.deepEqual(secondAppIconBytes, await readFile(path.join(relocated, ...secondAppIconArchive.split('/'))));
+      assert.equal(crypto.createHash('sha256').update(secondAppIconBytes).digest('hex'), secondAppIconDigest);
+      assert.equal(inner.files[secondAppIconArchive], secondAppIconDigest);
+      await localPage.locator('#icon-artwork-first-app-download').focus();
+      const [firstAppIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await firstAppIconDownload.failure(), null);
+      assert.equal(firstAppIconDownload.suggestedFilename(), path.basename(firstAppIconArchive));
+      const firstAppIconChunks = []; for await (const chunk of await firstAppIconDownload.createReadStream()) firstAppIconChunks.push(chunk);
+      const firstAppIconBytes = Buffer.concat(firstAppIconChunks);
+      assert.deepEqual(firstAppIconBytes, await readFile(path.join(relocated, ...firstAppIconArchive.split('/'))));
+      assert.equal(crypto.createHash('sha256').update(firstAppIconBytes).digest('hex'), firstAppIconDigest);
+      assert.equal(inner.files[firstAppIconArchive], firstAppIconDigest);
+      await localPage.locator('#icon-artwork-previous-download').focus();
+      const [previousIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await previousIconDownload.failure(), null);
+      assert.equal(previousIconDownload.suggestedFilename(), path.basename(previousIconArchive));
+      const previousIconChunks = []; for await (const chunk of await previousIconDownload.createReadStream()) previousIconChunks.push(chunk);
+      const previousIconBytes = Buffer.concat(previousIconChunks);
+      assert.deepEqual(previousIconBytes, await readFile(path.join(relocated, ...previousIconArchive.split('/'))));
+      assert.equal(crypto.createHash('sha256').update(previousIconBytes).digest('hex'), previousIconDigest);
+      assert.equal(inner.files[previousIconArchive], previousIconDigest);
+      await localPage.locator('#icon-artwork-legacy-download').focus();
+      const [legacyIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await legacyIconDownload.failure(), null);
+      assert.equal(legacyIconDownload.suggestedFilename(), path.basename(legacyIconArchive));
+      const legacyIconChunks = []; for await (const chunk of await legacyIconDownload.createReadStream()) legacyIconChunks.push(chunk);
+      const legacyIconBytes = Buffer.concat(legacyIconChunks);
+      assert.deepEqual(legacyIconBytes, await readFile(path.join(relocated, ...legacyIconArchive.split('/'))));
+      assert.equal(crypto.createHash('sha256').update(legacyIconBytes).digest('hex'), legacyIconDigest);
+      assert.equal(inner.files[legacyIconArchive], legacyIconDigest);
+      iconJourneys.push({ javaScriptEnabled, width, decoded: decodedIcons.length, sha256: iconDigest,
+        broadSha256: broadIconDigest, companionSha256: companionIconDigest, monochromeSha256: monochromeIconDigest, secondAppSha256: secondAppIconDigest, firstAppSha256: firstAppIconDigest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
+        method: 'saved included current and all eight preserved SVG archives' });
+      const terminalSpecimens = await checkTerminalSpecimens(localPage, terminalDocument);
+      await localPage.locator('#terminal-download').focus();
+      const [terminalZip] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await terminalZip.failure(), null);
+      assert.equal(terminalZip.suggestedFilename(), terminalArchive);
+      const terminalChunks = []; for await (const chunk of await terminalZip.createReadStream()) terminalChunks.push(chunk);
+      await localPage.keyboard.press('Tab');
+      assert.equal(await localPage.evaluate(() => document.activeElement.id), 'terminal-checksums');
+      const terminalSumUrl = pathToFileURL(path.join(relocated, 'terminal', 'SHA256SUMS')).href;
+      let terminalSumText;
       try {
-        assert.match(await localPage.locator('#portable-delivery').textContent(), /extracted portable preview/);
-        assert.equal(await localPage.locator('#portable-preview, #portable-checksums').count(), 0);
-        assert.equal(await localPage.locator('#downloads .download-card').count(), 17);
-        const decodedIcons = await checkIconGallery(localPage);
-        for (const relative of decodedIcons) {
-          const bytes = await readFile(path.join(relocated, ...relative.split('/')));
-          assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'), inner.files[relative]);
+        // Like the included CSS routes below, an extensionless local text
+        // file opens in the browser. Qualify that actual consumer behavior.
+        await Promise.all([localPage.waitForURL(terminalSumUrl, { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+        terminalSumText = await localPage.locator('pre').textContent();
+        assert.equal(terminalSumText, await readFile(path.join(relocated, 'terminal', 'SHA256SUMS'), 'utf8'));
+      } catch (error) {
+        failures.push({ scenario: 'portable Terminal checksum activation', javaScriptEnabled, width,
+          pageUrl: localPage.url(), error: error.message, observation: await localPage.evaluate(() => ({
+            focusedId: document.activeElement?.id, focusedHref: document.activeElement?.getAttribute('href'),
+            bodyText: document.body?.innerText.slice(0, 2400), title: document.title,
+          })) });
+        throw error;
+      }
+      const terminalAcquisition = await verifyTerminalDownloads(Buffer.concat(terminalChunks), Buffer.from(terminalSumText, 'utf8'), relocated);
+      assert.equal(terminalAcquisition.sha256, inner.files['terminal/' + terminalArchive]);
+      await localPage.goBack();
+      await localPage.locator('#terminal-checksums').focus();
+      await localPage.keyboard.press('Tab');
+      assert.equal(await localPage.evaluate(() => document.activeElement.id), 'terminal-guide');
+      const terminalGuideUrl = pathToFileURL(path.join(relocated, 'terminal', 'installation.md')).href;
+      await Promise.all([localPage.waitForURL(terminalGuideUrl), localPage.keyboard.press('Enter')]);
+      const terminalGuide = await readFile(path.join(relocated, 'terminal', 'installation.md'), 'utf8');
+      assert.equal((await localPage.locator('body').textContent()).trim(), terminalGuide.trim());
+      assert.equal(crypto.createHash('sha256').update(terminalGuide).digest('hex'), inner.files['terminal/installation.md']);
+      await localPage.goBack();
+      await localPage.evaluate(() => document.fonts.ready);
+      terminalJourneys.push({ javaScriptEnabled, width, ...terminalAcquisition, appearances: terminalSpecimens.map(card => card.appearance),
+        labeledSlots: 32, checksums: 'opened exact included plaintext and returned', guide: 'opened exact included Markdown and returned',
+        method: 'focused archive control, keyboard ZIP acquisition and exact local text routes' });
+      if (javaScriptEnabled) {
+        chooserJourneys.push({ width, ...await checkPackageChooser(localPage, packages, { delivery: 'portable' }) });
+        for (const textScale of [100, 200]) {
+          await localPage.evaluate(scale => document.documentElement.style.fontSize = scale + '%', textScale);
+          identificationJourneys.push({ width, ...await checkLocalPackageIdentification(localPage, packages, includedPayloads,
+            { delivery: 'portable', textScale }) });
         }
-        await localPage.locator('#icon-artwork-download').focus();
-        const [iconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-        assert.equal(await iconDownload.failure(), null);
-        assert.equal(iconDownload.suggestedFilename(), path.basename(iconArchive));
-        const iconChunks = []; for await (const chunk of await iconDownload.createReadStream()) iconChunks.push(chunk);
-        const iconBytes = Buffer.concat(iconChunks), iconDigest = crypto.createHash('sha256').update(iconBytes).digest('hex');
-        assert.deepEqual(iconBytes, await readFile(path.join(relocated, ...iconArchive.split('/'))));
-        assert.equal(iconDigest, inner.files[iconArchive]);
-        assert.equal(await readFile(path.join(relocated, 'icons', 'SVG-SHA256SUMS'), 'utf8'), iconChecksums(iconDigest));
-        await localPage.locator('#icon-artwork-broad-download').focus();
-        const [broadIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-        assert.equal(await broadIconDownload.failure(), null);
-        assert.equal(broadIconDownload.suggestedFilename(), path.basename(broadIconArchive));
-        const broadChunks = []; for await (const chunk of await broadIconDownload.createReadStream()) broadChunks.push(chunk);
-        const broadIconBytes = Buffer.concat(broadChunks);
-        assert.deepEqual(broadIconBytes, await readFile(path.join(relocated, ...broadIconArchive.split('/'))));
-        assert.equal(crypto.createHash('sha256').update(broadIconBytes).digest('hex'), broadIconDigest);
-        assert.equal(inner.files[broadIconArchive], broadIconDigest);
-        await localPage.locator('#icon-artwork-companion-download').focus();
-        const [companionIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-        assert.equal(await companionIconDownload.failure(), null);
-        assert.equal(companionIconDownload.suggestedFilename(), path.basename(companionIconArchive));
-        const companionChunks = []; for await (const chunk of await companionIconDownload.createReadStream()) companionChunks.push(chunk);
-        const companionIconBytes = Buffer.concat(companionChunks);
-        assert.deepEqual(companionIconBytes, await readFile(path.join(relocated, ...companionIconArchive.split('/'))));
-        assert.equal(crypto.createHash('sha256').update(companionIconBytes).digest('hex'), companionIconDigest);
-        assert.equal(inner.files[companionIconArchive], companionIconDigest);
-        await localPage.locator('#icon-artwork-monochrome-download').focus();
-        const [monochromeIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-        assert.equal(await monochromeIconDownload.failure(), null);
-        assert.equal(monochromeIconDownload.suggestedFilename(), path.basename(monochromeIconArchive));
-        const monochromeChunks = []; for await (const chunk of await monochromeIconDownload.createReadStream()) monochromeChunks.push(chunk);
-        const monochromeIconBytes = Buffer.concat(monochromeChunks);
-        assert.deepEqual(monochromeIconBytes, await readFile(path.join(relocated, ...monochromeIconArchive.split('/'))));
-        assert.equal(crypto.createHash('sha256').update(monochromeIconBytes).digest('hex'), monochromeIconDigest);
-        assert.equal(inner.files[monochromeIconArchive], monochromeIconDigest);
-        await localPage.locator('#icon-artwork-third-app-download').focus();
-        const [thirdAppIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-        assert.equal(await thirdAppIconDownload.failure(), null);
-        assert.equal(thirdAppIconDownload.suggestedFilename(), path.basename(thirdAppIconArchive));
-        const thirdChunks = []; for await (const chunk of await thirdAppIconDownload.createReadStream()) thirdChunks.push(chunk);
-        const thirdAppIconBytes = Buffer.concat(thirdChunks);
-        assert.deepEqual(thirdAppIconBytes, await readFile(path.join(relocated, ...thirdAppIconArchive.split('/'))));
-        assert.equal(crypto.createHash('sha256').update(thirdAppIconBytes).digest('hex'), thirdAppIconDigest);
-        assert.equal(inner.files[thirdAppIconArchive], thirdAppIconDigest);
-        await localPage.locator('#icon-artwork-second-app-download').focus();
-        const [secondAppIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-        assert.equal(await secondAppIconDownload.failure(), null);
-        assert.equal(secondAppIconDownload.suggestedFilename(), path.basename(secondAppIconArchive));
-        const secondAppIconChunks = []; for await (const chunk of await secondAppIconDownload.createReadStream()) secondAppIconChunks.push(chunk);
-        const secondAppIconBytes = Buffer.concat(secondAppIconChunks);
-        assert.deepEqual(secondAppIconBytes, await readFile(path.join(relocated, ...secondAppIconArchive.split('/'))));
-        assert.equal(crypto.createHash('sha256').update(secondAppIconBytes).digest('hex'), secondAppIconDigest);
-        assert.equal(inner.files[secondAppIconArchive], secondAppIconDigest);
-        await localPage.locator('#icon-artwork-first-app-download').focus();
-        const [firstAppIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-        assert.equal(await firstAppIconDownload.failure(), null);
-        assert.equal(firstAppIconDownload.suggestedFilename(), path.basename(firstAppIconArchive));
-        const firstAppIconChunks = []; for await (const chunk of await firstAppIconDownload.createReadStream()) firstAppIconChunks.push(chunk);
-        const firstAppIconBytes = Buffer.concat(firstAppIconChunks);
-        assert.deepEqual(firstAppIconBytes, await readFile(path.join(relocated, ...firstAppIconArchive.split('/'))));
-        assert.equal(crypto.createHash('sha256').update(firstAppIconBytes).digest('hex'), firstAppIconDigest);
-        assert.equal(inner.files[firstAppIconArchive], firstAppIconDigest);
-        await localPage.locator('#icon-artwork-previous-download').focus();
-        const [previousIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-        assert.equal(await previousIconDownload.failure(), null);
-        assert.equal(previousIconDownload.suggestedFilename(), path.basename(previousIconArchive));
-        const previousIconChunks = []; for await (const chunk of await previousIconDownload.createReadStream()) previousIconChunks.push(chunk);
-        const previousIconBytes = Buffer.concat(previousIconChunks);
-        assert.deepEqual(previousIconBytes, await readFile(path.join(relocated, ...previousIconArchive.split('/'))));
-        assert.equal(crypto.createHash('sha256').update(previousIconBytes).digest('hex'), previousIconDigest);
-        assert.equal(inner.files[previousIconArchive], previousIconDigest);
-        await localPage.locator('#icon-artwork-legacy-download').focus();
-        const [legacyIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-        assert.equal(await legacyIconDownload.failure(), null);
-        assert.equal(legacyIconDownload.suggestedFilename(), path.basename(legacyIconArchive));
-        const legacyIconChunks = []; for await (const chunk of await legacyIconDownload.createReadStream()) legacyIconChunks.push(chunk);
-        const legacyIconBytes = Buffer.concat(legacyIconChunks);
-        assert.deepEqual(legacyIconBytes, await readFile(path.join(relocated, ...legacyIconArchive.split('/'))));
-        assert.equal(crypto.createHash('sha256').update(legacyIconBytes).digest('hex'), legacyIconDigest);
-        assert.equal(inner.files[legacyIconArchive], legacyIconDigest);
-        iconJourneys.push({ javaScriptEnabled, width, decoded: decodedIcons.length, sha256: iconDigest,
-          broadSha256: broadIconDigest, companionSha256: companionIconDigest, monochromeSha256: monochromeIconDigest, secondAppSha256: secondAppIconDigest, firstAppSha256: firstAppIconDigest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
-          method: 'saved included current and all eight preserved SVG archives' });
-        const terminalSpecimens = await checkTerminalSpecimens(localPage, terminalDocument);
-        await localPage.locator('#terminal-download').focus();
-        const [terminalZip] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-        assert.equal(await terminalZip.failure(), null);
-        assert.equal(terminalZip.suggestedFilename(), terminalArchive);
-        const terminalChunks = []; for await (const chunk of await terminalZip.createReadStream()) terminalChunks.push(chunk);
-        await localPage.keyboard.press('Tab');
-        assert.equal(await localPage.evaluate(() => document.activeElement.id), 'terminal-checksums');
-        const terminalSumUrl = pathToFileURL(path.join(relocated, 'terminal', 'SHA256SUMS')).href;
-        let terminalSumText;
-        try {
-          // Like the included CSS routes below, an extensionless local text
-          // file opens in the browser. Qualify that actual consumer behavior.
-          await Promise.all([localPage.waitForURL(terminalSumUrl, { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-          terminalSumText = await localPage.locator('pre').textContent();
-          assert.equal(terminalSumText, await readFile(path.join(relocated, 'terminal', 'SHA256SUMS'), 'utf8'));
-        } catch (error) {
-          failures.push({ scenario: 'portable Terminal checksum activation', javaScriptEnabled, width,
-            pageUrl: localPage.url(), error: error.message, observation: await localPage.evaluate(() => ({
-              focusedId: document.activeElement?.id, focusedHref: document.activeElement?.getAttribute('href'),
-              bodyText: document.body?.innerText.slice(0, 2400), title: document.title,
-            })) });
-          throw error;
-        }
-        const terminalAcquisition = await verifyTerminalDownloads(Buffer.concat(terminalChunks), Buffer.from(terminalSumText, 'utf8'), relocated);
-        assert.equal(terminalAcquisition.sha256, inner.files['terminal/' + terminalArchive]);
-        await localPage.goBack();
-        await localPage.locator('#terminal-checksums').focus();
-        await localPage.keyboard.press('Tab');
-        assert.equal(await localPage.evaluate(() => document.activeElement.id), 'terminal-guide');
-        const terminalGuideUrl = pathToFileURL(path.join(relocated, 'terminal', 'installation.md')).href;
-        await Promise.all([localPage.waitForURL(terminalGuideUrl), localPage.keyboard.press('Enter')]);
-        const terminalGuide = await readFile(path.join(relocated, 'terminal', 'installation.md'), 'utf8');
-        assert.equal((await localPage.locator('body').textContent()).trim(), terminalGuide.trim());
-        assert.equal(crypto.createHash('sha256').update(terminalGuide).digest('hex'), inner.files['terminal/installation.md']);
-        await localPage.goBack();
-        await localPage.evaluate(() => document.fonts.ready);
-        terminalJourneys.push({ javaScriptEnabled, width, ...terminalAcquisition, appearances: terminalSpecimens.map(card => card.appearance),
-          labeledSlots: 32, checksums: 'opened exact included plaintext and returned', guide: 'opened exact included Markdown and returned',
-          method: 'focused archive control, keyboard ZIP acquisition and exact local text routes' });
+        await localPage.evaluate(() => document.documentElement.style.fontSize = '100%');
+      } else {
+        assert.ok(await localPage.locator('#package-chooser').isHidden());
+        assert.ok(await localPage.locator('#local-package-checker').isHidden());
+      }
+      for (const [appearance, background] of [['Obscur', 'rgb(0, 0, 0)'], ['Clair', 'rgb(255, 255, 255)']]) {
+        assert.equal(await localPage.locator(`.palette[data-palette="${appearance}"]`).evaluate(node => getComputedStyle(node).backgroundColor), background);
         if (javaScriptEnabled) {
-          chooserJourneys.push({ width, ...await checkPackageChooser(localPage, packages, { delivery: 'portable' }) });
-          for (const textScale of [100, 200]) {
-            await localPage.evaluate(scale => document.documentElement.style.fontSize = scale + '%', textScale);
-            identificationJourneys.push({ width, ...await checkLocalPackageIdentification(localPage, packages, includedPayloads,
-              { delivery: 'portable', textScale }) });
-          }
-          await localPage.evaluate(() => document.documentElement.style.fontSize = '100%');
-        } else {
-          assert.ok(await localPage.locator('#package-chooser').isHidden());
-          assert.ok(await localPage.locator('#local-package-checker').isHidden());
-        }
-        for (const [appearance, background] of [['Obscur', 'rgb(0, 0, 0)'], ['Clair', 'rgb(255, 255, 255)']]) {
-          assert.equal(await localPage.locator(`.palette[data-palette="${appearance}"]`).evaluate(node => getComputedStyle(node).backgroundColor), background);
-          if (javaScriptEnabled) {
-            await localPage.getByRole('button', { name: appearance, exact: true }).focus();
-            await localPage.keyboard.press('Enter');
-            assert.equal(await localPage.locator('html').getAttribute('data-theme'), appearance);
-          }
-        }
-        if (javaScriptEnabled) {
-          await localPage.locator('#sample-button').focus();
+          await localPage.getByRole('button', { name: appearance, exact: true }).focus();
           await localPage.keyboard.press('Enter');
-          assert.match(await localPage.locator('#control-status').textContent(), /Control activated/);
+          assert.equal(await localPage.locator('html').getAttribute('data-theme'), appearance);
         }
-        let guideAppearances = 0;
-        for (const item of packages.downloads) {
-          const card = localPage.locator(`#${item.platform}-${item.platform === 'opera-gx' ? 'paired' : item.name.toLowerCase()}`);
-          await card.locator('a[download]').focus();
-          for (const name of item.platform === 'opera-gx' ? ['Clair', 'Obscur'] : [item.name]) {
-            const anchor = `guide-${item.platform}-${name.toLowerCase()}`;
-            await localPage.keyboard.press('Tab');
-            assert.equal(await localPage.evaluate(() => document.activeElement.getAttribute('href')), '#' + anchor);
-            await localPage.keyboard.press('Enter');
-            await waitForGuideDestination(localPage, anchor);
-            const section = localPage.locator('#' + anchor);
-            assert.ok(await section.isVisible());
-            assert.ok((await section.textContent()).includes(records.get(item.path).sha256));
-            assert.equal(await section.locator('.local-package-path code').textContent(), 'downloads/' + item.path);
-            const guide = localPage.locator('#guide-' + item.platform);
-            for (const heading of ['Prerequisites and status', 'Install', 'Switch', 'Remove and restore', 'Fonts', 'Troubleshooting']) {
-              assert.equal(await guide.getByRole('heading', { name: heading, exact: true }).count(), 1);
-            }
-            await card.locator(`a.guide-link[href="#${anchor}"]`).focus();
-            guideAppearances++;
+      }
+      if (javaScriptEnabled) {
+        await localPage.locator('#sample-button').focus();
+        await localPage.keyboard.press('Enter');
+        assert.match(await localPage.locator('#control-status').textContent(), /Control activated/);
+      }
+      let guideAppearances = 0;
+      for (const item of packages.downloads) {
+        const card = localPage.locator(`#${item.platform}-${item.platform === 'opera-gx' ? 'paired' : item.name.toLowerCase()}`);
+        await card.locator('a[download]').focus();
+        for (const name of item.platform === 'opera-gx' ? ['Clair', 'Obscur'] : [item.name]) {
+          const anchor = `guide-${item.platform}-${name.toLowerCase()}`;
+          await localPage.keyboard.press('Tab');
+          assert.equal(await localPage.evaluate(() => document.activeElement.getAttribute('href')), '#' + anchor);
+          await localPage.keyboard.press('Enter');
+          await waitForGuideDestination(localPage, anchor);
+          const section = localPage.locator('#' + anchor);
+          assert.ok(await section.isVisible());
+          assert.ok((await section.textContent()).includes(records.get(item.path).sha256));
+          assert.equal(await section.locator('.local-package-path code').textContent(), 'downloads/' + item.path);
+          const guide = localPage.locator('#guide-' + item.platform);
+          for (const heading of ['Prerequisites and status', 'Install', 'Switch', 'Remove and restore', 'Fonts', 'Troubleshooting']) {
+            assert.equal(await guide.getByRole('heading', { name: heading, exact: true }).count(), 1);
           }
+          await card.locator(`a.guide-link[href="#${anchor}"]`).focus();
+          guideAppearances++;
         }
-        assert.equal(guideAppearances, 18);
-        const geometry = await localPage.evaluate(() => ({ width: innerWidth, document: document.documentElement.scrollWidth }));
-        assert.ok(geometry.document <= geometry.width + 1, JSON.stringify(geometry));
-        journeys.push({ javaScriptEnabled, width, guideAppearances, scriptControls: javaScriptEnabled ? 'passed' : 'not applicable' });
-      } finally { await localContext.close(); closedContexts++; }
-    }
-    // Preserve deliberate palette journeys below Chromium's download burst
-    // threshold. Use every included choice in both modes. CSS opens as local
-    // text in Chrome, while these archive types produce actual downloads.
-    for (const name of ['Clair', 'Obscur', 'Clair and Obscur']) {
-      const { localContext, localPage } = await filePage({ javaScriptEnabled, viewport: { width: 390, height: 844 } });
-      try {
-        for (const item of packages.downloads.filter(item => item.name === name)) {
-          const link = localPage.locator(`#${item.platform}-downloads a[download][href="downloads/${item.path}"]`);
-          assert.match(await link.textContent(), /^Open included /);
-          const included = await readFile(path.join(relocated, 'downloads', ...item.path.split('/')));
-          const expected = records.get(item.path);
-          assert.equal(included.length, expected.bytes);
-          assert.equal(crypto.createHash('sha256').update(included).digest('hex'), expected.sha256);
-          await link.focus();
-          let method, matchingGuide = null;
-          try {
-            if (item.path.endsWith('.css')) {
-              const localUrl = pathToFileURL(path.join(relocated, 'downloads', ...item.path.split('/'))).href;
-              await Promise.all([localPage.waitForURL(localUrl, { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-              assert.equal(await localPage.locator('pre').textContent(), included.toString('utf8'));
-              await localPage.goBack();
-              assert.equal(await localPage.locator('#portable-delivery').count(), 1);
-              matchingGuide = `guide-${item.platform}-${item.name.toLowerCase()}`;
-              await localPage.locator(`#${item.platform}-${item.name.toLowerCase()} a.guide-link[href="#${matchingGuide}"]`).focus();
-              await localPage.keyboard.press('Enter');
-              await waitForGuideDestination(localPage, matchingGuide);
-              assert.ok(await localPage.locator('#' + matchingGuide).isVisible());
-              await localPage.goBack();
-              await localPage.waitForURL(pathToFileURL(path.join(relocated, 'index.html')).href, { timeout: 2000, waitUntil: 'commit' });
-              method = 'opened included CSS as exact text, returned and reached matching guide';
-            } else {
-              const [download] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-              assert.equal(await download.failure(), null);
-              assert.equal(download.suggestedFilename(), path.basename(item.path));
-              const chunks = [];
-              for await (const chunk of await download.createReadStream()) chunks.push(chunk);
-              assert.equal(crypto.createHash('sha256').update(Buffer.concat(chunks)).digest('hex'), expected.sha256);
-              method = 'saved included archive';
-            }
-          }
-          catch (error) {
-            failures.push({ scenario: 'portable included package', javaScriptEnabled, platform: item.platform,
-              path: item.path, pageUrl: localPage.url(), requests, errors, error: error.message });
-            throw new Error(`Portable ${item.platform} ${item.name} journey failed (${item.path}): ${error.message}`, { cause: error });
-          }
-          assert.equal(localPage.url(), pathToFileURL(path.join(relocated, 'index.html')).href);
-          packageJourneys.push({ javaScriptEnabled, platform: item.platform, path: item.path, sha256: expected.sha256, method, matchingGuide });
-        }
-      } finally { await localContext.close(); closedContexts++; }
-    }
+      }
+      assert.equal(guideAppearances, 18);
+      const geometry = await localPage.evaluate(() => ({ width: innerWidth, document: document.documentElement.scrollWidth }));
+      assert.ok(geometry.document <= geometry.width + 1, JSON.stringify(geometry));
+      journeys.push({ javaScriptEnabled, width, guideAppearances, scriptControls: javaScriptEnabled ? 'passed' : 'not applicable' });
+    } finally { await localContext.close(); closedContexts++; }
   }
-  assert.equal(packageJourneys.length, 34);
-  assert.equal(iconJourneys.length, 4);
-  assert.equal(packageJourneys.filter(item => item.method === 'saved included archive').length, 22);
-  assert.equal(packageJourneys.filter(item => item.method === 'opened included CSS as exact text, returned and reached matching guide').length, 12);
-  const chosen = await filePage({ javaScriptEnabled: true, viewport: { width: 390, height: 844 } });
-  try {
-    for (const [target, appearance] of [['chrome', 'Obscur'], ['equicord', 'Clair']]) {
-      await chosen.localPage.locator('#package-target').selectOption(target);
-      await chosen.localPage.locator('#package-appearance').selectOption(appearance);
-      const item = packages.downloads.find(item => item.platform === target && item.name === appearance);
-      const included = await readFile(path.join(relocated, 'downloads', ...item.path.split('/')));
-      await chosen.localPage.locator('#package-choice-file').focus();
-      if (item.path.endsWith('.css')) {
-        const fileUrl = pathToFileURL(path.join(relocated, 'downloads', ...item.path.split('/'))).href;
-        await Promise.all([chosen.localPage.waitForURL(fileUrl, { timeout: 5000 }), chosen.localPage.keyboard.press('Enter')]);
-        assert.equal(await chosen.localPage.locator('pre').textContent(), included.toString('utf8'));
-        await chosen.localPage.goBack();
+  // Preserve deliberate palette journeys below Chromium's download burst
+  // threshold. Use every included choice in this mode. CSS opens as local
+  // text in Chrome, while these archive types produce actual downloads.
+  for (const name of ['Clair', 'Obscur', 'Clair and Obscur']) {
+    const { localContext, localPage } = await filePage({ javaScriptEnabled, viewport: { width: 390, height: 844 } });
+    try {
+      for (const item of packages.downloads.filter(item => item.name === name)) {
+        const link = localPage.locator(`#${item.platform}-downloads a[download][href="downloads/${item.path}"]`);
+        assert.match(await link.textContent(), /^Open included /);
+        const included = await readFile(path.join(relocated, 'downloads', ...item.path.split('/')));
+        const expected = records.get(item.path);
+        assert.equal(included.length, expected.bytes);
+        assert.equal(crypto.createHash('sha256').update(included).digest('hex'), expected.sha256);
+        await link.focus();
+        let method, matchingGuide = null;
+        try {
+          if (item.path.endsWith('.css')) {
+            const localUrl = pathToFileURL(path.join(relocated, 'downloads', ...item.path.split('/'))).href;
+            await Promise.all([localPage.waitForURL(localUrl, { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+            assert.equal(await localPage.locator('pre').textContent(), included.toString('utf8'));
+            await localPage.goBack();
+            assert.equal(await localPage.locator('#portable-delivery').count(), 1);
+            matchingGuide = `guide-${item.platform}-${item.name.toLowerCase()}`;
+            await localPage.locator(`#${item.platform}-${item.name.toLowerCase()} a.guide-link[href="#${matchingGuide}"]`).focus();
+            await localPage.keyboard.press('Enter');
+            await waitForGuideDestination(localPage, matchingGuide);
+            assert.ok(await localPage.locator('#' + matchingGuide).isVisible());
+            await localPage.goBack();
+            await localPage.waitForURL(pathToFileURL(path.join(relocated, 'index.html')).href, { timeout: 2000, waitUntil: 'commit' });
+            method = 'opened included CSS as exact text, returned and reached matching guide';
+          } else {
+            const [download] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+            assert.equal(await download.failure(), null);
+            assert.equal(download.suggestedFilename(), path.basename(item.path));
+            const chunks = [];
+            for await (const chunk of await download.createReadStream()) chunks.push(chunk);
+            assert.equal(crypto.createHash('sha256').update(Buffer.concat(chunks)).digest('hex'), expected.sha256);
+            method = 'saved included archive';
+          }
+        }
+        catch (error) {
+          failures.push({ scenario: 'portable included package', javaScriptEnabled, platform: item.platform,
+            path: item.path, pageUrl: localPage.url(), requests, errors, error: error.message });
+          throw new Error(`Portable ${item.platform} ${item.name} journey failed (${item.path}): ${error.message}`, { cause: error });
+        }
+        assert.equal(localPage.url(), pathToFileURL(path.join(relocated, 'index.html')).href);
+        packageJourneys.push({ javaScriptEnabled, platform: item.platform, path: item.path, sha256: expected.sha256, method, matchingGuide });
+      }
+    } finally { await localContext.close(); closedContexts++; }
+  }
+  assert.equal(packageJourneys.length, 17);
+  assert.equal(iconJourneys.length, 2);
+  assert.equal(packageJourneys.filter(item => item.method === 'saved included archive').length, 11);
+  assert.equal(packageJourneys.filter(item => item.method === 'opened included CSS as exact text, returned and reached matching guide').length, 6);
+  if (javaScriptEnabled) {
+    const chosen = await filePage({ javaScriptEnabled: true, viewport: { width: 390, height: 844 } });
+    try {
+      for (const [target, appearance] of [['chrome', 'Obscur'], ['equicord', 'Clair']]) {
         await chosen.localPage.locator('#package-target').selectOption(target);
         await chosen.localPage.locator('#package-appearance').selectOption(appearance);
-      } else {
-        const [download] = await Promise.all([chosen.localPage.waitForEvent('download', { timeout: 5000 }), chosen.localPage.keyboard.press('Enter')]);
-        assert.equal(await download.failure(), null);
-        const chunks = [];
-        for await (const chunk of await download.createReadStream()) chunks.push(chunk);
-        assert.deepEqual(Buffer.concat(chunks), included);
+        const item = packages.downloads.find(item => item.platform === target && item.name === appearance);
+        const included = await readFile(path.join(relocated, 'downloads', ...item.path.split('/')));
+        await chosen.localPage.locator('#package-choice-file').focus();
+        if (item.path.endsWith('.css')) {
+          const fileUrl = pathToFileURL(path.join(relocated, 'downloads', ...item.path.split('/'))).href;
+          await Promise.all([chosen.localPage.waitForURL(fileUrl, { timeout: 5000 }), chosen.localPage.keyboard.press('Enter')]);
+          assert.equal(await chosen.localPage.locator('pre').textContent(), included.toString('utf8'));
+          await chosen.localPage.goBack();
+          await chosen.localPage.locator('#package-target').selectOption(target);
+          await chosen.localPage.locator('#package-appearance').selectOption(appearance);
+        } else {
+          const [download] = await Promise.all([chosen.localPage.waitForEvent('download', { timeout: 5000 }), chosen.localPage.keyboard.press('Enter')]);
+          assert.equal(await download.failure(), null);
+          const chunks = [];
+          for await (const chunk of await download.createReadStream()) chunks.push(chunk);
+          assert.deepEqual(Buffer.concat(chunks), included);
+        }
+        const anchor = `guide-${target}-${appearance.toLowerCase()}`;
+        await chosen.localPage.locator('#package-choice-guide').focus();
+        await chosen.localPage.keyboard.press('Enter');
+        await waitForGuideDestination(chosen.localPage, anchor);
+        chooserJourneys.push({ target, appearance, path: item.path, method: item.path.endsWith('.css') ? 'opened included CSS and returned to matching guide' : 'saved included archive and reached matching guide' });
       }
-      const anchor = `guide-${target}-${appearance.toLowerCase()}`;
-      await chosen.localPage.locator('#package-choice-guide').focus();
-      await chosen.localPage.keyboard.press('Enter');
-      await waitForGuideDestination(chosen.localPage, anchor);
-      chooserJourneys.push({ target, appearance, path: item.path, method: item.path.endsWith('.css') ? 'opened included CSS and returned to matching guide' : 'saved included archive and reached matching guide' });
-    }
-  } finally { await chosen.localContext.close(); closedContexts++; }
+    } finally { await chosen.localContext.close(); closedContexts++; }
+  }
+  assert.equal(journeys.length, 2);
+  assert.equal(terminalJourneys.length, 2);
+  assert.equal(chooserJourneys.length, javaScriptEnabled ? 4 : 0);
+  assert.equal(identificationJourneys.length, javaScriptEnabled ? 4 : 0);
   assert.ok(requests.every(url => new URL(url).protocol === 'file:'), 'The extracted consumer must not request network resources');
   assert.deepEqual(errors, []);
-  if (evidence) {
-    await writeFile(path.join(evidence, 'portable-site-manifest.json'), JSON.stringify(inner, null, 2) + '\n');
+  if (modeEvidence) {
+    await writeFile(path.join(modeEvidence, 'portable-site-manifest.json'), JSON.stringify(inner, null, 2) + '\n');
   }
-  results.scenarios.push({ name: 'actual downloaded and relocated offline portable kit', status: 'passed',
+  results.scenarios.push({ name: `actual downloaded and relocated offline portable kit (${mode})`, status: 'passed', javaScriptEnabled,
     archive: archiveName, sha256: digest, bytes: archiveBytes.length, downloadNames, source: inner.source,
     protocol: 'file:', network: 'all external requests blocked', requests, errors, journeys, packageJourneys, chooserJourneys, identificationJourneys, iconJourneys, terminalJourneys,
     closedContexts, nativeAppsVerified: false });
