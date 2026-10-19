@@ -127,11 +127,12 @@ preserve_native_scaling = True</code></pre>
 
     <section id="icons" aria-labelledby="icons-heading">
       <h2 id="icons-heading">Matching app icons</h2>
-      <p>Choose by function: 24 original drawings, each shown in Clair and Obscur. Both appearances stay visible while you change the page appearance. These 0.2.0 SVG masters use stronger outlines and simpler details, with functional labels to help you choose a symbol.</p>
-      <p><a id="icon-artwork-download" class="button" href="{{ICON_ARCHIVE}}" download>Download 0.2.0 SVG artwork in both appearances</a> <a id="icon-artwork-checksums" class="secondary-link" href="{{ICON_CHECKSUMS}}" download>Current and original SVG ZIP checksums</a></p>
+      <p>Choose from 33 named apps and 24 general functions, each shown in Clair and Obscur. Both appearances stay visible while you change the page appearance. This first 0.3.0 collection covers 57 choices with original themed interpretations. It is a starting collection, not a complete app-store catalog or an ordered popularity ranking.</p>
+      <p><a id="icon-artwork-download" class="button" href="{{ICON_ARCHIVE}}" download>Download 0.3.0 SVG artwork in both appearances</a> <a id="icon-artwork-checksums" class="secondary-link" href="{{ICON_CHECKSUMS}}" download>Current and preserved SVG ZIP checksums</a></p>
+      <p><a id="icon-artwork-previous-download" class="secondary-link" href="{{PREVIOUS_ICON_ARCHIVE}}" download>Download the preserved 0.2.0 functional SVG artwork</a></p>
       <p><a id="icon-artwork-legacy-download" class="secondary-link" href="{{LEGACY_ICON_ARCHIVE}}" download>Download the preserved original 0.1.0 SVG artwork</a></p>
-      <p class="muted">The ZIP contains 48 SVG drawings, their identity manifest and the MIT license. It contains no PNGs, fonts, app-brand logos or installer. This gallery is an artwork preview, not a Samsung launcher screenshot.</p>
-      <div class="icon-gallery">{{ICON_GALLERY}}</div>
+      <p class="muted">The ZIP contains 114 SVG drawings, their identity and app-assignment manifest and the project license. The PNG exporter produces 228 images at two sizes. These are independent themed interpretations. App names and identifying marks belong to their respective owners, and no affiliation or endorsement is implied. The ZIP contains no PNGs, fonts or installer. This gallery is an artwork preview, not a Samsung launcher screenshot.</p>
+      {{ICON_GALLERY}}
       <details id="icon-png-instructions"><summary>Need PNG images for a phone?</summary>
         <p>The <a href="#current-source">current source snapshot</a> includes the existing PNG exporter and <code>docs/samsung-icons.md</code>. From that extracted source, generate a fresh SVG directory, then export it with the project's pinned Playwright dependency and headless Google Chrome:</p>
         <pre tabindex="0" aria-label="Generate SVG masters and export PNG images"><code>python -m themeforge.icons --output outputs/samsung-icons-svg-01

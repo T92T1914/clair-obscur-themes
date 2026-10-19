@@ -313,7 +313,7 @@ class ManifestAdmissionTests(KitFixture):
         (self.kit / 'site-manifest.json').write_bytes(b' ' * 65_537)
         self.assert_refused(message='File byte limit')
         self.document = manifest_document(self.files)
-        for number in range(119):
+        for number in range(193 - len(self.document['files'])):
             self.document['files'][f'file{number}.txt'] = '0' * 64
         self.write_manifest()
         self.assert_refused(message='declared file count')
@@ -322,6 +322,26 @@ class ManifestAdmissionTests(KitFixture):
             self.document['files'][f'a{number}/b/c/d/e/f/g/file'] = '0' * 64
         self.write_manifest()
         self.assert_refused(message='Combined inventory')
+
+    def test_expanded_declared_inventory_accepts_192_hashes_and_refuses_193(self):
+        # Exercise a complete comparison at the published limit. The current
+        # named-app portable kit also runs through ProducerInclusionTests.
+        for number in range(192 - len(self.files)):
+            name = f'expanded{number}.txt'
+            payload = f'Expanded inventory fixture {number}\n'.encode('ascii')
+            self.files[name] = payload
+            (self.kit / name).write_bytes(payload)
+        self.document = manifest_document(self.files)
+        self.assertEqual(len(self.document['files']), 192)
+        self.write_manifest()
+        before = self.snapshot()
+        self.assertEqual(verifier.verify(self.kit)[0], 0)
+        self.assertEqual(self.snapshot(), before)
+        self.document['files']['one-too-many.txt'] = '0' * 64
+        self.write_manifest()
+        before = self.snapshot()
+        self.assert_refused(message='declared file count')
+        self.assertEqual(self.snapshot(), before)
 
     def test_actual_inventory_depth_and_unsafe_extra_are_refused_before_reads(self):
         for number in range(245):

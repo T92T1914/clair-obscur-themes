@@ -355,14 +355,14 @@ class TerminalPreviewTests(unittest.TestCase):
                         self.assertEqual(style, f"color:{EXPECTED[name][field]};background:{background}")
                         self.assertEqual(context, f"on {partner}" if partner else "on default")
 
-    def test_terminal_preview_preserves_desktop_downloads_and_both_icon_revisions(self):
-        from preview import ICON_ARCHIVE, ICON_CHECKSUMS, LEGACY_ICON_ARCHIVE, PORTABLE_ARCHIVE, preview_files
+    def test_terminal_preview_preserves_desktop_downloads_and_all_icon_revisions(self):
+        from preview import ICON_ARCHIVE, ICON_CHECKSUMS, LEGACY_ICON_ARCHIVE, PREVIOUS_ICON_ARCHIVE, PORTABLE_ARCHIVE, preview_files
         from themeforge.icons import render_icons
         desktop = snapshot(self.artifacts)
         self.assertEqual(len(desktop), 32)
         icons = render_icons(self.document)
         current_svg = {path: payload for path, payload in icons.items() if path.endswith(".svg")}
-        self.assertEqual(len(current_svg), 48)
+        self.assertEqual(len(current_svg), 114)
         token_bytes = (ROOT / "tokens.json").read_bytes()
         files = preview_files(ROOT, self.artifacts)
         with zipfile.ZipFile(io.BytesIO(files[PORTABLE_ARCHIVE])) as portable:
@@ -376,11 +376,13 @@ class TerminalPreviewTests(unittest.TestCase):
             # preview archive and its delivered user download, independently.
             original_archive_hash = "040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34"
             self.assertEqual(hashlib.sha256(delivery[LEGACY_ICON_ARCHIVE]).hexdigest(), original_archive_hash)
+            self.assertEqual(hashlib.sha256(delivery[PREVIOUS_ICON_ARCHIVE]).hexdigest(),
+                             '6ae67a5aab7f4e0a50537bb6dcf3b383c5fc6e9e001d68db12a7413aaa376312')
             with zipfile.ZipFile(io.BytesIO(delivery[ICON_ARCHIVE])) as current:
-                self.assertEqual(json.loads(current.read("manifest.json"))["version"], "0.2.0")
+                self.assertEqual(json.loads(current.read("manifest.json"))["version"], "0.3.0")
             self.assertEqual(delivery[ICON_CHECKSUMS],
                              ''.join(f'{hashlib.sha256(delivery[path]).hexdigest()}  {Path(path).name}\n'
-                                     for path in (ICON_ARCHIVE, LEGACY_ICON_ARCHIVE)).encode())
+                                     for path in (ICON_ARCHIVE, PREVIOUS_ICON_ARCHIVE, LEGACY_ICON_ARCHIVE)).encode())
         self.assertEqual(snapshot(self.artifacts), desktop)
         self.assertEqual((ROOT / "tokens.json").read_bytes(), token_bytes)
 
