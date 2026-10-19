@@ -18,12 +18,13 @@ from .icon_apps import (
     APP_CATALOG, CATALOG_DATE, CATALOG_SCOPE,
     NEW_APP_CATALOG, NEW_CATALOG_DATE, NEW_CATALOG_SCOPE,
     THIRD_APP_CATALOG, THIRD_CATALOG_DATE, THIRD_CATALOG_SCOPE,
+    FOURTH_APP_CATALOG, FOURTH_CATALOG_DATE, FOURTH_CATALOG_SCOPE,
 )
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.6.0"
-VERSIONS = ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0", VERSION)
+VERSION = "0.7.0"
+VERSIONS = ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0", "0.6.0", VERSION)
 SIZE = 512
 STROKE = 16
 FUNCTIONS = (
@@ -603,6 +604,50 @@ THIRD_APP_GLYPHS = {
 }
 
 
+# Original companion interpretations extend the same 16-unit stroke and inset.
+FOURTH_APP_GLYPHS = {
+    "good-lock": [
+        _shape("rect", x=144, y=224, width=224, height=160, rx=36),
+        _path("M192 224 V176 Q192 128 256 128 Q320 128 320 176 V192"),
+        _shape("circle", cx=256, cy=288, r=20, stroke="accent"),
+        _path("M256 308 V344", accent=True),
+    ],
+    "connect-iq-store": [
+        _shape("rect", x=168, y=152, width=176, height=208, rx=40),
+        _path("M216 152 V112 H296 V152 M216 360 V400 H296 V360"),
+        _shape("rect", x=208, y=208, width=32, height=32, rx=8, stroke="accent"),
+        _shape("rect", x=272, y=208, width=32, height=32, rx=8, stroke="accent"),
+        _shape("rect", x=208, y=272, width=32, height=32, rx=8, stroke="accent"),
+        _shape("rect", x=272, y=272, width=32, height=32, rx=8, stroke="accent"),
+    ],
+    "steam": [
+        _path("M192 176 H320 C352 176 368 208 376 248 L392 328 "
+              "C400 368 368 384 344 352 L304 304 H208 L168 352 "
+              "C144 384 112 368 120 328 L136 248 C144 208 160 176 192 176 Z"),
+        _path("M176 240 H224 M200 216 V264", accent=True),
+        _shape("circle", cx=312, cy=232, r=12, stroke="accent"),
+        _shape("circle", cx=344, cy=264, r=12, stroke="accent"),
+    ],
+    "reuters": [
+        _path("M136 144 H344 V368 H160 Q136 368 136 344 Z "
+              "M344 192 H376 V344 Q376 368 344 368"),
+        _shape("rect", x=176, y=184, width=72, height=64, rx=8, stroke="accent"),
+        _path("M280 192 H312 M280 232 H312 M176 288 H304 M176 328 H272"),
+    ],
+    "home-depot": [
+        _path("M112 216 L256 128 L400 216 M144 216 V384 H368 V216"),
+        _path("M216 240 L256 216 L312 240 L296 272 L256 256 "
+              "L232 296 L200 280 Z M248 272 L216 344", accent=True),
+    ],
+    "patreon": [
+        _path("M144 144 H368 V216 C336 216 336 296 368 296 V368 "
+              "H144 V296 C176 296 176 216 144 216 Z"),
+        _path("M256 304 L208 256 C176 224 216 192 240 216 L256 232 "
+              "L272 216 C296 192 336 224 304 256 Z", accent=True),
+    ],
+}
+
+
 def icon_catalog(version: str = VERSION) -> list[dict]:
     """Return labels and explicit assignment identities for an admitted revision."""
     if version not in VERSIONS:
@@ -616,8 +661,10 @@ def icon_catalog(version: str = VERSION) -> list[dict]:
         apps = APP_CATALOG
     elif version == "0.4.0":
         apps = (*APP_CATALOG, *NEW_APP_CATALOG)
-    else:
+    elif version in ("0.5.0", "0.6.0"):
         apps = (*APP_CATALOG, *NEW_APP_CATALOG, *THIRD_APP_CATALOG)
+    else:
+        apps = (*APP_CATALOG, *NEW_APP_CATALOG, *THIRD_APP_CATALOG, *FOURTH_APP_CATALOG)
     for app in apps:
         if not isinstance(app, dict):
             raise ValueError("Malformed named-app catalog")
@@ -639,14 +686,18 @@ def icon_catalog(version: str = VERSION) -> list[dict]:
         packages.add(package)
         catalog.append(dict(app))
     drawings = set(APP_GLYPHS)
-    if version in ("0.4.0", "0.5.0", "0.6.0"):
+    if version in ("0.4.0", "0.5.0", "0.6.0", "0.7.0"):
         if drawings & set(NEW_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(NEW_APP_GLYPHS)
-    if version in ("0.5.0", "0.6.0"):
+    if version in ("0.5.0", "0.6.0", "0.7.0"):
         if drawings & set(THIRD_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(THIRD_APP_GLYPHS)
+    if version == "0.7.0":
+        if drawings & set(FOURTH_APP_GLYPHS):
+            raise ValueError("New named-app drawings replace an accepted ID")
+        drawings |= set(FOURTH_APP_GLYPHS)
     if drawings != seen - set(FUNCTIONS):
         raise ValueError("Named-app catalog and drawings differ")
     return catalog
@@ -665,7 +716,7 @@ def token_path(version: str = VERSION) -> Path:
     """Select the shared palette without changing a historical artwork revision."""
     if version not in VERSIONS:
         raise ValueError("Unsupported icon artwork version")
-    return ROOT / ("tokens-monochrome.json" if version == "0.6.0" else "tokens.json")
+    return ROOT / ("tokens-monochrome.json" if version in ("0.6.0", "0.7.0") else "tokens.json")
 
 
 def load_icon_tokens(version: str = VERSION, path: Path | None = None) -> dict:
@@ -707,7 +758,8 @@ def _render_icon(function: str, appearance: str, document: dict, grant: str, *, 
     drawings = (GLYPHS if version == "0.1.0" else
                 CURRENT_GLYPHS if function in CURRENT_GLYPHS else
                 APP_GLYPHS if function in APP_GLYPHS else
-                NEW_APP_GLYPHS if function in NEW_APP_GLYPHS else THIRD_APP_GLYPHS)
+                NEW_APP_GLYPHS if function in NEW_APP_GLYPHS else
+                THIRD_APP_GLYPHS if function in THIRD_APP_GLYPHS else FOURTH_APP_GLYPHS)
     for tag, attributes in drawings[function]:
         ET.SubElement(group, tag, {
             key: palette[value] if value in ("accent", "text") else value
@@ -722,7 +774,7 @@ def render_icons(document: dict, *, version: str = VERSION) -> dict[str, bytes]:
     _validated(document)
     if version not in VERSIONS:
         raise ValueError("Unsupported icon artwork version")
-    if version == "0.6.0":
+    if version in ("0.6.0", "0.7.0"):
         _monochrome(document)
     catalog = icon_catalog(version)
     names = [entry["id"] for entry in catalog]
@@ -750,17 +802,19 @@ def render_icons(document: dict, *, version: str = VERSION) -> dict[str, bytes]:
         "functions": names, "files": records,
         "scope": "Original functional glyphs; no brand logos, font assets or phone installation",
     }
-    if version in ("0.3.0", "0.4.0", "0.5.0", "0.6.0"):
+    if version in ("0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0"):
         if version == "0.3.0":
             date, scope = CATALOG_DATE, CATALOG_SCOPE
         elif version == "0.4.0":
             date, scope = NEW_CATALOG_DATE, NEW_CATALOG_SCOPE
-        else:
+        elif version in ("0.5.0", "0.6.0"):
             date, scope = THIRD_CATALOG_DATE, THIRD_CATALOG_SCOPE
+        else:
+            date, scope = FOURTH_CATALOG_DATE, FOURTH_CATALOG_SCOPE
         manifest.update(catalog=catalog, catalog_date=date, catalog_scope=scope,
                         scope="Original themed interpretations for named apps and general functions; "
                               "app names identify intended assignments, not publisher endorsement or installation")
-    if version == "0.6.0":
+    if version in ("0.6.0", "0.7.0"):
         manifest["palette_variant"] = "monochrome"
     files["manifest.json"] = (json.dumps(manifest, sort_keys=True, indent=2) + "\n").encode("utf-8")
     return files

@@ -72,10 +72,13 @@ and [original phone icon artwork](docs/samsung-icons.md). The watch face targets
 always on view. Version 0.3.0 compiled and passed all 16 exact-target simulator
 test groups. Bounded visual checks exercised both monochrome appearances,
 switching and the time-only always-on view. The broader 0.2.0 simulator history
-remains separately labeled. Physical watch acceptance, a new 0.3.0 normal-restart
-trial, battery life and phone theme application remain open.
+remains separately labeled. The transferred face was later reported present on
+the physical watch. Exact on-device version, switching, always-on behavior,
+persistence, USB restoration and power use remain open.
 
-The phone gallery's 0.6.0 black and white collection pairs 65 named Android apps with 24 general symbols, giving 89 choices in both appearances. Checked app labels, package IDs and official listings support manual assignment. Original 0.1.0, refined 0.2.0 and all three earlier named-app downloads remain unchanged, and all six revisions support the local PNG exporter. Coverage is a growing selection, not a complete store catalog or an ordered popularity chart.
+The phone gallery's 0.7.0 black and white collection pairs 71 named Android apps with 24 general symbols, giving 95 choices in both appearances. The latest additions cover Good Lock, Connect IQ Store, Steam, Reuters, The Home Depot and Patreon. Checked app labels, package IDs and official listings support manual assignment. All six earlier SVG archives remain unchanged, and all seven revisions support the local PNG exporter. Coverage is a growing selection, not a complete store catalog or an ordered popularity chart.
+
+A scoped Samsung Theme Park check saved and applied a local ObscurBW icon theme, with its selection checkmark observed. That pack combined one earlier general drawing, one 0.6.0 named drawing and neutral fallback artwork. It does not establish assignment of the full collection or the new 0.7.0 additions. Actual launcher masking, labels, phone fonts, switching and restoration remain separate checks.
 
 ## Report a problem
 

@@ -572,3 +572,39 @@ THIRD_APP_CATALOG = ({'id': 'linkedin',
   'selection_basis': '1B+ listing visibility and a missing Samsung smart-home companion identity. '
                      'Samsung device context does not establish installation, pairing or '
                      'compatible hardware.'})
+
+
+# The six companion selections are admitted only by 0.7.0. Earlier collections
+# retain their original assignments, inspection date and scope.
+FOURTH_CATALOG_DATE = "2026-10-19"
+FOURTH_CATALOG_SCOPE = ("Expanded monochrome collection retains 65 named apps and adds six inspected official Google Play identities "
+                       "for theme and watch companions, gaming, news, home improvement and creator communities. "
+                       "Canonical listing regions vary; listing identity does not establish installation or device compatibility. "
+                       "Not an ordered popularity chart or exhaustive catalog.")
+
+FOURTH_APP_CATALOG = (
+    {"id": "good-lock", "label": "Good Lock", "store_title": "Good Lock", "kind": "app",
+     "category": "personalization", "android_package": "com.samsung.android.goodlock",
+     "store_url": "https://play.google.com/store/apps/details?id=com.samsung.android.goodlock",
+     "selection_basis": "Missing Samsung customization companion, confirmed in its official listing; availability varies by device and region."},
+    {"id": "connect-iq-store", "label": "Connect IQ Store", "store_title": "Connect IQ™ Store", "kind": "app",
+     "category": "wearable-tools", "android_package": "com.garmin.connectiq",
+     "store_url": "https://play.google.com/store/apps/details?id=com.garmin.connectiq",
+     "selection_basis": "Missing Garmin watch-face and app-management companion, distinct from the retained Garmin Connect assignment."},
+    {"id": "steam", "label": "Steam", "store_title": "Steam", "kind": "app",
+     "category": "gaming", "android_package": "com.valvesoftware.android.steam.community",
+     "store_url": "https://play.google.com/store/apps/details?id=com.valvesoftware.android.steam.community",
+     "selection_basis": "Missing games and community companion, confirmed in Valve's official listing."},
+    {"id": "reuters", "label": "Reuters", "store_title": "Reuters - Breaking World News", "kind": "app",
+     "category": "news", "android_package": "com.thomsonreuters.reuters",
+     "store_url": "https://play.google.com/store/apps/details?id=com.thomsonreuters.reuters",
+     "selection_basis": "Missing news-category assignment, confirmed in the official Reuters listing."},
+    {"id": "home-depot", "label": "Home Depot", "store_title": "The Home Depot", "kind": "app",
+     "category": "shopping", "android_package": "com.thehomedepot",
+     "store_url": "https://play.google.com/store/apps/details?id=com.thehomedepot",
+     "selection_basis": "Missing home-improvement shopping assignment, confirmed in the official retailer listing."},
+    {"id": "patreon", "label": "Patreon", "store_title": "Patreon", "kind": "app",
+     "category": "creator-community", "android_package": "com.patreon.android",
+     "store_url": "https://play.google.com/store/apps/details?id=com.patreon.android",
+     "selection_basis": "Missing creator-community assignment, confirmed in Patreon's official listing."},
+)

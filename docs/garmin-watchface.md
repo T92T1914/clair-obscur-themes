@@ -58,6 +58,8 @@ On October 19, 2026, the normal and test-enabled 0.3.0 programs compiled for the
 
 The final active status sample was 19.2 kB against the displayed 123.9 kB budget. Menu samples were 20.4 and 21.3 kB. These are observed samples, not a peak or sustained memory measurement. The simulator was left in Obscur with Weather and Steps, battery 50 percent and High Power before closing. No pre-test persistent-property backup was captured, so this does not establish exact restoration of every earlier simulator setting. A new 0.3.0 normal-restart trial and physical-watch acceptance remain open.
 
+The normal 0.3.0 program was copied to the physical watch and read back with an exact SHA-256 match. The user later reported having the watch face on the Garmin. That is a user report of presence, separate from inspecting its exact displayed version, appearance switching, low-power behavior, persistence or power use. Returning the transfer USB mode from MTP to its previous Garmin setting remains outstanding.
+
 ## Preserved 0.2.0 simulator checks and remaining acceptance
 
 The accepted 0.2.0 simulator history below does not establish a new 0.3.0 runtime pass. The 16 simulator test groups cover the original time, calendar, invalid-value, appearance and geometry cases, plus field formatting, font-scale validation, data settings and layout bounds. The first native execution exposed the battery NaN conversion failure. Its explicit rejection was verified before the expanded candidate passed. Pure test groups do not themselves execute every provider lifecycle or inspect pixels.
