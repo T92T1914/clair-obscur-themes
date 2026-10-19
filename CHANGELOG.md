@@ -1,5 +1,12 @@
 # Changes
 
+## Preview icon finder
+
+- Find existing drawings by name, stable icon ID or Android package ID, with named-app and general-function filters.
+- Keep both appearances together, preserve their original order, and show the number of matching choices with an explicit empty state and Clear action.
+- Retain the complete static catalog without JavaScript. Filtering stays local in both the published and extracted portable preview.
+- Preserve artwork 0.9.0, all earlier icon archives and every accepted desktop, Terminal and watch package.
+
 ## Icon artwork 0.9.0
 
 - Add 48 inspected app interpretations across work, media, photo editing, fitness, home, banking and shipping. The black and white collection now has 151 named apps and 24 general functions in both appearances.

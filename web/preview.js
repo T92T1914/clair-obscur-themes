@@ -1,4 +1,51 @@
 const choices = [...document.querySelectorAll('[data-appearance]')];
+
+// Keep the static gallery complete if this optional enhancement cannot initialize.
+(() => {
+  const finder = document.querySelector('#icon-finder');
+  const query = document.querySelector('#icon-query');
+  const kind = document.querySelector('#icon-kind');
+  const clear = document.querySelector('#icon-clear');
+  const status = document.querySelector('#icon-filter-status');
+  const empty = document.querySelector('#icon-filter-empty');
+  if (!finder || !query || !kind || !clear || !status || !empty) return;
+  const normalize = value => value.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().replace(/['\u2019]/gu, '');
+  const records = [...document.querySelectorAll('#icons .icon-card')].map(card => {
+    const heading = card.querySelector('h4')?.textContent;
+    const id = card.dataset.iconFunction;
+    const type = card.dataset.iconKind;
+    const packageId = card.querySelector('code')?.textContent || '';
+    const group = card.closest('section[aria-labelledby]');
+    if (!heading || !id || !['app', 'function'].includes(type) || !group || (type === 'app' && !packageId)) return null;
+    return { card, type, group, text: normalize([heading, id, packageId].join(' ')) };
+  });
+  if (!records.length || records.some(record => !record)) return;
+  const groups = [...new Set(records.map(record => record.group))];
+  function updateIconFilter() {
+    const terms = normalize(query.value).trim().split(/\s+/u).filter(Boolean);
+    let shown = 0;
+    for (const record of records) {
+      const matches = (kind.value === 'all' || kind.value === record.type) && terms.every(term => record.text.includes(term));
+      record.card.hidden = !matches;
+      if (matches) shown++;
+    }
+    for (const group of groups) group.hidden = !records.some(record => record.group === group && !record.card.hidden);
+    status.textContent = `Showing ${shown} of ${records.length} choices.`;
+    empty.hidden = shown !== 0;
+  }
+  query.addEventListener('input', updateIconFilter);
+  kind.addEventListener('change', updateIconFilter);
+  finder.addEventListener('submit', event => event.preventDefault());
+  clear.addEventListener('click', () => {
+    query.value = '';
+    kind.value = 'all';
+    updateIconFilter();
+    query.focus();
+  });
+  updateIconFilter();
+  finder.hidden = false;
+})();
+
 for (const choice of choices) {
   choice.addEventListener('click', () => {
     const appearance = choice.dataset.appearance;
