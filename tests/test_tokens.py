@@ -6,6 +6,21 @@ from themeforge.tokens import load, validate, contrast, rgb
 ROOT=Path(__file__).resolve().parents[1]
 
 class TokenTests(unittest.TestCase):
+    def test_monochrome_identity_uses_neutral_roles_and_opposite_endpoints(self):
+        document = load(ROOT / 'tokens-monochrome.json')
+        self.assertEqual(document['version'], '1.0.0')
+        for name, background, foreground in (('Clair', '#ffffff', '#000000'),
+                                              ('Obscur', '#000000', '#ffffff')):
+            values = document['themes'][name]
+            for role, value in values.items():
+                self.assertEqual(len(set(rgb(value))), 1, (name, role, value))
+            for role in ('canvas', 'panel'):
+                self.assertEqual(values[role], background)
+            for role in ('text', 'accent', 'focus'):
+                self.assertEqual(values[role], foreground)
+            self.assertEqual(contrast(values['text'], values['canvas']), 21)
+        self.assertEqual(len(validate(document)), 58)
+
     def test_wcag_known_black_white_ratio(self):
         self.assertEqual(contrast('#000000','#ffffff'),21)
         self.assertEqual(contrast('#ffffff','#000000'),21)

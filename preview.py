@@ -27,7 +27,8 @@ WEB_ASSETS = frozenset({'index.html', 'preview.css', 'preview.js'})
 REPOSITORY_URL = 'https://github.com/T92T1914/clair-obscur-themes'
 PORTABLE_ARCHIVE = 'Clair-Obscur-portable-preview.zip'
 PORTABLE_CHECKSUMS = 'portable-SHA256SUMS'
-ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.5.0.zip'
+ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.6.0.zip'
+THIRD_APP_ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.5.0.zip'
 SECOND_APP_ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.4.0.zip'
 FIRST_APP_ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.3.0.zip'
 PREVIOUS_ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.2.0.zip'
@@ -74,7 +75,7 @@ def read_source(root: Path, path: Path) -> bytes:
 def source_files(root: Path) -> dict[str, bytes]:
     """Package reviewed source categories, never a broad workspace archive."""
     paths = [root / name for name in (
-        'README.md', 'AGENTS.md', 'LICENSE', 'CHANGELOG.md', 'tokens.json', 'build.py', 'preview.py',
+        'README.md', 'AGENTS.md', 'LICENSE', 'CHANGELOG.md', 'tokens.json', 'tokens-monochrome.json', 'build.py', 'preview.py',
         'verify_preview.py',
         'package.json', 'package-lock.json', '.gitignore', '.gitattributes',
         'tools/export-icons.mjs',
@@ -165,6 +166,8 @@ def source_identity(root: Path, sources: dict[str, bytes], expected_revision: st
 
 def preview_files(root: Path, artifacts: Path, expected_revision: str | None = None) -> dict[str, bytes]:
     document = load(root / 'tokens.json')
+    identity_document = load(root / 'tokens-monochrome.json')
+    identity_digest = _digest(_json_bytes(identity_document))
     tokens_digest = _digest(_json_bytes(document))
     manifest = build_release(root / 'tokens.json', artifacts, check=True)
     if manifest['tokens_sha256'] != tokens_digest:
@@ -206,6 +209,8 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
     sources = source_files(root)
     if _digest(_json_bytes(json.loads(sources['tokens.json'].decode('utf-8')))) != tokens_digest:
         raise ValueError('Source tokens differ from the verified artifact snapshot')
+    if _digest(_json_bytes(json.loads(sources['tokens-monochrome.json'].decode('utf-8')))) != identity_digest:
+        raise ValueError('Source monochrome tokens differ from the preview identity snapshot')
     license_text = normalize_license(sources['LICENSE'])
     license_bytes = license_text.encode('utf-8')
     license_comment = ('/*\n' + license_text + '*/\n').encode('utf-8')
@@ -222,7 +227,7 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
             raise ValueError('Source license differs from the browser candidate grants')
     if license_comment not in snapshot[CLAIR_EQUICORD_FOCUS_PATH]:
         raise ValueError('Source license differs from the verified Clair focus package grant')
-    icon_files = render_icons(document)
+    icon_files = render_icons(identity_document)
     icon_manifest = json.loads(icon_files['manifest.json'])
     catalog = icon_manifest['catalog']
     identifiers = [entry['id'] for entry in catalog]
@@ -239,7 +244,7 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
     icon_files['LICENSE.txt'] = sources['LICENSE']
     files['icons/LICENSE.txt'] = sources['LICENSE']
     files[ICON_ARCHIVE] = _zip_bytes(icon_files)
-    for revision, archive in (('0.4.0', SECOND_APP_ICON_ARCHIVE), ('0.3.0', FIRST_APP_ICON_ARCHIVE),
+    for revision, archive in (('0.5.0', THIRD_APP_ICON_ARCHIVE), ('0.4.0', SECOND_APP_ICON_ARCHIVE), ('0.3.0', FIRST_APP_ICON_ARCHIVE),
                               ('0.2.0', PREVIOUS_ICON_ARCHIVE), ('0.1.0', LEGACY_ICON_ARCHIVE)):
         retained_icons = render_icons(document, version=revision)
         for path, payload in retained_icons.items():
@@ -249,7 +254,7 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
         files[archive] = _zip_bytes(retained_icons)
     files[ICON_CHECKSUMS] = (
         ''.join(f'{_digest(files[path])}  {Path(path).name}\n'
-                for path in (ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
+                for path in (ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
                              PREVIOUS_ICON_ARCHIVE, LEGACY_ICON_ARCHIVE)).encode()
     )
     icon_cards = {'app': [], 'function': []}
@@ -317,6 +322,7 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
             .replace('{{SOURCE_DESCRIPTION}}', source_description)
             .replace('{{ICON_GALLERY}}', icon_gallery)
             .replace('{{ICON_ARCHIVE}}', ICON_ARCHIVE)
+            .replace('{{THIRD_APP_ICON_ARCHIVE}}', THIRD_APP_ICON_ARCHIVE)
             .replace('{{SECOND_APP_ICON_ARCHIVE}}', SECOND_APP_ICON_ARCHIVE)
             .replace('{{FIRST_APP_ICON_ARCHIVE}}', FIRST_APP_ICON_ARCHIVE)
             .replace('{{PREVIOUS_ICON_ARCHIVE}}', PREVIOUS_ICON_ARCHIVE)
@@ -334,7 +340,7 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
     css = []
     for weight, style, full, postscript in FACES:
         css.append(f'@font-face {{font-family:"Clair Obscur Inter";src:local("{full}"),local("{postscript}");font-weight:{weight};font-style:{style};font-display:swap;}}')
-    for name, tokens in document['themes'].items():
+    for name, tokens in identity_document['themes'].items():
         # :where keeps system-color media overrides stronger than this selector.
         css.append(f':where(:root[data-theme="{name}"], [data-palette="{name}"]) {{')
         css.extend(f'--{key.replace("_", "-")}:{value};' for key, value in tokens.items())

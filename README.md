@@ -1,6 +1,6 @@
 # Clair and Obscur
 
-Two appearances with native browser and self-contained client CSS candidates. Clair uses warm paper surfaces and dark text. Obscur uses near-black layers, clear text and restrained blue emphasis. Both come from the visual identity of [Tornado Atlas](https://github.com/T92T1914/tornado-atlas), with the host application's layout and scaling left in place.
+Two appearances built around black and white. Clair uses a white background with black lettering and symbols. Obscur uses a black background with white lettering and symbols. Neutral gray separates secondary information. The current app icons and watch-face source use this palette, with Inter where the host supports it and native font fallbacks elsewhere. Preserved desktop packages still use their earlier colors and versions.
 
 This is an experimental preview. Both themes have limited native Equibop evidence for loading, matching and opposite appearances, switching and scoped restoration. Obscur and Clair 0.1.1 each installed in the retained isolated ordinary Chrome profile, with only the recorded interface surfaces inspected. Complete native interface and typography coverage, Chrome switching, removal and cleanup remain open. The webpage specimen is not a screenshot of either application's interface. See the [compatibility and acceptance record](docs/acceptance.md) for the observed surfaces and remaining checks.
 
@@ -56,7 +56,7 @@ The [installation and removal guide](docs/installation.md) covers the exact step
 
 ## How it is built
 
-[tokens.json](tokens.json) holds one shared palette with named roles for text, surfaces, focus and control states. Small Python generators map those roles to native browser fields and shared client variables. Vivaldi receives five exported colors. Opera GX receives two integer HSL hints per appearance and derives its own palette, so exact source colors and contrast remain a native acceptance question. Narrow Vencord and BetterDiscord adapters handle their own settings switches and brand buttons. The build produces deterministic packages, verifies their contents and refuses to overwrite an output tree that contains unexpected or edited files.
+[tokens-monochrome.json](tokens-monochrome.json) holds the current black and white identity for the preview, app icons and watch face. [tokens.json](tokens.json) preserves the earlier desktop and historical icon palette. Each holds named roles for text, surfaces, focus and control states. Small Python generators map those roles to native browser fields and shared client variables. Vivaldi receives five exported colors. Opera GX receives two integer HSL hints per appearance and derives its own palette, so exact source colors and contrast remain a native acceptance question. Narrow Vencord and BetterDiscord adapters handle their own settings switches and brand buttons. The build produces deterministic packages, verifies their contents and refuses to overwrite an output tree that contains unexpected or edited files.
 
 The browser specimen exercises readable components, local font resolution, keyboard interaction, larger text and fallback behavior. It uses an isolated headless browser profile. Those tests help find mistakes in the supplied CSS and preview, but they cannot certify Chrome's tab strip, Equibop's full interface or physical HDR appearance.
 
@@ -69,10 +69,13 @@ See [development and verification](docs/development.md) for reproducible command
 The shared palette also supports a [Garmin watch face candidate](docs/garmin-watchface.md)
 and [original phone icon artwork](docs/samsung-icons.md). The watch face targets
 `fenix9pro47mm`, with selectable information fields and a separate time only
-always on view. Simulator checks cover the stated behavior on that target.
-Physical watch acceptance and phone import remain untested.
+always on view. Version 0.3.0 compiled and passed all 16 exact-target simulator
+test groups. Bounded visual checks exercised both monochrome appearances,
+switching and the time-only always-on view. The broader 0.2.0 simulator history
+remains separately labeled. Physical watch acceptance, a new 0.3.0 normal-restart
+trial, battery life and phone theme application remain open.
 
-The phone gallery's 0.5.0 collection pairs 65 named Android apps with 24 general symbols, giving 89 choices in both appearances. Checked app labels, package IDs and official listings support manual assignment. Original 0.1.0, refined 0.2.0 and both earlier named-app downloads remain unchanged, and all five revisions support the local PNG exporter. Coverage is a growing selection, not a complete store catalog or an ordered popularity chart.
+The phone gallery's 0.6.0 black and white collection pairs 65 named Android apps with 24 general symbols, giving 89 choices in both appearances. Checked app labels, package IDs and official listings support manual assignment. Original 0.1.0, refined 0.2.0 and all three earlier named-app downloads remain unchanged, and all six revisions support the local PNG exporter. Coverage is a growing selection, not a complete store catalog or an ordered popularity chart.
 
 ## Report a problem
 

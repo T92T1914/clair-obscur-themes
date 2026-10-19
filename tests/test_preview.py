@@ -551,6 +551,20 @@ class PreviewTokenSnapshotTests(unittest.TestCase):
         self.output = self.base / 'preview'
         build_release(self.tokens, self.artifacts)
 
+    def test_changed_monochrome_tokens_cannot_replace_the_captured_identity(self):
+        build_release(self.tokens, self.artifacts)
+        original_source_files = source_files
+
+        def change_before_capture(root):
+            path = root / 'tokens-monochrome.json'
+            changed = json.loads(path.read_bytes())
+            changed['themes']['Clair']['border'] = '#555555'
+            path.write_text(json.dumps(changed), encoding='utf-8')
+            return original_source_files(root)
+
+        with patch('preview.source_files', side_effect=change_before_capture):
+            with self.assertRaisesRegex(ValueError, 'Source monochrome tokens differ'):
+                preview_files(self.root, self.artifacts)
     def test_token_change_during_artifact_check_cannot_mix_preview_versions(self):
         # The display read sees old tokens, but the artifact check sees the
         # newer complete build. Both inputs are individually valid.

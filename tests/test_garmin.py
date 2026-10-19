@@ -9,7 +9,7 @@ import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 
-from themeforge.garmin import main, render_palette
+from themeforge.garmin import VERSION, main, render_palette
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,6 +34,27 @@ EXPECTED_COLORS = {
     "OBSCUR_SUCCESS": 0x8ECB9B, "OBSCUR_WARNING": 0xE3BF79,
     "OBSCUR_ERROR": 0xF2A3A3, "OBSCUR_CODE": 0x111111,
     "OBSCUR_DISABLED": 0xA4A4A4,
+}
+
+EXPECTED_MONOCHROME_COLORS = {
+    "CLAIR_CANVAS": 0xFFFFFF, "CLAIR_PANEL": 0xFFFFFF,
+    "CLAIR_TEXT": 0x000000, "CLAIR_MUTED": 0x444444,
+    "CLAIR_DIVIDER": 0xAAAAAA, "CLAIR_CONTROL": 0xF0F0F0,
+    "CLAIR_HOVER": 0xE0E0E0, "CLAIR_SELECTED": 0xE8E8E8,
+    "CLAIR_BORDER": 0x666666, "CLAIR_ACCENT": 0x000000,
+    "CLAIR_ON_ACCENT": 0xFFFFFF, "CLAIR_FOCUS": 0x000000,
+    "CLAIR_SUCCESS": 0x000000, "CLAIR_WARNING": 0x000000,
+    "CLAIR_ERROR": 0x000000, "CLAIR_CODE": 0xF5F5F5,
+    "CLAIR_DISABLED": 0x666666,
+    "OBSCUR_CANVAS": 0x000000, "OBSCUR_PANEL": 0x000000,
+    "OBSCUR_TEXT": 0xFFFFFF, "OBSCUR_MUTED": 0xCCCCCC,
+    "OBSCUR_DIVIDER": 0x505050, "OBSCUR_CONTROL": 0x151515,
+    "OBSCUR_HOVER": 0x252525, "OBSCUR_SELECTED": 0x202020,
+    "OBSCUR_BORDER": 0x999999, "OBSCUR_ACCENT": 0xFFFFFF,
+    "OBSCUR_ON_ACCENT": 0x000000, "OBSCUR_FOCUS": 0xFFFFFF,
+    "OBSCUR_SUCCESS": 0xFFFFFF, "OBSCUR_WARNING": 0xFFFFFF,
+    "OBSCUR_ERROR": 0xFFFFFF, "OBSCUR_CODE": 0x080808,
+    "OBSCUR_DISABLED": 0xAAAAAA,
 }
 
 
@@ -124,8 +145,75 @@ class GarminPaletteTests(unittest.TestCase):
             self.assertFalse(output.parent.exists())
 
     def test_committed_palette_is_the_current_generated_source(self):
+        current = json.loads((ROOT / "tokens-monochrome.json").read_text(encoding="utf-8"))
         self.assertEqual((ROOT / "garmin/watchface/source/GeneratedPalette.mc").read_bytes(),
-                         render_palette(self.document).encode("utf-8"))
+                         render_palette(current).encode("utf-8"))
+
+    def test_current_palette_has_exact_black_white_and_neutral_roles(self):
+        current = json.loads((ROOT / "tokens-monochrome.json").read_text(encoding="utf-8"))
+        source = render_palette(current)
+        self.assertEqual(VERSION, "0.3.0")
+        self.assertEqual(colors(source), EXPECTED_MONOCHROME_COLORS)
+        self.assertIn('const WATCHFACE_VERSION = "0.3.0";', source)
+        self.assertIn('const TOKEN_VERSION = "1.0.0";', source)
+        for color in colors(source).values():
+            self.assertEqual((color >> 16) & 255, (color >> 8) & 255)
+            self.assertEqual((color >> 8) & 255, color & 255)
+        # The active primary text and battery accent use opposite black/white
+        # endpoints: (1 + .05) / (0 + .05) = 21. Native pixels remain untested.
+        for name, background, foreground in (("CLAIR", 0xFFFFFF, 0), ("OBSCUR", 0, 0xFFFFFF)):
+            for role in ("CANVAS", "PANEL"):
+                self.assertEqual(colors(source)[name + "_" + role], background)
+            for role in ("TEXT", "ACCENT"):
+                self.assertEqual(colors(source)[name + "_" + role], foreground)
+
+    def test_default_cli_is_monochrome_and_legacy_input_remains_explicit(self):
+        current = json.loads((ROOT / "tokens-monochrome.json").read_text(encoding="utf-8"))
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "current.mc"
+            self.assertEqual(main(["--output", str(output)]), 0)
+            self.assertEqual(output.read_bytes(), render_palette(current).encode("utf-8"))
+            self.assertEqual(main(["--output", str(output), "--check"]), 0)
+            legacy = Path(temporary) / "legacy.mc"
+            self.assertEqual(main(["--tokens", str(ROOT / "tokens.json"), "--output", str(legacy)]), 0)
+            self.assertEqual(colors(legacy.read_text(encoding="utf-8")), EXPECTED_COLORS)
+            self.assertEqual(main(["--tokens", str(ROOT / "tokens.json"), "--output", str(legacy), "--check"]), 0)
+
+    def test_monochrome_update_retains_app_storage_keys_fonts_and_black_aod(self):
+        face = ROOT / "garmin/watchface"
+        manifest = ET.parse(face / "manifest.xml").getroot()
+        namespace = {"iq": "http://www.garmin.com/xml/connectiq"}
+        app = manifest.find("iq:application", namespace)
+        self.assertEqual(app.get("id"), "358023fe938b4d0dafa59913baf7ceec")
+        self.assertEqual([node.get("id") for node in app.findall("iq:products/iq:product", namespace)],
+                         ["fenix9pro47mm"])
+        properties = ET.parse(face / "resources/settings/properties.xml").getroot()
+        self.assertEqual([(node.get("id"), node.get("type"), node.text) for node in properties],
+                         [("appVersion", "string", "0.3.0"), ("appearance", "number", "1"),
+                          ("leftData", "number", "0"), ("rightData", "number", "1")])
+        view = (face / "source/ClairObscurView.mc").read_text(encoding="utf-8")
+        self.assertIn('(clair ? ThemePalette.CLAIR_CANVAS : ThemePalette.OBSCUR_CANVAS) : 0x000000;', view)
+        self.assertIn('dc.setColor(ThemePalette.OBSCUR_MUTED, 0x000000);', view)
+        for native_face in ("BionicBold", "RobotoMedium", "RobotoCondensedRegular"):
+            self.assertIn('fonts("' + native_face + '"', view)
+
+    def test_launcher_retains_geometry_with_only_black_white_and_neutral_ink(self):
+        launcher = ET.parse(ROOT / "garmin/watchface/resources/drawables/launcher.svg").getroot()
+        self.assertEqual((launcher.get("width"), launcher.get("height"), launcher.get("viewBox")),
+                         ("65", "65", "0 0 65 65"))
+        current = json.loads((ROOT / "tokens-monochrome.json").read_text(encoding="utf-8"))
+        ink = [node.get(attribute) for node in launcher for attribute in ("fill", "stroke")
+               if node.get(attribute) is not None]
+        self.assertEqual(ink, [current["themes"]["Obscur"]["canvas"],
+                               current["themes"]["Obscur"]["canvas"],
+                               current["themes"]["Obscur"]["text"],
+                               current["themes"]["Clair"]["canvas"],
+                               current["themes"]["Clair"]["border"]])
+        self.assertEqual(set(ink), {"#000000", "#ffffff", "#666666"})
+        self.assertEqual([node.tag.rsplit("}", 1)[-1] for node in launcher],
+                         ["rect", "circle", "path", "circle"])
+        self.assertEqual(launcher[2].get("d"), "M 32.5 10.5 A 22 22 0 0 0 32.5 54.5 Z")
+        self.assertEqual(launcher[3].get("r"), "5")
 
 
 class GarminAodGeometryTests(unittest.TestCase):

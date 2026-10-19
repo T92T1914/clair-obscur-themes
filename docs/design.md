@@ -1,5 +1,11 @@
 # Design and implementation
 
+The current identity is black and white. Clair uses white backgrounds with black lettering and symbols. Obscur uses black backgrounds with white lettering and symbols. Neutral gray carries secondary information, borders and control separation. The source is [tokens-monochrome.json](../tokens-monochrome.json). It drives the preview, icon artwork 0.6.0 and watch face 0.3.0. Inter remains the intended text family where supported. Native browser and watch fonts retain their existing platform limits.
+
+The desktop downloads and historical icon versions retain the earlier palette described below. Their identities and accepted bytes are unchanged. A current webpage specimen does not establish that an older installed package has changed colors.
+
+## Preserved desktop identity
+
 Clair and Obscur carry Tornado Atlas's warm light and restrained dark identity into two native application surfaces. Clair is a light theme, not a dark interface with a cream message pane. Obscur separates near-black surfaces without relying on background images, transparency or animated effects. Both retain the host application's layout and scaling.
 
 The shared source is [tokens.json](../tokens.json). Its Atlas reference is [revision 1eadada](https://github.com/T92T1914/tornado-atlas/tree/1eadada6370fba3bee875fa4020d41bbdd663dbf), specifically `web/appearance.css` and `web/atlas.css`. Atlas itself is not modified by this project.

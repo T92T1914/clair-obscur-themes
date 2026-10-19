@@ -1,5 +1,12 @@
 # Changes
 
+## Black and white identity
+
+- Add a shared neutral palette with pure white and black reading surfaces. Keep the original token file and desktop package bytes unchanged.
+- Use the new palette in current icon artwork 0.6.0 and watch-face source 0.3.0. Preserve every 0.5.0 icon shape, the watch layout, native font fallbacks, settings and separate always-on rendering path.
+- Preserve all five earlier icon archives and bind each artwork revision to its own token document. Verify neutral pixels in current PNG exports.
+- Show the new identity in the preview while labeling desktop downloads as preserved earlier colors. A new build does not inherit the prior watch version's simulator or physical-device acceptance.
+
 ## Icon artwork 0.5.0
 
 - Add eight inspected browser, productivity, account-tool and Samsung app interpretations. The collection now has 65 named apps plus 24 general functions in both appearances.
