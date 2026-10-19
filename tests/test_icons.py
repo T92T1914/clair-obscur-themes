@@ -44,6 +44,11 @@ APP_NAMES += THIRD_APP_NAMES
 THIRD_NAMES = BASE_NAMES + APP_NAMES
 FOURTH_APP_NAMES = "good-lock connect-iq-store steam reuters home-depot patreon".split()
 APP_NAMES += FOURTH_APP_NAMES
+FOURTH_NAMES = BASE_NAMES + APP_NAMES
+FIFTH_APP_NAMES = (
+    'youtube-music audible amazon-kindle pocket-casts vlc shazam soundcloud hulu target costco best-buy etsy aliexpress shein instacart airbnb booking expedia lyft uber-eats google-earth google-news galaxy-wearable files-by-google adobe-acrobat microsoft-word microsoft-excel microsoft-powerpoint google-slides google-lens roblox minecraft'
+).split()
+APP_NAMES += FIFTH_APP_NAMES
 NAMES = BASE_NAMES + APP_NAMES
 EXPECTED_APPS = {
     "google-chrome": ("Google Chrome", "com.android.chrome"),
@@ -117,6 +122,38 @@ EXPECTED_APPS = {
     "reuters": ("Reuters", "com.thomsonreuters.reuters"),
     "home-depot": ("Home Depot", "com.thehomedepot"),
     "patreon": ("Patreon", "com.patreon.android"),
+    'youtube-music': ('YouTube Music', 'com.google.android.apps.youtube.music'),
+    'audible': ('Audible', 'com.audible.application'),
+    'amazon-kindle': ('Amazon Kindle', 'com.amazon.kindle'),
+    'pocket-casts': ('Pocket Casts', 'au.com.shiftyjelly.pocketcasts'),
+    'vlc': ('VLC', 'org.videolan.vlc'),
+    'shazam': ('Shazam', 'com.shazam.android'),
+    'soundcloud': ('SoundCloud', 'com.soundcloud.android'),
+    'hulu': ('Hulu', 'com.hulu.plus'),
+    'target': ('Target', 'com.target.ui'),
+    'costco': ('Costco', 'com.costco.app.android'),
+    'best-buy': ('Best Buy', 'com.bestbuy.android'),
+    'etsy': ('Etsy', 'com.etsy.android'),
+    'aliexpress': ('AliExpress', 'com.alibaba.aliexpresshd'),
+    'shein': ('SHEIN', 'com.zzkko'),
+    'instacart': ('Instacart', 'com.instacart.client'),
+    'airbnb': ('Airbnb', 'com.airbnb.android'),
+    'booking': ('Booking.com', 'com.booking'),
+    'expedia': ('Expedia', 'com.expedia.bookings'),
+    'lyft': ('Lyft', 'me.lyft.android'),
+    'uber-eats': ('Uber Eats', 'com.ubercab.eats'),
+    'google-earth': ('Google Earth', 'com.google.earth'),
+    'google-news': ('Google News', 'com.google.android.apps.magazines'),
+    'galaxy-wearable': ('Galaxy Wearable', 'com.samsung.android.app.watchmanager'),
+    'files-by-google': ('Files by Google', 'com.google.android.apps.nbu.files'),
+    'adobe-acrobat': ('Adobe Acrobat', 'com.adobe.reader'),
+    'microsoft-word': ('Microsoft Word', 'com.microsoft.office.word'),
+    'microsoft-excel': ('Microsoft Excel', 'com.microsoft.office.excel'),
+    'microsoft-powerpoint': ('PowerPoint', 'com.microsoft.office.powerpoint'),
+    'google-slides': ('Google Slides', 'com.google.android.apps.docs.editors.slides'),
+    'google-lens': ('Google Lens', 'com.google.ar.lens'),
+    'roblox': ('Roblox', 'com.roblox.client'),
+    'minecraft': ('Minecraft', 'com.mojang.minecraftpe'),
 }
 NS = "{http://www.w3.org/2000/svg}"
 
@@ -178,11 +215,11 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(set(files), expected | {"manifest.json"})
         manifest = json.loads(files["manifest.json"])
         self.assertEqual(manifest["functions"], NAMES)
-        self.assertEqual(manifest["version"], "0.7.0")
+        self.assertEqual(manifest["version"], "0.8.0")
         self.assertEqual(manifest["token_schema"], 1)
         self.assertEqual(manifest["token_version"], "1.0.0")
         self.assertEqual(manifest["palette_variant"], "monochrome")
-        self.assertEqual(len(manifest["files"]), 190)
+        self.assertEqual(len(manifest["files"]), 254)
         for record in manifest["files"]:
             self.assertEqual(record["path"], f'{record["appearance"]}/{record["function"]}.svg')
             payload = files[record["path"]]
@@ -192,7 +229,7 @@ class FunctionalIconTests(unittest.TestCase):
         relabeled = files["Clair/phone.svg"].replace(b'aria-label="phone"', b'aria-label="messages"')
         self.assertEqual(geometry(relabeled), geometry(files["Clair/phone.svg"]))
         # Named choices must have different drawings, rather than relabeled aliases.
-        self.assertEqual(len({geometry(files[f"Clair/{name}.svg"]) for name in NAMES}), 95)
+        self.assertEqual(len({geometry(files[f"Clair/{name}.svg"]) for name in NAMES}), 127)
 
     def test_palette_roles_and_geometry_are_shared_without_hardcoded_colors(self):
         files = icons.render_icons(self.document)
@@ -251,10 +288,10 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(icons.token_path(), ROOT / "tokens-monochrome.json")
         for version in ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0"):
             self.assertEqual(icons.token_path(version), ROOT / "tokens.json")
-        for version in ("0.6.0", "0.7.0"):
+        for version in ("0.6.0", "0.7.0", "0.8.0"):
             self.assertEqual(icons.token_path(version), ROOT / "tokens-monochrome.json")
         for version, document in (("0.5.0", self.legacy_document), ("0.6.0", self.document),
-                                  ("0.7.0", self.document)):
+                                  ("0.7.0", self.document), ("0.8.0", self.document)):
             with self.subTest(version=version), tempfile.TemporaryDirectory() as temporary:
                 base = Path(temporary)
                 explicit = base / "explicit.json"
@@ -341,6 +378,7 @@ class FunctionalIconTests(unittest.TestCase):
         second_apps = icons.render_icons(self.legacy_document, version="0.4.0")
         third_apps = icons.render_icons(self.legacy_document, version="0.5.0")
         first_monochrome = icons.render_icons(self.document, version="0.6.0")
+        companion_apps = icons.render_icons(self.document, version="0.7.0")
         archived = {**legacy, "LICENSE.txt": license_text().encode("utf-8")}
         self.assertEqual(hashlib.sha256(_zip_bytes(archived)).hexdigest(),
                          "040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34")
@@ -362,6 +400,11 @@ class FunctionalIconTests(unittest.TestCase):
                          "241efb1fe6584df4f66c84571bfe671059404e83be8d67876f415af6564a56bb")
         self.assertEqual(hashlib.sha256(first_monochrome["manifest.json"]).hexdigest(),
                          "57537e0ad06dee704400160d30ae47f4cce8beba557c347ef5236ac8da32ee92")
+        companion_archive = {**companion_apps, "LICENSE.txt": license_text().encode("utf-8")}
+        self.assertEqual(hashlib.sha256(_zip_bytes(companion_archive)).hexdigest(),
+                         "aa18db922e824cd2bfa1ada2fbc08125af2605d9c5acb2ad8bfdb439985f4f05")
+        self.assertEqual(hashlib.sha256(companion_apps["manifest.json"]).hexdigest(),
+                         "a58049892930f817b1376c03510ab408c84d5336d908d885e4ab52e078d238ca")
         first_manifest = json.loads(first_apps["manifest.json"])
         current_manifest = json.loads(current["manifest.json"])
         self.assertEqual(first_manifest["functions"], PREVIOUS_NAMES)
@@ -391,6 +434,15 @@ class FunctionalIconTests(unittest.TestCase):
         for path, payload in first_monochrome.items():
             if path.endswith(".svg"):
                 self.assertEqual(current[path], payload, path)
+        companion_manifest = json.loads(companion_apps["manifest.json"])
+        self.assertEqual(companion_manifest["functions"], FOURTH_NAMES)
+        self.assertEqual(companion_manifest["catalog"], current_manifest["catalog"][:95])
+        self.assertEqual(companion_manifest["palette_variant"], "monochrome")
+        self.assertEqual(companion_manifest["token_version"], "1.0.0")
+        self.assertEqual(len(companion_manifest["files"]), 190)
+        for path, payload in companion_apps.items():
+            if path.endswith(".svg"):
+                self.assertEqual(current[path], payload, path)
         self.assertNotIn("palette_variant", json.loads(third_apps["manifest.json"]))
         for path in third_apps:
             if path.endswith(".svg"):
@@ -411,7 +463,7 @@ class FunctionalIconTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "differs"):
                 icons.build_icons(self.document, output, check=True)
             self.assertEqual(tree_snapshot(output), before)
-        for unsupported in ("0.0.0", "0.8.0", None, [], {}):
+        for unsupported in ("0.0.0", "0.9.0", None, [], {}):
             with self.subTest(version=unsupported), self.assertRaisesRegex(ValueError, "Unsupported"):
                 icons.render_icons(self.document, version=unsupported)
 
@@ -420,9 +472,9 @@ class FunctionalIconTests(unittest.TestCase):
         manifest = json.loads(files["manifest.json"])
         catalog = manifest["catalog"]
         self.assertEqual([row["id"] for row in catalog], NAMES)
-        self.assertEqual([row["kind"] for row in catalog], ["function"] * 24 + ["app"] * 71)
+        self.assertEqual([row["kind"] for row in catalog], ["function"] * 24 + ["app"] * 103)
         apps = catalog[24:]
-        self.assertEqual(len({row["android_package"] for row in apps}), 71)
+        self.assertEqual(len({row["android_package"] for row in apps}), 103)
         self.assertEqual({row["id"]: (row["label"], row["android_package"]) for row in apps}, EXPECTED_APPS)
         for row in apps:
             self.assertEqual(row["store_url"], "https://play.google.com/store/apps/details?id=" + row["android_package"])
@@ -534,6 +586,74 @@ class FunctionalIconTests(unittest.TestCase):
                     "home-depot": "The Home Depot", "patreon": "Patreon"}
         self.assertEqual({name: rows[name]["store_title"] for name in FOURTH_APP_NAMES}, expected)
 
+    def test_fifth_catalog_and_glyph_refusals_preserve_all_prior_named_collections(self):
+        previous = {version: icons.render_icons(icons.load_icon_tokens(version), version=version)
+                    for version in ("0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0")}
+        changes = ({"id": "good-lock"}, {"id": "phone"}, {"id": "../unsafe"},
+                   {"android_package": "com.garmin.connectiq"}, {"android_package": "bad-package"},
+                   {"label": " "}, {"store_title": ""}, {"category": ""}, {"kind": "function"},
+                   {"selection_basis": ""},
+                   {"store_url": "https://play.google.com/store/apps/details?id=com.wrong.app"})
+        def refuse_without_rewriting_history():
+            for version, files in previous.items():
+                self.assertEqual(icons.render_icons(icons.load_icon_tokens(version), version=version), files)
+            with tempfile.TemporaryDirectory() as temporary:
+                output = Path(temporary) / "never-created"
+                with self.assertRaises(ValueError):
+                    icons.build_icons(self.document, output)
+                self.assertFalse(output.exists())
+        for change in changes:
+            invalid = copy.deepcopy(icons.FIFTH_APP_CATALOG)
+            invalid[0].update(change)
+            with self.subTest(change=change), patch.object(icons, "FIFTH_APP_CATALOG", invalid):
+                refuse_without_rewriting_history()
+        for fault in ("missing", "accepted-ID"):
+            drawings = dict(icons.FIFTH_APP_GLYPHS)
+            if fault == "missing":
+                drawings.pop("youtube-music")
+            else:
+                drawings["good-lock"] = drawings["youtube-music"]
+            with self.subTest(drawings=fault), patch.object(icons, "FIFTH_APP_GLYPHS", drawings):
+                refuse_without_rewriting_history()
+
+    def test_broad_app_titles_match_inspected_listings_without_relabeling_localized_titles(self):
+        rows = {row["id"]: row for row in icons.icon_catalog()}
+        expected = {'youtube-music': 'YouTube Music',
+         'audible': 'Audible: Audiobooks & Podcasts',
+         'amazon-kindle': 'Amazon Kindle: Reading App',
+         'pocket-casts': 'Pocket Casts - Podcast App',
+         'vlc': 'VLC for Android',
+         'shazam': 'Shazam: Find Music & Concerts',
+         'soundcloud': 'SoundCloud: Discover Music',
+         'hulu': 'Hulu: Stream TV shows & movies',
+         'target': 'Target: Shop. Style. Save.',
+         'costco': 'Costco Wholesale',
+         'best-buy': 'Best Buy: Shop tech deals',
+         'etsy': 'Etsy: Shop from Real People',
+         'aliexpress': 'AliExpress : shopping en ligne',
+         'shein': 'SHEIN-Shopping Online',
+         'instacart': 'Instacart: Get Food Delivery',
+         'airbnb': 'Airbnb',
+         'booking': 'Booking.com: Hotels & Travel',
+         'expedia': 'Expedia: Hotels, Flights, Cars',
+         'lyft': 'Lyft',
+         'uber-eats': 'Uber Eats: Food and Grocery',
+         'google-earth': 'Google Earth',
+         'google-news': 'Google News - Daily Headlines',
+         'galaxy-wearable': 'Galaxy Wearable',
+         'files-by-google': 'Files by Google',
+         'adobe-acrobat': 'Adobe Acrobat Reader: Edit PDF',
+         'microsoft-word': 'Microsoft Word: Edit Documents',
+         'microsoft-excel': 'Microsoft Excel: Spreadsheets',
+         'microsoft-powerpoint': 'Microsoft PowerPoint',
+         'google-slides': 'Google Slides',
+         'google-lens': 'Google Lens',
+         'roblox': 'Roblox',
+         'minecraft': 'Minecraft: Dream it, Build it!'}
+        self.assertEqual({name: rows[name]["store_title"] for name in FIFTH_APP_NAMES}, expected)
+        self.assertEqual(rows["aliexpress"]["label"], "AliExpress")
+        self.assertEqual(rows["aliexpress"]["store_title"], "AliExpress : shopping en ligne")
+
     def test_current_bubble_has_one_continuous_outline_and_calculator_has_open_equals(self):
         files = icons.render_icons(self.document)
         bubble = ET.fromstring(files["Obscur/messages.svg"]).find(NS + "g")
@@ -557,7 +677,7 @@ class FunctionalIconTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "icons"
             result = icons.build_icons(self.document, output)
-            self.assertEqual(len(result["files"]), 190)
+            self.assertEqual(len(result["files"]), 254)
             before = tree_snapshot(output)
             self.assertEqual(before, icons.render_icons(self.document))
             icons.build_icons(self.document, output, check=True)
