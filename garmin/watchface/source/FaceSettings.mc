@@ -3,6 +3,26 @@ using Toybox.Lang;
 using Toybox.WatchUi;
 
 module FaceSettings {
+    function readLayout() as Lang.Number {
+        try {
+            var stored = Application.Properties.getValue("layout") as Lang.Object;
+            return FaceModel.sanitizeLayout(stored);
+        } catch (error instanceof Application.Properties.InvalidKeyException) {
+            return FaceModel.LAYOUT_ANALOG;
+        }
+    }
+
+    function saveLayout(value as Lang.Object or Null) as Lang.Boolean {
+        if (!FaceModel.isLayout(value)) { return false; }
+        Application.Properties.setValue("layout", value as Lang.Number);
+        WatchUi.requestUpdate();
+        return true;
+    }
+
+    function layoutName(choice as Lang.Number) as Lang.String {
+        return choice == FaceModel.LAYOUT_DIGITAL ? "Digital" : "Analog";
+    }
+
     function appearanceFromProperty(value as Lang.Object or Null) as Lang.String {
         if (!(value instanceof Lang.Number)) {
             return "Obscur";
@@ -61,8 +81,19 @@ module FaceSettings {
     function makeSettingsMenu() as WatchUi.Menu2 {
         var menu = new WatchUi.Menu2({:title => Rez.Strings.AppName});
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.AppearanceTitle, readAppearance(), "appearance", {}));
+        menu.addItem(new WatchUi.MenuItem(Rez.Strings.LayoutTitle, layoutName(readLayout()), "layout", {}));
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.LeftDataTitle, slotName(readSlot(0)), "left", {}));
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.RightDataTitle, slotName(readSlot(1)), "right", {}));
+        return menu;
+    }
+
+    function makeLayoutMenu() as WatchUi.Menu2 {
+        var menu = new WatchUi.Menu2({:title => Rez.Strings.LayoutTitle});
+        var selected = readLayout();
+        menu.addItem(new WatchUi.MenuItem(Rez.Strings.AnalogLabel,
+            selected == FaceModel.LAYOUT_ANALOG ? Rez.Strings.SelectedLabel : null, FaceModel.LAYOUT_ANALOG, {}));
+        menu.addItem(new WatchUi.MenuItem(Rez.Strings.DigitalLabel,
+            selected == FaceModel.LAYOUT_DIGITAL ? Rez.Strings.SelectedLabel : null, FaceModel.LAYOUT_DIGITAL, {}));
         return menu;
     }
 
@@ -107,9 +138,21 @@ class FaceConfigurationDelegate extends WatchUi.Menu2InputDelegate {
         if (!(id instanceof Lang.String)) { return; }
         if (id.equals("appearance")) {
             WatchUi.pushView(FaceSettings.makeMenu(), new AppearanceMenuDelegate(), WatchUi.SLIDE_IMMEDIATE);
-        } else {
+        } else if (id.equals("layout")) {
+            WatchUi.pushView(FaceSettings.makeLayoutMenu(), new FaceLayoutDelegate(), WatchUi.SLIDE_IMMEDIATE);
+        } else if (id.equals("left") || id.equals("right")) {
             var index = id.equals("right") ? 1 : 0;
             WatchUi.pushView(FaceSettings.makeSlotMenu(index), new FaceSlotDelegate(index), WatchUi.SLIDE_IMMEDIATE);
+        }
+    }
+}
+
+class FaceLayoutDelegate extends WatchUi.Menu2InputDelegate {
+    function initialize() { Menu2InputDelegate.initialize(); }
+    function onSelect(item as WatchUi.MenuItem) as Void {
+        if (FaceSettings.saveLayout(item.getId())) {
+            WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
+            WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
         }
     }
 }

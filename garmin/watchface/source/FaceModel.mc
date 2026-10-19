@@ -1,4 +1,6 @@
+using Toybox.Graphics;
 using Toybox.Lang;
+using Toybox.Math;
 using Toybox.System;
 
 module FaceModel {
@@ -18,6 +20,90 @@ module FaceModel {
     const BATTERY_TOP = 395;
     const BATTERY_BOTTOM = 427;
     const BATTERY_WIDTH = 172;
+    const LAYOUT_ANALOG = 0;
+    const LAYOUT_DIGITAL = 1;
+    const DIAL_CENTER = 227;
+    const TICK_OUTER = 208;
+    const TICK_INNER = 202;
+    const MARKER_OUTER = 196;
+    const HOUR_HAND_LENGTH = 114;
+    const MINUTE_HAND_LENGTH = 168;
+    const ANALOG_DATE_TOP = 94;
+    const ANALOG_DATE_BOTTOM = 124;
+    const ANALOG_DATE_WIDTH = 230;
+    const ANALOG_DATA_TOP = 270;
+    const ANALOG_DATA_BOTTOM = 352;
+    const ANALOG_DATA_WIDTH = 132;
+    const ANALOG_LEFT_X = 84;
+    const ANALOG_RIGHT_X = 238;
+    const ANALOG_CHARGE_TOP = 364;
+    const ANALOG_CHARGE_BOTTOM = 390;
+    const ANALOG_CHARGE_WIDTH = 180;
+
+    function isLayout(value as Lang.Object or Null) as Lang.Boolean {
+        if (!(value instanceof Lang.Number)) { return false; }
+        var choice = value as Lang.Number;
+        return choice == LAYOUT_ANALOG || choice == LAYOUT_DIGITAL;
+    }
+
+    function sanitizeLayout(value as Lang.Object or Null) as Lang.Number {
+        return isLayout(value) ? (value as Lang.Number) : LAYOUT_ANALOG;
+    }
+
+    // Turns run clockwise from twelve. The lateral component follows the same
+    // rotation, so markers and hand widths use the renderer's actual geometry.
+    function radialPoint(turn as Lang.Float, radius as Lang.Number,
+            lateral as Lang.Number) as Graphics.Point2D {
+        var angle = turn * 2.0 * Math.PI;
+        var sine = Math.sin(angle);
+        var cosine = Math.cos(angle);
+        return [Math.round(DIAL_CENTER + sine * radius + cosine * lateral).toNumber(),
+            Math.round(DIAL_CENTER - cosine * radius + sine * lateral).toNumber()];
+    }
+
+    function hourTurns(hour as Lang.Object or Null, minute as Lang.Object or Null)
+            as Lang.Float or Null {
+        if (!validClock(hour, minute)) { return null; }
+        return (((hour as Lang.Number) % 12) / 12.0 +
+            (minute as Lang.Number) / 720.0).toFloat();
+    }
+
+    function minuteTurns(minute as Lang.Object or Null) as Lang.Float or Null {
+        if (!validClock(0, minute)) { return null; }
+        return ((minute as Lang.Number) / 60.0).toFloat();
+    }
+
+    function minuteTick(index as Lang.Number) as Lang.Array<Graphics.Point2D> {
+        if (index < 0 || index >= 60) { return []; }
+        var turn = (index / 60.0).toFloat();
+        return [radialPoint(turn, TICK_OUTER, 0), radialPoint(turn, TICK_INNER, 0)];
+    }
+
+    function hourMarker(index as Lang.Number, part as Lang.Number)
+            as Lang.Array<Graphics.Point2D> {
+        if (index < 0 || index >= 12 || part < 0 || part > (index == 0 ? 1 : 0)) { return []; }
+        var turn = (index / 12.0).toFloat();
+        var offset = index == 0 ? (part == 0 ? -7 : 7) : 0;
+        var half = index != 0 && index % 3 == 0 ? 4 : 3;
+        var inner = index % 3 == 0 ? 172 : 178;
+        return [radialPoint(turn, inner, offset - half),
+            radialPoint(turn, MARKER_OUTER, offset - half),
+            radialPoint(turn, MARKER_OUTER, offset + half),
+            radialPoint(turn, inner, offset + half)];
+    }
+
+    function handPoints(hour as Lang.Object or Null, minute as Lang.Object or Null,
+            hourHand as Lang.Boolean) as Lang.Array<Graphics.Point2D> {
+        if (!validClock(hour, minute)) { return []; }
+        var turn = hourHand ? hourTurns(hour, minute) : minuteTurns(minute);
+        if (turn == null) { return []; }
+        var length = hourHand ? HOUR_HAND_LENGTH : MINUTE_HAND_LENGTH;
+        var half = hourHand ? 9 : 5;
+        var tailHalf = hourHand ? 6 : 3;
+        return [radialPoint(turn, -18, -tailHalf),
+            radialPoint(turn, length - 18, -half), radialPoint(turn, length, 0),
+            radialPoint(turn, length - 18, half), radialPoint(turn, -18, tailHalf)];
+    }
 
     function fontScale(value as Lang.Object or Null) as Lang.Float {
         if (!(value instanceof Lang.Float) && !(value instanceof Lang.Double) &&

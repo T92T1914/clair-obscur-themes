@@ -68,13 +68,16 @@ See [development and verification](docs/development.md) for reproducible command
 
 The shared palette also supports a [Garmin watch face candidate](docs/garmin-watchface.md)
 and [original phone icon artwork](docs/samsung-icons.md). The watch face targets
-`fenix9pro47mm`, with selectable information fields and a separate time only
-always on view. Version 0.3.0 compiled and passed all 16 exact-target simulator
-test groups. Bounded visual checks exercised both monochrome appearances,
-switching and the time-only always-on view. The broader 0.2.0 simulator history
-remains separately labeled. The transferred face was later reported present on
-the physical watch. Exact on-device version, switching, always-on behavior,
-persistence, USB restoration and power use remain open.
+`fenix9pro47mm`. Version 0.4.0 adds an original analog dial with a digital layout
+option, selectable information fields and a separate time only always on view.
+Both current programs compile for the exact target. Their 20 annotated test
+groups and current rendering, settings persistence and runtime memory remain
+unexecuted in the simulator. The preserved 0.3.0 program passed all 16 of its
+exact-target simulator test groups, with bounded appearance, switching and
+always-on observations. The broader 0.2.0 history remains separately labeled.
+The transferred earlier face was later reported present on the physical watch.
+Exact on-device version, switching, always-on behavior, persistence, USB
+restoration and power use remain open. No 0.4.0 device installation is claimed.
 
 The phone gallery's 0.7.0 black and white collection pairs 71 named Android apps with 24 general symbols, giving 95 choices in both appearances. The latest additions cover Good Lock, Connect IQ Store, Steam, Reuters, The Home Depot and Patreon. Checked app labels, package IDs and official listings support manual assignment. All six earlier SVG archives remain unchanged, and all seven revisions support the local PNG exporter. Coverage is a growing selection, not a complete store catalog or an ordered popularity chart.
 

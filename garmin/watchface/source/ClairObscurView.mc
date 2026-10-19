@@ -8,6 +8,7 @@ using Toybox.WatchUi;
 class ClairObscurView extends WatchUi.WatchFace {
     var _sleeping as Lang.Boolean = false;
     var _fontScale as Lang.Float = 0.0;
+    var _fontLayout as Lang.Number = -1;
     var _clockFonts as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont> = [];
     var _calendarFonts as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont> = [];
     var _valueFonts as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont> = [];
@@ -32,18 +33,28 @@ class ClairObscurView extends WatchUi.WatchFace {
         return result;
     }
 
-    function refreshFonts() as Void {
+    function refreshFonts(layout as Lang.Number) as Void {
         var settings = System.getDeviceSettings();
         var scale = settings has :fontScale ? FaceModel.fontScale(settings.fontScale) : 1.0;
-        if (_fontScale == scale) { return; }
+        if (_fontScale == scale && _fontLayout == layout) { return; }
         _fontScale = scale;
+        _fontLayout = layout;
         // Reference native target faces without copying or claiming Inter fonts.
-        _clockFonts = fonts("BionicBold", [108, 96, 84], Graphics.FONT_LARGE, scale);
-        _calendarFonts = fonts("RobotoMedium", [23, 20, 18], Graphics.FONT_XTINY, scale);
-        _valueFonts = fonts("BionicBold", [42, 34, 24, 18], Graphics.FONT_XTINY, scale);
-        _labelFonts = fonts("RobotoCondensedRegular", [20, 18, 16], Graphics.FONT_XTINY, scale);
+        // Build only the selected active layout's candidates, not two font caches.
+        if (layout == FaceModel.LAYOUT_ANALOG) {
+            _clockFonts = [];
+            _calendarFonts = fonts("RobotoMedium", [20, 18, 16], Graphics.FONT_XTINY, scale);
+            _valueFonts = fonts("RobotoMedium", [30, 26, 22, 18, 16], Graphics.FONT_XTINY, scale);
+            _labelFonts = fonts("RobotoCondensedRegular", [18, 16, 14], Graphics.FONT_XTINY, scale);
+            _batteryFonts = fonts("RobotoMedium", [18, 16, 14], Graphics.FONT_XTINY, scale);
+        } else {
+            _clockFonts = fonts("BionicBold", [108, 96, 84], Graphics.FONT_LARGE, scale);
+            _calendarFonts = fonts("RobotoMedium", [23, 20, 18], Graphics.FONT_XTINY, scale);
+            _valueFonts = fonts("BionicBold", [42, 34, 24, 18], Graphics.FONT_XTINY, scale);
+            _labelFonts = fonts("RobotoCondensedRegular", [20, 18, 16], Graphics.FONT_XTINY, scale);
+            _batteryFonts = fonts("RobotoMedium", [20, 18, 16], Graphics.FONT_XTINY, scale);
+        }
         _detailFonts = fonts("RobotoCondensedRegular", [16, 14, 12], Graphics.FONT_XTINY, scale);
-        _batteryFonts = fonts("RobotoMedium", [20, 18, 16], Graphics.FONT_XTINY, scale);
     }
 
     function pickFont(dc as Graphics.Dc, text as Lang.String,
@@ -88,41 +99,82 @@ class ClairObscurView extends WatchUi.WatchFace {
         var is24Hour = System.getDeviceSettings().is24Hour;
         var time = FaceModel.formatTime(local.hour, local.min, is24Hour);
         if (mode == :aod) { drawAlwaysOn(dc, time, local.min); return; }
-        refreshFonts();
+        var layout = FaceSettings.readLayout();
+        refreshFonts(layout);
         var date = FaceModel.shortDate(local.day, local.month, local.day_of_week);
         var period = FaceModel.period(local.hour, is24Hour);
         if (period.length() > 0) { date += "  " + period; }
         var text = clair ? ThemePalette.CLAIR_TEXT : ThemePalette.OBSCUR_TEXT;
         var muted = clair ? ThemePalette.CLAIR_MUTED : ThemePalette.OBSCUR_MUTED;
         var accent = clair ? ThemePalette.CLAIR_ACCENT : ThemePalette.OBSCUR_ACCENT;
+        var left = FaceData.readSlot(FaceSettings.readSlot(0), moment.value());
+        var right = FaceData.readSlot(FaceSettings.readSlot(1), moment.value());
+        var charge = FaceModel.formatBattery(System.getSystemStats().battery);
+        if (layout == FaceModel.LAYOUT_ANALOG) {
+            var border = clair ? ThemePalette.CLAIR_BORDER : ThemePalette.OBSCUR_BORDER;
+            drawAnalog(dc, local.hour, local.min, date, charge, left, right, text, muted, border, canvas);
+            return;
+        }
         dc.setColor(muted, canvas);
         line(dc, date, _calendarFonts, FaceModel.CALENDAR_WIDTH,
             FaceModel.CALENDAR_TOP, FaceModel.CALENDAR_BOTTOM);
         dc.setColor(text, canvas);
         line(dc, time, _clockFonts, FaceModel.TIME_WIDTH, FaceModel.TIME_TOP, FaceModel.TIME_BOTTOM);
-        var left = FaceData.readSlot(FaceSettings.readSlot(0), moment.value());
-        var right = FaceData.readSlot(FaceSettings.readSlot(1), moment.value());
-        drawSlot(dc, left, 77, 140, text, muted, canvas);
-        drawSlot(dc, right, 237, 140, text, muted, canvas);
+        drawSlot(dc, left, 77, 140, FaceModel.DATA_TOP, FaceModel.DATA_BOTTOM, text, muted, canvas);
+        drawSlot(dc, right, 237, 140, FaceModel.DATA_TOP, FaceModel.DATA_BOTTOM, text, muted, canvas);
         dc.setColor(accent, canvas);
-        line(dc, "BAT " + FaceModel.formatBattery(System.getSystemStats().battery), _batteryFonts,
+        line(dc, "BAT " + charge, _batteryFonts,
             FaceModel.BATTERY_WIDTH, FaceModel.BATTERY_TOP, FaceModel.BATTERY_BOTTOM);
     }
 
+    function analogSlotFonts(dc as Graphics.Dc, data as Lang.Dictionary<Lang.String, Lang.String>,
+            width as Lang.Number, height as Lang.Number)
+            as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont> or Null {
+        // Admit the whole three-row group using actual target measurements.
+        // Shrinking the value alone can never fix oversized label/detail rows.
+        for (var v = 0; v < _valueFonts.size(); v += 1) {
+            var value = _valueFonts[v];
+            if (dc.getTextWidthInPixels(data["value"], value) > width) { continue; }
+            for (var l = 0; l < _labelFonts.size(); l += 1) {
+                var label = _labelFonts[l];
+                if (dc.getTextWidthInPixels(data["label"], label) > width) { continue; }
+                for (var d = 0; d < _detailFonts.size(); d += 1) {
+                    var detail = _detailFonts[d];
+                    if (dc.getTextWidthInPixels(data["detail"], detail) > width) { continue; }
+                    var total = dc.getFontHeight(label) + dc.getFontHeight(value) +
+                        dc.getFontHeight(detail) + 6;
+                    if (total <= height) { return [label, value, detail]; }
+                }
+            }
+        }
+        return null;
+    }
+
     function drawSlot(dc as Graphics.Dc, data as Lang.Dictionary<Lang.String, Lang.String>,
-            x as Lang.Number, width as Lang.Number, text as Lang.Number,
+            x as Lang.Number, width as Lang.Number, top as Lang.Number,
+            bottom as Lang.Number, text as Lang.Number,
             muted as Lang.Number, canvas as Lang.Number) as Void {
-        var height = FaceModel.DATA_BOTTOM - FaceModel.DATA_TOP;
-        var label = pickFont(dc, data["label"], _labelFonts, width, 34);
-        var detail = pickFont(dc, data["detail"], _detailFonts, width, 28);
-        if (label == null || detail == null) { return; }
-        var available = height - dc.getFontHeight(label) - dc.getFontHeight(detail) - 6;
-        var value = pickFont(dc, data["value"], _valueFonts, width, available);
-        if (value == null) { return; }
+        var height = bottom - top;
+        var label = null;
+        var detail = null;
+        var value = null;
+        if (height < 100) {
+            var selected = analogSlotFonts(dc, data, width, height);
+            if (selected == null) { return; }
+            label = selected[0]; value = selected[1]; detail = selected[2];
+        } else {
+            // Preserve the digital layout's existing 112-pixel row policy.
+            label = pickFont(dc, data["label"], _labelFonts, width, 34);
+            detail = pickFont(dc, data["detail"], _detailFonts, width, 28);
+            if (label == null || detail == null) { return; }
+            var available = height - dc.getFontHeight(label) - dc.getFontHeight(detail) - 6;
+            value = pickFont(dc, data["value"], _valueFonts, width, available);
+        }
+        if (label == null || detail == null || value == null) { return; }
         var total = dc.getFontHeight(label) + dc.getFontHeight(value) + dc.getFontHeight(detail) + 6;
-        var y = FaceModel.DATA_TOP + ((height - total) / 2);
+        var y = top + ((height - total) / 2);
         var center = x + width / 2;
-        dc.setClip(x, FaceModel.DATA_TOP, width, height);
+        dc.setClip(x, top, width, height);
         dc.setColor(muted, canvas);
         dc.drawText(center, y, label, data["label"], Graphics.TEXT_JUSTIFY_CENTER);
         y += dc.getFontHeight(label) + 3;
@@ -132,6 +184,57 @@ class ClairObscurView extends WatchUi.WatchFace {
         dc.setColor(muted, canvas);
         dc.drawText(center, y, detail, data["detail"], Graphics.TEXT_JUSTIFY_CENTER);
         dc.clearClip();
+    }
+
+    function drawHand(dc as Graphics.Dc, points as Lang.Array<Graphics.Point2D>,
+            text as Lang.Number, canvas as Lang.Number) as Void {
+        if (points.size() != 5) { return; }
+        // A narrow opposing edge keeps the hand legible when it crosses text.
+        dc.setColor(canvas, canvas);
+        dc.setPenWidth(4);
+        for (var index = 0; index < points.size(); index += 1) {
+            var next = (index + 1) % points.size();
+            dc.drawLine(points[index][0], points[index][1], points[next][0], points[next][1]);
+        }
+        dc.setColor(text, canvas);
+        dc.fillPolygon(points);
+        dc.setPenWidth(1);
+    }
+
+    function drawAnalog(dc as Graphics.Dc, hour as Lang.Number, minute as Lang.Number,
+            date as Lang.String, charge as Lang.String,
+            left as Lang.Dictionary<Lang.String, Lang.String>,
+            right as Lang.Dictionary<Lang.String, Lang.String>, text as Lang.Number,
+            muted as Lang.Number, border as Lang.Number, canvas as Lang.Number) as Void {
+        dc.setColor(border, canvas);
+        dc.setPenWidth(1);
+        for (var tick = 0; tick < 60; tick += 1) {
+            var ends = FaceModel.minuteTick(tick);
+            dc.drawLine(ends[0][0], ends[0][1], ends[1][0], ends[1][1]);
+        }
+        dc.setColor(text, canvas);
+        for (var index = 0; index < 12; index += 1) {
+            dc.fillPolygon(FaceModel.hourMarker(index, 0));
+            if (index == 0) { dc.fillPolygon(FaceModel.hourMarker(index, 1)); }
+        }
+        dc.setColor(muted, canvas);
+        line(dc, date, _calendarFonts, FaceModel.ANALOG_DATE_WIDTH,
+            FaceModel.ANALOG_DATE_TOP, FaceModel.ANALOG_DATE_BOTTOM);
+        drawSlot(dc, left, FaceModel.ANALOG_LEFT_X, FaceModel.ANALOG_DATA_WIDTH,
+            FaceModel.ANALOG_DATA_TOP, FaceModel.ANALOG_DATA_BOTTOM, text, muted, canvas);
+        drawSlot(dc, right, FaceModel.ANALOG_RIGHT_X, FaceModel.ANALOG_DATA_WIDTH,
+            FaceModel.ANALOG_DATA_TOP, FaceModel.ANALOG_DATA_BOTTOM, text, muted, canvas);
+        dc.setColor(muted, canvas);
+        line(dc, "CHARGE " + charge, _batteryFonts, FaceModel.ANALOG_CHARGE_WIDTH,
+            FaceModel.ANALOG_CHARGE_TOP, FaceModel.ANALOG_CHARGE_BOTTOM);
+        // Time stays in front. Inner readings can be temporarily crossed by a
+        // hand; Digital remains available for an unobscured full-data layout.
+        drawHand(dc, FaceModel.handPoints(hour, minute, true), text, canvas);
+        drawHand(dc, FaceModel.handPoints(hour, minute, false), text, canvas);
+        dc.setColor(text, canvas);
+        dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, 8);
+        dc.setColor(canvas, canvas);
+        dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, 3);
     }
 
     function drawAlwaysOn(dc as Graphics.Dc, time as Lang.String, minute as Lang.Number) as Void {
