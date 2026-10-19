@@ -253,11 +253,65 @@ const broadIconApps = [
   ['minecraft', 'Minecraft', 'com.mojang.minecraftpe'],
 ];
 namedIconApps.push(...broadIconApps);
+const broadNamedIconApps = namedIconApps.slice();
+const everydayIconApps = [
+  ["slack", "Slack", "com.Slack"],
+  ["trello", "Trello", "com.trello"],
+  ["todoist", "Todoist", "com.todoist"],
+  ["ticktick", "TickTick", "com.ticktick.task"],
+  ["evernote", "Evernote", "com.evernote"],
+  ["obsidian", "Obsidian", "md.obsidian"],
+  ["dropbox", "Dropbox", "com.dropbox.android"],
+  ["proton-mail", "Proton Mail", "ch.protonmail.android"],
+  ["yahoo-mail", "Yahoo Mail", "com.yahoo.mobile.client.android.mail"],
+  ["google-tasks", "Google Tasks", "com.google.android.apps.tasks"],
+  ["google-one", "Google One", "com.google.android.apps.subscriptions.red"],
+  ["microsoft-copilot", "Microsoft Copilot", "com.microsoft.office.officehubrow"],
+  ["google-gemini", "Google Gemini", "com.google.android.apps.bard"],
+  ["claude", "Claude", "com.anthropic.claude"],
+  ["perplexity", "Perplexity", "ai.perplexity.app.android"],
+  ["bitwarden", "Bitwarden", "com.x8bit.bitwarden"],
+  ["apple-music", "Apple Music", "com.apple.android.music"],
+  ["apple-tv", "Apple TV", "com.apple.atve.androidtv.appletv"],
+  ["hbo-max", "HBO Max", "com.wbd.stream"],
+  ["peacock", "Peacock", "com.peacocktv.peacockandroid"],
+  ["paramount-plus", "Paramount+", "com.cbs.app"],
+  ["plex", "Plex", "com.plexapp.android"],
+  ["tubi", "Tubi", "com.tubitv"],
+  ["pluto-tv", "Pluto TV", "tv.pluto.android"],
+  ["crunchyroll", "Crunchyroll", "com.crunchyroll.crunchyroid"],
+  ["pandora", "Pandora", "com.pandora.android"],
+  ["iheartradio", "iHeart", "com.clearchannel.iheartradio.controller"],
+  ["siriusxm", "SiriusXM", "com.sirius"],
+  ["adobe-lightroom", "Adobe Lightroom", "com.adobe.lrmobile"],
+  ["photoshop-express", "Photoshop Express", "com.adobe.psmobile"],
+  ["snapseed", "Snapseed", "com.niksoftware.snapseed"],
+  ["picsart", "Picsart", "com.picsart.studio"],
+  ["strava", "Strava", "com.strava"],
+  ["fitbit", "Google Health (Fitbit)", "com.fitbit.FitbitMobile"],
+  ["google-fit", "Google Fit", "com.google.android.apps.fitness"],
+  ["myfitnesspal", "MyFitnessPal", "com.myfitnesspal.android"],
+  ["alltrails", "AllTrails", "com.alltrails.alltrails"],
+  ["komoot", "Komoot", "de.komoot.android"],
+  ["amazon-alexa", "Amazon Alexa", "com.amazon.dee.app"],
+  ["ring", "Ring", "com.ringapp"],
+  ["blink", "Blink", "com.immediasemi.android.blink"],
+  ["google-home", "Google Home", "com.google.android.apps.chromecast.app"],
+  ["zillow", "Zillow", "com.zillow.android.zillowmap"],
+  ["chase", "Chase", "com.chase.sig.android"],
+  ["capital-one", "Capital One", "com.konylabs.capitalone"],
+  ["chime", "Chime", "com.onedebit.chime"],
+  ["ups", "UPS", "com.ups.mobile.android"],
+  ["fedex", "FedEx", "com.fedex.ida.android"],
+];
+namedIconApps.push(...everydayIconApps);
 const iconFunctions = [...namedIconApps.map(row => row[0]), ...generalIconFunctions];
 const iconManifestFunctions = [...generalIconFunctions, ...namedIconApps.map(row => row[0])];
 const iconLabels = new Map([...generalIconFunctions.map(name => [name, name.replaceAll('-', ' ').replace(/\b[a-z]/g, letter => letter.toUpperCase())]),
   ...namedIconApps.map(([id, label]) => [id, label])]);
-const iconArchive = 'icons/Clair-Obscur-SVG-Icons-0.8.0.zip';
+const iconArchive = 'icons/Clair-Obscur-SVG-Icons-0.9.0.zip';
+const broadIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.8.0.zip';
+const broadIconDigest = 'fcdaec582be7508b3e62bd9168695ea1650e33c8e53c3de46f3614ae53d833cf';
 const companionIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.7.0.zip';
 const companionIconDigest = 'aa18db922e824cd2bfa1ada2fbc08125af2605d9c5acb2ad8bfdb439985f4f05';
 const monochromeIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.6.0.zip';
@@ -272,7 +326,7 @@ const previousIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.2.0.zip';
 const previousIconDigest = '6ae67a5aab7f4e0a50537bb6dcf3b383c5fc6e9e001d68db12a7413aaa376312';
 const legacyIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.1.0.zip';
 const legacyIconDigest = '040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34';
-const iconChecksums = digest => `${digest}  ${path.basename(iconArchive)}\n${companionIconDigest}  ${path.basename(companionIconArchive)}\n${monochromeIconDigest}  ${path.basename(monochromeIconArchive)}\n${thirdAppIconDigest}  ${path.basename(thirdAppIconArchive)}\n${secondAppIconDigest}  ${path.basename(secondAppIconArchive)}\n${firstAppIconDigest}  ${path.basename(firstAppIconArchive)}\n${previousIconDigest}  ${path.basename(previousIconArchive)}\n${legacyIconDigest}  ${path.basename(legacyIconArchive)}\n`;
+const iconChecksums = digest => `${digest}  ${path.basename(iconArchive)}\n${broadIconDigest}  ${path.basename(broadIconArchive)}\n${companionIconDigest}  ${path.basename(companionIconArchive)}\n${monochromeIconDigest}  ${path.basename(monochromeIconArchive)}\n${thirdAppIconDigest}  ${path.basename(thirdAppIconArchive)}\n${secondAppIconDigest}  ${path.basename(secondAppIconArchive)}\n${firstAppIconDigest}  ${path.basename(firstAppIconArchive)}\n${previousIconDigest}  ${path.basename(previousIconArchive)}\n${legacyIconDigest}  ${path.basename(legacyIconArchive)}\n`;
 const iconPaths = iconFunctions.flatMap(functionName => ['Clair', 'Obscur'].map(appearance => `icons/${appearance}/${functionName}.svg`));
 const terminalFragment = 'Clair-Obscur-Windows-Terminal-0.1.0.json';
 const terminalArchive = 'Clair-Obscur-Windows-Terminal-0.1.0.zip';
@@ -391,7 +445,7 @@ test('both appearances work at desktop and phone widths without horizontal overf
         if (evidence && width !== 2560) await page.screenshot({ path: path.join(evidence, `${name.toLowerCase()}-${width}-specimen.png`), fullPage: true });
       }
       assert.deepEqual([...new Set(network)].sort(), [origin + '/', ...['tokens.css', 'preview.css', 'preview.js', ...iconPaths].map(file => origin + '/' + file)].sort(),
-        'The page requests only its four original local assets and the 254 declared local SVGs');
+        'The page requests only its four original local assets and the 350 declared local SVGs');
       assert.deepEqual(consoleErrors, []);
     } finally { await context.close(); }
   }
@@ -666,9 +720,10 @@ async function checkIconGallery(page) {
   assert.equal(await page.locator('#icons-heading').textContent(), 'Matching app icons');
   assert.equal(await page.locator('#icons-app-heading').textContent(), 'Named apps');
   assert.equal(await page.locator('#icons-function-heading').textContent(), 'General functions');
-  assert.equal(await page.locator('#icons [data-icon-kind="app"]').count(), 103);
+  assert.equal(await page.locator('#icons [data-icon-kind="app"]').count(), 151);
   assert.equal(await page.locator('#icons [data-icon-kind="function"]').count(), 24);
   assert.equal(await page.locator('#icon-artwork-download').getAttribute('href'), iconArchive);
+  assert.equal(await page.locator('#icon-artwork-broad-download').getAttribute('href'), broadIconArchive);
   assert.equal(await page.locator('#icon-artwork-companion-download').getAttribute('href'), companionIconArchive);
   assert.equal(await page.locator('#icon-artwork-monochrome-download').getAttribute('href'), monochromeIconArchive);
   assert.equal(await page.locator('#icon-artwork-previous-download').getAttribute('href'), previousIconArchive);
@@ -677,7 +732,8 @@ async function checkIconGallery(page) {
   assert.equal(await page.locator('#icon-artwork-second-app-download').getAttribute('href'), secondAppIconArchive);
   assert.equal(await page.locator('#icon-artwork-first-app-download').getAttribute('href'), firstAppIconArchive);
   assert.match(await page.locator('#icon-artwork-first-app-download').textContent(), /preserved 0\.3\.0/);
-  assert.match(await page.locator('#icon-artwork-download').textContent(), /0\.8\.0/);
+  assert.match(await page.locator('#icon-artwork-download').textContent(), /0\.9\.0/);
+  assert.match(await page.locator('#icon-artwork-broad-download').textContent(), /preserved 0\.8\.0/);
   assert.match(await page.locator('#icon-artwork-companion-download').textContent(), /preserved 0\.7\.0/);
   assert.match(await page.locator('#icon-artwork-monochrome-download').textContent(), /preserved 0\.6\.0/);
   assert.match(await page.locator('#icon-artwork-previous-download').textContent(), /preserved 0\.2\.0/);
@@ -805,7 +861,7 @@ test('icon gallery decodes every current appearance at phone widths and enlarged
   }
 });
 
-test('no-script keyboard navigation acquires current and all seven preserved icon ZIPs with exact checksums', async () => {
+test('no-script keyboard navigation acquires current and all eight preserved icon ZIPs with exact checksums', async () => {
   const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false, viewport: { width: 320, height: 844 },
     setup: async (context, page) => page.route('**/preview.css', async route => route.fulfill({ contentType: 'text/css',
       body: await readFile(path.join(site, 'preview.css'), 'utf8') + '\nhtml { font-size: 200%; }\n' + textSpacingOverride })) });
@@ -837,6 +893,16 @@ test('no-script keyboard navigation acquires current and all seven preserved ico
     const chunks = []; for await (const chunk of await checksumDownload.createReadStream()) chunks.push(chunk);
     const digest = crypto.createHash('sha256').update(bytes).digest('hex');
     assert.equal(Buffer.concat(chunks).toString('utf8'), iconChecksums(digest));
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-broad-download');
+    const [broadDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
+    assert.equal(await broadDownload.failure(), null);
+    assert.equal(broadDownload.suggestedFilename(), path.basename(broadIconArchive));
+    const broadArchivePath = path.join(temp, 'keyboard-icons-broad.zip');
+    await broadDownload.saveAs(broadArchivePath);
+    const broadBytes = await readFile(broadArchivePath);
+    assert.deepEqual(broadBytes, await readFile(path.join(site, ...broadIconArchive.split('/'))));
+    assert.equal(crypto.createHash('sha256').update(broadBytes).digest('hex'), broadIconDigest);
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-companion-download');
     const [companionDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
@@ -913,17 +979,27 @@ test('no-script keyboard navigation acquires current and all seven preserved ico
       `functions=${JSON.stringify(iconManifestFunctions)}`,
       'expected={f"{appearance}/{function}.svg" for appearance in ("Clair","Obscur") for function in functions}',
       'with zipfile.ZipFile(archive_path) as archive:',
-      ' assert len(archive.namelist())==256 and set(archive.namelist())==expected|{"manifest.json","LICENSE.txt"}',
+      ' assert len(archive.namelist())==352 and set(archive.namelist())==expected|{"manifest.json","LICENSE.txt"}',
       ' assert archive.testzip() is None',
       ' for name in expected|{"manifest.json","LICENSE.txt"}:',
       '  assert archive.read(name)==(site/"icons"/name).read_bytes()',
       ' manifest=json.loads(archive.read("manifest.json"))',
-      ' assert manifest["version"]=="0.8.0" and manifest["stroke_width"]==16',
-      ' assert manifest["functions"]==functions and len(manifest["files"])==254',
+      ' assert manifest["version"]=="0.9.0" and manifest["stroke_width"]==16',
+      ' assert manifest["functions"]==functions and len(manifest["files"])==350',
       ' assert [entry["id"] for entry in manifest["catalog"]]==functions',
       ' for record in manifest["files"]:',
       '  assert hashlib.sha256(archive.read(record["path"])).hexdigest()==record["sha256"]',
     ].join('\n'), archivePath, site]);
+    run(['-c', [
+      'import hashlib,json,sys,zipfile',
+      `functions=${JSON.stringify([...generalIconFunctions, ...broadNamedIconApps.map(row => row[0])])}`,
+      'with zipfile.ZipFile(sys.argv[1]) as archive:',
+      ' assert archive.testzip() is None and len(archive.namelist())==256',
+      ' manifest=json.loads(archive.read("manifest.json"))',
+      ' assert manifest["version"]=="0.8.0" and manifest["stroke_width"]==16',
+      ' assert manifest["functions"]==functions and len(manifest["files"])==254',
+      ' assert hashlib.sha256(archive.read("manifest.json")).hexdigest()=="7a8a35d6ba1186a718e970e26c5c6b7b19bf4949010c7bc89af3cb6063b95252"',
+    ].join('\n'), broadArchivePath]);
     run(['-c', [
       'import json,sys,zipfile',
       `functions=${JSON.stringify([...generalIconFunctions, ...companionNamedIconApps.map(row => row[0])])}`,
@@ -982,8 +1058,8 @@ test('no-script keyboard navigation acquires current and all seven preserved ico
     assert.equal(new URL(page.url()).hash, '#icons');
     assert.deepEqual(consoleErrors, []);
     results.scenarios.push({ name: 'no-script icon artwork keyboard acquisition', status: 'passed', tabs,
-      sha256: digest, companionSha256: companionIconDigest, monochromeSha256: monochromeIconDigest, secondAppSha256: secondAppIconDigest, firstAppSha256: firstAppIconDigest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
-      currentArchiveFiles: 256, companionArchiveFiles: 192, monochromeArchiveFiles: 180, secondAppArchiveFiles: 164, firstAppArchiveFiles: 116, preservedArchiveFiles: 50, nativePhoneVerified: false,
+      sha256: digest, broadSha256: broadIconDigest, companionSha256: companionIconDigest, monochromeSha256: monochromeIconDigest, secondAppSha256: secondAppIconDigest, firstAppSha256: firstAppIconDigest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
+      currentArchiveFiles: 352, broadArchiveFiles: 256, companionArchiveFiles: 192, monochromeArchiveFiles: 180, secondAppArchiveFiles: 164, firstAppArchiveFiles: 116, preservedArchiveFiles: 50, nativePhoneVerified: false,
       width: 320, rootFontSize: '32px', spacingAdmission, mappingKeyboard,
       scope: 'Combined no-script, narrow, enlarged and spacing stress; separate from spacing-only acceptance' });
   } finally { await context.close(); }
@@ -2329,6 +2405,15 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
         assert.deepEqual(iconBytes, await readFile(path.join(relocated, ...iconArchive.split('/'))));
         assert.equal(iconDigest, inner.files[iconArchive]);
         assert.equal(await readFile(path.join(relocated, 'icons', 'SVG-SHA256SUMS'), 'utf8'), iconChecksums(iconDigest));
+        await localPage.locator('#icon-artwork-broad-download').focus();
+        const [broadIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+        assert.equal(await broadIconDownload.failure(), null);
+        assert.equal(broadIconDownload.suggestedFilename(), path.basename(broadIconArchive));
+        const broadChunks = []; for await (const chunk of await broadIconDownload.createReadStream()) broadChunks.push(chunk);
+        const broadIconBytes = Buffer.concat(broadChunks);
+        assert.deepEqual(broadIconBytes, await readFile(path.join(relocated, ...broadIconArchive.split('/'))));
+        assert.equal(crypto.createHash('sha256').update(broadIconBytes).digest('hex'), broadIconDigest);
+        assert.equal(inner.files[broadIconArchive], broadIconDigest);
         await localPage.locator('#icon-artwork-companion-download').focus();
         const [companionIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
         assert.equal(await companionIconDownload.failure(), null);
@@ -2393,8 +2478,8 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
         assert.equal(crypto.createHash('sha256').update(legacyIconBytes).digest('hex'), legacyIconDigest);
         assert.equal(inner.files[legacyIconArchive], legacyIconDigest);
         iconJourneys.push({ javaScriptEnabled, width, decoded: decodedIcons.length, sha256: iconDigest,
-          companionSha256: companionIconDigest, monochromeSha256: monochromeIconDigest, secondAppSha256: secondAppIconDigest, firstAppSha256: firstAppIconDigest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
-          method: 'saved included current and all seven preserved SVG archives' });
+          broadSha256: broadIconDigest, companionSha256: companionIconDigest, monochromeSha256: monochromeIconDigest, secondAppSha256: secondAppIconDigest, firstAppSha256: firstAppIconDigest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
+          method: 'saved included current and all eight preserved SVG archives' });
         const terminalSpecimens = await checkTerminalSpecimens(localPage, terminalDocument);
         await localPage.locator('#terminal-download').focus();
         const [terminalZip] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
