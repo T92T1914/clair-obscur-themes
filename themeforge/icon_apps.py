@@ -486,3 +486,89 @@ NEW_APP_CATALOG = ({'id': 'x',
   'store_url': 'https://play.google.com/store/apps/details?id=com.canva.editor',
   'selection_basis': '500M+ listing visibility and a missing visual-design app. Its listing title does not '
                      'make this theme an AI feature.'})
+
+
+THIRD_CATALOG_DATE = "2026-10-19"
+THIRD_CATALOG_SCOPE = ("Third finite collection adds inspected professional, developer, workspace, browser, "
+                       "authenticator and smart-home identities to the prior 57 named apps. "
+                       "Canonical listing footers were United States English, without device-availability evidence. "
+                       "Cumulative download bands are not current users or a regional ranking. "
+                       "Not an ordered popularity chart or exhaustive catalog.")
+
+THIRD_APP_CATALOG = ({'id': 'linkedin',
+  'label': 'LinkedIn',
+  'store_title': 'LinkedIn: Community & Network',
+  'kind': 'app',
+  'category': 'professional-networking',
+  'android_package': 'com.linkedin.android',
+  'store_url': 'https://play.google.com/store/apps/details?id=com.linkedin.android',
+  'selection_basis': '1B+ listing visibility and a missing professional-networking identity. This '
+                     'selects icon coverage, not LinkedIn account access, profile writing or a '
+                     'hiring claim.'},
+ {'id': 'github',
+  'label': 'GitHub',
+  'store_title': 'GitHub',
+  'kind': 'app',
+  'category': 'development',
+  'android_package': 'com.github.android',
+  'store_url': 'https://play.google.com/store/apps/details?id=com.github.android',
+  'selection_basis': '10M+ listing visibility and a missing developer-collaboration app identity. '
+                     'Existing repository work does not establish that the Android app is '
+                     'installed or used.'},
+ {'id': 'notion',
+  'label': 'Notion',
+  'store_title': 'Notion: AI Workspace',
+  'kind': 'app',
+  'category': 'productivity',
+  'android_package': 'notion.id',
+  'store_url': 'https://play.google.com/store/apps/details?id=notion.id',
+  'selection_basis': '10M+ listing visibility and a missing workspace app, separate from the '
+                     'existing Docs, Sheets and note app identities.'},
+ {'id': 'microsoft-edge',
+  'label': 'Microsoft Edge',
+  'store_title': 'Microsoft Edge',
+  'kind': 'app',
+  'category': 'browser',
+  'android_package': 'com.microsoft.emmx',
+  'store_url': 'https://play.google.com/store/apps/details?id=com.microsoft.emmx',
+  'selection_basis': '100M+ listing visibility and a missing Android browser identity alongside '
+                     'the existing Chrome, Firefox and Samsung Browser choices. Desktop theme '
+                     'candidates are separate evidence.'},
+ {'id': 'brave',
+  'label': 'Brave',
+  'store_title': 'Brave Private Web Browser, VPN',
+  'kind': 'app',
+  'category': 'browser',
+  'android_package': 'com.brave.browser',
+  'store_url': 'https://play.google.com/store/apps/details?id=com.brave.browser',
+  'selection_basis': '100M+ listing visibility and a missing browser identity. The listing title '
+                     'is not a recommendation to purchase a VPN or a claim about theme security.'},
+ {'id': 'microsoft-authenticator',
+  'label': 'Microsoft Authenticator',
+  'store_title': 'Microsoft Authenticator',
+  'kind': 'app',
+  'category': 'authentication',
+  'android_package': 'com.azure.authenticator',
+  'store_url': 'https://play.google.com/store/apps/details?id=com.azure.authenticator',
+  'selection_basis': '100M+ listing visibility and a missing authenticator app identity. The '
+                     'proposed icon neither configures authentication nor establishes an '
+                     'assessment of that app.'},
+ {'id': 'google-authenticator',
+  'label': 'Google Authenticator',
+  'store_title': 'Google Authenticator',
+  'kind': 'app',
+  'category': 'authentication',
+  'android_package': 'com.google.android.apps.authenticator2',
+  'store_url': 'https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2',
+  'selection_basis': '100M+ listing visibility and a separate authenticator identity that must '
+                     'remain visually distinguishable from Microsoft Authenticator.'},
+ {'id': 'samsung-smartthings',
+  'label': 'SmartThings',
+  'store_title': 'SmartThings',
+  'kind': 'app',
+  'category': 'smart-home',
+  'android_package': 'com.samsung.android.oneconnect',
+  'store_url': 'https://play.google.com/store/apps/details?id=com.samsung.android.oneconnect',
+  'selection_basis': '1B+ listing visibility and a missing Samsung smart-home companion identity. '
+                     'Samsung device context does not establish installation, pairing or '
+                     'compatible hardware.'})
