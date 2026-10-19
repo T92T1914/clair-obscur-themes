@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Render only the exact current generated SVG set, without changing existing output.
+// Render only an exact supported generated SVG set, without changing existing output.
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
@@ -40,25 +40,47 @@ function argumentsFor(argv) {
   return { input: options['--input'], output: options['--output'] };
 }
 
-function checkInput(input) {
-  runPython(['-m', 'themeforge.icons', '--output', input, '--check']);
+const inputVersion = String.raw`
+import json, sys
+from pathlib import Path
+from themeforge.icons import VERSIONS, _linked, _safe_output
+
+source = _safe_output(Path(sys.argv[1]))
+manifest_path = source / "manifest.json"
+try:
+    if _linked(manifest_path):
+        raise ValueError("Icon input manifest must not contain links or reparse points")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+except (OSError, UnicodeError, json.JSONDecodeError) as error:
+    raise ValueError("Icon output differs: input manifest is missing or invalid") from error
+version = manifest.get("version") if isinstance(manifest, dict) else None
+if version not in VERSIONS:
+    raise ValueError("Icon output differs: unsupported artwork version")
+print(version)
+`;
+
+function checkInput(input, version) {
+  runPython(['-m', 'themeforge.icons', '--output', input, '--version', version, '--check']);
 }
 
 const preflight = String.raw`
 import hashlib, json, sys
 from pathlib import Path
-from themeforge.icons import ROOT, _safe_output, build_icons, render_icons
+from themeforge.icons import ROOT, VERSIONS, _safe_output, build_icons, render_icons
 from themeforge.tokens import load
 
 source = _safe_output(Path(sys.argv[1]))
 output = _safe_output(Path(sys.argv[2]))
+version = sys.argv[3]
+if version not in VERSIONS:
+    raise ValueError("Unsupported artwork version")
 if source == output or source in output.parents:
     raise ValueError("PNG output must not be inside the SVG input tree")
 if output.exists():
     raise ValueError("PNG export requires a new output directory; existing entries are preserved")
 document = load(ROOT / "tokens.json")
-build_icons(document, source, check=True)
-expected = render_icons(document)
+build_icons(document, source, check=True, version=version)
+expected = render_icons(document, version=version)
 manifest = json.loads(expected["manifest.json"])
 license_payload = (ROOT / "LICENSE").read_bytes()
 def digest(payload):
@@ -85,8 +107,9 @@ print(json.dumps(result))
 
 async function exportIcons(input, output) {
   // The CLI check and shared Python path policy run before any browser launch.
-  checkInput(input);
-  const source = JSON.parse(runPython(['-c', preflight, input, output]));
+  const version = runPython(['-c', inputVersion, input]).trim();
+  checkInput(input, version);
+  const source = JSON.parse(runPython(['-c', preflight, input, output, version]));
   let browser, context;
   const records = [];
   const network = [], pageErrors = [];
@@ -164,7 +187,7 @@ async function exportIcons(input, output) {
     assert.deepEqual(network, [], 'No network request is permitted');
     assert.deepEqual(pageErrors, [], 'Rendering errors are not accepted');
     // Retain any partial output if source changes or final qualification fails.
-    checkInput(input);
+    checkInput(input, version);
     for (const file of source.files) assert.equal(sha(await readFile(path.join(input, file.path))), file.sha256, 'SVG input changed during export');
     assert.equal(sha(await readFile(path.join(input, 'manifest.json'))), source.source_manifest_sha256, 'SVG manifest changed during export');
     assert.equal(sha(await readFile(path.join(root, 'tokens.json'))), source.tokens_sha256, 'Tokens changed during export');
@@ -173,7 +196,7 @@ async function exportIcons(input, output) {
     const license = Buffer.from(source.license, 'utf8');
     await writeFile(path.join(output, 'LICENSE'), license, { flag: 'wx' });
     const manifest = {
-      schema_version: 1, generator: 'clair-obscur-png-export', exporter_version: '0.1.0',
+      schema_version: 1, generator: 'clair-obscur-png-export', exporter_version: '0.2.0',
       version: source.version,
       token_version: source.token_version, source_manifest_sha256: source.source_manifest_sha256,
       tokens_sha256: source.tokens_sha256, svg_generator_sha256: source.generator_sha256,

@@ -77,7 +77,7 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(set(files), expected | {"manifest.json"})
         manifest = json.loads(files["manifest.json"])
         self.assertEqual(manifest["functions"], NAMES)
-        self.assertEqual(manifest["version"], "0.1.0")
+        self.assertEqual(manifest["version"], "0.2.0")
         self.assertEqual(manifest["token_schema"], 1)
         self.assertEqual(manifest["token_version"], "0.1.1")
         self.assertEqual(len(manifest["files"]), 48)
@@ -149,7 +149,7 @@ class FunctionalIconTests(unittest.TestCase):
             self.assertEqual({key: tile.get(key) for key in ("x", "y", "width", "height", "rx")},
                              {"x": "32", "y": "32", "width": "448", "height": "448", "rx": "104"})
             group = root.find(NS + "g")
-            self.assertEqual(group.get("stroke-width"), "12")
+            self.assertEqual(group.get("stroke-width"), "16")
             self.assertEqual(group.get("stroke-linecap"), "round")
             self.assertEqual(group.get("stroke-linejoin"), "round")
             for element in group:
@@ -174,8 +174,50 @@ class FunctionalIconTests(unittest.TestCase):
                 for x, y in points:
                     self.assertGreaterEqual(min(x, y), 112, (name, tag, x, y))
                     self.assertLessEqual(max(x, y), 400, (name, tag, x, y))
-                    self.assertGreaterEqual(min(x - 6, y - 6), 106)
-                    self.assertLessEqual(max(x + 6, y + 6), 406)
+                    self.assertGreaterEqual(min(x - 8, y - 8), 104)
+                    self.assertLessEqual(max(x + 8, y + 8), 408)
+
+    def test_original_version_rebuilds_exact_accepted_archive_and_stays_separate(self):
+        from themeforge.build import _zip_bytes
+        from themeforge.legal import license_text
+        legacy = icons.render_icons(self.document, version="0.1.0")
+        current = icons.render_icons(self.document)
+        archived = {**legacy, "LICENSE.txt": license_text().encode("utf-8")}
+        self.assertEqual(hashlib.sha256(_zip_bytes(archived)).hexdigest(),
+                         "040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34")
+        self.assertEqual(json.loads(legacy["manifest.json"])["stroke_width"], 12)
+        for name in NAMES:
+            self.assertNotEqual(current[f"Clair/{name}.svg"], legacy[f"Clair/{name}.svg"])
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "legacy"
+            icons.build_icons(self.document, output, version="0.1.0")
+            before = tree_snapshot(output)
+            icons.build_icons(self.document, output, version="0.1.0", check=True)
+            with self.assertRaisesRegex(ValueError, "differs"):
+                icons.build_icons(self.document, output, check=True)
+            self.assertEqual(tree_snapshot(output), before)
+        for unsupported in ("0.0.0", "0.3.0", None, [], {}):
+            with self.subTest(version=unsupported), self.assertRaisesRegex(ValueError, "Unsupported"):
+                icons.render_icons(self.document, version=unsupported)
+
+    def test_current_bubble_has_one_continuous_outline_and_calculator_has_open_equals(self):
+        files = icons.render_icons(self.document)
+        bubble = ET.fromstring(files["Obscur/messages.svg"]).find(NS + "g")
+        self.assertEqual(len(bubble.findall(NS + "rect")), 0)
+        outline = bubble.findall(NS + "path")[0].get("d")
+        self.assertEqual(outline.count("M"), 1)
+        self.assertTrue(outline.endswith("Z"))
+        # The tail is part of the perimeter rather than a line over a closed rectangle.
+        calculator = ET.fromstring(files["Clair/calculator.svg"]).find(NS + "g")
+        operators = calculator.findall(NS + "path")[0].get("d")
+        horizontal = re.findall(r"M(\d+) (\d+) H(\d+)", operators)
+        # The final two horizontal marks form '='. Measure their real clear gap
+        # so merely increasing stroke weight cannot close it again.
+        first, second = horizontal[-2:]
+        self.assertEqual((first[0], first[2]), (second[0], second[2]))
+        width = float(calculator.get("stroke-width"))
+        clear_gap = abs(float(second[1]) - float(first[1])) - width
+        self.assertGreaterEqual(clear_gap, width)
 
     def test_fresh_build_and_check_preserve_bytes_and_refuse_rebuild(self):
         with tempfile.TemporaryDirectory() as temporary:
