@@ -4,6 +4,14 @@ The current 0.9.0 black and white collection contains 151 named-app interpretati
 
 The original 0.1.0, refined 0.2.0 and first named-app 0.3.0 SVGs, manifests and download archives remain unchanged. All 81 drawings from the accepted 0.4.0 collection retain their exact SVG bytes in 0.5.0, alongside its preserved archive and manifest. The original 24 general drawings also retain their 0.2.0 bytes. Those historical collections retain their original colors. The first monochrome 0.6.0 collection preserves all 0.5.0 geometry while changing the tile and every symbol to black and white. The 0.7.0 collection retains every accepted 0.6.0 SVG byte and adds six app interpretations. The 0.8.0 collection retains all 190 accepted 0.7.0 SVGs and adds 32 named choices. Current 0.9.0 retains all 254 accepted 0.8.0 SVGs and adds 48 named choices. Clair uses a white tile with black strokes. Obscur uses a black tile with white strokes. No blue accent or warm background remains in the current artwork. No publisher image files, remote assets or fonts are imported. App names and familiar marks identify their respective owners. This independent theme collection does not imply publisher affiliation or endorsement.
 
+## Find a drawing
+
+The preview's finder searches visible names, stable icon IDs and Android package IDs. Matching ignores case, accents and apostrophes. When a query contains several words, every word must match. Choose Named apps or General functions to narrow the same query. Each matching choice retains both Clair and Obscur drawings, its label and its original assignment link.
+
+Clear filters restores all 175 choices and returns focus to the search field. A result count and a no-match message keep the current state visible. Page appearance controls do not clear the query. Filtering changes the gallery only. The downloads still contain the complete collection.
+
+The same finder works in the extracted portable preview. It makes no network request, saves no query and adds nothing to the page URL. With JavaScript disabled or unavailable, the complete catalog and its downloads remain visible. The finder does not change any artwork, app assignment, installed theme or phone setting.
+
 ## Named-app coverage
 
 The preserved first named-app collection covers Google Chrome, YouTube, Google Maps, Gmail, Google Photos, Google Messages, Google Calendar, Google Drive, Samsung Browser, Samsung Notes, Samsung Health, Garmin Connect, WhatsApp, Messenger, Instagram, Facebook, Snapchat, TikTok, Discord, Reddit, Pinterest, Telegram, Spotify, Netflix, Amazon Shopping, Walmart, Temu, Uber, DoorDash, PayPal, Microsoft Outlook, ChatGPT and Firefox.

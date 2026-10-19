@@ -138,6 +138,16 @@ preserve_native_scaling = True</code></pre>
       <p><a id="icon-artwork-previous-download" class="secondary-link" href="{{PREVIOUS_ICON_ARCHIVE}}" download>Download the preserved 0.2.0 functional SVG artwork</a></p>
       <p><a id="icon-artwork-legacy-download" class="secondary-link" href="{{LEGACY_ICON_ARCHIVE}}" download>Download the preserved original 0.1.0 SVG artwork</a></p>
       <p class="muted">The ZIP contains 350 SVG drawings, their identity and app-assignment manifest and the project license. The PNG exporter produces 700 images at two sizes. These are independent themed interpretations. App names and identifying marks belong to their respective owners, and no affiliation or endorsement is implied. The ZIP contains no PNGs, fonts or installer. This gallery is an artwork preview, not a Samsung launcher screenshot.</p>
+      <form id="icon-finder" class="icon-finder" role="search" aria-label="Find an icon" hidden>
+        <p id="icon-filter-help">Search names, icon IDs or Android package IDs. Multiple words must all match. Each choice keeps both appearances, and downloads include the whole collection.</p>
+        <div class="icon-filter-controls">
+          <label for="icon-query">Find an icon<input id="icon-query" type="search" autocomplete="off" spellcheck="false" aria-describedby="icon-filter-help"></label>
+          <label for="icon-kind">Icon type<select id="icon-kind"><option value="all">All icons</option><option value="app">Named apps</option><option value="function">General functions</option></select></label>
+          <button id="icon-clear" type="button">Clear filters</button>
+        </div>
+        <p id="icon-filter-status" role="status" aria-live="polite" aria-atomic="true"></p>
+        <p id="icon-filter-empty" hidden>No icons match. Try a different name or package ID, or clear the filters.</p>
+      </form>
       {{ICON_GALLERY}}
       <details id="icon-png-instructions"><summary>Need PNG images for a phone?</summary>
         <p>The <a href="#current-source">current source snapshot</a> includes the existing PNG exporter and <code>docs/samsung-icons.md</code>. From that extracted source, generate a fresh SVG directory, then export it with the project's pinned Playwright dependency and headless Google Chrome:</p>

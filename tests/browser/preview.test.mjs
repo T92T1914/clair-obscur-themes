@@ -822,9 +822,11 @@ async function checkIconGallery(page) {
 }
 
 async function checkIconMappingKeyboard(page) {
-  // Start at the last artwork download, then follow the real next Tab order
-  // through every store link. No store request or phone installation is made.
-  await page.locator('#icon-artwork-legacy-download').focus();
+  // The finder precedes the gallery when enhanced. Without script, the last
+  // archive is still its preceding focusable control. Follow actual Tab order
+  // through all store links without opening the store or installing anything.
+  await (await page.locator('#icon-finder').isVisible()
+    ? page.locator('#icon-clear') : page.locator('#icon-artwork-legacy-download')).focus();
   for (const [id, , packageId] of namedIconApps) {
     await page.keyboard.press('Tab');
     const active = await page.evaluate(() => {
@@ -840,6 +842,318 @@ async function checkIconMappingKeyboard(page) {
   }
   return { keyboardReachable: namedIconApps.length, scope: 'Exact official href and actual Tab focus; store page and installation unexecuted' };
 }
+
+// The full inventory above and the literal subsets below are independent of
+// the production matcher. Retain node identity as well as visible result text.
+async function snapshotFinderCatalog(page) {
+  await page.evaluate(() => {
+    window.finderOriginalCards = [...document.querySelectorAll('#icons article.icon-card')]
+      .map(node => ({ node, html: node.innerHTML }));
+  });
+}
+
+async function assertFinderResults(page, expected, { enhanced = true } = {}) {
+  const state = await page.evaluate(() => {
+    const cards = [...document.querySelectorAll('#icons article.icon-card')];
+    const visible = cards.filter(node => node.getClientRects().length && getComputedStyle(node).visibility === 'visible');
+    const originals = window.finderOriginalCards;
+    return { ids: visible.map(node => node.dataset.iconFunction), allIds: cards.map(node => node.dataset.iconFunction),
+      retained: originals && cards.length === originals.length && cards.every((node, index) =>
+        node === originals[index].node && node.innerHTML === originals[index].html),
+      hidden: cards.filter(node => node.hidden).map(node => node.dataset.iconFunction),
+      pairs: visible.map(node => ({ id: node.dataset.iconFunction,
+        captions: [...node.querySelectorAll('figcaption')].map(caption => caption.textContent),
+        images: [...node.querySelectorAll('img')].map(image => ({ path: image.getAttribute('src'),
+          width: image.getBoundingClientRect().width, height: image.getBoundingClientRect().height,
+          complete: image.complete, naturalWidth: image.naturalWidth })) })),
+      groups: ['app', 'function'].map(kind => {
+        const section = document.getElementById('icons-' + kind + '-heading').parentElement;
+        return { kind, hidden: section.hidden, visible: Boolean(section.getClientRects().length) };
+      }) };
+  });
+  assert.deepEqual(state.ids, expected, 'Finder must expose independently expected choices in original order');
+  assert.deepEqual(state.allIds, iconFunctions, 'Filtering must retain every original card');
+  assert.equal(state.retained, true, 'Filtering must retain nodes, artwork, labels and assignment contents');
+  if (enhanced) {
+    assert.deepEqual(state.hidden, iconFunctions.filter(id => !expected.includes(id)), 'Nonmatches must be hidden rather than transparent or focusable');
+    assert.equal(await page.locator('#icon-filter-status').innerText(), 'Showing ' + expected.length + ' of 175 choices.');
+    assert.equal(await page.locator('#icon-filter-empty').isVisible(), expected.length === 0);
+    for (const group of state.groups) {
+      const hasResults = expected.some(id => generalIconFunctions.includes(id) === (group.kind === 'function'));
+      assert.equal(group.hidden, !hasResults); assert.equal(group.visible, hasResults);
+    }
+  } else assert.deepEqual(state.hidden, [], 'Failed enhancement must retain the complete static gallery');
+  for (const pair of state.pairs) {
+    assert.deepEqual(pair.captions, ['Clair', 'Obscur']); assert.equal(pair.images.length, 2);
+    for (const [index, appearance] of ['Clair', 'Obscur'].entries()) {
+      const image = pair.images[index];
+      assert.equal(image.path, 'icons/' + appearance + '/' + pair.id + '.svg');
+      assert.ok(image.width > 0 && image.height > 0, pair.id + ' paired artwork is hidden');
+      assert.equal(image.complete, true); assert.equal(image.naturalWidth, 512);
+    }
+  }
+  return { visible: state.ids, originalNodesRetained: state.retained, pairedAppearances: true };
+}
+
+async function assertFinderControlLayout(page, { spacing = false } = {}) {
+  const state = await page.evaluate(() => ({ width: innerWidth, pageWidth: document.documentElement.scrollWidth,
+    controls: [...document.querySelectorAll('#icon-finder label, #icon-query, #icon-kind, #icon-clear, #icon-filter-status, #icon-filter-empty')]
+      .filter(node => node.getClientRects().length).map(node => {
+        const style = getComputedStyle(node), box = node.getBoundingClientRect(), textRects = [];
+        for (const child of node.childNodes) if (child.nodeType === Node.TEXT_NODE && child.textContent.trim()) {
+          const range = document.createRange(); range.selectNodeContents(child);
+          textRects.push(...[...range.getClientRects()].map(rect => ({ left: rect.left, right: rect.right, width: rect.width, height: rect.height })));
+        }
+        return { id: node.id || node.tagName + ':' + node.textContent.trim(), tag: node.tagName, text: node.textContent.trim(),
+          visibility: style.visibility, opacity: style.opacity, left: box.left, right: box.right, width: box.width, height: box.height,
+          textRects, fontSize: style.fontSize, lineHeight: style.lineHeight, letterSpacing: style.letterSpacing,
+          wordSpacing: style.wordSpacing, marginBlockEnd: style.marginBlockEnd };
+      }) }));
+  assert.ok(state.pageWidth <= state.width + 1, JSON.stringify(state));
+  const nativeSelect = [];
+  for (const control of state.controls) {
+    assert.equal(control.visibility, 'visible'); assert.ok(Number(control.opacity) > 0);
+    assert.ok(control.width > 0 && control.height > 0 && control.left >= -1 && control.right <= state.width + 1, JSON.stringify(control));
+    if (['INPUT', 'SELECT', 'BUTTON'].includes(control.tag)) assert.ok(control.height >= 44, JSON.stringify(control));
+    else assert.ok(control.textRects.length > 0, 'Finder text unavailable: ' + control.id);
+    for (const rect of control.textRects) assert.ok(rect.width > 0 && rect.height > 0 && rect.left >= control.left - 1 && rect.right <= control.right + 1,
+      'Finder text clipped: ' + JSON.stringify(control));
+    if (!spacing) continue;
+    const size = parseFloat(control.fontSize);
+    for (const [property, minimum] of [['lineHeight', 1.5], ['letterSpacing', .12], ['wordSpacing', .16]]) {
+      if (control.tag === 'SELECT' && property === 'lineHeight' && control.lineHeight === 'normal')
+        nativeSelect.push({ id: control.id, computed: 'normal', scope: 'Native select metric remains unverified, not admitted as 1.5' });
+      else assert.ok(parseFloat(control[property]) + .02 >= size * minimum, 'Finder spacing admission ' + property + ': ' + JSON.stringify(control));
+    }
+    if (control.tag === 'P') assert.ok(parseFloat(control.marginBlockEnd) + .02 >= size * 2, 'Finder paragraph spacing: ' + control.id);
+  }
+  return { ...state, nativeSelect };
+}
+
+async function finderKeyboardRecovery(page) {
+  const query = page.locator('#icon-query');
+  await query.fill('home'); await assertFinderResults(page, ['home-depot', 'google-home', 'home']);
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-query');
+  await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-kind');
+  await page.keyboard.press('Home'); await page.keyboard.press('ArrowDown'); await page.keyboard.press('Tab');
+  assert.equal(await page.locator('#icon-kind').inputValue(), 'app');
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-clear');
+  await assertFinderResults(page, ['home-depot', 'google-home']);
+  for (const [id, packageId] of [['home-depot', 'com.thehomedepot'], ['google-home', 'com.google.android.apps.chromecast.app']]) {
+    await page.keyboard.press('Tab');
+    assert.deepEqual(await page.evaluate(() => ({ id: document.activeElement.closest('[data-icon-function]')?.dataset.iconFunction,
+      href: document.activeElement.getAttribute('href'), visible: Boolean(document.activeElement.getClientRects().length) })),
+    { id, href: 'https://play.google.com/store/apps/details?id=' + packageId, visible: true });
+  }
+  await page.keyboard.press('Tab');
+  assert.equal(await page.evaluate(() => document.activeElement.closest('[data-icon-function]')?.dataset.iconFunction ?? null), null);
+  await page.locator('#icon-kind').focus(); await page.keyboard.press('Home');
+  await page.keyboard.press('ArrowDown'); await page.keyboard.press('ArrowDown'); await page.keyboard.press('Tab');
+  assert.equal(await page.locator('#icon-kind').inputValue(), 'function'); await assertFinderResults(page, ['home']);
+  await page.keyboard.press('Enter');
+  assert.equal(await query.inputValue(), ''); assert.equal(await page.locator('#icon-kind').inputValue(), 'all');
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-query'); await assertFinderResults(page, iconFunctions);
+  return { visibleStoreLinksReachedByTab: 2, appAndFunctionKinds: true, clearRestoredAllAndFocusedQuery: true };
+}
+
+test('icon finder matches labels, stable IDs and packages literally in both appearances and phone layouts', async () => {
+  const cases = [
+    // Google Home also matches "chrome" in its documented chromecast package ID.
+    ['  \t  ', iconFunctions], ['  gOoGlE  ChRoMe  ', ['google-chrome', 'google-home']], ['maps google', ['google-maps']], ['google maps', ['google-maps']],
+    ['  tasks\tgoogle  ', ['google-tasks']], ['COM.FITBIT.FITBITMOBILE', ['fitbit']], ['Google Health', ['fitbit']],
+    ['voice-recorder', ['voice-recorder']], ['cLáUdE', ['claude']],
+    ["McDonald's", ['mcdonalds']], ['McDonald’s', ['mcdonalds']], ['mcdonalds', ['mcdonalds']],
+    ['microsoft office', ['outlook', 'microsoft-word', 'microsoft-excel', 'microsoft-powerpoint', 'microsoft-copilot']],
+    ['office microsoft', ['outlook', 'microsoft-word', 'microsoft-excel', 'microsoft-powerpoint', 'microsoft-copilot']],
+    ['mail', ['gmail', 'proton-mail', 'yahoo-mail', 'mail']], ['Clair', []], ['Google Play listing', []],
+    ['this app does not exist 8675309', []], ['^(Google|Apple).*', []], ['[', []],
+    ['<img src=x onerror="window.finderInjected=true">', []],
+  ];
+  for (const width of [390, 1280]) {
+    const { context, page, consoleErrors } = await pageFor({ viewport: { width, height: 844 } });
+    try {
+      await snapshotFinderCatalog(page);
+      const form = page.getByRole('search', { name: 'Find an icon', exact: true });
+      assert.equal(await form.getAttribute('id'), 'icon-finder'); assert.ok(await form.isVisible());
+      const searchbox = page.getByRole('searchbox', { name: 'Find an icon', exact: true });
+      assert.equal(await searchbox.getAttribute('id'), 'icon-query');
+      assert.equal(await searchbox.getAttribute('type'), 'search');
+      assert.equal(await page.getByRole('combobox', { name: 'Icon type', exact: true }).getAttribute('id'), 'icon-kind');
+      assert.deepEqual(await page.locator('#icon-kind option').evaluateAll(nodes => nodes.map(node => node.value)), ['all', 'app', 'function']);
+      const status = page.locator('#icon-filter-status');
+      assert.equal(await status.getAttribute('role'), 'status'); assert.equal(await status.getAttribute('aria-live'), 'polite');
+      assert.equal(await status.getAttribute('aria-atomic'), 'true'); await assertFinderResults(page, iconFunctions);
+      for (const appearance of ['Obscur', 'Clair']) {
+        await page.getByRole('button', { name: appearance, exact: true }).click();
+        for (const [query, expected] of cases) {
+          await page.locator('#icon-query').fill(query); await assertFinderResults(page, expected);
+          assert.equal(await page.locator('#icon-query').inputValue(), query);
+          assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-query');
+        }
+        assert.equal(await page.evaluate(() => window.finderInjected), undefined);
+        assert.equal(await page.locator('#icon-finder img').count(), 0, 'Literal query markup must never become HTML');
+        await page.locator('#icon-query').fill('claude');
+        const before = { url: page.url(), timeOrigin: await page.evaluate(() => performance.timeOrigin) };
+        await page.keyboard.press('Enter'); await assertFinderResults(page, ['claude']);
+        assert.equal(page.url(), before.url); assert.equal(await page.evaluate(() => performance.timeOrigin), before.timeOrigin);
+        await page.getByRole('button', { name: appearance === 'Clair' ? 'Obscur' : 'Clair', exact: true }).click();
+        assert.equal(await page.locator('#icon-query').inputValue(), 'claude'); await assertFinderResults(page, ['claude']);
+        await page.locator('#icon-kind').selectOption('function'); await assertFinderResults(page, []);
+        assert.match(await page.locator('#icon-filter-empty').innerText(), /clear|different|another/i);
+        await page.getByRole('button', { name: 'Clear filters', exact: true }).click(); await assertFinderResults(page, iconFunctions);
+        assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-query');
+        await page.locator('#icon-kind').selectOption('app'); await assertFinderResults(page, namedIconApps.map(row => row[0]));
+        await page.locator('#icon-kind').selectOption('function'); await assertFinderResults(page, generalIconFunctions);
+        await page.locator('#icon-kind').selectOption('all'); await assertFinderResults(page, iconFunctions);
+        await assertFinderControlLayout(page);
+      }
+      const keyboard = await finderKeyboardRecovery(page); assert.deepEqual(consoleErrors, []);
+      results.scenarios.push({ name: 'literal icon finder and keyboard recovery', status: 'passed', width, cases: cases.length,
+        appearances: ['Clair', 'Obscur'], keyboard, nativePhoneVerified: false });
+    } finally { await context.close(); }
+  }
+});
+
+test('icon finder leaves exact artwork downloads and the independent platform chooser usable', async () => {
+  const { context, page, consoleErrors } = await pageFor({ viewport: { width: 390, height: 844 } });
+  try {
+    await snapshotFinderCatalog(page);
+    await page.locator('#package-target').selectOption('equicord'); await page.locator('#package-appearance').selectOption('Clair');
+    const chooserBefore = await page.locator('#package-choice-result').innerHTML();
+    await page.locator('#icon-query').fill('this app does not exist 8675309'); await assertFinderResults(page, []);
+    for (const id of ['icon-artwork-download', 'icon-artwork-broad-download', 'icon-artwork-companion-download',
+      'icon-artwork-monochrome-download', 'icon-artwork-third-app-download', 'icon-artwork-second-app-download',
+      'icon-artwork-first-app-download', 'icon-artwork-previous-download', 'icon-artwork-legacy-download', 'icon-artwork-checksums'])
+      assert.ok(await page.locator('#' + id).isVisible(), 'Filtering hid a download: ' + id);
+    await page.getByRole('button', { name: 'Obscur', exact: true }).click();
+    assert.equal(await page.locator('#package-choice-result').innerHTML(), chooserBefore);
+    assert.equal(await page.locator('#package-target').inputValue(), 'equicord');
+    assert.equal(await page.locator('#package-appearance').inputValue(), 'Clair');
+    assert.equal(await page.locator('#package-choice-file').getAttribute('href'), 'downloads/equicord/Clair-Equicord-0.1.2.theme.css');
+    const beforeUrl = page.url(); await page.locator('#icon-artwork-download').focus();
+    const [download] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }), page.keyboard.press('Enter')]);
+    assert.equal(await download.failure(), null); assert.equal(download.suggestedFilename(), path.basename(iconArchive));
+    const chunks = []; for await (const chunk of await download.createReadStream()) chunks.push(chunk);
+    const expectedBytes = await readFile(path.join(site, iconArchive)), actualBytes = Buffer.concat(chunks);
+    assert.deepEqual(actualBytes, expectedBytes); assert.equal(page.url(), beforeUrl);
+    const digest = crypto.createHash('sha256').update(actualBytes).digest('hex');
+    assert.ok((await readFile(path.join(site, 'icons/SVG-SHA256SUMS'), 'utf8')).includes(digest + '  ' + path.basename(iconArchive) + '\n'));
+    await page.locator('#icon-query').fill('claude'); await assertFinderResults(page, ['claude']);
+    const assignmentUrl = 'https://play.google.com/store/apps/details?id=com.anthropic.claude';
+    const interceptedAssignments = [];
+    // Exercise the actual result anchor without contacting the store.
+    await page.route(url => url.href === assignmentUrl, async route => {
+      interceptedAssignments.push({ url: route.request().url(), method: route.request().method() });
+      await route.fulfill({ contentType: 'text/html; charset=utf-8',
+        body: '<!doctype html><title>Assignment fixture</title><h1>Claude assignment fixture</h1>' });
+    });
+    await page.locator('#icon-clear').focus(); await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.closest('[data-icon-function]')?.dataset.iconFunction), 'claude');
+    assert.equal(await page.evaluate(() => document.activeElement.getAttribute('href')), assignmentUrl);
+    await Promise.all([page.waitForURL(assignmentUrl), page.keyboard.press('Enter')]);
+    assert.equal(page.url(), assignmentUrl);
+    assert.equal(await page.getByRole('heading', { name: 'Claude assignment fixture', exact: true }).textContent(), 'Claude assignment fixture');
+    assert.deepEqual(interceptedAssignments, [{ url: assignmentUrl, method: 'GET' }]);
+    assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: 'filtered icon acquisition and independent platform chooser', status: 'passed', sha256: digest,
+      resultLinkActivation: { url: assignmentUrl, method: 'keyboard Enter, exact page route fulfilled with an inert local response', externalStoreContacted: false },
+      scope: 'Exact browser-consumed SVG ZIP after zero results and actual result-anchor activation against a local fixture; no store, installation or native acceptance' });
+  } finally { await context.close(); }
+});
+
+test('icon finder spacing-only overrides preserve readable controls and real keyboard operations', async () => {
+  const { context, page, consoleErrors } = await pageFor();
+  try {
+    await snapshotFinderCatalog(page);
+    const baseline = await spacingContentBaseline(page);
+    assert.equal(baseline.width, 1280); assert.equal(baseline.rootFontSize, '16px');
+    await page.addStyleTag({ content: textSpacingOverride });
+    const wholePageAdmission = await assertTextSpacing(page, baseline), controls = [];
+    for (const appearance of ['Clair', 'Obscur']) {
+      await page.getByRole('button', { name: appearance, exact: true }).click();
+      controls.push(await assertFinderControlLayout(page, { spacing: true })); await finderKeyboardRecovery(page);
+      await page.locator('#icon-query').fill('no matching icon 8675309'); await assertFinderResults(page, []);
+      await assertFinderControlLayout(page, { spacing: true });
+      await page.locator('#icon-clear').focus(); await page.keyboard.press('Enter'); await assertFinderResults(page, iconFunctions);
+    }
+    assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: 'icon finder spacing only', status: 'passed', wholePageAdmission, controls,
+      scope: 'All four applicable overrides at unchanged 1280 px viewport and 16 px root; native select line-height separately labeled' });
+  } finally { await context.close(); }
+});
+
+test('icon finder narrow enlarged fallback spacing remains a separate additional stress case', async () => {
+  const { context, page, consoleErrors } = await pageFor({ viewport: { width: 320, height: 844 }, missingFont: true });
+  try {
+    await snapshotFinderCatalog(page); await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+    const baseline = await spacingContentBaseline(page);
+    assert.equal(baseline.width, 320); assert.equal(baseline.rootFontSize, '32px');
+    await page.addStyleTag({ content: textSpacingOverride });
+    const wholePageAdmission = await assertTextSpacing(page, baseline);
+    for (const appearance of ['Clair', 'Obscur']) {
+      await page.getByRole('button', { name: appearance, exact: true }).click();
+      await assertFinderControlLayout(page, { spacing: true }); await finderKeyboardRecovery(page);
+      await page.locator('#icon-query').fill('COM.FITBIT.FITBITMOBILE'); await assertFinderResults(page, ['fitbit']);
+      await assertFinderControlLayout(page, { spacing: true });
+      await page.locator('#icon-clear').focus(); await page.keyboard.press('Enter');
+    }
+    assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: 'icon finder responsive spacing stress', status: 'passed', width: 320, rootFontSize: '32px', wholePageAdmission,
+      scope: 'Combined narrow layout, enlarged root text and unavailable local Inter alias; separate from spacing-only acceptance and browser zoom' });
+  } finally { await context.close(); }
+});
+
+test('icon finder enhancement failure preserves every static choice and download', async () => {
+  for (const failure of ['no-script', 'blocked-script', 'missing-control', 'invalid-record']) {
+    const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: failure !== 'no-script', viewport: { width: 390, height: 844 },
+      setup: async (context, page) => {
+        if (failure === 'blocked-script') await page.route('**/preview.js', route => route.abort('blockedbyclient'));
+        if (failure === 'missing-control' || failure === 'invalid-record') await page.route(origin + '/', async route => {
+          const original = await readFile(path.join(site, 'index.html'), 'utf8');
+          const from = failure === 'missing-control' ? 'id="icon-query"' : 'data-icon-kind="app"';
+          const to = failure === 'missing-control' ? 'id="icon-query-unavailable"' : 'data-icon-kind="unknown"';
+          assert.ok(original.includes(from), 'Fallback fault must reach the intended current markup');
+          await route.fulfill({ contentType: 'text/html; charset=utf-8', body: original.replace(from, to) });
+        });
+      } });
+    try {
+      await snapshotFinderCatalog(page);
+      assert.ok(await page.locator('#icon-finder').isHidden(), failure + ' must not expose an inert finder');
+      await assertFinderResults(page, iconFunctions, { enhanced: false });
+      assert.deepEqual(await page.locator('#icons article.icon-card p a').evaluateAll(nodes => nodes.map(node => ({
+        id: node.closest('[data-icon-function]').dataset.iconFunction, href: node.getAttribute('href') }))),
+      namedIconApps.map(([id, , packageId]) => ({ id, href: 'https://play.google.com/store/apps/details?id=' + packageId })));
+      for (const id of ['icon-artwork-download', 'icon-artwork-broad-download', 'icon-artwork-companion-download',
+        'icon-artwork-monochrome-download', 'icon-artwork-third-app-download', 'icon-artwork-second-app-download',
+        'icon-artwork-first-app-download', 'icon-artwork-previous-download', 'icon-artwork-legacy-download']) assert.ok(await page.locator('#' + id).isVisible());
+      if (failure === 'missing-control' || failure === 'invalid-record') {
+        await page.locator('#sample-button').click(); assert.match(await page.locator('#control-status').innerText(), /Control activated/);
+        assert.deepEqual(consoleErrors, [], 'Failed finder admission must not break unrelated enhancement');
+      }
+      results.scenarios.push({ name: 'icon finder static fallback', failure, status: 'passed', retainedChoices: 175, retainedMappings: 151,
+        scope: 'Isolated fixture initialization fault or script absence, not a product defect' });
+    } finally { await context.close(); }
+  }
+});
+
+test('icon finder qualification rejects an initialized but inert query control', async () => {
+  const { context, page, consoleErrors } = await pageFor({ setup: async (context, page) => {
+    await page.route('**/preview.js', async route => {
+      const original = await readFile(path.join(site, 'preview.js'), 'utf8');
+      const listener = "query.addEventListener('input', updateIconFilter);";
+      assert.equal(original.split(listener).length - 1, 1, 'Fault must target exactly the current finder input listener');
+      await route.fulfill({ contentType: 'text/javascript', body: original.replace(listener, '/* disposable inert-query fault */') });
+    });
+  } });
+  try {
+    await snapshotFinderCatalog(page); assert.ok(await page.locator('#icon-finder').isVisible());
+    await assertFinderResults(page, iconFunctions); await page.locator('#icon-query').fill('claude');
+    await assert.rejects(assertFinderResults(page, ['claude']), /Finder must expose independently expected choices/);
+    assert.equal(await page.locator('#icon-query').inputValue(), 'claude'); assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: 'icon finder controlled operation failure', fault: 'input listener removed after valid initialization',
+      status: 'rejected as expected', scope: 'Disposable browser response fault, not a product defect' });
+  } finally { await context.close(); }
+});
 
 test('icon gallery decodes every current appearance at phone widths and enlarged fallback text', async () => {
   for (const scenario of [{ width: 390, enlarged: false }, { width: 320, enlarged: true }]) {
