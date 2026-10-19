@@ -313,20 +313,20 @@ class ManifestAdmissionTests(KitFixture):
         (self.kit / 'site-manifest.json').write_bytes(b' ' * 65_537)
         self.assert_refused(message='File byte limit')
         self.document = manifest_document(self.files)
-        for number in range(257 - len(self.document['files'])):
+        for number in range(321 - len(self.document['files'])):
             self.document['files'][f'file{number}.txt'] = '0' * 64
         self.write_manifest()
         self.assert_refused(message='declared file count')
         self.document = manifest_document(self.files)
-        for number in range(40):
+        for number in range(48):
             self.document['files'][f'a{number}/b/c/d/e/f/g/file'] = '0' * 64
         self.write_manifest()
         self.assert_refused(message='Combined inventory')
 
-    def test_expanded_declared_inventory_accepts_prior_and_256_hashes_and_refuses_257(self):
+    def test_expanded_declared_inventory_accepts_prior_and_320_hashes_and_refuses_321(self):
         # Exercise a complete comparison at the published limit. The current
         # named-app portable kit also runs through ProducerInclusionTests.
-        for count in (192, 224, 240, 248, 256):
+        for count in (192, 224, 240, 248, 256, 313, 320):
             while len(self.files) < count:
                 number = len(self.files)
                 name = f'expanded{number}.txt'
@@ -346,10 +346,10 @@ class ManifestAdmissionTests(KitFixture):
         self.assertEqual(self.snapshot(), before)
 
     def test_actual_inventory_depth_and_unsafe_extra_are_refused_before_reads(self):
-        extra_count = 288 - len(verifier.inventory(self.kit))
+        extra_count = 352 - len(verifier.inventory(self.kit))
         for number in range(extra_count):
             (self.kit / f'extra{number}.txt').touch()
-        self.assertEqual(len(verifier.inventory(self.kit)), 288)
+        self.assertEqual(len(verifier.inventory(self.kit)), 352)
         (self.kit / f'extra{extra_count}.txt').touch()
         with patch.object(verifier, '_read', side_effect=AssertionError('content read')):
             with self.assertRaisesRegex(verifier.VerificationInputError, 'Actual inventory'):

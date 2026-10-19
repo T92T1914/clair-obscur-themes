@@ -1,5 +1,13 @@
 # Changes
 
+## Icon artwork 0.8.0
+
+- Add 32 inspected app interpretations across media, reading, shopping, travel, office tools and games. The black and white collection now has 103 named apps and 24 general functions in both appearances.
+- Preserve all 190 accepted 0.7.0 SVGs and all seven historical artwork archives. Keep the original desktop packages and watch program unchanged.
+- Export 508 current PNGs through the existing version-specific exporter, retaining input admission for all eight revisions.
+- Admit the larger portable kit within 320 declared hashes and 352 filesystem entries, retaining byte, path, link and read checks and boundary refusals.
+- Keep the earlier partial Theme Park application distinct from new artwork availability and full launcher acceptance.
+
 ## Icon artwork 0.7.0
 
 - Add six inspected app interpretations: Good Lock, Connect IQ Store, Steam, Reuters, The Home Depot and Patreon. The black and white collection now has 71 named apps and 24 general functions in both appearances.
