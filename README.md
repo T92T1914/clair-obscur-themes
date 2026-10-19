@@ -72,7 +72,7 @@ and [original phone icon artwork](docs/samsung-icons.md). The watch face targets
 always on view. Simulator checks cover the stated behavior on that target.
 Physical watch acceptance and phone import remain untested.
 
-The phone gallery's 0.3.0 collection pairs 33 named Android apps with 24 general symbols, giving 57 choices in both appearances. Checked app labels, package IDs and official listings support manual assignment. Original 0.1.0 and refined 0.2.0 downloads remain unchanged, and all three revisions support the local PNG exporter. This first collection is not a complete store catalog or an ordered popularity chart.
+The phone gallery's 0.4.0 collection pairs 57 named Android apps with 24 general symbols, giving 81 choices in both appearances. Checked app labels, package IDs and official listings support manual assignment. Original 0.1.0, refined 0.2.0 and first named-app 0.3.0 downloads remain unchanged, and all four revisions support the local PNG exporter. Coverage is a growing selection, not a complete store catalog or an ordered popularity chart.
 
 ## Report a problem
 

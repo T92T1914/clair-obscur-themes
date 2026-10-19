@@ -73,7 +73,7 @@ unsupported. These rules also apply to extra entries before any content is read.
 | Limit | Value |
 | --- | --- |
 | Manifest | 65,536 bytes |
-| Declared hashes | 192 |
+| Declared hashes | 224 |
 | Expected or observed files and directories | 256, excluding the root |
 | Each declared member | 8,388,608 bytes |
 | Total returned read bytes, including both manifest reads and sentinels | 16,777,216 |
