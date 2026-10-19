@@ -1,5 +1,13 @@
 # Changes
 
+## Icon artwork 0.7.0
+
+- Add six inspected app interpretations: Good Lock, Connect IQ Store, Steam, Reuters, The Home Depot and Patreon. The black and white collection now has 71 named apps and 24 general functions in both appearances.
+- Preserve every accepted 0.6.0 SVG byte and all six historical artwork archives. Keep both monochrome revisions bound to their shared neutral token document.
+- Export 380 current PNGs while retaining exact-version input admission and saved-pixel checks for all seven collections.
+- Admit the expanded portable kit within 256 declared hashes and 288 filesystem entries. Preserve path, byte and read limits and over-limit refusal.
+- Record the limited 0.6.0 Theme Park application observation and user-reported watch-face presence separately from current 0.7.0 qualification and full device acceptance.
+
 ## Black and white identity
 
 - Add a shared neutral palette with pure white and black reading surfaces. Keep the original token file and desktop package bytes unchanged.

@@ -86,13 +86,24 @@ const thirdApps = [
   ['samsung-smartthings', 'SmartThings', 'com.samsung.android.oneconnect'],
 ];
 const secondApps = [...firstApps, ...addedApps];
-const apps = [...secondApps, ...thirdApps];
+const retainedApps = [...secondApps, ...thirdApps];
+const fourthApps = [
+  ['good-lock', 'Good Lock', 'com.samsung.android.goodlock'],
+  ['connect-iq-store', 'Connect IQ Store', 'com.garmin.connectiq'],
+  ['steam', 'Steam', 'com.valvesoftware.android.steam.community'],
+  ['reuters', 'Reuters', 'com.thomsonreuters.reuters'],
+  ['home-depot', 'Home Depot', 'com.thehomedepot'],
+  ['patreon', 'Patreon', 'com.patreon.android'],
+];
+const apps = [...retainedApps, ...fourthApps];
 const firstFunctions = [...baseFunctions, ...firstApps.map(([id]) => id)];
 const secondFunctions = [...baseFunctions, ...secondApps.map(([id]) => id)];
+const retainedFunctions = [...baseFunctions, ...retainedApps.map(([id]) => id)];
 const functions = [...baseFunctions, ...apps.map(([id]) => id)];
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 let temporary, source, sourceBefore, legacySource, legacyBefore, previousSource, previousBefore,
-  firstSource, firstBefore, secondSource, secondBefore, thirdSource, thirdBefore;
+  firstSource, firstBefore, secondSource, secondBefore, thirdSource, thirdBefore,
+  monochromeSource, monochromeBefore;
 
 function execute(command, args, options = {}) {
   return spawnSync(command, args, { cwd: root, encoding: 'utf8', windowsHide: true,
@@ -180,6 +191,31 @@ function decodeRgba(bytes, size) {
   return rgba;
 }
 
+function assertMonochromePixels(bytes, size, appearance, record, relative) {
+  assert.equal(record.pixel_check.nontransparent_border_pixels, 0);
+  assert.equal(record.pixel_check.nonneutral_pixels, 0);
+  assert.deepEqual(Object.keys(record.pixel_check.counts).sort(), ['glyph', 'panel', 'transparent']);
+  assert.ok(record.pixel_check.counts.glyph > 100, 'One combined glyph color is measured');
+  const rgba = decodeRgba(bytes, size);
+  const tile = appearance === 'Clair' ? 255 : 0;
+  const foreground = appearance === 'Clair' ? 0 : 255;
+  const counts = { panel: 0, glyph: 0, transparent: 0 };
+  let nonneutral = 0;
+  for (let y = 0; y < size; y += 1) for (let x = 0; x < size; x += 1) {
+    const index = (y * size + x) * 4, alpha = rgba[index + 3];
+    if (alpha === 0) counts.transparent += 1;
+    else if (rgba[index] !== rgba[index + 1] || rgba[index + 1] !== rgba[index + 2]) nonneutral += 1;
+    if (x < size / 16 || y < size / 16 || x >= size * 15 / 16 || y >= size * 15 / 16) assert.equal(alpha, 0, 'Full outer margin stays transparent');
+    if (alpha !== 255) continue;
+    if (rgba[index] === tile) counts.panel += 1;
+    if (rgba[index] === foreground) counts.glyph += 1;
+  }
+  assert.ok(counts.transparent > 0 && counts.panel > size * size / 3 && counts.glyph > 100,
+    `${relative} preserves its pure tile, pure foreground and transparent margin`);
+  assert.equal(nonneutral, 0, 'Every visible RGB triple is neutral; antialias grays are valid');
+  assert.deepEqual(record.pixel_check.counts, counts);
+}
+
 before(async () => {
   temporary = await mkdtemp(path.join(tmpdir(), 'clair-obscur-icon-export-'));
   source = path.join(temporary, 'svg');
@@ -218,6 +254,17 @@ before(async () => {
   thirdBefore = await snapshot(thirdSource);
   assert.equal(thirdBefore['manifest.json'], 'e40a9bd7ae62f677078fb10a48e0ced5901a43bfff06c8684270d560ca4529c8',
     'The accepted third-collection manifest remains exact');
+  monochromeSource = path.join(temporary, 'first-monochrome-svg');
+  const monochrome = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', monochromeSource, '--version', '0.6.0']);
+  assert.ifError(monochrome.error);
+  assert.equal(monochrome.status, 0, monochrome.stdout + monochrome.stderr);
+  monochromeBefore = await snapshot(monochromeSource);
+  assert.equal(monochromeBefore['manifest.json'], '57537e0ad06dee704400160d30ae47f4cce8beba557c347ef5236ac8da32ee92',
+    'The accepted first-monochrome manifest remains exact');
+  for (const appearance of ['Clair', 'Obscur']) for (const name of retainedFunctions) {
+    assert.equal(sourceBefore[`${appearance}/${name}.svg`], monochromeBefore[`${appearance}/${name}.svg`],
+      'Every retained monochrome SVG stays byte-identical in the expanded collection');
+  }
 });
 
 after(async () => {
@@ -228,20 +275,20 @@ after(async () => {
   }
 });
 
-test('PNG command exports 356 monochrome icons with independent neutral-pixel decoding and assignment identities', async () => {
+test('PNG command exports 380 monochrome icons with independent neutral-pixel decoding and assignment identities', async () => {
   const output = path.join(temporary, 'png');
   const result = exportTo(source, output);
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.match(result.stdout, /Exported 356 PNG icons/);
+  assert.match(result.stdout, /Exported 380 PNG icons/);
   const manifestBytes = await readFile(path.join(output, 'manifest.json'));
   const manifest = JSON.parse(manifestBytes);
   const expected = ['manifest.json', 'LICENSE'];
-  assert.equal(manifest.version, '0.6.0');
-  assert.equal(manifest.exporter_version, '0.6.0');
+  assert.equal(manifest.version, '0.7.0');
+  assert.equal(manifest.exporter_version, '0.7.0');
   assert.equal(manifest.palette_variant, 'monochrome');
   assert.equal(manifest.token_version, '1.0.0');
-  assert.equal(manifest.files.length, 356);
+  assert.equal(manifest.files.length, 380);
   assert.deepEqual(manifest.functions, functions);
   assert.equal(manifest.source_manifest_sha256, sourceBefore['manifest.json']);
   assert.equal(manifest.tokens_file, 'tokens-monochrome.json');
@@ -250,7 +297,7 @@ test('PNG command exports 356 monochrome icons with independent neutral-pixel de
   assert.equal(manifest.svg_catalog_sha256, sha(await readFile(path.join(root, 'themeforge/icon_apps.py'))));
   const svgManifest = JSON.parse(await readFile(path.join(source, 'manifest.json')));
   assert.deepEqual(manifest.catalog, svgManifest.catalog, 'Complete admitted assignment metadata survives PNG export');
-  assert.equal(manifest.catalog.length, 89);
+  assert.equal(manifest.catalog.length, 95);
   assert.equal(manifest.catalog_date, '2026-10-19');
   assert.equal(manifest.catalog_scope, svgManifest.catalog_scope);
   assert.match(manifest.catalog_scope, /Not an ordered popularity chart or exhaustive catalog/);
@@ -261,6 +308,11 @@ test('PNG command exports 356 monochrome icons with independent neutral-pixel de
     assert.equal(entry.store_url, `https://play.google.com/store/apps/details?id=${entry.android_package}`);
     for (const field of ['category', 'store_title', 'selection_basis']) assert.ok(entry[field].trim());
   }
+  assert.deepEqual(Object.fromEntries(manifest.catalog.filter(entry => fourthApps.some(([id]) => id === entry.id))
+    .map(entry => [entry.id, entry.store_title])), {
+    'good-lock': 'Good Lock', 'connect-iq-store': 'Connect IQ\u2122 Store', steam: 'Steam',
+    reuters: 'Reuters - Breaking World News', 'home-depot': 'The Home Depot', patreon: 'Patreon',
+  });
   assert.equal(manifest.exporter_sha256, sha(await readFile(exporter)));
   const license = await readFile(path.join(output, 'LICENSE'));
   assert.deepEqual(license, await readFile(path.join(root, 'LICENSE')));
@@ -271,10 +323,10 @@ test('PNG command exports 356 monochrome icons with independent neutral-pixel de
   assert.equal(manifestBytes.toString().includes(root), false, 'No checkout path enters the export manifest');
   assert.equal(manifestBytes.toString().includes(temporary), false, 'No temporary or user path enters the export manifest');
   const records = new Map(manifest.files.map(record => [record.path, record]));
-  assert.equal(records.size, 356);
+  assert.equal(records.size, 380);
   for (const appearance of ['Clair', 'Obscur']) for (const size of [512, 1024]) {
     const hashes = functions.map(name => records.get(`${appearance}/${size}/${name}.png`)?.sha256);
-    assert.equal(new Set(hashes).size, 89, `${appearance}/${size} retains 89 distinct drawings`);
+    assert.equal(new Set(hashes).size, 95, `${appearance}/${size} retains 95 distinct drawings`);
     assert.equal(hashes.includes(undefined), false);
   }
   for (const appearance of ['Clair', 'Obscur']) for (const size of [512, 1024]) for (const name of functions) {
@@ -286,34 +338,13 @@ test('PNG command exports 356 monochrome icons with independent neutral-pixel de
     assert.equal(record.sha256, sha(bytes)); assert.equal(record.bytes, bytes.length);
     assert.equal(record.source_svg_sha256, sourceBefore[`${appearance}/${name}.svg`]);
     assert.equal(record.width, size); assert.equal(record.height, size);
-    assert.equal(record.pixel_check.nontransparent_border_pixels, 0);
-    assert.equal(record.pixel_check.nonneutral_pixels, 0);
-    assert.deepEqual(Object.keys(record.pixel_check.counts).sort(), ['glyph', 'panel', 'transparent']);
-    assert.ok(record.pixel_check.counts.glyph > 100, 'One combined glyph color is measured');
-    const rgba = decodeRgba(bytes, size);
-    const tile = appearance === 'Clair' ? 255 : 0;
-    const foreground = appearance === 'Clair' ? 0 : 255;
-    const counts = { panel: 0, glyph: 0, transparent: 0 };
-    let nonneutral = 0;
-    for (let y = 0; y < size; y += 1) for (let x = 0; x < size; x += 1) {
-      const index = (y * size + x) * 4, alpha = rgba[index + 3];
-      if (alpha === 0) counts.transparent += 1;
-      else if (rgba[index] !== rgba[index + 1] || rgba[index + 1] !== rgba[index + 2]) nonneutral += 1;
-      if (x < size / 16 || y < size / 16 || x >= size * 15 / 16 || y >= size * 15 / 16) assert.equal(alpha, 0, 'Full outer margin stays transparent');
-      if (alpha !== 255) continue;
-      if (rgba[index] === tile) counts.panel += 1;
-      if (rgba[index] === foreground) counts.glyph += 1;
-    }
-    assert.ok(counts.transparent > 0 && counts.panel > size * size / 3 && counts.glyph > 100,
-      `${relative} preserves its pure tile, pure foreground and transparent margin`);
-    assert.equal(nonneutral, 0, 'Every visible RGB triple is neutral; antialias grays are valid');
-    assert.deepEqual(record.pixel_check.counts, counts);
+    assertMonochromePixels(bytes, size, appearance, record, relative);
   }
   assert.deepEqual(Object.keys(await snapshot(output)).sort(), expected.sort());
   assert.deepEqual(await snapshot(source), sourceBefore);
 });
 
-for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
+for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
   const historical = {
     '0.1.0': { input: legacySource, before: legacyBefore, functions: baseFunctions, images: 96 },
     '0.2.0': { input: previousSource, before: previousBefore, functions: baseFunctions, images: 96 },
@@ -321,8 +352,10 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0']) test(`accep
       apps: firstApps, date: '2026-10-18' },
     '0.4.0': { input: secondSource, before: secondBefore, functions: secondFunctions, images: 324,
       apps: secondApps, date: '2026-10-19' },
-    '0.5.0': { input: thirdSource, before: thirdBefore, functions, images: 356,
-      apps, date: '2026-10-19' },
+    '0.5.0': { input: thirdSource, before: thirdBefore, functions: retainedFunctions, images: 356,
+      apps: retainedApps, date: '2026-10-19' },
+    '0.6.0': { input: monochromeSource, before: monochromeBefore, functions: retainedFunctions, images: 356,
+      apps: retainedApps, date: '2026-10-19', monochrome: true },
   }[version];
   const historicalSource = historical.input, historicalBefore = historical.before;
   const historicalFunctions = historical.functions, imageCount = historical.images;
@@ -333,11 +366,13 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0']) test(`accep
   assert.match(result.stdout, new RegExp(`Exported ${imageCount} PNG icons`));
   const manifest = JSON.parse(await readFile(path.join(output, 'manifest.json')));
   assert.equal(manifest.version, version);
-  assert.equal(manifest.exporter_version, '0.6.0');
-  assert.equal(manifest.tokens_file, 'tokens.json');
-  assert.equal(manifest.tokens_sha256, sha(await readFile(path.join(root, 'tokens.json'))));
-  assert.equal(manifest.token_version, '0.1.1');
-  assert.equal(Object.hasOwn(manifest, 'palette_variant'), false);
+  assert.equal(manifest.exporter_version, '0.7.0');
+  const tokenFile = historical.monochrome ? 'tokens-monochrome.json' : 'tokens.json';
+  assert.equal(manifest.tokens_file, tokenFile);
+  assert.equal(manifest.tokens_sha256, sha(await readFile(path.join(root, tokenFile))));
+  assert.equal(manifest.token_version, historical.monochrome ? '1.0.0' : '0.1.1');
+  if (historical.monochrome) assert.equal(manifest.palette_variant, 'monochrome');
+  else assert.equal(Object.hasOwn(manifest, 'palette_variant'), false);
   assert.equal(manifest.source_manifest_sha256, historicalBefore['manifest.json']);
   assert.deepEqual(manifest.functions, historicalFunctions);
   if (historical.apps) {
@@ -370,6 +405,7 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0']) test(`accep
       assert.equal(record.source_svg_sha256, historicalBefore[`${appearance}/${name}.svg`]);
       assert.equal(record.width, size); assert.equal(record.height, size);
       hashes.push(record.sha256);
+      if (historical.monochrome) assertMonochromePixels(bytes, size, appearance, record, relative);
       if (name === 'phone' || name === 'camera') {
         const rgba = decodeRgba(bytes, size);
         assert.equal(rgba[3], 0, 'Legacy PNG keeps its transparent corner');
@@ -385,11 +421,12 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0']) test(`accep
 
 test('unknown and mismatched artwork versions are refused before output reservation or browser launch', async () => {
   const admitted = [['0.1.0', legacySource], ['0.2.0', previousSource], ['0.3.0', firstSource],
-    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', source]];
+    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', source]];
   const cases = [['unknown', source, '9.9.9']];
   for (const [actual, original] of admitted) for (const [claimed] of admitted) {
     if (actual !== claimed) cases.push([`${actual}-as-${claimed}`, original, claimed]);
   }
+  assert.equal(cases.length, 43, 'All 42 cross-version claims and one unknown version are exercised');
   for (const [name, original, version] of cases) {
     const input = path.join(temporary, name);
     await cp(original, input, { recursive: true });
@@ -408,14 +445,20 @@ test('unknown and mismatched artwork versions are refused before output reservat
 test('altered app assignments and mixed previous/current artwork fail admission without changing their evidence', async () => {
   for (const mutation of ['label', 'android_package', 'store_url', 'store_title', 'category',
     'selection_basis', 'catalog_date', 'catalog_scope', 'historical-first-label', 'historical-second-label',
-    'historical-third-label', 'mixed-version-svg', 'mixed-version-manifest']) {
+    'historical-third-label', 'historical-monochrome-label', 'mixed-version-svg', 'mixed-version-manifest',
+    'previous-monochrome-manifest', 'new-svg-in-historical-monochrome']) {
     const input = path.join(temporary, `assignment-${mutation}`);
     await cp(mutation === 'historical-first-label' ? firstSource :
       mutation === 'historical-second-label' ? secondSource :
-      mutation === 'historical-third-label' ? thirdSource : source, input, { recursive: true });
+      mutation === 'historical-third-label' ? thirdSource :
+      ['historical-monochrome-label', 'new-svg-in-historical-monochrome'].includes(mutation) ? monochromeSource : source, input, { recursive: true });
     const manifestPath = path.join(input, 'manifest.json');
     const manifest = JSON.parse(await readFile(manifestPath));
-    if (mutation === 'mixed-version-svg') {
+    if (mutation === 'new-svg-in-historical-monochrome') {
+      await cp(path.join(source, 'Clair', 'good-lock.svg'), path.join(input, 'Clair', 'good-lock.svg'));
+    } else if (mutation === 'previous-monochrome-manifest') {
+      await cp(path.join(monochromeSource, 'manifest.json'), manifestPath);
+    } else if (mutation === 'mixed-version-svg') {
       await cp(path.join(thirdSource, 'Clair', 'github.svg'), path.join(input, 'Clair', 'github.svg'));
     } else if (mutation === 'mixed-version-manifest') {
       await cp(path.join(thirdSource, 'manifest.json'), manifestPath);
@@ -424,7 +467,8 @@ test('altered app assignments and mixed previous/current artwork fail admission 
       else if (mutation === 'historical-first-label') manifest.catalog.find(entry => entry.id === 'google-chrome').label = 'unqualified replacement';
       else if (mutation === 'historical-second-label') manifest.catalog.find(entry => entry.id === 'google-meet').label = 'unqualified replacement';
       else if (mutation === 'historical-third-label') manifest.catalog.find(entry => entry.id === 'microsoft-authenticator').label = 'unqualified replacement';
-      else manifest.catalog.find(entry => entry.id === 'github')[mutation] = 'unqualified replacement';
+      else if (mutation === 'historical-monochrome-label') manifest.catalog.find(entry => entry.id === 'github').label = 'unqualified replacement';
+      else manifest.catalog.find(entry => entry.id === 'good-lock')[mutation] = 'unqualified replacement';
       await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
     }
     const before = await snapshot(input);

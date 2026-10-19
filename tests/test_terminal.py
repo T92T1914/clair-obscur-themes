@@ -358,13 +358,13 @@ class TerminalPreviewTests(unittest.TestCase):
     def test_terminal_preview_preserves_desktop_downloads_and_all_icon_revisions(self):
         from preview import (FIRST_APP_ICON_ARCHIVE, ICON_ARCHIVE, ICON_CHECKSUMS,
                              LEGACY_ICON_ARCHIVE, PREVIOUS_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE,
-                             PORTABLE_ARCHIVE, preview_files)
+                             MONOCHROME_ICON_ARCHIVE, PORTABLE_ARCHIVE, preview_files)
         from themeforge.icons import render_icons
         desktop = snapshot(self.artifacts)
         self.assertEqual(len(desktop), 32)
         icons = render_icons(json.loads((ROOT / 'tokens-monochrome.json').read_bytes()))
         current_svg = {path: payload for path, payload in icons.items() if path.endswith(".svg")}
-        self.assertEqual(len(current_svg), 178)
+        self.assertEqual(len(current_svg), 190)
         token_bytes = (ROOT / "tokens.json").read_bytes()
         files = preview_files(ROOT, self.artifacts)
         with zipfile.ZipFile(io.BytesIO(files[PORTABLE_ARCHIVE])) as portable:
@@ -386,11 +386,13 @@ class TerminalPreviewTests(unittest.TestCase):
                              'fc2540a7bf9a6d580a3238904b6e7e4f6b77ca5df5797cc7ce3a6de782cda0cf')
             self.assertEqual(hashlib.sha256(delivery[THIRD_APP_ICON_ARCHIVE]).hexdigest(),
                              '2310c0151c0c3215e99d24a7aa92616a55dc726b2e38466427890223d778307a')
+            self.assertEqual(hashlib.sha256(delivery[MONOCHROME_ICON_ARCHIVE]).hexdigest(),
+                             "241efb1fe6584df4f66c84571bfe671059404e83be8d67876f415af6564a56bb")
             with zipfile.ZipFile(io.BytesIO(delivery[ICON_ARCHIVE])) as current:
-                self.assertEqual(json.loads(current.read("manifest.json"))["version"], "0.6.0")
+                self.assertEqual(json.loads(current.read("manifest.json"))["version"], "0.7.0")
             self.assertEqual(delivery[ICON_CHECKSUMS],
                              ''.join(f'{hashlib.sha256(delivery[path]).hexdigest()}  {Path(path).name}\n'
-                                     for path in (ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
+                                     for path in (ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
                                                   PREVIOUS_ICON_ARCHIVE, LEGACY_ICON_ARCHIVE)).encode())
         self.assertEqual(snapshot(self.artifacts), desktop)
         self.assertEqual((ROOT / "tokens.json").read_bytes(), token_bytes)

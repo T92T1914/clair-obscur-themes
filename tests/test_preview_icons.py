@@ -11,7 +11,7 @@ from unittest.mock import patch
 import zipfile
 
 from preview import (
-    FIRST_APP_ICON_ARCHIVE, ICON_ARCHIVE, ICON_CHECKSUMS, LEGACY_ICON_ARCHIVE,
+    FIRST_APP_ICON_ARCHIVE, ICON_ARCHIVE, ICON_CHECKSUMS, LEGACY_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE,
     PREVIOUS_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, PORTABLE_ARCHIVE, ROOT, preview_files,
 )
 from themeforge.build import build_release
@@ -94,7 +94,15 @@ THIRD_APPS = (
     ('google-authenticator', 'Google Authenticator', 'com.google.android.apps.authenticator2'),
     ('samsung-smartthings', 'SmartThings', 'com.samsung.android.oneconnect'),
 )
-APPS = FIRST_APPS + ADDITIONAL_APPS + THIRD_APPS
+COMPANION_APPS = (
+    ('good-lock', 'Good Lock', 'com.samsung.android.goodlock'),
+    ('connect-iq-store', 'Connect IQ Store', 'com.garmin.connectiq'),
+    ('steam', 'Steam', 'com.valvesoftware.android.steam.community'),
+    ('reuters', 'Reuters', 'com.thomsonreuters.reuters'),
+    ('home-depot', 'Home Depot', 'com.thehomedepot'),
+    ('patreon', 'Patreon', 'com.patreon.android'),
+)
+APPS = FIRST_APPS + ADDITIONAL_APPS + THIRD_APPS + COMPANION_APPS
 CURRENT_IDS = FUNCTIONS + [row[0] for row in APPS]
 GALLERY_IDS = [row[0] for row in APPS] + FUNCTIONS
 LABELS = {**{name: name.replace('-', ' ').title() for name in FUNCTIONS},
@@ -161,7 +169,7 @@ class PreviewIconTests(unittest.TestCase):
         expected = render_icons(monochrome)
         retained = render_icons(document, version='0.5.0')
         manifest = json.loads(expected['manifest.json'])
-        self.assertEqual(manifest['version'], '0.6.0')
+        self.assertEqual(manifest['version'], '0.7.0')
         self.assertEqual(manifest['functions'], CURRENT_IDS)
         self.assertEqual(len(expected), len(CURRENT_IDS) * 2 + 1)
         expected['LICENSE.txt'] = (ROOT / 'LICENSE').read_bytes()
@@ -217,13 +225,23 @@ class PreviewIconTests(unittest.TestCase):
             self.assertEqual({name: archive.read(name) for name in archive.namelist()}, retained)
         self.assertEqual(hashlib.sha256(files[THIRD_APP_ICON_ARCHIVE]).hexdigest(),
                          '2310c0151c0c3215e99d24a7aa92616a55dc726b2e38466427890223d778307a')
+        previous_monochrome = render_icons(monochrome, version='0.6.0')
+        previous_monochrome['LICENSE.txt'] = (ROOT / 'LICENSE').read_bytes()
+        with zipfile.ZipFile(io.BytesIO(files[MONOCHROME_ICON_ARCHIVE])) as archive:
+            self.assertEqual(len(archive.namelist()), 180)
+            self.assertEqual({name: archive.read(name) for name in archive.namelist()}, previous_monochrome)
+        self.assertEqual(hashlib.sha256(files[MONOCHROME_ICON_ARCHIVE]).hexdigest(),
+                         '241efb1fe6584df4f66c84571bfe671059404e83be8d67876f415af6564a56bb')
+        for path, payload in previous_monochrome.items():
+            if path.endswith('.svg'):
+                self.assertEqual(expected[path], payload)
         self.assertNotEqual(files[ICON_ARCHIVE], files[LEGACY_ICON_ARCHIVE])
         self.assertEqual(files[ICON_CHECKSUMS],
                          ''.join(f'{hashlib.sha256(files[path]).hexdigest()}  {Path(path).name}\n'
-                                 for path in (ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
+                                 for path in (ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
                                               PREVIOUS_ICON_ARCHIVE, LEGACY_ICON_ARCHIVE)).encode())
         repeated = preview_files(ROOT, self.artifacts)
-        for path in (ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
+        for path in (ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
                      PREVIOUS_ICON_ARCHIVE, LEGACY_ICON_ARCHIVE):
             self.assertEqual(repeated[path], files[path])
 
@@ -262,7 +280,7 @@ class PreviewIconTests(unittest.TestCase):
                 for identifier, _, package in APPS:
                     self.assertIn(f'https://play.google.com/store/apps/details?id={package}', page)
                     self.assertIn(f'<code>{package}</code>', page)
-                for path in (ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
+                for path in (ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
                              PREVIOUS_ICON_ARCHIVE, LEGACY_ICON_ARCHIVE, ICON_CHECKSUMS):
                     links = [link for link in markup.links if link.get('href') == path]
                     self.assertEqual(len(links), 1)
@@ -270,13 +288,14 @@ class PreviewIconTests(unittest.TestCase):
                     self.assertEqual(delivery[path], files[path])
                 history = {link['id']: link['href'] for link in markup.links if 'id' in link}
                 self.assertEqual(history['icon-artwork-download'], ICON_ARCHIVE)
+                self.assertEqual(history['icon-artwork-monochrome-download'], MONOCHROME_ICON_ARCHIVE)
                 self.assertEqual(history['icon-artwork-second-app-download'], SECOND_APP_ICON_ARCHIVE)
                 self.assertEqual(history['icon-artwork-first-app-download'], FIRST_APP_ICON_ARCHIVE)
                 self.assertEqual(history['icon-artwork-previous-download'], PREVIOUS_ICON_ARCHIVE)
                 self.assertEqual(history['icon-artwork-legacy-download'], LEGACY_ICON_ARCHIVE)
                 self.assertEqual([link['id'] for link in markup.links
                                   if link.get('id', '').startswith('icon-artwork-')], [
-                    'icon-artwork-download', 'icon-artwork-checksums',
+                    'icon-artwork-download', 'icon-artwork-checksums', 'icon-artwork-monochrome-download',
                     'icon-artwork-third-app-download', 'icon-artwork-second-app-download', 'icon-artwork-first-app-download',
                     'icon-artwork-previous-download',
                     'icon-artwork-legacy-download',
@@ -301,9 +320,9 @@ class PreviewIconTests(unittest.TestCase):
         self.assertEqual(files['index.html'].count(b'class="download-card"'), 17)
 
     def test_an_icon_license_read_after_source_capture_cannot_replace_the_captured_grant(self):
-        for changed_version in ('0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0'):
+        for changed_version in ('0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0'):
             with self.subTest(version=changed_version):
-                def changed_grant(document, *, version='0.6.0'):
+                def changed_grant(document, *, version='0.7.0'):
                     icons = render_icons(document, version=version)
                     if version == changed_version:
                         last = 'Obscur/search.svg'
@@ -319,10 +338,11 @@ class PreviewIconTests(unittest.TestCase):
         for identifier, mutation in (
                 ('youtube', 'missing-app'), ('youtube', 'missing-label'),
                 ('canva', 'missing-app'), ('canva', 'missing-label'),
-                ('samsung-smartthings', 'missing-app'), ('samsung-smartthings', 'missing-label')):
-            def changed_catalog(document, *, version='0.6.0'):
+                ('samsung-smartthings', 'missing-app'), ('samsung-smartthings', 'missing-label'),
+                ('good-lock', 'missing-app'), ('patreon', 'missing-label')):
+            def changed_catalog(document, *, version='0.7.0'):
                 files = render_icons(document, version=version)
-                if version == '0.6.0':
+                if version == '0.7.0':
                     manifest = json.loads(files['manifest.json'])
                     if mutation == 'missing-app':
                         manifest['catalog'] = [entry for entry in manifest['catalog'] if entry['id'] != identifier]
@@ -336,9 +356,9 @@ class PreviewIconTests(unittest.TestCase):
             self.assertEqual(snapshot(self.artifacts), self.original)
 
     def test_current_app_labels_are_escaped_in_headings_and_image_alternatives(self):
-        def changed_label(document, *, version='0.6.0'):
+        def changed_label(document, *, version='0.7.0'):
             files = render_icons(document, version=version)
-            if version == '0.6.0':
+            if version == '0.7.0':
                 manifest = json.loads(files['manifest.json'])
                 next(entry for entry in manifest['catalog'] if entry['id'] == 'youtube')['label'] = '<App & "Name">'
                 files['manifest.json'] = json.dumps(manifest).encode()

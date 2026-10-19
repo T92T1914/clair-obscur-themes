@@ -41,6 +41,9 @@ THIRD_APP_NAMES = (
     "google-authenticator samsung-smartthings"
 ).split()
 APP_NAMES += THIRD_APP_NAMES
+THIRD_NAMES = BASE_NAMES + APP_NAMES
+FOURTH_APP_NAMES = "good-lock connect-iq-store steam reuters home-depot patreon".split()
+APP_NAMES += FOURTH_APP_NAMES
 NAMES = BASE_NAMES + APP_NAMES
 EXPECTED_APPS = {
     "google-chrome": ("Google Chrome", "com.android.chrome"),
@@ -108,6 +111,12 @@ EXPECTED_APPS = {
     "microsoft-authenticator": ("Microsoft Authenticator", "com.azure.authenticator"),
     "google-authenticator": ("Google Authenticator", "com.google.android.apps.authenticator2"),
     "samsung-smartthings": ("SmartThings", "com.samsung.android.oneconnect"),
+    "good-lock": ("Good Lock", "com.samsung.android.goodlock"),
+    "connect-iq-store": ("Connect IQ Store", "com.garmin.connectiq"),
+    "steam": ("Steam", "com.valvesoftware.android.steam.community"),
+    "reuters": ("Reuters", "com.thomsonreuters.reuters"),
+    "home-depot": ("Home Depot", "com.thehomedepot"),
+    "patreon": ("Patreon", "com.patreon.android"),
 }
 NS = "{http://www.w3.org/2000/svg}"
 
@@ -169,11 +178,11 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(set(files), expected | {"manifest.json"})
         manifest = json.loads(files["manifest.json"])
         self.assertEqual(manifest["functions"], NAMES)
-        self.assertEqual(manifest["version"], "0.6.0")
+        self.assertEqual(manifest["version"], "0.7.0")
         self.assertEqual(manifest["token_schema"], 1)
         self.assertEqual(manifest["token_version"], "1.0.0")
         self.assertEqual(manifest["palette_variant"], "monochrome")
-        self.assertEqual(len(manifest["files"]), 178)
+        self.assertEqual(len(manifest["files"]), 190)
         for record in manifest["files"]:
             self.assertEqual(record["path"], f'{record["appearance"]}/{record["function"]}.svg')
             payload = files[record["path"]]
@@ -183,7 +192,7 @@ class FunctionalIconTests(unittest.TestCase):
         relabeled = files["Clair/phone.svg"].replace(b'aria-label="phone"', b'aria-label="messages"')
         self.assertEqual(geometry(relabeled), geometry(files["Clair/phone.svg"]))
         # Named choices must have different drawings, rather than relabeled aliases.
-        self.assertEqual(len({geometry(files[f"Clair/{name}.svg"]) for name in NAMES}), 89)
+        self.assertEqual(len({geometry(files[f"Clair/{name}.svg"]) for name in NAMES}), 95)
 
     def test_palette_roles_and_geometry_are_shared_without_hardcoded_colors(self):
         files = icons.render_icons(self.document)
@@ -204,7 +213,7 @@ class FunctionalIconTests(unittest.TestCase):
         changed["themes"]["Clair"].update(panel="#fcfbf7", text="#252525", accent="#355e77")
         changed["version"] = "2.3.4"
         updated = icons.render_icons(changed, version="0.5.0")
-        for name in NAMES:
+        for name in THIRD_NAMES:
             self.assertNotEqual(updated[f"Clair/{name}.svg"], files[f"Clair/{name}.svg"])
             self.assertEqual(updated[f"Obscur/{name}.svg"], files[f"Obscur/{name}.svg"])
             self.assertEqual(geometry(updated[f"Clair/{name}.svg"]), geometry(files[f"Clair/{name}.svg"]))
@@ -242,7 +251,10 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(icons.token_path(), ROOT / "tokens-monochrome.json")
         for version in ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0"):
             self.assertEqual(icons.token_path(version), ROOT / "tokens.json")
-        for version, document in (("0.5.0", self.legacy_document), ("0.6.0", self.document)):
+        for version in ("0.6.0", "0.7.0"):
+            self.assertEqual(icons.token_path(version), ROOT / "tokens-monochrome.json")
+        for version, document in (("0.5.0", self.legacy_document), ("0.6.0", self.document),
+                                  ("0.7.0", self.document)):
             with self.subTest(version=version), tempfile.TemporaryDirectory() as temporary:
                 base = Path(temporary)
                 explicit = base / "explicit.json"
@@ -328,6 +340,7 @@ class FunctionalIconTests(unittest.TestCase):
         first_apps = icons.render_icons(self.legacy_document, version="0.3.0")
         second_apps = icons.render_icons(self.legacy_document, version="0.4.0")
         third_apps = icons.render_icons(self.legacy_document, version="0.5.0")
+        first_monochrome = icons.render_icons(self.document, version="0.6.0")
         archived = {**legacy, "LICENSE.txt": license_text().encode("utf-8")}
         self.assertEqual(hashlib.sha256(_zip_bytes(archived)).hexdigest(),
                          "040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34")
@@ -344,6 +357,11 @@ class FunctionalIconTests(unittest.TestCase):
         third_archive = {**third_apps, "LICENSE.txt": license_text().encode("utf-8")}
         self.assertEqual(hashlib.sha256(_zip_bytes(third_archive)).hexdigest(),
                          "2310c0151c0c3215e99d24a7aa92616a55dc726b2e38466427890223d778307a")
+        monochrome_archive = {**first_monochrome, "LICENSE.txt": license_text().encode("utf-8")}
+        self.assertEqual(hashlib.sha256(_zip_bytes(monochrome_archive)).hexdigest(),
+                         "241efb1fe6584df4f66c84571bfe671059404e83be8d67876f415af6564a56bb")
+        self.assertEqual(hashlib.sha256(first_monochrome["manifest.json"]).hexdigest(),
+                         "57537e0ad06dee704400160d30ae47f4cce8beba557c347ef5236ac8da32ee92")
         first_manifest = json.loads(first_apps["manifest.json"])
         current_manifest = json.loads(current["manifest.json"])
         self.assertEqual(first_manifest["functions"], PREVIOUS_NAMES)
@@ -363,7 +381,16 @@ class FunctionalIconTests(unittest.TestCase):
             for name in SECOND_NAMES:
                 path = f"{appearance}/{name}.svg"
                 self.assertEqual(third_apps[path], second_apps[path])
-        self.assertEqual(json.loads(third_apps["manifest.json"])["catalog"], current_manifest["catalog"])
+        self.assertEqual(json.loads(third_apps["manifest.json"])["catalog"], current_manifest["catalog"][:89])
+        monochrome_manifest = json.loads(first_monochrome["manifest.json"])
+        self.assertEqual(monochrome_manifest["functions"], THIRD_NAMES)
+        self.assertEqual(monochrome_manifest["catalog"], current_manifest["catalog"][:89])
+        self.assertEqual(monochrome_manifest["token_version"], "1.0.0")
+        self.assertEqual(monochrome_manifest["palette_variant"], "monochrome")
+        self.assertEqual(len(monochrome_manifest["files"]), 178)
+        for path, payload in first_monochrome.items():
+            if path.endswith(".svg"):
+                self.assertEqual(current[path], payload, path)
         self.assertNotIn("palette_variant", json.loads(third_apps["manifest.json"]))
         for path in third_apps:
             if path.endswith(".svg"):
@@ -384,7 +411,7 @@ class FunctionalIconTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "differs"):
                 icons.build_icons(self.document, output, check=True)
             self.assertEqual(tree_snapshot(output), before)
-        for unsupported in ("0.0.0", "0.7.0", None, [], {}):
+        for unsupported in ("0.0.0", "0.8.0", None, [], {}):
             with self.subTest(version=unsupported), self.assertRaisesRegex(ValueError, "Unsupported"):
                 icons.render_icons(self.document, version=unsupported)
 
@@ -393,9 +420,9 @@ class FunctionalIconTests(unittest.TestCase):
         manifest = json.loads(files["manifest.json"])
         catalog = manifest["catalog"]
         self.assertEqual([row["id"] for row in catalog], NAMES)
-        self.assertEqual([row["kind"] for row in catalog], ["function"] * 24 + ["app"] * 65)
+        self.assertEqual([row["kind"] for row in catalog], ["function"] * 24 + ["app"] * 71)
         apps = catalog[24:]
-        self.assertEqual(len({row["android_package"] for row in apps}), 65)
+        self.assertEqual(len({row["android_package"] for row in apps}), 71)
         self.assertEqual({row["id"]: (row["label"], row["android_package"]) for row in apps}, EXPECTED_APPS)
         for row in apps:
             self.assertEqual(row["store_url"], "https://play.google.com/store/apps/details?id=" + row["android_package"])
@@ -470,6 +497,43 @@ class FunctionalIconTests(unittest.TestCase):
                         icons.build_icons(self.document, output)
                     self.assertFalse(output.exists())
 
+    def test_fourth_catalog_and_glyph_refusals_preserve_all_prior_named_collections(self):
+        previous = {version: icons.render_icons(icons.load_icon_tokens(version), version=version)
+                    for version in ("0.3.0", "0.4.0", "0.5.0", "0.6.0")}
+        changes = ({"id": "linkedin"}, {"id": "phone"},
+                   {"android_package": "com.garmin.android.apps.connectmobile"},
+                   {"label": " "}, {"store_title": ""}, {"category": ""},
+                   {"selection_basis": ""},
+                   {"store_url": "https://play.google.com/store/apps/details?id=com.wrong.app"})
+        def refuse_without_rewriting_history():
+            for version, files in previous.items():
+                self.assertEqual(icons.render_icons(icons.load_icon_tokens(version), version=version), files)
+            with tempfile.TemporaryDirectory() as temporary:
+                output = Path(temporary) / "never-created"
+                with self.assertRaises(ValueError):
+                    icons.build_icons(self.document, output)
+                self.assertFalse(output.exists())
+        for change in changes:
+            invalid = copy.deepcopy(icons.FOURTH_APP_CATALOG)
+            invalid[0].update(change)
+            with self.subTest(change=change), patch.object(icons, "FOURTH_APP_CATALOG", invalid):
+                refuse_without_rewriting_history()
+        for fault in ("missing", "accepted-ID"):
+            drawings = dict(icons.FOURTH_APP_GLYPHS)
+            if fault == "missing":
+                drawings.pop("good-lock")
+            else:
+                drawings["linkedin"] = drawings["good-lock"]
+            with self.subTest(drawings=fault), patch.object(icons, "FOURTH_APP_GLYPHS", drawings):
+                refuse_without_rewriting_history()
+
+    def test_companion_store_titles_remain_distinct_from_short_assignment_labels(self):
+        rows = {row["id"]: row for row in icons.icon_catalog()}
+        expected = {"good-lock": "Good Lock", "connect-iq-store": "Connect IQ\u2122 Store",
+                    "steam": "Steam", "reuters": "Reuters - Breaking World News",
+                    "home-depot": "The Home Depot", "patreon": "Patreon"}
+        self.assertEqual({name: rows[name]["store_title"] for name in FOURTH_APP_NAMES}, expected)
+
     def test_current_bubble_has_one_continuous_outline_and_calculator_has_open_equals(self):
         files = icons.render_icons(self.document)
         bubble = ET.fromstring(files["Obscur/messages.svg"]).find(NS + "g")
@@ -493,7 +557,7 @@ class FunctionalIconTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "icons"
             result = icons.build_icons(self.document, output)
-            self.assertEqual(len(result["files"]), 178)
+            self.assertEqual(len(result["files"]), 190)
             before = tree_snapshot(output)
             self.assertEqual(before, icons.render_icons(self.document))
             icons.build_icons(self.document, output, check=True)
