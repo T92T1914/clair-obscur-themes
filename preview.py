@@ -27,7 +27,8 @@ WEB_ASSETS = frozenset({'index.html', 'preview.css', 'preview.js'})
 REPOSITORY_URL = 'https://github.com/T92T1914/clair-obscur-themes'
 PORTABLE_ARCHIVE = 'Clair-Obscur-portable-preview.zip'
 PORTABLE_CHECKSUMS = 'portable-SHA256SUMS'
-ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.1.0.zip'
+ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.2.0.zip'
+LEGACY_ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.1.0.zip'
 ICON_CHECKSUMS = 'icons/SVG-SHA256SUMS'
 GARMIN_SOURCE_FILES = (
     'garmin/build.py', 'garmin/watchface/manifest.xml', 'garmin/watchface/monkey.jungle',
@@ -228,8 +229,15 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
     icon_files['LICENSE.txt'] = sources['LICENSE']
     files['icons/LICENSE.txt'] = sources['LICENSE']
     files[ICON_ARCHIVE] = _zip_bytes(icon_files)
+    legacy_icons = render_icons(document, version='0.1.0')
+    for path, payload in legacy_icons.items():
+        if path.endswith('.svg') and icon_license_comment not in payload:
+            raise ValueError('Source license differs from the generated icon grant')
+    legacy_icons['LICENSE.txt'] = sources['LICENSE']
+    files[LEGACY_ICON_ARCHIVE] = _zip_bytes(legacy_icons)
     files[ICON_CHECKSUMS] = (
-        f'{_digest(files[ICON_ARCHIVE])}  {Path(ICON_ARCHIVE).name}\n'.encode()
+        ''.join(f'{_digest(files[path])}  {Path(path).name}\n'
+                for path in (ICON_ARCHIVE, LEGACY_ICON_ARCHIVE)).encode()
     )
     icon_cards = []
     for function in icon_manifest['functions']:
@@ -285,6 +293,7 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
             .replace('{{SOURCE_DESCRIPTION}}', source_description)
             .replace('{{ICON_GALLERY}}', '\n'.join(icon_cards))
             .replace('{{ICON_ARCHIVE}}', ICON_ARCHIVE)
+            .replace('{{LEGACY_ICON_ARCHIVE}}', LEGACY_ICON_ARCHIVE)
             .replace('{{ICON_CHECKSUMS}}', ICON_CHECKSUMS)
             .replace('{{TERMINAL_SPECIMENS}}', '\n'.join(terminal_cards))
             .replace('{{TERMINAL_ARCHIVE}}', f'terminal/{TERMINAL_ARCHIVE}')

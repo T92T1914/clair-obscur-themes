@@ -1,5 +1,11 @@
 # Changes
 
+## Icon artwork 0.2.0
+
+- Strengthen the shared stroke, join the message-bubble outline, balance lighter silhouettes and open dense details for small-size rendering.
+- Keep the original 0.1.0 SVG archive byte-identical at its existing download URL. Offer current and original downloads in the static and portable galleries.
+- Export either revision through the existing PNG tool, with version-specific admission before browser launch. Phone assignment, masking and label-font acceptance remain untested.
+
 ## Clair Equicord 0.1.2 candidate
 
 - Keep native keyboard-focus rings visible on Clair's warm light surfaces. The original 0.1.1 file reproduced pale slider and switch rings in the recorded Equibop client, while the same native Light controls without Clair had clear blue rings.

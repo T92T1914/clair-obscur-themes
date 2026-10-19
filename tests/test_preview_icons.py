@@ -10,7 +10,7 @@ import unittest
 from unittest.mock import patch
 import zipfile
 
-from preview import ICON_ARCHIVE, ICON_CHECKSUMS, PORTABLE_ARCHIVE, ROOT, preview_files
+from preview import ICON_ARCHIVE, ICON_CHECKSUMS, LEGACY_ICON_ARCHIVE, PORTABLE_ARCHIVE, ROOT, preview_files
 from themeforge.build import build_release
 from themeforge.icons import render_icons
 
@@ -66,12 +66,12 @@ class PreviewIconTests(unittest.TestCase):
         build_release(ROOT / 'tokens.json', self.artifacts)
         self.original = snapshot(self.artifacts)
 
-    def test_artwork_archive_preserves_every_original_svg_manifest_and_license(self):
+    def test_current_artwork_archive_matches_gallery_and_preserves_original_archive(self):
         files = preview_files(ROOT, self.artifacts)
         document = json.loads((ROOT / 'tokens.json').read_bytes())
         expected = render_icons(document)
         manifest = json.loads(expected['manifest.json'])
-        self.assertEqual(manifest['version'], '0.1.0')
+        self.assertEqual(manifest['version'], '0.2.0')
         self.assertEqual(manifest['functions'], FUNCTIONS)
         self.assertEqual(len(expected), 49)
         expected['LICENSE.txt'] = (ROOT / 'LICENSE').read_bytes()
@@ -82,10 +82,22 @@ class PreviewIconTests(unittest.TestCase):
             self.assertEqual(set(archive.namelist()), set(expected))
             for name, payload in expected.items():
                 self.assertEqual(archive.read(name), payload)
-        digest = hashlib.sha256(files[ICON_ARCHIVE]).hexdigest()
+        legacy = render_icons(document, version='0.1.0')
+        legacy['LICENSE.txt'] = (ROOT / 'LICENSE').read_bytes()
+        with zipfile.ZipFile(io.BytesIO(files[LEGACY_ICON_ARCHIVE])) as archive:
+            self.assertEqual(len(archive.namelist()), 50)
+            self.assertEqual(set(archive.namelist()), set(legacy))
+            for name, payload in legacy.items():
+                self.assertEqual(archive.read(name), payload)
+        self.assertEqual(hashlib.sha256(files[LEGACY_ICON_ARCHIVE]).hexdigest(),
+                         '040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34')
+        self.assertNotEqual(files[ICON_ARCHIVE], files[LEGACY_ICON_ARCHIVE])
         self.assertEqual(files[ICON_CHECKSUMS],
-                         f'{digest}  Clair-Obscur-SVG-Icons-0.1.0.zip\n'.encode())
-        self.assertEqual(preview_files(ROOT, self.artifacts)[ICON_ARCHIVE], files[ICON_ARCHIVE])
+                         ''.join(f'{hashlib.sha256(files[path]).hexdigest()}  {Path(path).name}\n'
+                                 for path in (ICON_ARCHIVE, LEGACY_ICON_ARCHIVE)).encode())
+        repeated = preview_files(ROOT, self.artifacts)
+        for path in (ICON_ARCHIVE, LEGACY_ICON_ARCHIVE):
+            self.assertEqual(repeated[path], files[path])
 
     def test_published_and_portable_pages_show_both_appearances_with_local_acquisition(self):
         files = preview_files(ROOT, self.artifacts)
@@ -111,7 +123,7 @@ class PreviewIconTests(unittest.TestCase):
                         self.assertNotIn('loading', image)
                         self.assertNotIn('hidden', image)
                         self.assertEqual(delivery[path], files[path])
-                for path in (ICON_ARCHIVE, ICON_CHECKSUMS):
+                for path in (ICON_ARCHIVE, LEGACY_ICON_ARCHIVE, ICON_CHECKSUMS):
                     links = [link for link in markup.links if link.get('href') == path]
                     self.assertEqual(len(links), 1)
                     self.assertIn('download', links[0])
@@ -136,13 +148,19 @@ class PreviewIconTests(unittest.TestCase):
         self.assertEqual(files['index.html'].count(b'class="download-card"'), 17)
 
     def test_an_icon_license_read_after_source_capture_cannot_replace_the_captured_grant(self):
-        icons = render_icons(json.loads((ROOT / 'tokens.json').read_bytes()))
-        last = 'Obscur/search.svg'
-        icons[last] = icons[last].replace(b'MIT License', b'Changed grant', 1)
-        with patch('preview.render_icons', return_value=icons):
-            with self.assertRaisesRegex(ValueError, 'Source license differs from the generated icon grant'):
-                preview_files(ROOT, self.artifacts)
-        self.assertEqual(snapshot(self.artifacts), self.original)
+        for changed_version in ('0.1.0', '0.2.0'):
+            with self.subTest(version=changed_version):
+                def changed_grant(document, *, version='0.2.0'):
+                    icons = render_icons(document, version=version)
+                    if version == changed_version:
+                        last = 'Obscur/search.svg'
+                        icons[last] = icons[last].replace(b'MIT License', b'Changed grant', 1)
+                    return icons
+
+                with patch('preview.render_icons', side_effect=changed_grant):
+                    with self.assertRaisesRegex(ValueError, 'Source license differs from the generated icon grant'):
+                        preview_files(ROOT, self.artifacts)
+                self.assertEqual(snapshot(self.artifacts), self.original)
 
 
 if __name__ == '__main__':

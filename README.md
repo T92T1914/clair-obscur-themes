@@ -72,6 +72,8 @@ and [original phone icon artwork](docs/samsung-icons.md). The watch face targets
 always on view. Simulator checks cover the stated behavior on that target.
 Physical watch acceptance and phone import remain untested.
 
+The phone gallery uses the refined 0.2.0 drawings, with stronger small-size strokes and clearer interiors. The original 0.1.0 artwork download remains available unchanged. Both revisions support the local PNG exporter.
+
 ## Report a problem
 
 Include the theme and application versions, native Light or Dark setting, the affected surface and the steps that reproduce it. For Equicord, mention relevant theme or font overrides without exporting your full settings. Crop private names and messages from any screenshots. A missing glyph, unreadable code block or ambiguous switch state is useful evidence even when the rest of the interface looks right.

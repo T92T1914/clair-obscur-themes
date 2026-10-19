@@ -3,7 +3,7 @@ import { before, after, test } from 'node:test';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { inflateSync } from 'node:zlib';
-import { mkdtemp, readFile, writeFile, mkdir, cp, rm, readdir, symlink, lstat } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile, mkdir, cp, rm, readdir, symlink, lstat, readlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -14,7 +14,7 @@ const python = process.platform === 'win32' ? ['py', '-3.11', '-X', 'utf8'] : ['
 const functions = ('phone messages contacts camera gallery settings calendar clock files notes mail browser maps ' +
   'music video store wallet calculator weather health fitness voice-recorder home search').split(' ');
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
-let temporary, source, sourceBefore;
+let temporary, source, sourceBefore, legacySource, legacyBefore;
 
 function execute(command, args, options = {}) {
   return spawnSync(command, args, { cwd: root, encoding: 'utf8', windowsHide: true,
@@ -109,6 +109,11 @@ before(async () => {
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stdout + result.stderr);
   sourceBefore = await snapshot(source);
+  legacySource = path.join(temporary, 'legacy-svg');
+  const legacy = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', legacySource, '--version', '0.1.0']);
+  assert.ifError(legacy.error);
+  assert.equal(legacy.status, 0, legacy.stdout + legacy.stderr);
+  legacyBefore = await snapshot(legacySource);
 });
 
 after(async () => {
@@ -128,6 +133,8 @@ test('PNG command exports all 96 usable icons with independent saved-file decodi
   const manifestBytes = await readFile(path.join(output, 'manifest.json'));
   const manifest = JSON.parse(manifestBytes);
   const expected = ['manifest.json', 'LICENSE'];
+  assert.equal(manifest.version, '0.2.0');
+  assert.equal(manifest.exporter_version, '0.2.0');
   assert.equal(manifest.files.length, 96);
   assert.deepEqual(manifest.functions, functions);
   assert.equal(manifest.source_manifest_sha256, sourceBefore['manifest.json']);
@@ -183,6 +190,69 @@ test('PNG command exports all 96 usable icons with independent saved-file decodi
   assert.deepEqual(await snapshot(source), sourceBefore);
 });
 
+test('accepted legacy SVG artwork exports all 96 PNGs with its own version and source identities', async () => {
+  const output = path.join(temporary, 'legacy-png');
+  const result = exportTo(legacySource, output);
+  assert.ifError(result.error);
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.match(result.stdout, /Exported 96 PNG icons/);
+  const manifest = JSON.parse(await readFile(path.join(output, 'manifest.json')));
+  assert.equal(manifest.version, '0.1.0');
+  assert.equal(manifest.exporter_version, '0.2.0');
+  assert.equal(manifest.source_manifest_sha256, legacyBefore['manifest.json']);
+  assert.deepEqual(manifest.functions, functions);
+  assert.deepEqual(manifest.sizes, [512, 1024]);
+  assert.equal(manifest.renderer.network_requests, 0);
+  const expected = ['LICENSE', 'manifest.json'];
+  assert.equal(manifest.files.length, 96);
+  const records = new Map(manifest.files.map(record => [record.path, record]));
+  assert.equal(records.size, 96);
+  for (const appearance of ['Clair', 'Obscur']) for (const size of [512, 1024]) {
+    const hashes = [];
+    for (const name of functions) {
+      const relative = `${appearance}/${size}/${name}.png`;
+      expected.push(relative);
+      const record = records.get(relative);
+      assert.ok(record, `${relative} has a manifest record`);
+      const bytes = await readFile(path.join(output, relative));
+      assert.equal(record.sha256, sha(bytes));
+      assert.equal(record.bytes, bytes.length);
+      assert.equal(record.source_svg_sha256, legacyBefore[`${appearance}/${name}.svg`]);
+      assert.equal(record.width, size); assert.equal(record.height, size);
+      hashes.push(record.sha256);
+      if (name === 'phone' || name === 'camera') {
+        const rgba = decodeRgba(bytes, size);
+        assert.equal(rgba[3], 0, 'Legacy PNG keeps its transparent corner');
+        assert.ok(rgba.some((value, index) => index % 4 === 3 && value > 0), 'Legacy drawing remains visible');
+      }
+    }
+    assert.equal(new Set(hashes).size, 24, `${appearance}/${size} retains 24 legacy drawings`);
+  }
+  assert.deepEqual(Object.keys(await snapshot(output)).sort(), expected.sort());
+  assert.deepEqual(await snapshot(legacySource), legacyBefore);
+  assert.deepEqual(await snapshot(source), sourceBefore);
+});
+
+test('unknown and mismatched artwork versions are refused before output reservation or browser launch', async () => {
+  for (const [name, original, version] of [
+    ['unknown', source, '9.9.9'],
+    ['current-with-legacy-version', source, '0.1.0'],
+    ['legacy-with-current-version', legacySource, '0.2.0'],
+  ]) {
+    const input = path.join(temporary, name);
+    await cp(original, input, { recursive: true });
+    const manifestPath = path.join(input, 'manifest.json');
+    const manifest = JSON.parse(await readFile(manifestPath));
+    manifest.version = version;
+    await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
+    const before = await snapshot(input);
+    const output = path.join(temporary, `${name}-output`);
+    assertFailedBeforeBrowser(exportTo(input, output, true), name === 'unknown' ? /unsupported artwork version/ : /Icon output differs/);
+    await assert.rejects(lstat(output), { code: 'ENOENT' });
+    assert.deepEqual(await snapshot(input), before);
+  }
+});
+
 test('changed, missing and extra SVG or manifest inputs fail before browser launch and preserve evidence', async () => {
   for (const mutation of ['changed-svg', 'missing-svg', 'extra-svg', 'changed-manifest', 'missing-manifest', 'extra-directory']) {
     const input = path.join(temporary, mutation);
@@ -234,6 +304,42 @@ test('linked or junction output ancestors are refused before browser launch with
   assertFailedBeforeBrowser(exportTo(linkedInput, output, true), /links or reparse/);
   await assert.rejects(lstat(output), { code: 'ENOENT' });
   assert.deepEqual(await snapshot(source), sourceBefore);
+});
+
+test('a linked child manifest is refused before parsing its owned target or launching a browser', async t => {
+  for (const [name, contents] of [
+    ['malformed', '{owned malformed JSON fixture'],
+    ['unsupported', JSON.stringify({ version: '9.9.9' })],
+  ]) {
+    const input = path.join(temporary, `linked-manifest-${name}`);
+    await cp(source, input, { recursive: true });
+    const manifestPath = path.join(input, 'manifest.json');
+    await rm(manifestPath);
+    const target = path.join(temporary, `manifest-target-${name}.json`);
+    await writeFile(target, contents);
+    try {
+      await symlink(target, manifestPath, 'file');
+    } catch (error) {
+      if (process.platform === 'win32' && ['EPERM', 'EACCES', 'ENOTSUP', 'ENOSYS'].includes(error.code)) {
+        t.skip(`Windows file symlink fixture unavailable: ${error.code}`);
+        return;
+      }
+      throw error;
+    }
+    const before = await snapshot(input);
+    const targetBefore = await readFile(target);
+    const linkBefore = await readlink(manifestPath);
+    const output = path.join(temporary, `linked-manifest-${name}-output`);
+    const result = exportTo(input, output, true);
+    assertFailedBeforeBrowser(result, /links? or reparse/);
+    assert.doesNotMatch(result.stderr, /missing or invalid|unsupported artwork version|JSONDecodeError/,
+      'Link refusal must precede target parsing or version admission');
+    await assert.rejects(lstat(output), { code: 'ENOENT' });
+    assert.equal((await lstat(manifestPath)).isSymbolicLink(), true);
+    assert.equal(await readlink(manifestPath), linkBefore);
+    assert.deepEqual(await readFile(target), targetBefore);
+    assert.deepEqual(await snapshot(input), before);
+  }
 });
 
 test('a failed renderer retains its newly reserved output and never repairs it on a second attempt', async () => {

@@ -15,9 +15,10 @@ from .tokens import load, validate
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.1.0"
+VERSION = "0.2.0"
+VERSIONS = ("0.1.0", VERSION)
 SIZE = 512
-STROKE = 12
+STROKE = 16
 FUNCTIONS = (
     "phone", "messages", "contacts", "camera", "gallery", "settings",
     "calendar", "clock", "files", "notes", "mail", "browser", "maps",
@@ -174,6 +175,52 @@ GLYPHS = {
 }
 
 
+# Keep the original geometry available for exact 0.1.0 rebuilds. The current
+# drawings open crowded interiors and balance the lighter silhouettes at small sizes.
+CURRENT_GLYPHS = {
+    **GLYPHS,
+    "messages": [
+        _path("M168 136 H344 Q392 136 392 184 V296 Q392 344 344 344 "
+              "H216 L152 392 V340 Q120 328 120 296 V184 Q120 136 168 136 Z"),
+        _path("M184 216 H328 M184 264 H288", accent=True),
+    ],
+    "contacts": [
+        _shape("circle", cx=256, cy=192, r=52, stroke="accent"),
+        _path("M144 376 V348 C144 304 192 280 256 280 C320 280 368 304 368 348 V376 Z"),
+    ],
+    "browser": [
+        _shape("circle", cx=256, cy=256, r=136),
+        _path("M120 256 H392", accent=True),
+        _path("M256 120 C176 184 176 328 256 392 "
+              "M256 120 C336 184 336 328 256 392"),
+    ],
+    "maps": [
+        _path("M128 144 L208 176 L304 136 L384 168 V368 L304 336 L208 376 L128 344 Z"),
+        _path("M208 176 V376 M304 136 V160 M304 328 V336"),
+        _path("M304 304 C280 280 256 256 256 232 C256 168 352 168 352 232 "
+              "C352 256 328 280 304 304 Z", accent=True),
+        _shape("circle", cx=304, cy=232, r=16, stroke="accent"),
+    ],
+    "music": [
+        _path("M224 344 V168 L368 136 V304"),
+        _shape("ellipse", cx=184, cy=344, rx=40, ry=28, stroke="accent"),
+        _shape("ellipse", cx=328, cy=304, rx=40, ry=28, stroke="accent"),
+        _path("M224 208 L368 176"),
+    ],
+    "calculator": [
+        _shape("rect", x=152, y=112, width=208, height=288, rx=32),
+        _shape("rect", x=184, y=152, width=144, height=56, rx=12, stroke="accent"),
+        _path("M192 264 H224 M208 248 V280 M288 264 H320 "
+              "M192 328 L224 360 M224 328 L192 360 M288 328 H320 M288 360 H320"),
+    ],
+    "fitness": [
+        _shape("rect", x=136, y=168, width=48, height=176, rx=16),
+        _shape("rect", x=328, y=168, width=48, height=176, rx=16),
+        _path("M112 208 V304 M400 208 V304 M184 256 H328", accent=True),
+    ],
+}
+
+
 def _validated(document: dict) -> None:
     if not isinstance(document, dict) or type(document.get("schema_version")) is not int:
         raise ValueError("Expected a token document with an integer schema version")
@@ -183,7 +230,7 @@ def _validated(document: dict) -> None:
         raise ValueError("Malformed token document") from error
 
 
-def _render_icon(function: str, appearance: str, document: dict, grant: str) -> bytes:
+def _render_icon(function: str, appearance: str, document: dict, grant: str, *, version: str) -> bytes:
     palette = document["themes"][appearance]
     svg = ET.Element("svg", {
         "xmlns": "http://www.w3.org/2000/svg", "width": str(SIZE), "height": str(SIZE),
@@ -193,8 +240,9 @@ def _render_icon(function: str, appearance: str, document: dict, grant: str) -> 
     ET.SubElement(svg, "rect", {"x": "32", "y": "32", "width": "448", "height": "448",
                                "rx": "104", "fill": palette["panel"]})
     group = ET.SubElement(svg, "g", {"fill": "none", "stroke": palette["text"],
-        "stroke-width": str(STROKE), "stroke-linecap": "round", "stroke-linejoin": "round"})
-    for tag, attributes in GLYPHS[function]:
+        "stroke-width": str(12 if version == "0.1.0" else STROKE),
+        "stroke-linecap": "round", "stroke-linejoin": "round"})
+    for tag, attributes in (GLYPHS if version == "0.1.0" else CURRENT_GLYPHS)[function]:
         ET.SubElement(group, tag, {
             key: palette[value] if value in ("accent", "text") else value
             for key, value in attributes.items()
@@ -203,9 +251,11 @@ def _render_icon(function: str, appearance: str, document: dict, grant: str) -> 
     return (ET.tostring(svg, encoding="unicode") + "\n").encode("utf-8")
 
 
-def render_icons(document: dict) -> dict[str, bytes]:
+def render_icons(document: dict, *, version: str = VERSION) -> dict[str, bytes]:
     """Return 48 SVG masters and their deterministic identity manifest."""
     _validated(document)
+    if version not in VERSIONS:
+        raise ValueError("Unsupported icon artwork version")
     grant = license_text()
     if "--" in grant:
         raise ValueError("The license cannot be embedded safely in an XML comment")
@@ -214,14 +264,14 @@ def render_icons(document: dict) -> dict[str, bytes]:
     for appearance in ("Clair", "Obscur"):
         for function in FUNCTIONS:
             name = f"{appearance}/{function}.svg"
-            payload = _render_icon(function, appearance, document, grant)
+            payload = _render_icon(function, appearance, document, grant, version=version)
             files[name] = payload
             records.append({"appearance": appearance, "function": function, "path": name,
                 "bytes": len(payload), "sha256": hashlib.sha256(payload).hexdigest()})
     manifest = {
-        "schema_version": 1, "generator": "themeforge.icons", "version": VERSION,
+        "schema_version": 1, "generator": "themeforge.icons", "version": version,
         "token_schema": document["schema_version"], "token_version": document["version"],
-        "size": [SIZE, SIZE], "stroke_width": STROKE,
+        "size": [SIZE, SIZE], "stroke_width": 12 if version == "0.1.0" else STROKE,
         "tile": {"x": 32, "y": 32, "width": 448, "height": 448, "radius": 104},
         "glyph_centerline_bounds": [112, 112, 400, 400],
         "palette_roles": {"tile": "panel", "glyph": "text", "emphasis": "accent"},
@@ -270,9 +320,9 @@ def _read_tree(root: Path) -> tuple[dict[str, bytes], set[str]]:
     return files, directories
 
 
-def build_icons(document: dict, output: Path, *, check: bool = False) -> dict:
+def build_icons(document: dict, output: Path, *, check: bool = False, version: str = VERSION) -> dict:
     """Create a new tree or compare an existing one, never replace user output."""
-    files = render_icons(document)
+    files = render_icons(document, version=version)
     output = _safe_output(Path(output))
     if check:
         if not output.is_dir():
@@ -300,9 +350,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--tokens", type=Path, default=ROOT / "tokens.json")
     parser.add_argument("--output", type=Path, required=True, help="A new folder outside managed dist")
     parser.add_argument("--check", action="store_true", help="Compare all generated bytes without writing")
+    parser.add_argument("--version", choices=VERSIONS, default=VERSION, help="Artwork revision to generate or verify")
     options = parser.parse_args(argv)
     try:
-        manifest = build_icons(load(options.tokens), options.output, check=options.check)
+        manifest = build_icons(load(options.tokens), options.output, check=options.check, version=options.version)
     except (OSError, ValueError, TypeError, AttributeError) as error:
         parser.exit(1, f"Icon generation: {error}\n")
     print(f'{"Verified" if options.check else "Generated"} {len(manifest["files"])} original SVG icons')
