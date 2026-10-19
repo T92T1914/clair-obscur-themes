@@ -619,7 +619,7 @@ async function checkTerminalSpecimens(page, document) {
       assert.equal(slot.sample.background, terminalRgb(partner ? scheme[partner] : scheme.background), `${appearance} ${field} background`);
     }
     for (const node of [card.heading, card.name, ...card.slots.flatMap(slot => [slot.label, slot.sample, slot.context])]) {
-      assert.ok(!node.missing && node.text.length > 0 && node.width > 0 && node.height > 0, JSON.stringify(node));
+      assert.ok(!node.missing && node.text.length > 0 && node.width > 0 && node.height > 0, 'Terminal specimen text unavailable: ' + JSON.stringify(node));
       assert.equal(node.visibility, 'visible'); assert.notEqual(node.display, 'none');
       assert.ok(Number(node.opacity) > 0);
       assert.ok(node.left >= -1 && node.right <= node.viewport + 1, JSON.stringify(node));
@@ -640,14 +640,14 @@ async function checkTerminalSpecimens(page, document) {
 
 async function verifyTerminalDownloads(archiveBytes, checksumBytes, siteRoot) {
   const terminalRoot = path.join(siteRoot, 'terminal');
-  assert.deepEqual(archiveBytes, await readFile(path.join(terminalRoot, terminalArchive)));
+  assert.deepEqual(archiveBytes, await readFile(path.join(terminalRoot, terminalArchive)), 'Terminal archive bytes differ from captured package');
   assert.deepEqual(checksumBytes, await readFile(path.join(terminalRoot, 'SHA256SUMS')));
   const pairs = checksumBytes.toString('utf8').trimEnd().split('\n').map(line => {
     const match = /^([a-f0-9]{64})  ([A-Za-z0-9._-]+)$/.exec(line);
     assert.ok(match, 'Each checksum must identify one generated local file'); return match.slice(1);
   });
   assert.deepEqual(pairs.map(([, name]) => name).sort(), [terminalFragment, terminalArchive, 'LICENSE.txt', 'manifest.json'].sort());
-  for (const [digest, name] of pairs) assert.equal(crypto.createHash('sha256').update(await readFile(path.join(terminalRoot, name))).digest('hex'), digest);
+  for (const [digest, name] of pairs) assert.equal(crypto.createHash('sha256').update(await readFile(path.join(terminalRoot, name))).digest('hex'), digest, 'Terminal checksum mismatch for ' + name);
   const fragment = JSON.parse(await readFile(path.join(terminalRoot, terminalFragment), 'utf8'));
   assertTerminalFragment(fragment);
   const archivePath = path.join(temp, `terminal-acquired-${crypto.createHash('sha256').update(archiveBytes).digest('hex')}.zip`);
@@ -666,6 +666,36 @@ async function verifyTerminalDownloads(archiveBytes, checksumBytes, siteRoot) {
     '  assert archive.read(info.filename)==(terminal_root/info.filename).read_bytes()',
   ].join('\n'), archivePath, terminalRoot]);
   return { sha256: crypto.createHash('sha256').update(archiveBytes).digest('hex'), bytes: archiveBytes.length, schemes: fragment.schemes.map(scheme => scheme.name) };
+}
+
+async function terminalKeyboardAcquisition(page) {
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'terminal-preview-link');
+  await page.keyboard.press('Enter');
+  await page.waitForURL(url => url.hash === '#terminal');
+  await page.keyboard.press('Tab');
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'terminal-download');
+  const [archive] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }), page.keyboard.press('Enter')]);
+  assert.equal(await archive.failure(), null);
+  assert.equal(archive.suggestedFilename(), terminalArchive);
+  const archiveChunks = []; for await (const chunk of await archive.createReadStream()) archiveChunks.push(chunk);
+  await page.keyboard.press('Tab');
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'terminal-checksums');
+  const [checksums] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }), page.keyboard.press('Enter')]);
+  assert.equal(await checksums.failure(), null);
+  const checksumChunks = []; for await (const chunk of await checksums.createReadStream()) checksumChunks.push(chunk);
+  const acquisition = await verifyTerminalDownloads(Buffer.concat(archiveChunks), Buffer.concat(checksumChunks), site);
+  await page.keyboard.press('Tab');
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'terminal-guide');
+  const previewUrl = page.url(), guideUrl = origin + '/terminal/installation.md';
+  const [guideResponse] = await Promise.all([page.waitForResponse(response => response.url() === guideUrl), page.keyboard.press('Enter')]);
+  await page.waitForURL(guideUrl);
+  assert.equal(guideResponse.status(), 200);
+  const guide = await readFile(path.join(site, 'terminal', 'installation.md'));
+  assert.deepEqual(await guideResponse.body(), guide);
+  assert.deepEqual(guide, await readFile(path.join(root, 'docs', 'windows-terminal.md')));
+  assert.equal((await page.locator('body').innerText()).trim(), guide.toString('utf8').trim());
+  return { ...acquisition, previewUrl, guide: 'exact captured repository Markdown',
+    guideScope: 'separate plaintext response and content; preview spacing stylesheet does not apply' };
 }
 
 test('Windows Terminal specimens show exact package colors and all labels at phone and enlarged fallback sizes', async () => {
@@ -698,30 +728,7 @@ test('Windows Terminal no-script sequential keyboard journey acquires the exact 
     while (await page.evaluate(() => document.activeElement?.id) !== 'terminal-preview-link' && tabs < 40) {
       await page.keyboard.press('Tab'); tabs++;
     }
-    assert.equal(await page.evaluate(() => document.activeElement.id), 'terminal-preview-link');
-    await page.keyboard.press('Enter');
-    await page.waitForURL(url => url.hash === '#terminal');
-    await page.keyboard.press('Tab');
-    assert.equal(await page.evaluate(() => document.activeElement.id), 'terminal-download');
-    const [archive] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }), page.keyboard.press('Enter')]);
-    assert.equal(await archive.failure(), null);
-    assert.equal(archive.suggestedFilename(), terminalArchive);
-    const archiveChunks = []; for await (const chunk of await archive.createReadStream()) archiveChunks.push(chunk);
-    await page.keyboard.press('Tab');
-    assert.equal(await page.evaluate(() => document.activeElement.id), 'terminal-checksums');
-    const [checksums] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }), page.keyboard.press('Enter')]);
-    assert.equal(await checksums.failure(), null);
-    const checksumChunks = []; for await (const chunk of await checksums.createReadStream()) checksumChunks.push(chunk);
-    const acquisition = await verifyTerminalDownloads(Buffer.concat(archiveChunks), Buffer.concat(checksumChunks), site);
-    await page.keyboard.press('Tab');
-    assert.equal(await page.evaluate(() => document.activeElement.id), 'terminal-guide');
-    const guideUrl = origin + '/terminal/installation.md';
-    const [guideResponse] = await Promise.all([page.waitForResponse(response => response.url() === guideUrl), page.keyboard.press('Enter')]);
-    await page.waitForURL(guideUrl);
-    assert.equal(guideResponse.status(), 200);
-    assert.deepEqual(await guideResponse.body(), await readFile(path.join(site, 'terminal', 'installation.md')));
-    assert.deepEqual(await readFile(path.join(site, 'terminal', 'installation.md')), await readFile(path.join(root, 'docs', 'windows-terminal.md')));
-    assert.match(await page.locator('body').innerText(), /Windows Terminal colors/);
+    const acquisition = await terminalKeyboardAcquisition(page);
     assert.deepEqual(consoleErrors, []);
     results.scenarios.push({ name: 'Terminal sequential no-script acquisition and guide', status: 'passed', tabs,
       ...acquisition, guide: 'exact captured repository Markdown', nativeTerminalVerified: false });
@@ -968,6 +975,66 @@ async function spacingPackageJourney(page, appearance, baseline) {
     keyboardSelection: true, actualDownload: true, matchedAndChangedBytes: true, clear: true };
 }
 
+async function terminalSpacingAdmission(page) {
+  const observed = await page.locator('#terminal').evaluate(section => {
+    const errors = [], minimumRatios = { lineHeight: Infinity, letterSpacing: Infinity, wordSpacing: Infinity, paragraph: Infinity };
+    const nodes = [...section.querySelectorAll('h2, h3, p, code, small, a')];
+    let paragraphs = 0;
+    for (const node of nodes) {
+      const style = getComputedStyle(node), size = parseFloat(style.fontSize);
+      const label = node.id || node.closest('[data-ansi]')?.dataset.ansi || node.tagName.toLowerCase();
+      if (!node.getClientRects().length || style.visibility !== 'visible' || Number(style.opacity) === 0) errors.push('Terminal spacing text unavailable: ' + label);
+      for (const [property, minimum] of [['lineHeight', 1.5], ['letterSpacing', .12], ['wordSpacing', .16]]) {
+        minimumRatios[property] = Math.min(minimumRatios[property], parseFloat(style[property]) / size);
+        if (!(parseFloat(style[property]) + .02 >= size * minimum)) errors.push(`Terminal spacing admission ${property}: ${label} = ${style[property]}`);
+      }
+      if (node.tagName === 'P') {
+        minimumRatios.paragraph = Math.min(minimumRatios.paragraph, parseFloat(style.marginBlockEnd) / size);
+        if (!(parseFloat(style.marginBlockEnd) + .02 >= size * 2)) errors.push('Terminal spacing admission paragraph: ' + label);
+        paragraphs++;
+      }
+    }
+    return { errors, nodes: nodes.length, paragraphs, minimumRatios,
+      cards: section.querySelectorAll('.terminal-palette').length,
+      labels: section.querySelectorAll('.terminal-slot > p').length,
+      samples: section.querySelectorAll('.terminal-slot > code').length,
+      contexts: section.querySelectorAll('.terminal-slot > small').length,
+      schemeNames: section.querySelectorAll('.terminal-palette > p > code').length,
+      actions: section.querySelectorAll('#terminal-download, #terminal-checksums, #terminal-guide').length };
+  });
+  assert.deepEqual(observed.errors, []);
+  assert.deepEqual([observed.cards, observed.labels, observed.samples, observed.contexts, observed.schemeNames, observed.actions], [2, 32, 32, 32, 2, 3]);
+  assert.ok(observed.nodes > 100 && observed.paragraphs >= 34, 'Admit the real Terminal text and every action');
+  return observed;
+}
+
+async function terminalSpacingJourney(page, baseline, { javaScriptEnabled = true } = {}) {
+  const fragment = JSON.parse(await readFile(path.join(site, 'terminal', terminalFragment), 'utf8'));
+  const appearance = await page.locator('html').getAttribute('data-theme');
+  const specimens = await checkTerminalSpecimens(page, fragment);
+  const admission = await terminalSpacingAdmission(page);
+  await spacingKeyboardFocus(page, page.locator('#terminal-preview-link'));
+  const acquisition = await terminalKeyboardAcquisition(page);
+  await page.goBack();
+  await page.waitForURL(acquisition.previewUrl);
+  // The guide is a separate plaintext response. Re-admit preview overrides
+  // after returning rather than assuming that injected styles or page state persist.
+  if (javaScriptEnabled) {
+    if (await page.locator('html').evaluate(node => getComputedStyle(node).fontSize) !== baseline.rootFontSize) {
+      await page.addStyleTag({ content: `html { font-size: ${baseline.rootFontSize}; }` });
+    }
+    await page.getByRole('button', { name: appearance, exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await page.addStyleTag({ content: textSpacingOverride });
+  }
+  assert.equal(await page.locator('html').getAttribute('data-theme'), appearance);
+  await assertTextSpacing(page, baseline);
+  const returnedAdmission = await terminalSpacingAdmission(page);
+  await checkTerminalSpecimens(page, fragment);
+  return { ...acquisition, appearances: specimens.map(card => card.appearance), labeledSlots: 32, admission,
+    returnedAdmission, returnedToPreview: true, previewOverridesReadmitted: true, nativeTerminalVerified: false };
+}
+
 test('text spacing alone preserves content and the keyboard package journey in both appearances', async () => {
   for (const appearance of ['Obscur', 'Clair']) {
     const { context, page, consoleErrors } = await pageFor();
@@ -978,8 +1045,9 @@ test('text spacing alone preserves content and the keyboard package journey in b
       await page.addStyleTag({ content: textSpacingOverride });
       const admission = await assertTextSpacing(page, baseline);
       const journey = await spacingPackageJourney(page, appearance, baseline);
+      const terminal = await terminalSpacingJourney(page, baseline);
       assert.deepEqual(consoleErrors, []);
-      results.scenarios.push({ name: 'text spacing only', appearance, status: 'passed', admission, journey,
+      results.scenarios.push({ name: 'text spacing only', appearance, status: 'passed', admission, journey, terminal,
         scope: 'four spacing overrides at unchanged default typography; English text, not native application or full WCAG acceptance' });
     } finally { await context.close(); }
   }
@@ -997,8 +1065,9 @@ test('text spacing with narrow layout and enlarged fallback text is separate add
         await page.addStyleTag({ content: textSpacingOverride });
         const admission = await assertTextSpacing(page, baseline);
         const journey = await spacingPackageJourney(page, appearance, baseline);
+        const terminal = await terminalSpacingJourney(page, baseline);
         assert.deepEqual(consoleErrors, []);
-        results.scenarios.push({ name: 'text spacing additional responsive stress', appearance, ...scenario, status: 'passed', admission, journey,
+        results.scenarios.push({ name: 'text spacing additional responsive stress', appearance, ...scenario, status: 'passed', admission, journey, terminal,
           scope: 'narrow viewport and optional root-font enlargement, not browser zoom or spacing-only conformance' });
       } finally { await context.close(); }
     }
@@ -1029,9 +1098,10 @@ test('text spacing keeps the no-script catalog and keyboard installation routes 
       assert.equal(await saved.failure(), null);
       assert.equal(crypto.createHash('sha256').update(Buffer.concat(chunks)).digest('hex'), expected.sha256);
     }
+    const terminal = await terminalSpacingJourney(page, baseline, { javaScriptEnabled: false });
     await assertTextSpacing(page, baseline);
     assert.deepEqual(consoleErrors, []);
-    results.scenarios.push({ name: 'text spacing no-script static routes', status: 'passed', admission,
+    results.scenarios.push({ name: 'text spacing no-script static routes', status: 'passed', admission, terminal,
       scope: 'default reading appearance and both static palettes, not an operable no-script appearance switch' });
   } finally { await context.close(); }
 });
@@ -1063,6 +1133,48 @@ test('text spacing qualification rejects a missing override, clipped prose and a
         await assert.rejects(chooseSpacingPackage(page, 'Obscur'), /chooser did not render/);
       }
       results.scenarios.push({ name: 'text spacing controlled oracle failure', fault, status: 'rejected as expected', scope: 'disposable harness fault, not a product defect' });
+    } finally { await context.close(); }
+  }
+});
+
+test('text spacing Terminal qualification rejects a hidden sample and altered downloaded ZIP bytes', async () => {
+  for (const fault of ['hidden-terminal-sample', 'altered-terminal-zip']) {
+    const { context, page, consoleErrors } = await pageFor();
+    const downloaded = [];
+    page.on('download', download => downloaded.push({ filename: download.suggestedFilename(), url: download.url() }));
+    try {
+      const baseline = await spacingContentBaseline(page);
+      await page.addStyleTag({ content: textSpacingOverride });
+      await assertTextSpacing(page, baseline);
+      if (fault === 'hidden-terminal-sample') {
+        const hiding = await page.addStyleTag({ content: '#terminal .terminal-palette[data-palette="Clair"] .terminal-slot[data-ansi="red"] > code { display: none !important; }' });
+        await assert.rejects(terminalSpacingJourney(page, baseline), /Terminal specimen text unavailable/);
+        await hiding.evaluate(node => node.remove());
+        await terminalSpacingAdmission(page);
+        await checkTerminalSpecimens(page, JSON.parse(await readFile(path.join(site, 'terminal', terminalFragment), 'utf8')));
+      } else {
+        // Change only this run's temporary served ZIP. Keep its independent
+        // checksums and scheme fragment intact, then restore the fixture in finally.
+        assert.ok(site.startsWith(temp + path.sep), 'Fault injection must stay inside the owned temporary preview');
+        const fixtureArchive = path.join(site, 'terminal', terminalArchive);
+        const original = await readFile(fixtureArchive), altered = Buffer.from(original);
+        const checksums = await readFile(path.join(site, 'terminal', 'SHA256SUMS'));
+        const fragment = await readFile(path.join(site, 'terminal', terminalFragment));
+        altered[0] ^= 1;
+        try {
+          await writeFile(fixtureArchive, altered);
+          assert.deepEqual(await readFile(fixtureArchive), altered, 'The controlled fixture fault must actually be present');
+          await assert.rejects(terminalSpacingJourney(page, baseline), /Terminal checksum mismatch for Clair-Obscur-Windows-Terminal-0\.1\.0\.zip/);
+          assert.deepEqual(downloaded.map(download => download.url), [origin + '/terminal/' + terminalArchive, origin + '/terminal/SHA256SUMS'], 'Reject bytes acquired by the real keyboard download controls');
+          assert.deepEqual(await readFile(path.join(site, 'terminal', 'SHA256SUMS')), checksums);
+          assert.deepEqual(await readFile(path.join(site, 'terminal', terminalFragment)), fragment);
+        } finally { await writeFile(fixtureArchive, original); }
+        assert.deepEqual(await readFile(fixtureArchive), original, 'Restore the owned fixture after the controlled failure');
+      }
+      assert.deepEqual(consoleErrors, []);
+      results.scenarios.push({ name: 'text spacing controlled Terminal oracle failure', fault, status: 'rejected as expected',
+        actualDownloads: downloaded, fixtureRestored: true,
+        scope: 'disposable hidden sample or changed served fixture bytes, not a product defect' });
     } finally { await context.close(); }
   }
 });
