@@ -1,5 +1,14 @@
 # Changes
 
+## Icon artwork 0.9.0
+
+- Add 48 inspected app interpretations across work, media, photo editing, fitness, home, banking and shipping. The black and white collection now has 151 named apps and 24 general functions in both appearances.
+- Preserve all 254 accepted 0.8.0 SVGs and all eight earlier artwork archives. Keep the original desktop packages and watch program unchanged.
+- Export 700 current PNGs through the existing version-specific exporter, retaining input admission for all nine revisions.
+- Admit the larger portable kit within 416 declared hashes and 448 filesystem entries, retaining the existing byte, path, link and read protections.
+- Preserve observed app naming and exact package scope, including Google Health (Fitbit) and the inspected work-connected Microsoft Copilot app.
+- Keep the earlier partial Theme Park application separate from the new artwork and complete launcher acceptance.
+
 ## Icon artwork 0.8.0
 
 - Add 32 inspected app interpretations across media, reading, shopping, travel, office tools and games. The black and white collection now has 103 named apps and 24 general functions in both appearances.
