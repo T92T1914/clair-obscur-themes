@@ -1,5 +1,12 @@
 # Changes
 
+## Icon artwork 0.5.0
+
+- Add eight inspected browser, productivity, account-tool and Samsung app interpretations. The collection now has 65 named apps plus 24 general functions in both appearances.
+- Preserve all 162 accepted 0.4.0 SVGs, their metadata and the four historical artwork archives.
+- Export 356 current PNGs and retain exact-version admission, decoding and acquisition for all five versions.
+- Admit the expanded portable inventory within a 240-hash bound while retaining the existing total-entry and other observation limits.
+
 ## Icon artwork 0.4.0
 
 - Add 24 source-verified app interpretations for work, documents, payments, navigation, learning, media and communication. The collection now has 57 named apps and 24 general functions in both appearances.

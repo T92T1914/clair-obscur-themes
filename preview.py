@@ -27,7 +27,8 @@ WEB_ASSETS = frozenset({'index.html', 'preview.css', 'preview.js'})
 REPOSITORY_URL = 'https://github.com/T92T1914/clair-obscur-themes'
 PORTABLE_ARCHIVE = 'Clair-Obscur-portable-preview.zip'
 PORTABLE_CHECKSUMS = 'portable-SHA256SUMS'
-ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.4.0.zip'
+ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.5.0.zip'
+SECOND_APP_ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.4.0.zip'
 FIRST_APP_ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.3.0.zip'
 PREVIOUS_ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.2.0.zip'
 LEGACY_ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.1.0.zip'
@@ -238,7 +239,7 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
     icon_files['LICENSE.txt'] = sources['LICENSE']
     files['icons/LICENSE.txt'] = sources['LICENSE']
     files[ICON_ARCHIVE] = _zip_bytes(icon_files)
-    for revision, archive in (('0.3.0', FIRST_APP_ICON_ARCHIVE),
+    for revision, archive in (('0.4.0', SECOND_APP_ICON_ARCHIVE), ('0.3.0', FIRST_APP_ICON_ARCHIVE),
                               ('0.2.0', PREVIOUS_ICON_ARCHIVE), ('0.1.0', LEGACY_ICON_ARCHIVE)):
         retained_icons = render_icons(document, version=revision)
         for path, payload in retained_icons.items():
@@ -248,7 +249,7 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
         files[archive] = _zip_bytes(retained_icons)
     files[ICON_CHECKSUMS] = (
         ''.join(f'{_digest(files[path])}  {Path(path).name}\n'
-                for path in (ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
+                for path in (ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
                              PREVIOUS_ICON_ARCHIVE, LEGACY_ICON_ARCHIVE)).encode()
     )
     icon_cards = {'app': [], 'function': []}
@@ -316,6 +317,7 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
             .replace('{{SOURCE_DESCRIPTION}}', source_description)
             .replace('{{ICON_GALLERY}}', icon_gallery)
             .replace('{{ICON_ARCHIVE}}', ICON_ARCHIVE)
+            .replace('{{SECOND_APP_ICON_ARCHIVE}}', SECOND_APP_ICON_ARCHIVE)
             .replace('{{FIRST_APP_ICON_ARCHIVE}}', FIRST_APP_ICON_ARCHIVE)
             .replace('{{PREVIOUS_ICON_ARCHIVE}}', PREVIOUS_ICON_ARCHIVE)
             .replace('{{LEGACY_ICON_ARCHIVE}}', LEGACY_ICON_ARCHIVE)

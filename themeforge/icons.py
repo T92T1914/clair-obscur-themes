@@ -17,12 +17,13 @@ from .tokens import load, validate
 from .icon_apps import (
     APP_CATALOG, CATALOG_DATE, CATALOG_SCOPE,
     NEW_APP_CATALOG, NEW_CATALOG_DATE, NEW_CATALOG_SCOPE,
+    THIRD_APP_CATALOG, THIRD_CATALOG_DATE, THIRD_CATALOG_SCOPE,
 )
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.4.0"
-VERSIONS = ("0.1.0", "0.2.0", "0.3.0", VERSION)
+VERSION = "0.5.0"
+VERSIONS = ("0.1.0", "0.2.0", "0.3.0", "0.4.0", VERSION)
 SIZE = 512
 STROKE = 16
 FUNCTIONS = (
@@ -547,6 +548,61 @@ NEW_APP_GLYPHS = {
 }
 
 
+# Original vector interpretations for the third named-app collection.
+# Distinct browser, account-approval and time-key silhouettes retain shared geometry.
+THIRD_APP_GLYPHS = {
+    "linkedin": [
+        _shape("rect", x=128, y=128, width=256, height=256, rx=32),
+        _shape("circle", cx=192, cy=200, r=16, stroke="accent"),
+        _path("M192 248 V328", accent=True),
+        _path("M248 328 V248 M248 280 C248 232 320 232 320 280 V328"),
+    ],
+    "github": [
+        _shape("circle", cx=176, cy=168, r=28),
+        _shape("circle", cx=336, cy=168, r=28),
+        _shape("circle", cx=176, cy=352, r=28),
+        _path("M176 196 V324 M176 280 C176 232 336 264 336 196", accent=True),
+    ],
+    "notion": [
+        _path("M144 168 L176 136 H368 V352 L336 384 H144 Z"),
+        _path("M144 168 H336 V384 M336 168 L368 136"),
+        _path("M184 328 V224 L288 328 V224", accent=True),
+    ],
+    "microsoft-edge": [
+        _path("M376 288 C376 352 328 384 264 384 C184 384 128 328 128 256 "
+              "C128 184 184 128 256 128 C320 128 368 168 384 224"),
+        _path("M128 256 C160 200 240 192 304 232 C352 256 352 312 304 328 "
+              "C248 352 184 312 192 264", accent=True),
+    ],
+    "brave": [
+        _path("M256 120 L368 168 V272 C368 328 320 368 256 392 "
+              "C192 368 144 328 144 272 V168 Z"),
+        _path("M200 232 L224 208 L256 224 L288 208 L312 232 "
+              "L304 296 L272 328 H240 L208 296 Z", accent=True),
+        _path("M232 272 L256 288 L280 272"),
+    ],
+    "microsoft-authenticator": [
+        _shape("rect", x=168, y=120, width=176, height=272, rx=32),
+        _path("M224 152 H288 M232 360 H280"),
+        _path("M208 256 L248 296 L320 208", accent=True),
+    ],
+    "google-authenticator": [
+        _shape("circle", cx=208, cy=208, r=64),
+        _path("M256 256 L384 384 M312 312 L336 288 M352 352 L376 328"),
+        _path("M208 176 V208 H232", accent=True),
+    ],
+    "samsung-smartthings": [
+        _shape("circle", cx=160, cy=160, r=28),
+        _shape("circle", cx=352, cy=160, r=28),
+        _shape("circle", cx=160, cy=352, r=28),
+        _shape("circle", cx=352, cy=352, r=28),
+        _shape("circle", cx=256, cy=256, r=32, stroke="accent"),
+        _path("M180 180 L233 233 M332 180 L279 233 "
+              "M180 332 L233 279 M332 332 L279 279", accent=True),
+    ],
+}
+
+
 def icon_catalog(version: str = VERSION) -> list[dict]:
     """Return labels and explicit assignment identities for an admitted revision."""
     if version not in VERSIONS:
@@ -556,7 +612,12 @@ def icon_catalog(version: str = VERSION) -> list[dict]:
     if version in ("0.1.0", "0.2.0"):
         return catalog
     seen, packages = set(FUNCTIONS), set()
-    apps = APP_CATALOG if version == "0.3.0" else (*APP_CATALOG, *NEW_APP_CATALOG)
+    if version == "0.3.0":
+        apps = APP_CATALOG
+    elif version == "0.4.0":
+        apps = (*APP_CATALOG, *NEW_APP_CATALOG)
+    else:
+        apps = (*APP_CATALOG, *NEW_APP_CATALOG, *THIRD_APP_CATALOG)
     for app in apps:
         if not isinstance(app, dict):
             raise ValueError("Malformed named-app catalog")
@@ -578,10 +639,14 @@ def icon_catalog(version: str = VERSION) -> list[dict]:
         packages.add(package)
         catalog.append(dict(app))
     drawings = set(APP_GLYPHS)
-    if version == "0.4.0":
+    if version in ("0.4.0", "0.5.0"):
         if drawings & set(NEW_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(NEW_APP_GLYPHS)
+    if version == "0.5.0":
+        if drawings & set(THIRD_APP_GLYPHS):
+            raise ValueError("New named-app drawings replace an accepted ID")
+        drawings |= set(THIRD_APP_GLYPHS)
     if drawings != seen - set(FUNCTIONS):
         raise ValueError("Named-app catalog and drawings differ")
     return catalog
@@ -611,7 +676,8 @@ def _render_icon(function: str, appearance: str, document: dict, grant: str, *, 
         "stroke-linecap": "round", "stroke-linejoin": "round"})
     drawings = (GLYPHS if version == "0.1.0" else
                 CURRENT_GLYPHS if function in CURRENT_GLYPHS else
-                APP_GLYPHS if function in APP_GLYPHS else NEW_APP_GLYPHS)
+                APP_GLYPHS if function in APP_GLYPHS else
+                NEW_APP_GLYPHS if function in NEW_APP_GLYPHS else THIRD_APP_GLYPHS)
     for tag, attributes in drawings[function]:
         ET.SubElement(group, tag, {
             key: palette[value] if value in ("accent", "text") else value
@@ -652,9 +718,13 @@ def render_icons(document: dict, *, version: str = VERSION) -> dict[str, bytes]:
         "functions": names, "files": records,
         "scope": "Original functional glyphs; no brand logos, font assets or phone installation",
     }
-    if version in ("0.3.0", "0.4.0"):
-        date, scope = ((CATALOG_DATE, CATALOG_SCOPE) if version == "0.3.0"
-                       else (NEW_CATALOG_DATE, NEW_CATALOG_SCOPE))
+    if version in ("0.3.0", "0.4.0", "0.5.0"):
+        if version == "0.3.0":
+            date, scope = CATALOG_DATE, CATALOG_SCOPE
+        elif version == "0.4.0":
+            date, scope = NEW_CATALOG_DATE, NEW_CATALOG_SCOPE
+        else:
+            date, scope = THIRD_CATALOG_DATE, THIRD_CATALOG_SCOPE
         manifest.update(catalog=catalog, catalog_date=date, catalog_scope=scope,
                         scope="Original themed interpretations for named apps and general functions; "
                               "app names identify intended assignments, not publisher endorsement or installation")

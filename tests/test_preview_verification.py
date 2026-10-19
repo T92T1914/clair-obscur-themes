@@ -313,7 +313,7 @@ class ManifestAdmissionTests(KitFixture):
         (self.kit / 'site-manifest.json').write_bytes(b' ' * 65_537)
         self.assert_refused(message='File byte limit')
         self.document = manifest_document(self.files)
-        for number in range(225 - len(self.document['files'])):
+        for number in range(241 - len(self.document['files'])):
             self.document['files'][f'file{number}.txt'] = '0' * 64
         self.write_manifest()
         self.assert_refused(message='declared file count')
@@ -323,10 +323,10 @@ class ManifestAdmissionTests(KitFixture):
         self.write_manifest()
         self.assert_refused(message='Combined inventory')
 
-    def test_expanded_declared_inventory_accepts_192_and_224_hashes_and_refuses_225(self):
+    def test_expanded_declared_inventory_accepts_192_224_and_240_hashes_and_refuses_241(self):
         # Exercise a complete comparison at the published limit. The current
         # named-app portable kit also runs through ProducerInclusionTests.
-        for count in (192, 224):
+        for count in (192, 224, 240):
             while len(self.files) < count:
                 number = len(self.files)
                 name = f'expanded{number}.txt'
