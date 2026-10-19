@@ -95,15 +95,103 @@ const fourthApps = [
   ['home-depot', 'Home Depot', 'com.thehomedepot'],
   ['patreon', 'Patreon', 'com.patreon.android'],
 ];
-const apps = [...retainedApps, ...fourthApps];
+const companionApps = [...retainedApps, ...fourthApps];
+const fifthApps = [
+  ["youtube-music", "YouTube Music", "com.google.android.apps.youtube.music"],
+  ["audible", "Audible", "com.audible.application"],
+  ["amazon-kindle", "Amazon Kindle", "com.amazon.kindle"],
+  ["pocket-casts", "Pocket Casts", "au.com.shiftyjelly.pocketcasts"],
+  ["vlc", "VLC", "org.videolan.vlc"],
+  ["shazam", "Shazam", "com.shazam.android"],
+  ["soundcloud", "SoundCloud", "com.soundcloud.android"],
+  ["hulu", "Hulu", "com.hulu.plus"],
+  ["target", "Target", "com.target.ui"],
+  ["costco", "Costco", "com.costco.app.android"],
+  ["best-buy", "Best Buy", "com.bestbuy.android"],
+  ["etsy", "Etsy", "com.etsy.android"],
+  ["aliexpress", "AliExpress", "com.alibaba.aliexpresshd"],
+  ["shein", "SHEIN", "com.zzkko"],
+  ["instacart", "Instacart", "com.instacart.client"],
+  ["airbnb", "Airbnb", "com.airbnb.android"],
+  ["booking", "Booking.com", "com.booking"],
+  ["expedia", "Expedia", "com.expedia.bookings"],
+  ["lyft", "Lyft", "me.lyft.android"],
+  ["uber-eats", "Uber Eats", "com.ubercab.eats"],
+  ["google-earth", "Google Earth", "com.google.earth"],
+  ["google-news", "Google News", "com.google.android.apps.magazines"],
+  ["galaxy-wearable", "Galaxy Wearable", "com.samsung.android.app.watchmanager"],
+  ["files-by-google", "Files by Google", "com.google.android.apps.nbu.files"],
+  ["adobe-acrobat", "Adobe Acrobat", "com.adobe.reader"],
+  ["microsoft-word", "Microsoft Word", "com.microsoft.office.word"],
+  ["microsoft-excel", "Microsoft Excel", "com.microsoft.office.excel"],
+  ["microsoft-powerpoint", "PowerPoint", "com.microsoft.office.powerpoint"],
+  ["google-slides", "Google Slides", "com.google.android.apps.docs.editors.slides"],
+  ["google-lens", "Google Lens", "com.google.ar.lens"],
+  ["roblox", "Roblox", "com.roblox.client"],
+  ["minecraft", "Minecraft", "com.mojang.minecraftpe"],
+];
+const broadApps = [...companionApps, ...fifthApps];
+const sixthApps = [
+  ["slack", "Slack", "com.Slack"],
+  ["trello", "Trello", "com.trello"],
+  ["todoist", "Todoist", "com.todoist"],
+  ["ticktick", "TickTick", "com.ticktick.task"],
+  ["evernote", "Evernote", "com.evernote"],
+  ["obsidian", "Obsidian", "md.obsidian"],
+  ["dropbox", "Dropbox", "com.dropbox.android"],
+  ["proton-mail", "Proton Mail", "ch.protonmail.android"],
+  ["yahoo-mail", "Yahoo Mail", "com.yahoo.mobile.client.android.mail"],
+  ["google-tasks", "Google Tasks", "com.google.android.apps.tasks"],
+  ["google-one", "Google One", "com.google.android.apps.subscriptions.red"],
+  ["microsoft-copilot", "Microsoft Copilot", "com.microsoft.office.officehubrow"],
+  ["google-gemini", "Google Gemini", "com.google.android.apps.bard"],
+  ["claude", "Claude", "com.anthropic.claude"],
+  ["perplexity", "Perplexity", "ai.perplexity.app.android"],
+  ["bitwarden", "Bitwarden", "com.x8bit.bitwarden"],
+  ["apple-music", "Apple Music", "com.apple.android.music"],
+  ["apple-tv", "Apple TV", "com.apple.atve.androidtv.appletv"],
+  ["hbo-max", "HBO Max", "com.wbd.stream"],
+  ["peacock", "Peacock", "com.peacocktv.peacockandroid"],
+  ["paramount-plus", "Paramount+", "com.cbs.app"],
+  ["plex", "Plex", "com.plexapp.android"],
+  ["tubi", "Tubi", "com.tubitv"],
+  ["pluto-tv", "Pluto TV", "tv.pluto.android"],
+  ["crunchyroll", "Crunchyroll", "com.crunchyroll.crunchyroid"],
+  ["pandora", "Pandora", "com.pandora.android"],
+  ["iheartradio", "iHeart", "com.clearchannel.iheartradio.controller"],
+  ["siriusxm", "SiriusXM", "com.sirius"],
+  ["adobe-lightroom", "Adobe Lightroom", "com.adobe.lrmobile"],
+  ["photoshop-express", "Photoshop Express", "com.adobe.psmobile"],
+  ["snapseed", "Snapseed", "com.niksoftware.snapseed"],
+  ["picsart", "Picsart", "com.picsart.studio"],
+  ["strava", "Strava", "com.strava"],
+  ["fitbit", "Google Health (Fitbit)", "com.fitbit.FitbitMobile"],
+  ["google-fit", "Google Fit", "com.google.android.apps.fitness"],
+  ["myfitnesspal", "MyFitnessPal", "com.myfitnesspal.android"],
+  ["alltrails", "AllTrails", "com.alltrails.alltrails"],
+  ["komoot", "Komoot", "de.komoot.android"],
+  ["amazon-alexa", "Amazon Alexa", "com.amazon.dee.app"],
+  ["ring", "Ring", "com.ringapp"],
+  ["blink", "Blink", "com.immediasemi.android.blink"],
+  ["google-home", "Google Home", "com.google.android.apps.chromecast.app"],
+  ["zillow", "Zillow", "com.zillow.android.zillowmap"],
+  ["chase", "Chase", "com.chase.sig.android"],
+  ["capital-one", "Capital One", "com.konylabs.capitalone"],
+  ["chime", "Chime", "com.onedebit.chime"],
+  ["ups", "UPS", "com.ups.mobile.android"],
+  ["fedex", "FedEx", "com.fedex.ida.android"],
+];
+const apps = [...broadApps, ...sixthApps];
 const firstFunctions = [...baseFunctions, ...firstApps.map(([id]) => id)];
 const secondFunctions = [...baseFunctions, ...secondApps.map(([id]) => id)];
 const retainedFunctions = [...baseFunctions, ...retainedApps.map(([id]) => id)];
+const companionFunctions = [...baseFunctions, ...companionApps.map(([id]) => id)];
+const broadFunctions = [...baseFunctions, ...broadApps.map(([id]) => id)];
 const functions = [...baseFunctions, ...apps.map(([id]) => id)];
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 let temporary, source, sourceBefore, legacySource, legacyBefore, previousSource, previousBefore,
   firstSource, firstBefore, secondSource, secondBefore, thirdSource, thirdBefore,
-  monochromeSource, monochromeBefore;
+  monochromeSource, monochromeBefore, companionSource, companionBefore, broadSource, broadBefore;
 
 function execute(command, args, options = {}) {
   return spawnSync(command, args, { cwd: root, encoding: 'utf8', windowsHide: true,
@@ -265,6 +353,28 @@ before(async () => {
     assert.equal(sourceBefore[`${appearance}/${name}.svg`], monochromeBefore[`${appearance}/${name}.svg`],
       'Every retained monochrome SVG stays byte-identical in the expanded collection');
   }
+  companionSource = path.join(temporary, 'companion-svg');
+  const companion = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', companionSource, '--version', '0.7.0']);
+  assert.ifError(companion.error);
+  assert.equal(companion.status, 0, companion.stdout + companion.stderr);
+  companionBefore = await snapshot(companionSource);
+  assert.equal(companionBefore['manifest.json'], 'a58049892930f817b1376c03510ab408c84d5336d908d885e4ab52e078d238ca',
+    'The accepted companion-collection manifest remains exact');
+  for (const appearance of ['Clair', 'Obscur']) for (const name of companionFunctions) {
+    assert.equal(sourceBefore[`${appearance}/${name}.svg`], companionBefore[`${appearance}/${name}.svg`],
+      'All 190 accepted companion SVG bytes remain unchanged in the broader collection');
+  }
+  broadSource = path.join(temporary, 'broad-svg');
+  const broad = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', broadSource, '--version', '0.8.0']);
+  assert.ifError(broad.error);
+  assert.equal(broad.status, 0, broad.stdout + broad.stderr);
+  broadBefore = await snapshot(broadSource);
+  assert.equal(broadBefore['manifest.json'], '7a8a35d6ba1186a718e970e26c5c6b7b19bf4949010c7bc89af3cb6063b95252',
+    'The accepted broad-collection manifest remains exact');
+  for (const appearance of ['Clair', 'Obscur']) for (const name of broadFunctions) {
+    assert.equal(sourceBefore[`${appearance}/${name}.svg`], broadBefore[`${appearance}/${name}.svg`],
+      'All 254 accepted broad SVG bytes remain unchanged in the everyday collection');
+  }
 });
 
 after(async () => {
@@ -275,20 +385,20 @@ after(async () => {
   }
 });
 
-test('PNG command exports 380 monochrome icons with independent neutral-pixel decoding and assignment identities', async () => {
+test('PNG command exports 700 monochrome icons with independent neutral-pixel decoding and assignment identities', async () => {
   const output = path.join(temporary, 'png');
   const result = exportTo(source, output);
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.match(result.stdout, /Exported 380 PNG icons/);
+  assert.match(result.stdout, /Exported 700 PNG icons/);
   const manifestBytes = await readFile(path.join(output, 'manifest.json'));
   const manifest = JSON.parse(manifestBytes);
   const expected = ['manifest.json', 'LICENSE'];
-  assert.equal(manifest.version, '0.7.0');
-  assert.equal(manifest.exporter_version, '0.7.0');
+  assert.equal(manifest.version, '0.9.0');
+  assert.equal(manifest.exporter_version, '0.9.0');
   assert.equal(manifest.palette_variant, 'monochrome');
   assert.equal(manifest.token_version, '1.0.0');
-  assert.equal(manifest.files.length, 380);
+  assert.equal(manifest.files.length, 700);
   assert.deepEqual(manifest.functions, functions);
   assert.equal(manifest.source_manifest_sha256, sourceBefore['manifest.json']);
   assert.equal(manifest.tokens_file, 'tokens-monochrome.json');
@@ -297,7 +407,7 @@ test('PNG command exports 380 monochrome icons with independent neutral-pixel de
   assert.equal(manifest.svg_catalog_sha256, sha(await readFile(path.join(root, 'themeforge/icon_apps.py'))));
   const svgManifest = JSON.parse(await readFile(path.join(source, 'manifest.json')));
   assert.deepEqual(manifest.catalog, svgManifest.catalog, 'Complete admitted assignment metadata survives PNG export');
-  assert.equal(manifest.catalog.length, 95);
+  assert.equal(manifest.catalog.length, 175);
   assert.equal(manifest.catalog_date, '2026-10-19');
   assert.equal(manifest.catalog_scope, svgManifest.catalog_scope);
   assert.match(manifest.catalog_scope, /Not an ordered popularity chart or exhaustive catalog/);
@@ -313,6 +423,92 @@ test('PNG command exports 380 monochrome icons with independent neutral-pixel de
     'good-lock': 'Good Lock', 'connect-iq-store': 'Connect IQ\u2122 Store', steam: 'Steam',
     reuters: 'Reuters - Breaking World News', 'home-depot': 'The Home Depot', patreon: 'Patreon',
   });
+  assert.deepEqual(Object.fromEntries(manifest.catalog.filter(entry => fifthApps.some(([id]) => id === entry.id))
+    .map(entry => [entry.id, entry.store_title])), {
+    "youtube-music": "YouTube Music",
+    "audible": "Audible: Audiobooks & Podcasts",
+    "amazon-kindle": "Amazon Kindle: Reading App",
+    "pocket-casts": "Pocket Casts - Podcast App",
+    "vlc": "VLC for Android",
+    "shazam": "Shazam: Find Music & Concerts",
+    "soundcloud": "SoundCloud: Discover Music",
+    "hulu": "Hulu: Stream TV shows & movies",
+    "target": "Target: Shop. Style. Save.",
+    "costco": "Costco Wholesale",
+    "best-buy": "Best Buy: Shop tech deals",
+    "etsy": "Etsy: Shop from Real People",
+    "aliexpress": "AliExpress : shopping en ligne",
+    "shein": "SHEIN-Shopping Online",
+    "instacart": "Instacart: Get Food Delivery",
+    "airbnb": "Airbnb",
+    "booking": "Booking.com: Hotels & Travel",
+    "expedia": "Expedia: Hotels, Flights, Cars",
+    "lyft": "Lyft",
+    "uber-eats": "Uber Eats: Food and Grocery",
+    "google-earth": "Google Earth",
+    "google-news": "Google News - Daily Headlines",
+    "galaxy-wearable": "Galaxy Wearable",
+    "files-by-google": "Files by Google",
+    "adobe-acrobat": "Adobe Acrobat Reader: Edit PDF",
+    "microsoft-word": "Microsoft Word: Edit Documents",
+    "microsoft-excel": "Microsoft Excel: Spreadsheets",
+    "microsoft-powerpoint": "Microsoft PowerPoint",
+    "google-slides": "Google Slides",
+    "google-lens": "Google Lens",
+    "roblox": "Roblox",
+    "minecraft": "Minecraft: Dream it, Build it!"
+});
+  assert.deepEqual(Object.fromEntries(manifest.catalog.filter(entry => sixthApps.some(([id]) => id === entry.id))
+    .map(entry => [entry.id, entry.store_title])), {
+    "slack": "Slack",
+    "trello": "Trello: Personal Planner App",
+    "todoist": "Todoist: To Do List & Calendar",
+    "ticktick": "TickTick:To Do List & Calendar",
+    "evernote": "Evernote - Note Organizer",
+    "obsidian": "Obsidian",
+    "dropbox": "Dropbox: Secure Cloud Storage",
+    "proton-mail": "Proton Mail: Encrypted Email",
+    "yahoo-mail": "Yahoo Mail: Email & Planner",
+    "google-tasks": "Google Tasks",
+    "google-one": "Google One",
+    "microsoft-copilot": "Microsoft Copilot",
+    "google-gemini": "Google Gemini",
+    "claude": "Claude by Anthropic",
+    "perplexity": "Perplexity - Ask Anything",
+    "bitwarden": "Bitwarden Password Manager",
+    "apple-music": "Apple Music",
+    "apple-tv": "Apple TV: Shows, Movies & More",
+    "hbo-max": "HBO Max: Stream TV & Movies",
+    "peacock": "Peacock TV: Stream TV & Movies",
+    "paramount-plus": "Paramount+",
+    "plex": "Plex: Find Movies & TV Shows",
+    "tubi": "Tubi: Free Movies & Live TV",
+    "pluto-tv": "Pluto TV: Watch Free Movies/TV",
+    "crunchyroll": "Crunchyroll: Anime Streaming",
+    "pandora": "Pandora - Music & Podcasts",
+    "iheartradio": "iHeart: Music, Radio, Podcasts",
+    "siriusxm": "SiriusXM: Music, Sports & Talk",
+    "adobe-lightroom": "Lightroom Photo & Video Editor",
+    "photoshop-express": "Photoshop Express Photo Editor",
+    "snapseed": "Snapseed",
+    "picsart": "Picsart AI Photo Editor, Video",
+    "strava": "Strava: Run, Bike, Walk",
+    "fitbit": "Google Health (Fitbit)",
+    "google-fit": "Google Fit: Activity Tracking",
+    "myfitnesspal": "MyFitnessPal: Calorie Counter",
+    "alltrails": "AllTrails: Hike, Bike & Run",
+    "komoot": "komoot - hike, bike & run",
+    "amazon-alexa": "Amazon Alexa",
+    "ring": "Ring - Always Home",
+    "blink": "Blink Home Monitor",
+    "google-home": "Google Home",
+    "zillow": "Zillow: Homes for Sale & Rent",
+    "chase": "Chase Mobile",
+    "capital-one": "Capital One Mobile",
+    "chime": "Chime\u00ae \u2013 Fee-Free Banking",
+    "ups": "UPS",
+    "fedex": "FedEx Mobile"
+});
   assert.equal(manifest.exporter_sha256, sha(await readFile(exporter)));
   const license = await readFile(path.join(output, 'LICENSE'));
   assert.deepEqual(license, await readFile(path.join(root, 'LICENSE')));
@@ -323,10 +519,10 @@ test('PNG command exports 380 monochrome icons with independent neutral-pixel de
   assert.equal(manifestBytes.toString().includes(root), false, 'No checkout path enters the export manifest');
   assert.equal(manifestBytes.toString().includes(temporary), false, 'No temporary or user path enters the export manifest');
   const records = new Map(manifest.files.map(record => [record.path, record]));
-  assert.equal(records.size, 380);
+  assert.equal(records.size, 700);
   for (const appearance of ['Clair', 'Obscur']) for (const size of [512, 1024]) {
     const hashes = functions.map(name => records.get(`${appearance}/${size}/${name}.png`)?.sha256);
-    assert.equal(new Set(hashes).size, 95, `${appearance}/${size} retains 95 distinct drawings`);
+    assert.equal(new Set(hashes).size, 175, `${appearance}/${size} retains 175 distinct drawings`);
     assert.equal(hashes.includes(undefined), false);
   }
   for (const appearance of ['Clair', 'Obscur']) for (const size of [512, 1024]) for (const name of functions) {
@@ -344,7 +540,7 @@ test('PNG command exports 380 monochrome icons with independent neutral-pixel de
   assert.deepEqual(await snapshot(source), sourceBefore);
 });
 
-for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
+for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
   const historical = {
     '0.1.0': { input: legacySource, before: legacyBefore, functions: baseFunctions, images: 96 },
     '0.2.0': { input: previousSource, before: previousBefore, functions: baseFunctions, images: 96 },
@@ -356,6 +552,10 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0']) te
       apps: retainedApps, date: '2026-10-19' },
     '0.6.0': { input: monochromeSource, before: monochromeBefore, functions: retainedFunctions, images: 356,
       apps: retainedApps, date: '2026-10-19', monochrome: true },
+    '0.7.0': { input: companionSource, before: companionBefore, functions: companionFunctions, images: 380,
+      apps: companionApps, date: '2026-10-19', monochrome: true },
+    '0.8.0': { input: broadSource, before: broadBefore, functions: broadFunctions, images: 508,
+      apps: broadApps, date: '2026-10-19', monochrome: true },
   }[version];
   const historicalSource = historical.input, historicalBefore = historical.before;
   const historicalFunctions = historical.functions, imageCount = historical.images;
@@ -366,7 +566,7 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0']) te
   assert.match(result.stdout, new RegExp(`Exported ${imageCount} PNG icons`));
   const manifest = JSON.parse(await readFile(path.join(output, 'manifest.json')));
   assert.equal(manifest.version, version);
-  assert.equal(manifest.exporter_version, '0.7.0');
+  assert.equal(manifest.exporter_version, '0.9.0');
   const tokenFile = historical.monochrome ? 'tokens-monochrome.json' : 'tokens.json';
   assert.equal(manifest.tokens_file, tokenFile);
   assert.equal(manifest.tokens_sha256, sha(await readFile(path.join(root, tokenFile))));
@@ -421,12 +621,12 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0']) te
 
 test('unknown and mismatched artwork versions are refused before output reservation or browser launch', async () => {
   const admitted = [['0.1.0', legacySource], ['0.2.0', previousSource], ['0.3.0', firstSource],
-    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', source]];
-  const cases = [['unknown', source, '9.9.9']];
+    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', source]];
+  const cases = [['unknown', source, '0.10.0']];
   for (const [actual, original] of admitted) for (const [claimed] of admitted) {
     if (actual !== claimed) cases.push([`${actual}-as-${claimed}`, original, claimed]);
   }
-  assert.equal(cases.length, 43, 'All 42 cross-version claims and one unknown version are exercised');
+  assert.equal(cases.length, 73, 'All 72 cross-version claims and one unsupported future version are exercised');
   for (const [name, original, version] of cases) {
     const input = path.join(temporary, name);
     await cp(original, input, { recursive: true });
@@ -446,15 +646,27 @@ test('altered app assignments and mixed previous/current artwork fail admission 
   for (const mutation of ['label', 'android_package', 'store_url', 'store_title', 'category',
     'selection_basis', 'catalog_date', 'catalog_scope', 'historical-first-label', 'historical-second-label',
     'historical-third-label', 'historical-monochrome-label', 'mixed-version-svg', 'mixed-version-manifest',
-    'previous-monochrome-manifest', 'new-svg-in-historical-monochrome']) {
+    'previous-monochrome-manifest', 'new-svg-in-historical-monochrome', 'historical-companion-label',
+    'previous-companion-manifest', 'new-svg-in-historical-companion', 'historical-broad-label',
+    'previous-broad-manifest', 'new-svg-in-historical-broad']) {
     const input = path.join(temporary, `assignment-${mutation}`);
     await cp(mutation === 'historical-first-label' ? firstSource :
       mutation === 'historical-second-label' ? secondSource :
       mutation === 'historical-third-label' ? thirdSource :
-      ['historical-monochrome-label', 'new-svg-in-historical-monochrome'].includes(mutation) ? monochromeSource : source, input, { recursive: true });
+      ['historical-monochrome-label', 'new-svg-in-historical-monochrome'].includes(mutation) ? monochromeSource :
+      ['historical-companion-label', 'new-svg-in-historical-companion'].includes(mutation) ? companionSource :
+      ['historical-broad-label', 'new-svg-in-historical-broad'].includes(mutation) ? broadSource : source, input, { recursive: true });
     const manifestPath = path.join(input, 'manifest.json');
     const manifest = JSON.parse(await readFile(manifestPath));
-    if (mutation === 'new-svg-in-historical-monochrome') {
+    if (mutation === 'new-svg-in-historical-broad') {
+      await cp(path.join(source, 'Clair', 'slack.svg'), path.join(input, 'Clair', 'slack.svg'));
+    } else if (mutation === 'previous-broad-manifest') {
+      await cp(path.join(broadSource, 'manifest.json'), manifestPath);
+    } else if (mutation === 'new-svg-in-historical-companion') {
+      await cp(path.join(source, 'Clair', 'youtube-music.svg'), path.join(input, 'Clair', 'youtube-music.svg'));
+    } else if (mutation === 'previous-companion-manifest') {
+      await cp(path.join(companionSource, 'manifest.json'), manifestPath);
+    } else if (mutation === 'new-svg-in-historical-monochrome') {
       await cp(path.join(source, 'Clair', 'good-lock.svg'), path.join(input, 'Clair', 'good-lock.svg'));
     } else if (mutation === 'previous-monochrome-manifest') {
       await cp(path.join(monochromeSource, 'manifest.json'), manifestPath);
@@ -468,7 +680,9 @@ test('altered app assignments and mixed previous/current artwork fail admission 
       else if (mutation === 'historical-second-label') manifest.catalog.find(entry => entry.id === 'google-meet').label = 'unqualified replacement';
       else if (mutation === 'historical-third-label') manifest.catalog.find(entry => entry.id === 'microsoft-authenticator').label = 'unqualified replacement';
       else if (mutation === 'historical-monochrome-label') manifest.catalog.find(entry => entry.id === 'github').label = 'unqualified replacement';
-      else manifest.catalog.find(entry => entry.id === 'good-lock')[mutation] = 'unqualified replacement';
+      else if (mutation === 'historical-companion-label') manifest.catalog.find(entry => entry.id === 'good-lock').label = 'unqualified replacement';
+      else if (mutation === 'historical-broad-label') manifest.catalog.find(entry => entry.id === 'youtube-music').label = 'unqualified replacement';
+      else manifest.catalog.find(entry => entry.id === 'slack')[mutation] = 'unqualified replacement';
       await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
     }
     const before = await snapshot(input);
@@ -569,7 +783,7 @@ test('linked or junction output ancestors are refused before browser launch with
 test('a linked child manifest is refused before parsing its owned target or launching a browser', async t => {
   for (const [name, contents] of [
     ['malformed', '{owned malformed JSON fixture'],
-    ['unsupported', JSON.stringify({ version: '9.9.9' })],
+    ['unsupported', JSON.stringify({ version: '0.10.0' })],
   ]) {
     const input = path.join(temporary, `linked-manifest-${name}`);
     await cp(source, input, { recursive: true });

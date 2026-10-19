@@ -79,9 +79,9 @@ The transferred earlier face was later reported present on the physical watch.
 Exact on-device version, switching, always-on behavior, persistence, USB
 restoration and power use remain open. No 0.4.0 device installation is claimed.
 
-The phone gallery's 0.7.0 black and white collection pairs 71 named Android apps with 24 general symbols, giving 95 choices in both appearances. The latest additions cover Good Lock, Connect IQ Store, Steam, Reuters, The Home Depot and Patreon. Checked app labels, package IDs and official listings support manual assignment. All six earlier SVG archives remain unchanged, and all seven revisions support the local PNG exporter. Coverage is a growing selection, not a complete store catalog or an ordered popularity chart.
+The phone gallery's 0.9.0 black and white collection pairs 151 named Android apps with 24 general symbols, giving 175 choices in both appearances. A local finder searches names, icon IDs and Android package IDs, with separate named-app and general-function filters. Both appearances stay together, and the full catalog remains available without JavaScript. The latest 48 additions fill work, media, photo-editing, fitness, home, banking and shipping gaps. Checked app labels, package IDs and official listings support manual assignment. All eight earlier SVG archives remain unchanged, and all nine revisions support the local PNG exporter. Coverage is a growing selection, not a complete store catalog or an ordered popularity chart.
 
-A scoped Samsung Theme Park check saved and applied a local ObscurBW icon theme, with its selection checkmark observed. That pack combined one earlier general drawing, one 0.6.0 named drawing and neutral fallback artwork. It does not establish assignment of the full collection or the new 0.7.0 additions. Actual launcher masking, labels, phone fonts, switching and restoration remain separate checks.
+A scoped Samsung Theme Park check saved and applied a local ObscurBW icon theme, with its selection checkmark observed. That pack combined one earlier general drawing, one 0.6.0 named drawing and neutral fallback artwork. It does not establish assignment of the full collection or the later 0.7.0, 0.8.0 and 0.9.0 additions. Actual launcher masking, labels, phone fonts, switching and restoration remain separate checks.
 
 ## Report a problem
 

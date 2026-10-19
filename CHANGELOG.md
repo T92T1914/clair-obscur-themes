@@ -8,6 +8,30 @@
 - Compile normal and test-enabled programs for `fenix9pro47mm` with SDK 9.2.0. Add four annotated test groups for analog geometry and layout settings, plus host geometry and resource checks. Current simulator rendering, execution of all 20 groups, persistence, memory and physical-device acceptance remain open.
 - Preserve earlier watch programs, simulator observations, transfer evidence, icon artwork and desktop package bytes.
 
+## Preview icon finder
+
+- Find existing drawings by name, stable icon ID or Android package ID, with named-app and general-function filters.
+- Keep both appearances together, preserve their original order, and show the number of matching choices with an explicit empty state and Clear action.
+- Retain the complete static catalog without JavaScript. Filtering stays local in both the published and extracted portable preview.
+- Preserve artwork 0.9.0, all earlier icon archives and every accepted desktop, Terminal and watch package.
+
+## Icon artwork 0.9.0
+
+- Add 48 inspected app interpretations across work, media, photo editing, fitness, home, banking and shipping. The black and white collection now has 151 named apps and 24 general functions in both appearances.
+- Preserve all 254 accepted 0.8.0 SVGs and all eight earlier artwork archives. Keep the original desktop packages and watch program unchanged.
+- Export 700 current PNGs through the existing version-specific exporter, retaining input admission for all nine revisions.
+- Admit the larger portable kit within 416 declared hashes and 448 filesystem entries, retaining the existing byte, path, link and read protections.
+- Preserve observed app naming and exact package scope, including Google Health (Fitbit) and the inspected work-connected Microsoft Copilot app.
+- Keep the earlier partial Theme Park application separate from the new artwork and complete launcher acceptance.
+
+## Icon artwork 0.8.0
+
+- Add 32 inspected app interpretations across media, reading, shopping, travel, office tools and games. The black and white collection now has 103 named apps and 24 general functions in both appearances.
+- Preserve all 190 accepted 0.7.0 SVGs and all seven historical artwork archives. Keep the original desktop packages and watch program unchanged.
+- Export 508 current PNGs through the existing version-specific exporter, retaining input admission for all eight revisions.
+- Admit the larger portable kit within 320 declared hashes and 352 filesystem entries, retaining byte, path, link and read checks and boundary refusals.
+- Keep the earlier partial Theme Park application distinct from new artwork availability and full launcher acceptance.
+
 ## Icon artwork 0.7.0
 
 - Add six inspected app interpretations: Good Lock, Connect IQ Store, Steam, Reuters, The Home Depot and Patreon. The black and white collection now has 71 named apps and 24 general functions in both appearances.

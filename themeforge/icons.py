@@ -19,12 +19,14 @@ from .icon_apps import (
     NEW_APP_CATALOG, NEW_CATALOG_DATE, NEW_CATALOG_SCOPE,
     THIRD_APP_CATALOG, THIRD_CATALOG_DATE, THIRD_CATALOG_SCOPE,
     FOURTH_APP_CATALOG, FOURTH_CATALOG_DATE, FOURTH_CATALOG_SCOPE,
+    FIFTH_APP_CATALOG, FIFTH_CATALOG_DATE, FIFTH_CATALOG_SCOPE,
+    SIXTH_APP_CATALOG, SIXTH_CATALOG_DATE, SIXTH_CATALOG_SCOPE,
 )
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.7.0"
-VERSIONS = ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0", "0.6.0", VERSION)
+VERSION = "0.9.0"
+VERSIONS = ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", VERSION)
 SIZE = 512
 STROKE = 16
 FUNCTIONS = (
@@ -648,6 +650,436 @@ FOURTH_APP_GLYPHS = {
 }
 
 
+# Broader media, shopping, travel, utility and game interpretations retain the
+# same safe inset and stroke. These drawings belong only to the 0.8.0 catalog.
+FIFTH_APP_GLYPHS = {
+    "youtube-music": [
+        _shape("circle", cx=256, cy=256, r=128),
+        _shape("circle", cx=256, cy=256, r=80),
+        _path("M240 216 L296 256 L240 296 Z", accent=True, filled=True),
+    ],
+    "audible": [
+        _path("M136 248 Q192 224 256 256 Q320 224 376 248 V368 "
+              "Q320 344 256 376 Q192 344 136 368 Z M256 256 V376"),
+        _path("M192 192 Q256 128 320 192 M224 216 Q256 184 288 216", accent=True),
+    ],
+    "amazon-kindle": [
+        _path("M128 152 Q192 128 256 168 Q320 128 384 152 V352 "
+              "Q320 328 256 368 Q192 328 128 352 Z M256 168 V368"),
+        _path("M296 160 V264 L320 240 L344 264 V152", accent=True),
+    ],
+    "pocket-casts": [
+        _shape("circle", cx=256, cy=256, r=128),
+        _path("M184 328 V248 Q184 184 248 184 H328 "
+              "M224 328 V264 Q224 224 264 224 H328", accent=True),
+        _shape("circle", cx=288, cy=288, r=24, fill="accent", stroke="accent"),
+    ],
+    "vlc": [
+        _path("M256 128 L144 368 H368 Z M128 392 H384"),
+        _path("M208 240 H304 M176 304 H336", accent=True),
+    ],
+    "shazam": [
+        _path("M184 344 C128 296 136 200 192 160 C248 120 328 152 344 208 "
+              "C360 256 320 280 288 304 C264 320 280 368 240 384"),
+        _path("M208 248 C208 192 296 192 296 240 C296 272 256 264 256 304", accent=True),
+    ],
+    "soundcloud": [
+        _path("M248 328 H344 C400 328 400 240 344 240 "
+              "C328 176 248 176 232 240"),
+        _path("M128 264 V304 M168 232 V328 M208 208 V328 M248 240 V328", accent=True),
+    ],
+    "hulu": [
+        _shape("rect", x=128, y=152, width=256, height=208, rx=32),
+        _path("M216 392 H296 M256 360 V392"),
+        _path("M208 208 V304 M304 208 V304 M208 256 H304", accent=True),
+    ],
+    "target": [
+        _shape("circle", cx=232, cy=280, r=104),
+        _shape("circle", cx=232, cy=280, r=48),
+        _path("M232 280 L376 136 M312 136 H376 V200", accent=True),
+    ],
+    "costco": [
+        _path("M128 184 L256 128 L384 184 V376 H128 Z"),
+        _shape("rect", x=208, y=248, width=96, height=128, rx=8),
+        _path("M176 208 H336 M160 280 H176 M336 280 H352 M160 328 H176 M336 328 H352", accent=True),
+    ],
+    "best-buy": [
+        _path("M128 208 L192 144 H384 V352 H192 L128 288 Z"),
+        _shape("circle", cx=184, cy=248, r=16),
+        _shape("rect", x=240, y=208, width=96, height=80, rx=8, stroke="accent"),
+        _path("M264 184 V208 M312 184 V208 M264 288 V312 M312 288 V312", accent=True),
+    ],
+    "etsy": [
+        _shape("circle", cx=168, cy=328, r=40),
+        _shape("circle", cx=272, cy=328, r=40),
+        _path("M192 296 L352 144 M248 296 L128 144", accent=True),
+        _shape("circle", cx=224, cy=264, r=12),
+    ],
+    "aliexpress": [
+        _shape("rect", x=160, y=176, width=224, height=192, rx=24),
+        _path("M160 232 H384 M272 176 V232"),
+        _path("M128 288 H224 M128 336 H192 M304 288 L328 312 L360 264", accent=True),
+    ],
+    "shein": [
+        _path("M256 192 C256 136 320 136 320 184 C320 208 280 224 256 240 "
+              "L384 320 H128 L256 240", accent=True),
+        _path("M152 352 H360"),
+    ],
+    "instacart": [
+        _path("M144 368 L208 240 Q232 216 256 240 L288 272 Q312 296 288 320 Z"),
+        _path("M256 240 C248 192 280 160 312 144 Q336 192 288 248 "
+              "M288 272 Q336 208 384 232 Q368 280 304 288", accent=True),
+        _path("M200 280 L224 304 M176 328 L200 344"),
+    ],
+    "airbnb": [
+        _path("M128 240 L256 128 L384 240 M160 224 V376 H352 V224"),
+        _path("M256 328 L216 288 C184 256 216 224 240 248 L256 264 "
+              "L272 248 C296 224 328 256 296 288 Z", accent=True),
+    ],
+    "booking": [
+        _shape("rect", x=168, y=128, width=176, height=256, rx=16),
+        _path("M208 184 H224 M288 184 H304 M208 240 H224 M288 240 H304", accent=True),
+        _path("M232 384 V328 Q232 304 256 304 Q280 304 280 328 V384 M144 384 H368"),
+    ],
+    "expedia": [
+        _path("M160 160 C256 112 368 176 384 272 C400 352 288 400 200 360"),
+        _path("M128 264 H224 V176 L256 136 L288 176 V264 H384 "
+              "L352 296 H288 V344 L256 376 L224 344 V296 H160 Z", accent=True),
+    ],
+    "lyft": [
+        _path("M128 320 V248 H176 L224 184 H304 L352 248 H384 V320 H352 M288 320 H224 M160 320 H128"),
+        _shape("circle", cx=192, cy=320, r=32),
+        _shape("circle", cx=320, cy=320, r=32),
+        _path("M224 248 H320 M216 144 Q256 120 296 144", accent=True),
+    ],
+    "uber-eats": [
+        _path("M160 192 H352 L376 376 H136 Z M208 192 V168 Q208 128 256 128 Q304 128 304 168 V192"),
+        _path("M208 248 V272 Q208 288 224 288 Q240 288 240 272 V248 "
+              "M224 248 V328 M288 248 V328", accent=True),
+    ],
+    "google-earth": [
+        _shape("circle", cx=256, cy=256, r=128),
+        _path("M160 184 L208 160 L248 184 L232 232 L192 240 L176 288 L144 264 "
+              "M288 240 L344 224 L368 256 L336 288 L320 352 L280 320 Z", accent=True),
+    ],
+    "google-news": [
+        _path("M128 184 V144 H336 V184"),
+        _shape("rect", x=152, y=184, width=232, height=192, rx=16),
+        _shape("rect", x=184, y=216, width=64, height=64, rx=8, stroke="accent"),
+        _path("M280 224 H344 M280 264 H344 M184 328 H344", accent=True),
+    ],
+    "galaxy-wearable": [
+        _path("M176 256 V352 Q176 376 200 376 Q224 376 224 352 V208 "
+              "C224 144 128 144 128 208 C128 248 152 256 176 256 Z"),
+        _path("M336 256 V352 Q336 376 312 376 Q288 376 288 352 V208 "
+              "C288 144 384 144 384 208 C384 248 360 256 336 256 Z", accent=True),
+    ],
+    "files-by-google": [
+        _path("M128 208 V144 H224 L256 176 H384 V368 H128 Z"),
+        _path("M256 224 V320 M208 272 L256 320 L304 272", accent=True),
+    ],
+    "adobe-acrobat": [
+        _path("M144 128 H304 L368 192 V384 H144 Z M304 128 V192 H368"),
+        _path("M192 320 L288 224 L320 256 L224 352 H192 Z M264 248 L296 280", accent=True),
+    ],
+    "microsoft-word": [
+        _shape("rect", x=144, y=128, width=224, height=256, rx=24),
+        _path("M192 208 H320 M192 256 H272 M192 304 H264"),
+        _path("M312 288 V352 M296 288 H328 M296 352 H328", accent=True),
+    ],
+    "microsoft-excel": [
+        _shape("rect", x=128, y=144, width=256, height=224, rx=16),
+        _path("M128 216 H384 M216 144 V368 M160 176 H184 M160 264 H184 M160 312 H184"),
+        _path("M256 256 L336 328 M336 256 L256 328", accent=True),
+    ],
+    "microsoft-powerpoint": [
+        _shape("rect", x=128, y=144, width=256, height=192, rx=16),
+        _path("M256 336 V384 M208 384 L256 352 L304 384"),
+        _path("M256 184 V248 H320 Q320 184 256 184 Z", accent=True, filled=True),
+        _path("M216 200 C160 240 200 312 264 288", accent=True),
+    ],
+    "google-slides": [
+        _path("M160 120 H296 L368 192 V392 H160 Z M296 120 V192 H368"),
+        _shape("rect", x=200, y=232, width=128, height=96, rx=8, stroke="accent"),
+        _path("M240 296 H288", accent=True),
+    ],
+    "google-lens": [
+        _path("M128 216 V144 H200 M312 144 H384 V216 M384 312 V384 H312 M200 384 H128 V312"),
+        _shape("circle", cx=256, cy=256, r=72, stroke="accent"),
+    ],
+    "roblox": [
+        _path("M256 128 L384 200 V328 L256 400 L128 328 V200 Z "
+              "M128 200 L256 272 L384 200 M256 272 V400"),
+        _path("M192 164 L320 236 M192 308 L224 328 M288 328 L320 308", accent=True),
+    ],
+    "minecraft": [
+        _path("M144 152 H280 L368 240 L328 280 L256 208 H176 L144 240 H112 V184 Z"),
+        _path("M240 224 L272 256 L176 384 L144 352 Z", accent=True, filled=True),
+    ],
+}
+
+
+# Original0.9 drawings retain the existing inset and shared stroke.
+SIXTH_APP_GLYPHS = {
+"slack": [
+        _path("M208 136 L176 376 M304 136 L272 376 "
+              "M136 216 H376 M128 304 H368", accent=True),
+    ],
+    "trello": [
+        _shape("rect", x=128, y=136, width=256, height=240, rx=24),
+        _shape("rect", x=168, y=184, width=64, height=144, rx=12, stroke="accent"),
+        _shape("rect", x=280, y=184, width=64, height=96, rx=12, stroke="accent"),
+    ],
+    "todoist": [
+        _path("M136 176 L160 200 L208 152 M136 264 L160 288 L208 240 "
+              "M136 352 L160 376 L208 328", accent=True),
+        _path("M248 176 H376 M248 264 H344 M248 352 H312"),
+    ],
+    "ticktick": [
+        _shape("circle", cx=256, cy=272, r=112),
+        _path("M224 128 H288 M256 128 V160"),
+        _path("M192 272 L240 320 L320 224", accent=True),
+    ],
+    "evernote": [
+        _path("M152 352 V216 Q152 144 224 144 H304 Q368 144 368 208 "
+              "V312 Q368 368 320 368 Q280 368 280 328 V280 H232 V352"),
+        _shape("ellipse", cx=224, cy=216, rx=40, ry=56, stroke="accent"),
+        _shape("circle", cx=320, cy=208, r=8, fill="accent", stroke="accent"),
+    ],
+    "obsidian": [
+        _path("M224 128 L336 168 L368 312 L280 384 L144 320 L168 200 Z"),
+        _path("M224 128 L248 240 L168 200 M248 240 L336 168 "
+              "M248 240 L280 384 M248 240 L144 320", accent=True),
+    ],
+    "dropbox": [
+        _path("M128 200 L192 144 L256 184 L320 144 L384 200 "
+              "L320 248 L256 216 L192 248 Z"),
+        _path("M160 232 V320 L256 376 L352 320 V232 M256 272 V376", accent=True),
+    ],
+    "proton-mail": [
+        _path("M256 128 L384 184 V280 Q384 344 256 392 Q128 344 128 280 V184 Z"),
+        _shape("rect", x=176, y=208, width=160, height=112, rx=16),
+        _path("M176 224 L256 280 L336 224", accent=True),
+    ],
+    "yahoo-mail": [
+        _path("M128 224 L256 128 L384 224 V368 H128 Z M128 224 L184 264 M384 224 L328 264"),
+        _path("M216 264 L256 304 L296 264 M256 304 V344", accent=True),
+    ],
+    "google-tasks": [
+        _path("M376 232 C384 312 320 384 248 384 C176 384 128 328 128 256 "
+              "C128 184 184 128 256 128 H312"),
+        _path("M200 248 L248 296 L368 152", accent=True),
+    ],
+    "google-one": [
+        _shape("circle", cx=256, cy=256, r=128),
+        _path("M224 216 L264 184 V328 M224 328 H304", accent=True),
+    ],
+    "microsoft-copilot": [
+        _path("M160 184 Q128 184 128 216 V296 Q128 328 160 328 H232 L280 184 Z"),
+        _path("M280 184 H352 Q384 184 384 216 V296 Q384 328 352 328 H232 Z", accent=True),
+    ],
+    "google-gemini": [
+        _path("M232 152 Q248 232 320 248 Q248 264 232 344 "
+              "Q216 264 144 248 Q216 232 232 152 Z"),
+        _path("M352 128 Q360 160 392 168 Q360 176 352 208 "
+              "Q344 176 312 168 Q344 160 352 128 Z", accent=True),
+    ],
+    "claude": [
+        _path("M160 312 C160 192 352 192 352 312 M128 344 H384"),
+        _path("M256 128 V168 M152 168 L176 200 M360 168 L336 200 "
+              "M128 248 H168 M344 248 H384", accent=True),
+    ],
+    "perplexity": [
+        _path("M256 128 L384 256 L256 384 L128 256 Z"),
+        _path("M200 312 L240 224 L312 192 L280 272 Z", accent=True),
+    ],
+    "bitwarden": [
+        _path("M256 128 L368 176 V264 C368 328 304 376 256 400 "
+              "C208 376 144 328 144 264 V176 Z"),
+        _shape("circle", cx=256, cy=232, r=32, stroke="accent"),
+        _path("M256 264 V328 M256 296 H280", accent=True),
+    ],
+    "apple-music": [
+        _shape("rect", x=144, y=128, width=224, height=256, rx=48),
+        _path("M240 320 V184 L328 160 V216 L240 240", accent=True),
+        _shape("ellipse", cx=208, cy=320, rx=32, ry=24, stroke="accent"),
+    ],
+    "apple-tv": [
+        _shape("rect", x=128, y=192, width=256, height=160, rx=24),
+        _path("M208 136 L256 192 L304 136"),
+        _path("M184 232 H248 M216 232 V312 M272 232 L304 312 L336 232", accent=True),
+    ],
+    "hbo-max": [
+        _shape("circle", cx=208, cy=256, r=88),
+        _path("M296 216 L384 168 V344 L296 296"),
+        _shape("circle", cx=184, cy=216, r=12, fill="accent", stroke="accent"),
+        _shape("circle", cx=248, cy=256, r=12, fill="accent", stroke="accent"),
+        _shape("circle", cx=184, cy=296, r=12, fill="accent", stroke="accent"),
+    ],
+    "peacock": [
+        _path("M256 376 L144 272 Q112 176 176 152 Q224 144 256 224 "
+              "Q288 144 336 152 Q400 176 368 272 Z"),
+        _path("M256 192 C200 248 200 304 256 336 C312 304 312 248 256 192 Z", accent=True),
+    ],
+    "paramount-plus": [
+        _path("M128 360 L224 176 L288 288 L320 232 L384 360 Z"),
+        _path("M192 240 L224 264 L248 224 M320 144 H384 M352 112 V176", accent=True),
+    ],
+    "plex": [
+        _path("M128 160 V352 M384 160 V352"),
+        _path("M176 160 L288 256 L176 352 M248 160 L360 256 L248 352", accent=True),
+    ],
+    "tubi": [
+        _path("M128 176 H384 V224 C344 224 344 288 384 288 V336 "
+              "H128 V288 C168 288 168 224 128 224 Z"),
+        _path("M232 216 L296 256 L232 296 Z", accent=True),
+    ],
+    "pluto-tv": [
+        _path("M144 184 L328 368 C232 400 112 280 144 184 Z"),
+        _path("M192 232 L328 136 M328 136 H376 V184 M248 352 L224 392 H328", accent=True),
+    ],
+"crunchyroll": [
+        _path("M128 256 Q192 152 280 176 Q344 192 384 256 "
+              "Q320 344 232 336 Q168 320 128 256 Z"),
+        _shape("circle", cx=256, cy=256, r=56, stroke="accent"),
+        _path("M280 128 V160 M328 144 L312 176", accent=True),
+    ],
+    "pandora": [
+        _shape("rect", x=128, y=200, width=256, height=168, rx=24),
+        _path("M176 200 L320 128 M152 248 H256", accent=True),
+        _shape("circle", cx=200, cy=304, r=32),
+        _path("M288 272 H344 M288 312 H344", accent=True),
+    ],
+    "iheartradio": [
+        _path("M256 368 L160 280 C112 232 160 176 208 208 L256 248 "
+              "L304 208 C352 176 400 232 352 280 Z"),
+        _path("M192 152 Q256 112 320 152 M216 184 Q256 160 296 184", accent=True),
+    ],
+    "siriusxm": [
+        _path("M232 208 L280 160 L328 208 L280 256 Z"),
+        _path("M128 256 L184 200 L224 240 L168 296 Z "
+              "M304 184 L360 128 L400 168 L344 224 Z", accent=True),
+        _path("M280 256 L312 288 M264 304 Q288 328 320 320 "
+              "M240 328 Q280 376 344 360", accent=True),
+    ],
+    "adobe-lightroom": [
+        _shape("rect", x=128, y=144, width=256, height=176, rx=16),
+        _path("M152 288 L216 216 L264 264 L304 224 L360 288", accent=True),
+        _shape("circle", cx=312, cy=192, r=16),
+        _path("M176 352 V384 M256 344 V384 M336 360 V384", accent=True),
+    ],
+    "photoshop-express": [
+        _path("M176 128 V336 H384 M128 176 H336 V384"),
+        _path("M224 288 L312 200 M312 144 V176 M360 192 H384 "
+              "M344 160 L360 144", accent=True),
+    ],
+    "snapseed": [
+        _path("M152 360 C128 240 224 136 368 136 "
+              "C392 256 296 368 176 368 Z"),
+        _path("M176 344 L328 176 M224 296 L216 248 M272 248 L320 256", accent=True),
+    ],
+    "picsart": [
+        _path("M256 128 C184 128 128 184 128 256 C128 336 192 384 264 384 "
+              "Q304 384 304 344 Q304 312 336 304 Q384 296 384 248 "
+              "C384 176 328 128 256 128 Z"),
+        _shape("circle", cx=184, cy=232, r=16, stroke="accent"),
+        _shape("circle", cx=240, cy=184, r=16, stroke="accent"),
+        _shape("circle", cx=312, cy=200, r=16, stroke="accent"),
+    ],
+    "strava": [
+        _path("M128 376 L248 168 L368 376"),
+        _path("M248 168 V120 H312 L288 144 H248", accent=True),
+        _path("M184 280 H216 L248 224 L280 280 H312", accent=True),
+    ],
+    "fitbit": [
+        _path("M216 144 L200 112 H312 L296 144 "
+              "M216 368 L200 400 H312 L296 368"),
+        _shape("rect", x=168, y=144, width=176, height=224, rx=56),
+        _shape("circle", cx=232, cy=232, r=12, fill="accent", stroke="accent"),
+        _shape("circle", cx=280, cy=232, r=12, fill="accent", stroke="accent"),
+        _shape("circle", cx=232, cy=280, r=12, fill="accent", stroke="accent"),
+        _shape("circle", cx=280, cy=280, r=12, fill="accent", stroke="accent"),
+    ],
+    "google-fit": [
+        _path("M256 384 L152 280 C112 232 136 168 184 160 "
+              "Q224 152 256 192 Q288 152 328 160 C376 168 400 232 360 280 Z"),
+        _path("M200 256 L240 296 L320 216", accent=True),
+    ],
+    "myfitnesspal": [
+        _shape("circle", cx=256, cy=256, r=88),
+        _path("M120 160 V216 Q120 240 144 240 V368 "
+              "M144 160 V240 M168 160 V216 Q168 240 144 240", accent=True),
+        _path("M384 160 C352 208 352 248 384 272 V368 M384 160 V272", accent=True),
+    ],
+    "alltrails": [
+        _path("M128 304 L224 144 L280 240 L320 184 L384 304"),
+        _path("M224 144 L208 208 L240 192 M320 184 L304 240 L336 232", accent=True),
+        _path("M256 288 C192 320 304 328 264 352 Q248 368 208 384", accent=True),
+    ],
+    "komoot": [
+        _shape("circle", cx=256, cy=256, r=128),
+        _path("M288 176 L224 224 L192 336 L288 288 Z", accent=True),
+        _path("M224 224 L288 288 M256 128 V144 M384 256 H368 "
+              "M256 384 V368 M128 256 H144"),
+    ],
+    "amazon-alexa": [
+        _shape("ellipse", cx=256, cy=176, rx=104, ry=40),
+        _path("M152 176 V336 C152 392 360 392 360 336 V176"),
+        _path("M208 256 V304 M256 232 V328 M304 256 V304", accent=True),
+    ],
+    "ring": [
+        _shape("rect", x=192, y=128, width=128, height=256, rx=48),
+        _shape("circle", cx=256, cy=208, r=32, stroke="accent"),
+        _shape("circle", cx=256, cy=312, r=24),
+        _path("M144 200 V248 M368 200 V248", accent=True),
+    ],
+    "blink": [
+        _path("M168 152 H304 L368 216 V296 H168 Z"),
+        _shape("circle", cx=256, cy=224, r=40, stroke="accent"),
+        _path("M232 296 V352 H328 M200 384 H360"),
+        _path("M128 160 V192 M344 128 L360 144", accent=True),
+    ],
+    "google-home": [
+        _path("M128 240 L256 128 L384 240 M160 224 V376 H352 V224"),
+        _path("M208 264 Q256 216 304 264 M232 288 Q256 264 280 288", accent=True),
+        _shape("circle", cx=256, cy=320, r=12, fill="accent", stroke="accent"),
+    ],
+    "zillow": [
+        _path("M128 232 L256 128 L384 232 M160 208 V376 H352 V208"),
+        _shape("circle", cx=248, cy=264, r=48, stroke="accent"),
+        _path("M280 304 L320 344", accent=True),
+    ],
+    "chase": [
+        _path("M176 128 H336 L384 176 V336 L336 384 H176 L128 336 V176 Z"),
+        _shape("circle", cx=256, cy=256, r=64, stroke="accent"),
+        _path("M256 192 V232 M320 256 H280 M256 320 V280 M192 256 H232", accent=True),
+        _shape("circle", cx=256, cy=256, r=16),
+    ],
+    "capital-one": [
+        _shape("rect", x=128, y=192, width=256, height=176, rx=24),
+        _path("M152 240 H224 M160 320 H224"),
+        _path("M216 168 Q288 120 360 144 M320 128 L360 144 L336 176", accent=True),
+        _shape("rect", x=280, y=272, width=48, height=40, rx=8, stroke="accent"),
+    ],
+    "chime": [
+        _path("M152 328 H360 L328 280 V224 C328 136 184 136 184 224 V280 Z"),
+        _path("M240 136 V120 H272 V136 M224 360 Q256 392 288 360", accent=True),
+        _path("M224 232 H288 M224 272 H288", accent=True),
+    ],
+    "ups": [
+        _path("M256 120 L376 168 V272 C376 328 320 368 256 400 "
+              "C192 368 136 328 136 272 V168 Z"),
+        _path("M192 232 L256 200 L320 232 V304 L256 336 L192 304 Z "
+              "M192 232 L256 264 L320 232 M256 264 V336", accent=True),
+    ],
+    "fedex": [
+        _path("M136 176 H344 V208 M136 176 V368 H344 V320 M208 176 V232 H272 V176"),
+        _path("M208 272 H392 L352 232 M392 272 L352 312", accent=True),
+        _path("M168 336 H216"),
+    ],
+}
+
+
 def icon_catalog(version: str = VERSION) -> list[dict]:
     """Return labels and explicit assignment identities for an admitted revision."""
     if version not in VERSIONS:
@@ -663,8 +1095,12 @@ def icon_catalog(version: str = VERSION) -> list[dict]:
         apps = (*APP_CATALOG, *NEW_APP_CATALOG)
     elif version in ("0.5.0", "0.6.0"):
         apps = (*APP_CATALOG, *NEW_APP_CATALOG, *THIRD_APP_CATALOG)
-    else:
+    elif version == "0.7.0":
         apps = (*APP_CATALOG, *NEW_APP_CATALOG, *THIRD_APP_CATALOG, *FOURTH_APP_CATALOG)
+    elif version == "0.8.0":
+        apps = (*APP_CATALOG, *NEW_APP_CATALOG, *THIRD_APP_CATALOG, *FOURTH_APP_CATALOG, *FIFTH_APP_CATALOG)
+    else:
+        apps = (*APP_CATALOG, *NEW_APP_CATALOG, *THIRD_APP_CATALOG, *FOURTH_APP_CATALOG, *FIFTH_APP_CATALOG, *SIXTH_APP_CATALOG)
     for app in apps:
         if not isinstance(app, dict):
             raise ValueError("Malformed named-app catalog")
@@ -686,18 +1122,26 @@ def icon_catalog(version: str = VERSION) -> list[dict]:
         packages.add(package)
         catalog.append(dict(app))
     drawings = set(APP_GLYPHS)
-    if version in ("0.4.0", "0.5.0", "0.6.0", "0.7.0"):
+    if version in ("0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0"):
         if drawings & set(NEW_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(NEW_APP_GLYPHS)
-    if version in ("0.5.0", "0.6.0", "0.7.0"):
+    if version in ("0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0"):
         if drawings & set(THIRD_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(THIRD_APP_GLYPHS)
-    if version == "0.7.0":
+    if version in ("0.7.0", "0.8.0", "0.9.0"):
         if drawings & set(FOURTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(FOURTH_APP_GLYPHS)
+    if version in ("0.8.0", "0.9.0"):
+        if drawings & set(FIFTH_APP_GLYPHS):
+            raise ValueError("New named-app drawings replace an accepted ID")
+        drawings |= set(FIFTH_APP_GLYPHS)
+    if version == "0.9.0":
+        if drawings & set(SIXTH_APP_GLYPHS):
+            raise ValueError("New named-app drawings replace an accepted ID")
+        drawings |= set(SIXTH_APP_GLYPHS)
     if drawings != seen - set(FUNCTIONS):
         raise ValueError("Named-app catalog and drawings differ")
     return catalog
@@ -716,7 +1160,7 @@ def token_path(version: str = VERSION) -> Path:
     """Select the shared palette without changing a historical artwork revision."""
     if version not in VERSIONS:
         raise ValueError("Unsupported icon artwork version")
-    return ROOT / ("tokens-monochrome.json" if version in ("0.6.0", "0.7.0") else "tokens.json")
+    return ROOT / ("tokens-monochrome.json" if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0") else "tokens.json")
 
 
 def load_icon_tokens(version: str = VERSION, path: Path | None = None) -> dict:
@@ -759,7 +1203,9 @@ def _render_icon(function: str, appearance: str, document: dict, grant: str, *, 
                 CURRENT_GLYPHS if function in CURRENT_GLYPHS else
                 APP_GLYPHS if function in APP_GLYPHS else
                 NEW_APP_GLYPHS if function in NEW_APP_GLYPHS else
-                THIRD_APP_GLYPHS if function in THIRD_APP_GLYPHS else FOURTH_APP_GLYPHS)
+                THIRD_APP_GLYPHS if function in THIRD_APP_GLYPHS else
+                FOURTH_APP_GLYPHS if function in FOURTH_APP_GLYPHS else
+                FIFTH_APP_GLYPHS if function in FIFTH_APP_GLYPHS else SIXTH_APP_GLYPHS)
     for tag, attributes in drawings[function]:
         ET.SubElement(group, tag, {
             key: palette[value] if value in ("accent", "text") else value
@@ -774,7 +1220,7 @@ def render_icons(document: dict, *, version: str = VERSION) -> dict[str, bytes]:
     _validated(document)
     if version not in VERSIONS:
         raise ValueError("Unsupported icon artwork version")
-    if version in ("0.6.0", "0.7.0"):
+    if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0"):
         _monochrome(document)
     catalog = icon_catalog(version)
     names = [entry["id"] for entry in catalog]
@@ -802,19 +1248,23 @@ def render_icons(document: dict, *, version: str = VERSION) -> dict[str, bytes]:
         "functions": names, "files": records,
         "scope": "Original functional glyphs; no brand logos, font assets or phone installation",
     }
-    if version in ("0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0"):
+    if version in ("0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0"):
         if version == "0.3.0":
             date, scope = CATALOG_DATE, CATALOG_SCOPE
         elif version == "0.4.0":
             date, scope = NEW_CATALOG_DATE, NEW_CATALOG_SCOPE
         elif version in ("0.5.0", "0.6.0"):
             date, scope = THIRD_CATALOG_DATE, THIRD_CATALOG_SCOPE
-        else:
+        elif version == "0.7.0":
             date, scope = FOURTH_CATALOG_DATE, FOURTH_CATALOG_SCOPE
+        elif version == "0.8.0":
+            date, scope = FIFTH_CATALOG_DATE, FIFTH_CATALOG_SCOPE
+        else:
+            date, scope = SIXTH_CATALOG_DATE, SIXTH_CATALOG_SCOPE
         manifest.update(catalog=catalog, catalog_date=date, catalog_scope=scope,
                         scope="Original themed interpretations for named apps and general functions; "
                               "app names identify intended assignments, not publisher endorsement or installation")
-    if version in ("0.6.0", "0.7.0"):
+    if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0"):
         manifest["palette_variant"] = "monochrome"
     files["manifest.json"] = (json.dumps(manifest, sort_keys=True, indent=2) + "\n").encode("utf-8")
     return files

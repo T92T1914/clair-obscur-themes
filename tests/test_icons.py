@@ -44,6 +44,21 @@ APP_NAMES += THIRD_APP_NAMES
 THIRD_NAMES = BASE_NAMES + APP_NAMES
 FOURTH_APP_NAMES = "good-lock connect-iq-store steam reuters home-depot patreon".split()
 APP_NAMES += FOURTH_APP_NAMES
+FOURTH_NAMES = BASE_NAMES + APP_NAMES
+FIFTH_APP_NAMES = (
+    'youtube-music audible amazon-kindle pocket-casts vlc shazam soundcloud hulu target costco best-buy etsy aliexpress shein instacart airbnb booking expedia lyft uber-eats google-earth google-news galaxy-wearable files-by-google adobe-acrobat microsoft-word microsoft-excel microsoft-powerpoint google-slides google-lens roblox minecraft'
+).split()
+APP_NAMES += FIFTH_APP_NAMES
+FIFTH_NAMES = BASE_NAMES + APP_NAMES
+SIXTH_APP_NAMES = (
+    "slack trello todoist ticktick evernote obsidian dropbox proton-mail "
+    "yahoo-mail google-tasks google-one microsoft-copilot google-gemini claude perplexity bitwarden "
+    "apple-music apple-tv hbo-max peacock paramount-plus plex tubi pluto-tv "
+    "crunchyroll pandora iheartradio siriusxm adobe-lightroom photoshop-express snapseed picsart "
+    "strava fitbit google-fit myfitnesspal alltrails komoot amazon-alexa ring "
+    "blink google-home zillow chase capital-one chime ups fedex"
+).split()
+APP_NAMES += SIXTH_APP_NAMES
 NAMES = BASE_NAMES + APP_NAMES
 EXPECTED_APPS = {
     "google-chrome": ("Google Chrome", "com.android.chrome"),
@@ -117,7 +132,525 @@ EXPECTED_APPS = {
     "reuters": ("Reuters", "com.thomsonreuters.reuters"),
     "home-depot": ("Home Depot", "com.thehomedepot"),
     "patreon": ("Patreon", "com.patreon.android"),
+    'youtube-music': ('YouTube Music', 'com.google.android.apps.youtube.music'),
+    'audible': ('Audible', 'com.audible.application'),
+    'amazon-kindle': ('Amazon Kindle', 'com.amazon.kindle'),
+    'pocket-casts': ('Pocket Casts', 'au.com.shiftyjelly.pocketcasts'),
+    'vlc': ('VLC', 'org.videolan.vlc'),
+    'shazam': ('Shazam', 'com.shazam.android'),
+    'soundcloud': ('SoundCloud', 'com.soundcloud.android'),
+    'hulu': ('Hulu', 'com.hulu.plus'),
+    'target': ('Target', 'com.target.ui'),
+    'costco': ('Costco', 'com.costco.app.android'),
+    'best-buy': ('Best Buy', 'com.bestbuy.android'),
+    'etsy': ('Etsy', 'com.etsy.android'),
+    'aliexpress': ('AliExpress', 'com.alibaba.aliexpresshd'),
+    'shein': ('SHEIN', 'com.zzkko'),
+    'instacart': ('Instacart', 'com.instacart.client'),
+    'airbnb': ('Airbnb', 'com.airbnb.android'),
+    'booking': ('Booking.com', 'com.booking'),
+    'expedia': ('Expedia', 'com.expedia.bookings'),
+    'lyft': ('Lyft', 'me.lyft.android'),
+    'uber-eats': ('Uber Eats', 'com.ubercab.eats'),
+    'google-earth': ('Google Earth', 'com.google.earth'),
+    'google-news': ('Google News', 'com.google.android.apps.magazines'),
+    'galaxy-wearable': ('Galaxy Wearable', 'com.samsung.android.app.watchmanager'),
+    'files-by-google': ('Files by Google', 'com.google.android.apps.nbu.files'),
+    'adobe-acrobat': ('Adobe Acrobat', 'com.adobe.reader'),
+    'microsoft-word': ('Microsoft Word', 'com.microsoft.office.word'),
+    'microsoft-excel': ('Microsoft Excel', 'com.microsoft.office.excel'),
+    'microsoft-powerpoint': ('PowerPoint', 'com.microsoft.office.powerpoint'),
+    'google-slides': ('Google Slides', 'com.google.android.apps.docs.editors.slides'),
+    'google-lens': ('Google Lens', 'com.google.ar.lens'),
+    'roblox': ('Roblox', 'com.roblox.client'),
+    'minecraft': ('Minecraft', 'com.mojang.minecraftpe'),
 }
+# Independent literals from the inspected 48-row intake, SHA256 9711de129883dca9e806dcc60e821a3d1de84366f0d2c16306fa39efcccbee5d.
+SIXTH_EXPECTED_APPS = (
+    {
+        "id": "slack",
+        "label": "Slack",
+        "store_title": "Slack",
+        "kind": "app",
+        "category": "workplace",
+        "android_package": "com.Slack",
+        "store_url": "https://play.google.com/store/apps/details?id=com.Slack",
+        "selection_basis": "Missing named workplace messaging assignment alongside retained Teams and Discord."
+    },
+    {
+        "id": "trello",
+        "label": "Trello",
+        "store_title": "Trello: Personal Planner App",
+        "kind": "app",
+        "category": "productivity",
+        "android_package": "com.trello",
+        "store_url": "https://play.google.com/store/apps/details?id=com.trello",
+        "selection_basis": "Missing named board and personal-planning assignment."
+    },
+    {
+        "id": "todoist",
+        "label": "Todoist",
+        "store_title": "Todoist: To Do List & Calendar",
+        "kind": "app",
+        "category": "productivity",
+        "android_package": "com.todoist",
+        "store_url": "https://play.google.com/store/apps/details?id=com.todoist",
+        "selection_basis": "Missing named to-do and calendar-planning assignment."
+    },
+    {
+        "id": "ticktick",
+        "label": "TickTick",
+        "store_title": "TickTick:To Do List & Calendar",
+        "kind": "app",
+        "category": "productivity",
+        "android_package": "com.ticktick.task",
+        "store_url": "https://play.google.com/store/apps/details?id=com.ticktick.task",
+        "selection_basis": "Missing second named task-list and calendar-planning assignment."
+    },
+    {
+        "id": "evernote",
+        "label": "Evernote",
+        "store_title": "Evernote - Note Organizer",
+        "kind": "app",
+        "category": "notes",
+        "android_package": "com.evernote",
+        "store_url": "https://play.google.com/store/apps/details?id=com.evernote",
+        "selection_basis": "Missing named note-organizing assignment alongside retained Samsung Notes and Google Keep."
+    },
+    {
+        "id": "obsidian",
+        "label": "Obsidian",
+        "store_title": "Obsidian",
+        "kind": "app",
+        "category": "notes",
+        "android_package": "md.obsidian",
+        "store_url": "https://play.google.com/store/apps/details?id=md.obsidian",
+        "selection_basis": "Missing named local-knowledge and note-taking assignment."
+    },
+    {
+        "id": "dropbox",
+        "label": "Dropbox",
+        "store_title": "Dropbox: Secure Cloud Storage",
+        "kind": "app",
+        "category": "cloud-storage",
+        "android_package": "com.dropbox.android",
+        "store_url": "https://play.google.com/store/apps/details?id=com.dropbox.android",
+        "selection_basis": "Missing named file-storage and sharing assignment alongside retained Google Drive and OneDrive."
+    },
+    {
+        "id": "proton-mail",
+        "label": "Proton Mail",
+        "store_title": "Proton Mail: Encrypted Email",
+        "kind": "app",
+        "category": "email",
+        "android_package": "ch.protonmail.android",
+        "store_url": "https://play.google.com/store/apps/details?id=ch.protonmail.android",
+        "selection_basis": "Missing named mail-service assignment alongside retained Gmail and Outlook."
+    },
+    {
+        "id": "yahoo-mail",
+        "label": "Yahoo Mail",
+        "store_title": "Yahoo Mail: Email & Planner",
+        "kind": "app",
+        "category": "email",
+        "android_package": "com.yahoo.mobile.client.android.mail",
+        "store_url": "https://play.google.com/store/apps/details?id=com.yahoo.mobile.client.android.mail",
+        "selection_basis": "Missing named mail-service and inbox-organizing assignment."
+    },
+    {
+        "id": "google-tasks",
+        "label": "Google Tasks",
+        "store_title": "Google Tasks",
+        "kind": "app",
+        "category": "productivity",
+        "android_package": "com.google.android.apps.tasks",
+        "store_url": "https://play.google.com/store/apps/details?id=com.google.android.apps.tasks",
+        "selection_basis": "Missing named Google task-list assignment, separate from the retained Calendar app."
+    },
+    {
+        "id": "google-one",
+        "label": "Google One",
+        "store_title": "Google One",
+        "kind": "app",
+        "category": "cloud-storage",
+        "android_package": "com.google.android.apps.subscriptions.red",
+        "store_url": "https://play.google.com/store/apps/details?id=com.google.android.apps.subscriptions.red",
+        "selection_basis": "Missing named Google storage-management and phone-backup assignment, separate from Drive."
+    },
+    {
+        "id": "microsoft-copilot",
+        "label": "Microsoft Copilot",
+        "store_title": "Microsoft Copilot",
+        "kind": "app",
+        "category": "productivity",
+        "android_package": "com.microsoft.office.officehubrow",
+        "store_url": "https://play.google.com/store/apps/details?id=com.microsoft.office.officehubrow",
+        "selection_basis": "Missing inspected work-connected Microsoft Copilot phone-app assignment; package is com.microsoft.office.officehubrow. The older standalone com.microsoft.copilot identity was not verified and is not treated as equivalent."
+    },
+    {
+        "id": "google-gemini",
+        "label": "Google Gemini",
+        "store_title": "Google Gemini",
+        "kind": "app",
+        "category": "assistant",
+        "android_package": "com.google.android.apps.bard",
+        "store_url": "https://play.google.com/store/apps/details?id=com.google.android.apps.bard",
+        "selection_basis": "Missing named Google assistant-app assignment."
+    },
+    {
+        "id": "claude",
+        "label": "Claude",
+        "store_title": "Claude by Anthropic",
+        "kind": "app",
+        "category": "assistant",
+        "android_package": "com.anthropic.claude",
+        "store_url": "https://play.google.com/store/apps/details?id=com.anthropic.claude",
+        "selection_basis": "Missing named Anthropic assistant-app assignment."
+    },
+    {
+        "id": "perplexity",
+        "label": "Perplexity",
+        "store_title": "Perplexity - Ask Anything",
+        "kind": "app",
+        "category": "search",
+        "android_package": "ai.perplexity.app.android",
+        "store_url": "https://play.google.com/store/apps/details?id=ai.perplexity.app.android",
+        "selection_basis": "Missing named question-answering and search-app assignment."
+    },
+    {
+        "id": "bitwarden",
+        "label": "Bitwarden",
+        "store_title": "Bitwarden Password Manager",
+        "kind": "app",
+        "category": "password-management",
+        "android_package": "com.x8bit.bitwarden",
+        "store_url": "https://play.google.com/store/apps/details?id=com.x8bit.bitwarden",
+        "selection_basis": "Missing named password-manager assignment; no security endorsement is implied by inclusion."
+    },
+    {
+        "id": "apple-music",
+        "label": "Apple Music",
+        "store_title": "Apple Music",
+        "kind": "app",
+        "category": "music",
+        "android_package": "com.apple.android.music",
+        "store_url": "https://play.google.com/store/apps/details?id=com.apple.android.music",
+        "selection_basis": "Missing named music-service assignment alongside retained Spotify and YouTube Music."
+    },
+    {
+        "id": "apple-tv",
+        "label": "Apple TV",
+        "store_title": "Apple TV: Shows, Movies & More",
+        "kind": "app",
+        "category": "streaming",
+        "android_package": "com.apple.atve.androidtv.appletv",
+        "store_url": "https://play.google.com/store/apps/details?id=com.apple.atve.androidtv.appletv",
+        "selection_basis": "Missing named video-service assignment; Apple's official Android announcement explicitly includes phones, tablets and foldables."
+    },
+    {
+        "id": "hbo-max",
+        "label": "HBO Max",
+        "store_title": "HBO Max: Stream TV & Movies",
+        "kind": "app",
+        "category": "streaming",
+        "android_package": "com.wbd.stream",
+        "store_url": "https://play.google.com/store/apps/details?id=com.wbd.stream",
+        "selection_basis": "Missing current HBO Max streaming assignment using its inspected com.wbd.stream listing."
+    },
+    {
+        "id": "peacock",
+        "label": "Peacock",
+        "store_title": "Peacock TV: Stream TV & Movies",
+        "kind": "app",
+        "category": "streaming",
+        "android_package": "com.peacocktv.peacockandroid",
+        "store_url": "https://play.google.com/store/apps/details?id=com.peacocktv.peacockandroid",
+        "selection_basis": "Missing named video-streaming assignment."
+    },
+    {
+        "id": "paramount-plus",
+        "label": "Paramount+",
+        "store_title": "Paramount+",
+        "kind": "app",
+        "category": "streaming",
+        "android_package": "com.cbs.app",
+        "store_url": "https://play.google.com/store/apps/details?id=com.cbs.app",
+        "selection_basis": "Missing named video-streaming assignment."
+    },
+    {
+        "id": "plex",
+        "label": "Plex",
+        "store_title": "Plex: Find Movies & TV Shows",
+        "kind": "app",
+        "category": "streaming",
+        "android_package": "com.plexapp.android",
+        "store_url": "https://play.google.com/store/apps/details?id=com.plexapp.android",
+        "selection_basis": "Missing named media-library and streaming assignment."
+    },
+    {
+        "id": "tubi",
+        "label": "Tubi",
+        "store_title": "Tubi: Free Movies & Live TV",
+        "kind": "app",
+        "category": "streaming",
+        "android_package": "com.tubitv",
+        "store_url": "https://play.google.com/store/apps/details?id=com.tubitv",
+        "selection_basis": "Missing named video-streaming and live-TV assignment."
+    },
+    {
+        "id": "pluto-tv",
+        "label": "Pluto TV",
+        "store_title": "Pluto TV: Watch Free Movies/TV",
+        "kind": "app",
+        "category": "streaming",
+        "android_package": "tv.pluto.android",
+        "store_url": "https://play.google.com/store/apps/details?id=tv.pluto.android",
+        "selection_basis": "Missing named live-TV and streaming assignment."
+    },
+    {
+        "id": "crunchyroll",
+        "label": "Crunchyroll",
+        "store_title": "Crunchyroll: Anime Streaming",
+        "kind": "app",
+        "category": "streaming",
+        "android_package": "com.crunchyroll.crunchyroid",
+        "store_url": "https://play.google.com/store/apps/details?id=com.crunchyroll.crunchyroid",
+        "selection_basis": "Missing named anime-streaming assignment."
+    },
+    {
+        "id": "pandora",
+        "label": "Pandora",
+        "store_title": "Pandora - Music & Podcasts",
+        "kind": "app",
+        "category": "music",
+        "android_package": "com.pandora.android",
+        "store_url": "https://play.google.com/store/apps/details?id=com.pandora.android",
+        "selection_basis": "Missing named music and podcast-service assignment."
+    },
+    {
+        "id": "iheartradio",
+        "label": "iHeart",
+        "store_title": "iHeart: Music, Radio, Podcasts",
+        "kind": "app",
+        "category": "radio",
+        "android_package": "com.clearchannel.iheartradio.controller",
+        "store_url": "https://play.google.com/store/apps/details?id=com.clearchannel.iheartradio.controller",
+        "selection_basis": "Missing named iHeart music, radio and podcast assignment; requested stable id iheartradio retained."
+    },
+    {
+        "id": "siriusxm",
+        "label": "SiriusXM",
+        "store_title": "SiriusXM: Music, Sports & Talk",
+        "kind": "app",
+        "category": "radio",
+        "android_package": "com.sirius",
+        "store_url": "https://play.google.com/store/apps/details?id=com.sirius",
+        "selection_basis": "Missing named music, sports and talk-radio assignment."
+    },
+    {
+        "id": "adobe-lightroom",
+        "label": "Adobe Lightroom",
+        "store_title": "Lightroom Photo & Video Editor",
+        "kind": "app",
+        "category": "photo-editing",
+        "android_package": "com.adobe.lrmobile",
+        "store_url": "https://play.google.com/store/apps/details?id=com.adobe.lrmobile",
+        "selection_basis": "Missing named Adobe photo-editing assignment."
+    },
+    {
+        "id": "photoshop-express",
+        "label": "Photoshop Express",
+        "store_title": "Photoshop Express Photo Editor",
+        "kind": "app",
+        "category": "photo-editing",
+        "android_package": "com.adobe.psmobile",
+        "store_url": "https://play.google.com/store/apps/details?id=com.adobe.psmobile",
+        "selection_basis": "Missing named Adobe quick photo-editing assignment, separate from Lightroom."
+    },
+    {
+        "id": "snapseed",
+        "label": "Snapseed",
+        "store_title": "Snapseed",
+        "kind": "app",
+        "category": "photo-editing",
+        "android_package": "com.niksoftware.snapseed",
+        "store_url": "https://play.google.com/store/apps/details?id=com.niksoftware.snapseed",
+        "selection_basis": "Missing named photo-editing assignment."
+    },
+    {
+        "id": "picsart",
+        "label": "Picsart",
+        "store_title": "Picsart AI Photo Editor, Video",
+        "kind": "app",
+        "category": "photo-editing",
+        "android_package": "com.picsart.studio",
+        "store_url": "https://play.google.com/store/apps/details?id=com.picsart.studio",
+        "selection_basis": "Missing named photo and video-editing assignment."
+    },
+    {
+        "id": "strava",
+        "label": "Strava",
+        "store_title": "Strava: Run, Bike, Walk",
+        "kind": "app",
+        "category": "fitness",
+        "android_package": "com.strava",
+        "store_url": "https://play.google.com/store/apps/details?id=com.strava",
+        "selection_basis": "Missing named activity-tracking and fitness-community assignment."
+    },
+    {
+        "id": "fitbit",
+        "label": "Google Health (Fitbit)",
+        "store_title": "Google Health (Fitbit)",
+        "kind": "app",
+        "category": "fitness",
+        "android_package": "com.fitbit.FitbitMobile",
+        "store_url": "https://play.google.com/store/apps/details?id=com.fitbit.FitbitMobile",
+        "selection_basis": "Missing current Google Health (Fitbit) assignment; current title and existing Fitbit package were directly inspected."
+    },
+    {
+        "id": "google-fit",
+        "label": "Google Fit",
+        "store_title": "Google Fit: Activity Tracking",
+        "kind": "app",
+        "category": "fitness",
+        "android_package": "com.google.android.apps.fitness",
+        "store_url": "https://play.google.com/store/apps/details?id=com.google.android.apps.fitness",
+        "selection_basis": "Still-listed Google Fit activity-tracking assignment with a distinct package; Google has announced migration into Google Health, without establishing its completion here."
+    },
+    {
+        "id": "myfitnesspal",
+        "label": "MyFitnessPal",
+        "store_title": "MyFitnessPal: Calorie Counter",
+        "kind": "app",
+        "category": "nutrition",
+        "android_package": "com.myfitnesspal.android",
+        "store_url": "https://play.google.com/store/apps/details?id=com.myfitnesspal.android",
+        "selection_basis": "Missing named food-log and nutrition-tracking assignment."
+    },
+    {
+        "id": "alltrails",
+        "label": "AllTrails",
+        "store_title": "AllTrails: Hike, Bike & Run",
+        "kind": "app",
+        "category": "outdoors",
+        "android_package": "com.alltrails.alltrails",
+        "store_url": "https://play.google.com/store/apps/details?id=com.alltrails.alltrails",
+        "selection_basis": "Missing named trail and outdoor-route assignment."
+    },
+    {
+        "id": "komoot",
+        "label": "Komoot",
+        "store_title": "komoot - hike, bike & run",
+        "kind": "app",
+        "category": "outdoors",
+        "android_package": "de.komoot.android",
+        "store_url": "https://play.google.com/store/apps/details?id=de.komoot.android",
+        "selection_basis": "Missing second named hiking, cycling and route-planning assignment."
+    },
+    {
+        "id": "amazon-alexa",
+        "label": "Amazon Alexa",
+        "store_title": "Amazon Alexa",
+        "kind": "app",
+        "category": "smart-home",
+        "android_package": "com.amazon.dee.app",
+        "store_url": "https://play.google.com/store/apps/details?id=com.amazon.dee.app",
+        "selection_basis": "Missing named home and voice-assistant companion assignment."
+    },
+    {
+        "id": "ring",
+        "label": "Ring",
+        "store_title": "Ring - Always Home",
+        "kind": "app",
+        "category": "smart-home",
+        "android_package": "com.ringapp",
+        "store_url": "https://play.google.com/store/apps/details?id=com.ringapp",
+        "selection_basis": "Missing named Ring home-device companion assignment."
+    },
+    {
+        "id": "blink",
+        "label": "Blink",
+        "store_title": "Blink Home Monitor",
+        "kind": "app",
+        "category": "smart-home",
+        "android_package": "com.immediasemi.android.blink",
+        "store_url": "https://play.google.com/store/apps/details?id=com.immediasemi.android.blink",
+        "selection_basis": "Missing named Blink home-camera companion assignment."
+    },
+    {
+        "id": "google-home",
+        "label": "Google Home",
+        "store_title": "Google Home",
+        "kind": "app",
+        "category": "smart-home",
+        "android_package": "com.google.android.apps.chromecast.app",
+        "store_url": "https://play.google.com/store/apps/details?id=com.google.android.apps.chromecast.app",
+        "selection_basis": "Missing named Google home-device companion assignment alongside retained SmartThings."
+    },
+    {
+        "id": "zillow",
+        "label": "Zillow",
+        "store_title": "Zillow: Homes for Sale & Rent",
+        "kind": "app",
+        "category": "property",
+        "android_package": "com.zillow.android.zillowmap",
+        "store_url": "https://play.google.com/store/apps/details?id=com.zillow.android.zillowmap",
+        "selection_basis": "Missing named property-search assignment."
+    },
+    {
+        "id": "chase",
+        "label": "Chase",
+        "store_title": "Chase Mobile",
+        "kind": "app",
+        "category": "banking",
+        "android_package": "com.chase.sig.android",
+        "store_url": "https://play.google.com/store/apps/details?id=com.chase.sig.android",
+        "selection_basis": "Missing named Chase phone-banking assignment; inclusion does not imply personal account ownership."
+    },
+    {
+        "id": "capital-one",
+        "label": "Capital One",
+        "store_title": "Capital One Mobile",
+        "kind": "app",
+        "category": "banking",
+        "android_package": "com.konylabs.capitalone",
+        "store_url": "https://play.google.com/store/apps/details?id=com.konylabs.capitalone",
+        "selection_basis": "Missing named Capital One phone-banking assignment; inclusion does not imply personal account ownership."
+    },
+    {
+        "id": "chime",
+        "label": "Chime",
+        "store_title": "Chime® – Fee-Free Banking",
+        "kind": "app",
+        "category": "banking",
+        "android_package": "com.onedebit.chime",
+        "store_url": "https://play.google.com/store/apps/details?id=com.onedebit.chime",
+        "selection_basis": "Missing named Chime phone-banking assignment; inclusion does not imply personal account ownership."
+    },
+    {
+        "id": "ups",
+        "label": "UPS",
+        "store_title": "UPS",
+        "kind": "app",
+        "category": "shipping",
+        "android_package": "com.ups.mobile.android",
+        "store_url": "https://play.google.com/store/apps/details?id=com.ups.mobile.android",
+        "selection_basis": "Missing named parcel-tracking and shipping-service assignment."
+    },
+    {
+        "id": "fedex",
+        "label": "FedEx",
+        "store_title": "FedEx Mobile",
+        "kind": "app",
+        "category": "shipping",
+        "android_package": "com.fedex.ida.android",
+        "store_url": "https://play.google.com/store/apps/details?id=com.fedex.ida.android",
+        "selection_basis": "Missing second named parcel-tracking and shipping-service assignment."
+    },
+)
+EXPECTED_APPS.update({row["id"]: (row["label"], row["android_package"])
+                      for row in SIXTH_EXPECTED_APPS})
+
 NS = "{http://www.w3.org/2000/svg}"
 
 
@@ -178,11 +711,11 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(set(files), expected | {"manifest.json"})
         manifest = json.loads(files["manifest.json"])
         self.assertEqual(manifest["functions"], NAMES)
-        self.assertEqual(manifest["version"], "0.7.0")
+        self.assertEqual(manifest["version"], "0.9.0")
         self.assertEqual(manifest["token_schema"], 1)
         self.assertEqual(manifest["token_version"], "1.0.0")
         self.assertEqual(manifest["palette_variant"], "monochrome")
-        self.assertEqual(len(manifest["files"]), 190)
+        self.assertEqual(len(manifest["files"]), 350)
         for record in manifest["files"]:
             self.assertEqual(record["path"], f'{record["appearance"]}/{record["function"]}.svg')
             payload = files[record["path"]]
@@ -192,7 +725,7 @@ class FunctionalIconTests(unittest.TestCase):
         relabeled = files["Clair/phone.svg"].replace(b'aria-label="phone"', b'aria-label="messages"')
         self.assertEqual(geometry(relabeled), geometry(files["Clair/phone.svg"]))
         # Named choices must have different drawings, rather than relabeled aliases.
-        self.assertEqual(len({geometry(files[f"Clair/{name}.svg"]) for name in NAMES}), 95)
+        self.assertEqual(len({geometry(files[f"Clair/{name}.svg"]) for name in NAMES}), 175)
 
     def test_palette_roles_and_geometry_are_shared_without_hardcoded_colors(self):
         files = icons.render_icons(self.document)
@@ -251,10 +784,11 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(icons.token_path(), ROOT / "tokens-monochrome.json")
         for version in ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0"):
             self.assertEqual(icons.token_path(version), ROOT / "tokens.json")
-        for version in ("0.6.0", "0.7.0"):
+        for version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0"):
             self.assertEqual(icons.token_path(version), ROOT / "tokens-monochrome.json")
         for version, document in (("0.5.0", self.legacy_document), ("0.6.0", self.document),
-                                  ("0.7.0", self.document)):
+                                  ("0.7.0", self.document), ("0.8.0", self.document),
+                                  ("0.9.0", self.document)):
             with self.subTest(version=version), tempfile.TemporaryDirectory() as temporary:
                 base = Path(temporary)
                 explicit = base / "explicit.json"
@@ -341,6 +875,8 @@ class FunctionalIconTests(unittest.TestCase):
         second_apps = icons.render_icons(self.legacy_document, version="0.4.0")
         third_apps = icons.render_icons(self.legacy_document, version="0.5.0")
         first_monochrome = icons.render_icons(self.document, version="0.6.0")
+        companion_apps = icons.render_icons(self.document, version="0.7.0")
+        broad_apps = icons.render_icons(self.document, version="0.8.0")
         archived = {**legacy, "LICENSE.txt": license_text().encode("utf-8")}
         self.assertEqual(hashlib.sha256(_zip_bytes(archived)).hexdigest(),
                          "040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34")
@@ -362,6 +898,16 @@ class FunctionalIconTests(unittest.TestCase):
                          "241efb1fe6584df4f66c84571bfe671059404e83be8d67876f415af6564a56bb")
         self.assertEqual(hashlib.sha256(first_monochrome["manifest.json"]).hexdigest(),
                          "57537e0ad06dee704400160d30ae47f4cce8beba557c347ef5236ac8da32ee92")
+        companion_archive = {**companion_apps, "LICENSE.txt": license_text().encode("utf-8")}
+        self.assertEqual(hashlib.sha256(_zip_bytes(companion_archive)).hexdigest(),
+                         "aa18db922e824cd2bfa1ada2fbc08125af2605d9c5acb2ad8bfdb439985f4f05")
+        self.assertEqual(hashlib.sha256(companion_apps["manifest.json"]).hexdigest(),
+                         "a58049892930f817b1376c03510ab408c84d5336d908d885e4ab52e078d238ca")
+        broad_archive = {**broad_apps, "LICENSE.txt": license_text().encode("utf-8")}
+        self.assertEqual(hashlib.sha256(_zip_bytes(broad_archive)).hexdigest(),
+                         "fcdaec582be7508b3e62bd9168695ea1650e33c8e53c3de46f3614ae53d833cf")
+        self.assertEqual(hashlib.sha256(broad_apps["manifest.json"]).hexdigest(),
+                         "7a8a35d6ba1186a718e970e26c5c6b7b19bf4949010c7bc89af3cb6063b95252")
         first_manifest = json.loads(first_apps["manifest.json"])
         current_manifest = json.loads(current["manifest.json"])
         self.assertEqual(first_manifest["functions"], PREVIOUS_NAMES)
@@ -391,6 +937,22 @@ class FunctionalIconTests(unittest.TestCase):
         for path, payload in first_monochrome.items():
             if path.endswith(".svg"):
                 self.assertEqual(current[path], payload, path)
+        companion_manifest = json.loads(companion_apps["manifest.json"])
+        self.assertEqual(companion_manifest["functions"], FOURTH_NAMES)
+        self.assertEqual(companion_manifest["catalog"], current_manifest["catalog"][:95])
+        self.assertEqual(companion_manifest["palette_variant"], "monochrome")
+        self.assertEqual(companion_manifest["token_version"], "1.0.0")
+        self.assertEqual(len(companion_manifest["files"]), 190)
+        for path, payload in companion_apps.items():
+            if path.endswith(".svg"):
+                self.assertEqual(current[path], payload, path)
+        broad_manifest = json.loads(broad_apps["manifest.json"])
+        self.assertEqual(broad_manifest["functions"], FIFTH_NAMES)
+        self.assertEqual(broad_manifest["catalog"], current_manifest["catalog"][:127])
+        self.assertEqual(len(broad_manifest["files"]), 254)
+        for path, payload in broad_apps.items():
+            if path.endswith(".svg"):
+                self.assertEqual(current[path], payload, path)
         self.assertNotIn("palette_variant", json.loads(third_apps["manifest.json"]))
         for path in third_apps:
             if path.endswith(".svg"):
@@ -411,7 +973,7 @@ class FunctionalIconTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "differs"):
                 icons.build_icons(self.document, output, check=True)
             self.assertEqual(tree_snapshot(output), before)
-        for unsupported in ("0.0.0", "0.8.0", None, [], {}):
+        for unsupported in ("0.0.0", "0.10.0", None, [], {}):
             with self.subTest(version=unsupported), self.assertRaisesRegex(ValueError, "Unsupported"):
                 icons.render_icons(self.document, version=unsupported)
 
@@ -420,9 +982,9 @@ class FunctionalIconTests(unittest.TestCase):
         manifest = json.loads(files["manifest.json"])
         catalog = manifest["catalog"]
         self.assertEqual([row["id"] for row in catalog], NAMES)
-        self.assertEqual([row["kind"] for row in catalog], ["function"] * 24 + ["app"] * 71)
+        self.assertEqual([row["kind"] for row in catalog], ["function"] * 24 + ["app"] * 151)
         apps = catalog[24:]
-        self.assertEqual(len({row["android_package"] for row in apps}), 71)
+        self.assertEqual(len({row["android_package"] for row in apps}), 151)
         self.assertEqual({row["id"]: (row["label"], row["android_package"]) for row in apps}, EXPECTED_APPS)
         for row in apps:
             self.assertEqual(row["store_url"], "https://play.google.com/store/apps/details?id=" + row["android_package"])
@@ -534,6 +1096,113 @@ class FunctionalIconTests(unittest.TestCase):
                     "home-depot": "The Home Depot", "patreon": "Patreon"}
         self.assertEqual({name: rows[name]["store_title"] for name in FOURTH_APP_NAMES}, expected)
 
+    def test_fifth_catalog_and_glyph_refusals_preserve_all_prior_named_collections(self):
+        previous = {version: icons.render_icons(icons.load_icon_tokens(version), version=version)
+                    for version in ("0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0")}
+        changes = ({"id": "good-lock"}, {"id": "phone"}, {"id": "../unsafe"},
+                   {"android_package": "com.garmin.connectiq"}, {"android_package": "bad-package"},
+                   {"label": " "}, {"store_title": ""}, {"category": ""}, {"kind": "function"},
+                   {"selection_basis": ""},
+                   {"store_url": "https://play.google.com/store/apps/details?id=com.wrong.app"})
+        def refuse_without_rewriting_history():
+            for version, files in previous.items():
+                self.assertEqual(icons.render_icons(icons.load_icon_tokens(version), version=version), files)
+            with tempfile.TemporaryDirectory() as temporary:
+                output = Path(temporary) / "never-created"
+                with self.assertRaises(ValueError):
+                    icons.build_icons(self.document, output)
+                self.assertFalse(output.exists())
+        for change in changes:
+            invalid = copy.deepcopy(icons.FIFTH_APP_CATALOG)
+            invalid[0].update(change)
+            with self.subTest(change=change), patch.object(icons, "FIFTH_APP_CATALOG", invalid):
+                refuse_without_rewriting_history()
+        for fault in ("missing", "accepted-ID"):
+            drawings = dict(icons.FIFTH_APP_GLYPHS)
+            if fault == "missing":
+                drawings.pop("youtube-music")
+            else:
+                drawings["good-lock"] = drawings["youtube-music"]
+            with self.subTest(drawings=fault), patch.object(icons, "FIFTH_APP_GLYPHS", drawings):
+                refuse_without_rewriting_history()
+
+    def test_broad_app_titles_match_inspected_listings_without_relabeling_localized_titles(self):
+        rows = {row["id"]: row for row in icons.icon_catalog()}
+        expected = {'youtube-music': 'YouTube Music',
+         'audible': 'Audible: Audiobooks & Podcasts',
+         'amazon-kindle': 'Amazon Kindle: Reading App',
+         'pocket-casts': 'Pocket Casts - Podcast App',
+         'vlc': 'VLC for Android',
+         'shazam': 'Shazam: Find Music & Concerts',
+         'soundcloud': 'SoundCloud: Discover Music',
+         'hulu': 'Hulu: Stream TV shows & movies',
+         'target': 'Target: Shop. Style. Save.',
+         'costco': 'Costco Wholesale',
+         'best-buy': 'Best Buy: Shop tech deals',
+         'etsy': 'Etsy: Shop from Real People',
+         'aliexpress': 'AliExpress : shopping en ligne',
+         'shein': 'SHEIN-Shopping Online',
+         'instacart': 'Instacart: Get Food Delivery',
+         'airbnb': 'Airbnb',
+         'booking': 'Booking.com: Hotels & Travel',
+         'expedia': 'Expedia: Hotels, Flights, Cars',
+         'lyft': 'Lyft',
+         'uber-eats': 'Uber Eats: Food and Grocery',
+         'google-earth': 'Google Earth',
+         'google-news': 'Google News - Daily Headlines',
+         'galaxy-wearable': 'Galaxy Wearable',
+         'files-by-google': 'Files by Google',
+         'adobe-acrobat': 'Adobe Acrobat Reader: Edit PDF',
+         'microsoft-word': 'Microsoft Word: Edit Documents',
+         'microsoft-excel': 'Microsoft Excel: Spreadsheets',
+         'microsoft-powerpoint': 'Microsoft PowerPoint',
+         'google-slides': 'Google Slides',
+         'google-lens': 'Google Lens',
+         'roblox': 'Roblox',
+         'minecraft': 'Minecraft: Dream it, Build it!'}
+        self.assertEqual({name: rows[name]["store_title"] for name in FIFTH_APP_NAMES}, expected)
+        self.assertEqual(rows["aliexpress"]["label"], "AliExpress")
+        self.assertEqual(rows["aliexpress"]["store_title"], "AliExpress : shopping en ligne")
+
+    def test_sixth_catalog_and_glyph_refusals_preserve_all_eight_earlier_versions(self):
+        versions = ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0")
+        previous = {version: icons.render_icons(icons.load_icon_tokens(version), version=version)
+                    for version in versions}
+        changes = ({"id": "youtube-music"}, {"id": "phone"}, {"id": "../unsafe"},
+                   {"android_package": "com.google.android.apps.youtube.music"},
+                   {"android_package": "bad-package"}, {"label": " "}, {"store_title": ""},
+                   {"category": ""}, {"kind": "function"}, {"selection_basis": ""},
+                   {"store_url": "https://play.google.com/store/apps/details?id=com.wrong.app"})
+
+        def refuse_without_rewriting_history():
+            for version, files in previous.items():
+                self.assertEqual(icons.render_icons(icons.load_icon_tokens(version), version=version), files)
+            with tempfile.TemporaryDirectory() as temporary:
+                output = Path(temporary) / "never-created"
+                with self.assertRaises(ValueError):
+                    icons.build_icons(self.document, output)
+                self.assertFalse(output.exists())
+                self.assertEqual(list(Path(temporary).iterdir()), [])
+
+        for change in changes:
+            invalid = copy.deepcopy(icons.SIXTH_APP_CATALOG)
+            invalid[0].update(change)
+            with self.subTest(change=change), patch.object(icons, "SIXTH_APP_CATALOG", invalid):
+                refuse_without_rewriting_history()
+        for fault in ("missing", "accepted-ID"):
+            drawings = dict(icons.SIXTH_APP_GLYPHS)
+            if fault == "missing":
+                drawings.pop("slack")
+            else:
+                drawings["youtube-music"] = drawings["slack"]
+            with self.subTest(drawings=fault), patch.object(icons, "SIXTH_APP_GLYPHS", drawings):
+                refuse_without_rewriting_history()
+
+    def test_everyday_identity_rows_match_the_independently_inspected_literals(self):
+        catalog = icons.icon_catalog()
+        self.assertEqual([row["id"] for row in SIXTH_EXPECTED_APPS], SIXTH_APP_NAMES)
+        self.assertEqual(catalog[-48:], list(SIXTH_EXPECTED_APPS))
+
     def test_current_bubble_has_one_continuous_outline_and_calculator_has_open_equals(self):
         files = icons.render_icons(self.document)
         bubble = ET.fromstring(files["Obscur/messages.svg"]).find(NS + "g")
@@ -557,7 +1226,7 @@ class FunctionalIconTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "icons"
             result = icons.build_icons(self.document, output)
-            self.assertEqual(len(result["files"]), 190)
+            self.assertEqual(len(result["files"]), 350)
             before = tree_snapshot(output)
             self.assertEqual(before, icons.render_icons(self.document))
             icons.build_icons(self.document, output, check=True)

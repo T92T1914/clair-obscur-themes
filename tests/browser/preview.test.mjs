@@ -217,11 +217,103 @@ const companionIconApps = [
   ['patreon', 'Patreon', 'com.patreon.android'],
 ];
 namedIconApps.push(...companionIconApps);
+const companionNamedIconApps = namedIconApps.slice();
+const broadIconApps = [
+  ['youtube-music', 'YouTube Music', 'com.google.android.apps.youtube.music'],
+  ['audible', 'Audible', 'com.audible.application'],
+  ['amazon-kindle', 'Amazon Kindle', 'com.amazon.kindle'],
+  ['pocket-casts', 'Pocket Casts', 'au.com.shiftyjelly.pocketcasts'],
+  ['vlc', 'VLC', 'org.videolan.vlc'],
+  ['shazam', 'Shazam', 'com.shazam.android'],
+  ['soundcloud', 'SoundCloud', 'com.soundcloud.android'],
+  ['hulu', 'Hulu', 'com.hulu.plus'],
+  ['target', 'Target', 'com.target.ui'],
+  ['costco', 'Costco', 'com.costco.app.android'],
+  ['best-buy', 'Best Buy', 'com.bestbuy.android'],
+  ['etsy', 'Etsy', 'com.etsy.android'],
+  ['aliexpress', 'AliExpress', 'com.alibaba.aliexpresshd'],
+  ['shein', 'SHEIN', 'com.zzkko'],
+  ['instacart', 'Instacart', 'com.instacart.client'],
+  ['airbnb', 'Airbnb', 'com.airbnb.android'],
+  ['booking', 'Booking.com', 'com.booking'],
+  ['expedia', 'Expedia', 'com.expedia.bookings'],
+  ['lyft', 'Lyft', 'me.lyft.android'],
+  ['uber-eats', 'Uber Eats', 'com.ubercab.eats'],
+  ['google-earth', 'Google Earth', 'com.google.earth'],
+  ['google-news', 'Google News', 'com.google.android.apps.magazines'],
+  ['galaxy-wearable', 'Galaxy Wearable', 'com.samsung.android.app.watchmanager'],
+  ['files-by-google', 'Files by Google', 'com.google.android.apps.nbu.files'],
+  ['adobe-acrobat', 'Adobe Acrobat', 'com.adobe.reader'],
+  ['microsoft-word', 'Microsoft Word', 'com.microsoft.office.word'],
+  ['microsoft-excel', 'Microsoft Excel', 'com.microsoft.office.excel'],
+  ['microsoft-powerpoint', 'PowerPoint', 'com.microsoft.office.powerpoint'],
+  ['google-slides', 'Google Slides', 'com.google.android.apps.docs.editors.slides'],
+  ['google-lens', 'Google Lens', 'com.google.ar.lens'],
+  ['roblox', 'Roblox', 'com.roblox.client'],
+  ['minecraft', 'Minecraft', 'com.mojang.minecraftpe'],
+];
+namedIconApps.push(...broadIconApps);
+const broadNamedIconApps = namedIconApps.slice();
+const everydayIconApps = [
+  ["slack", "Slack", "com.Slack"],
+  ["trello", "Trello", "com.trello"],
+  ["todoist", "Todoist", "com.todoist"],
+  ["ticktick", "TickTick", "com.ticktick.task"],
+  ["evernote", "Evernote", "com.evernote"],
+  ["obsidian", "Obsidian", "md.obsidian"],
+  ["dropbox", "Dropbox", "com.dropbox.android"],
+  ["proton-mail", "Proton Mail", "ch.protonmail.android"],
+  ["yahoo-mail", "Yahoo Mail", "com.yahoo.mobile.client.android.mail"],
+  ["google-tasks", "Google Tasks", "com.google.android.apps.tasks"],
+  ["google-one", "Google One", "com.google.android.apps.subscriptions.red"],
+  ["microsoft-copilot", "Microsoft Copilot", "com.microsoft.office.officehubrow"],
+  ["google-gemini", "Google Gemini", "com.google.android.apps.bard"],
+  ["claude", "Claude", "com.anthropic.claude"],
+  ["perplexity", "Perplexity", "ai.perplexity.app.android"],
+  ["bitwarden", "Bitwarden", "com.x8bit.bitwarden"],
+  ["apple-music", "Apple Music", "com.apple.android.music"],
+  ["apple-tv", "Apple TV", "com.apple.atve.androidtv.appletv"],
+  ["hbo-max", "HBO Max", "com.wbd.stream"],
+  ["peacock", "Peacock", "com.peacocktv.peacockandroid"],
+  ["paramount-plus", "Paramount+", "com.cbs.app"],
+  ["plex", "Plex", "com.plexapp.android"],
+  ["tubi", "Tubi", "com.tubitv"],
+  ["pluto-tv", "Pluto TV", "tv.pluto.android"],
+  ["crunchyroll", "Crunchyroll", "com.crunchyroll.crunchyroid"],
+  ["pandora", "Pandora", "com.pandora.android"],
+  ["iheartradio", "iHeart", "com.clearchannel.iheartradio.controller"],
+  ["siriusxm", "SiriusXM", "com.sirius"],
+  ["adobe-lightroom", "Adobe Lightroom", "com.adobe.lrmobile"],
+  ["photoshop-express", "Photoshop Express", "com.adobe.psmobile"],
+  ["snapseed", "Snapseed", "com.niksoftware.snapseed"],
+  ["picsart", "Picsart", "com.picsart.studio"],
+  ["strava", "Strava", "com.strava"],
+  ["fitbit", "Google Health (Fitbit)", "com.fitbit.FitbitMobile"],
+  ["google-fit", "Google Fit", "com.google.android.apps.fitness"],
+  ["myfitnesspal", "MyFitnessPal", "com.myfitnesspal.android"],
+  ["alltrails", "AllTrails", "com.alltrails.alltrails"],
+  ["komoot", "Komoot", "de.komoot.android"],
+  ["amazon-alexa", "Amazon Alexa", "com.amazon.dee.app"],
+  ["ring", "Ring", "com.ringapp"],
+  ["blink", "Blink", "com.immediasemi.android.blink"],
+  ["google-home", "Google Home", "com.google.android.apps.chromecast.app"],
+  ["zillow", "Zillow", "com.zillow.android.zillowmap"],
+  ["chase", "Chase", "com.chase.sig.android"],
+  ["capital-one", "Capital One", "com.konylabs.capitalone"],
+  ["chime", "Chime", "com.onedebit.chime"],
+  ["ups", "UPS", "com.ups.mobile.android"],
+  ["fedex", "FedEx", "com.fedex.ida.android"],
+];
+namedIconApps.push(...everydayIconApps);
 const iconFunctions = [...namedIconApps.map(row => row[0]), ...generalIconFunctions];
 const iconManifestFunctions = [...generalIconFunctions, ...namedIconApps.map(row => row[0])];
 const iconLabels = new Map([...generalIconFunctions.map(name => [name, name.replaceAll('-', ' ').replace(/\b[a-z]/g, letter => letter.toUpperCase())]),
   ...namedIconApps.map(([id, label]) => [id, label])]);
-const iconArchive = 'icons/Clair-Obscur-SVG-Icons-0.7.0.zip';
+const iconArchive = 'icons/Clair-Obscur-SVG-Icons-0.9.0.zip';
+const broadIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.8.0.zip';
+const broadIconDigest = 'fcdaec582be7508b3e62bd9168695ea1650e33c8e53c3de46f3614ae53d833cf';
+const companionIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.7.0.zip';
+const companionIconDigest = 'aa18db922e824cd2bfa1ada2fbc08125af2605d9c5acb2ad8bfdb439985f4f05';
 const monochromeIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.6.0.zip';
 const monochromeIconDigest = '241efb1fe6584df4f66c84571bfe671059404e83be8d67876f415af6564a56bb';
 const thirdAppIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.5.0.zip';
@@ -234,7 +326,7 @@ const previousIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.2.0.zip';
 const previousIconDigest = '6ae67a5aab7f4e0a50537bb6dcf3b383c5fc6e9e001d68db12a7413aaa376312';
 const legacyIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.1.0.zip';
 const legacyIconDigest = '040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34';
-const iconChecksums = digest => `${digest}  ${path.basename(iconArchive)}\n${monochromeIconDigest}  ${path.basename(monochromeIconArchive)}\n${thirdAppIconDigest}  ${path.basename(thirdAppIconArchive)}\n${secondAppIconDigest}  ${path.basename(secondAppIconArchive)}\n${firstAppIconDigest}  ${path.basename(firstAppIconArchive)}\n${previousIconDigest}  ${path.basename(previousIconArchive)}\n${legacyIconDigest}  ${path.basename(legacyIconArchive)}\n`;
+const iconChecksums = digest => `${digest}  ${path.basename(iconArchive)}\n${broadIconDigest}  ${path.basename(broadIconArchive)}\n${companionIconDigest}  ${path.basename(companionIconArchive)}\n${monochromeIconDigest}  ${path.basename(monochromeIconArchive)}\n${thirdAppIconDigest}  ${path.basename(thirdAppIconArchive)}\n${secondAppIconDigest}  ${path.basename(secondAppIconArchive)}\n${firstAppIconDigest}  ${path.basename(firstAppIconArchive)}\n${previousIconDigest}  ${path.basename(previousIconArchive)}\n${legacyIconDigest}  ${path.basename(legacyIconArchive)}\n`;
 const iconPaths = iconFunctions.flatMap(functionName => ['Clair', 'Obscur'].map(appearance => `icons/${appearance}/${functionName}.svg`));
 const terminalFragment = 'Clair-Obscur-Windows-Terminal-0.1.0.json';
 const terminalArchive = 'Clair-Obscur-Windows-Terminal-0.1.0.zip';
@@ -353,7 +445,7 @@ test('both appearances work at desktop and phone widths without horizontal overf
         if (evidence && width !== 2560) await page.screenshot({ path: path.join(evidence, `${name.toLowerCase()}-${width}-specimen.png`), fullPage: true });
       }
       assert.deepEqual([...new Set(network)].sort(), [origin + '/', ...['tokens.css', 'preview.css', 'preview.js', ...iconPaths].map(file => origin + '/' + file)].sort(),
-        'The page requests only its four original local assets and the 190 declared local SVGs');
+        'The page requests only its four original local assets and the 350 declared local SVGs');
       assert.deepEqual(consoleErrors, []);
     } finally { await context.close(); }
   }
@@ -628,9 +720,11 @@ async function checkIconGallery(page) {
   assert.equal(await page.locator('#icons-heading').textContent(), 'Matching app icons');
   assert.equal(await page.locator('#icons-app-heading').textContent(), 'Named apps');
   assert.equal(await page.locator('#icons-function-heading').textContent(), 'General functions');
-  assert.equal(await page.locator('#icons [data-icon-kind="app"]').count(), 71);
+  assert.equal(await page.locator('#icons [data-icon-kind="app"]').count(), 151);
   assert.equal(await page.locator('#icons [data-icon-kind="function"]').count(), 24);
   assert.equal(await page.locator('#icon-artwork-download').getAttribute('href'), iconArchive);
+  assert.equal(await page.locator('#icon-artwork-broad-download').getAttribute('href'), broadIconArchive);
+  assert.equal(await page.locator('#icon-artwork-companion-download').getAttribute('href'), companionIconArchive);
   assert.equal(await page.locator('#icon-artwork-monochrome-download').getAttribute('href'), monochromeIconArchive);
   assert.equal(await page.locator('#icon-artwork-previous-download').getAttribute('href'), previousIconArchive);
   assert.equal(await page.locator('#icon-artwork-legacy-download').getAttribute('href'), legacyIconArchive);
@@ -638,7 +732,9 @@ async function checkIconGallery(page) {
   assert.equal(await page.locator('#icon-artwork-second-app-download').getAttribute('href'), secondAppIconArchive);
   assert.equal(await page.locator('#icon-artwork-first-app-download').getAttribute('href'), firstAppIconArchive);
   assert.match(await page.locator('#icon-artwork-first-app-download').textContent(), /preserved 0\.3\.0/);
-  assert.match(await page.locator('#icon-artwork-download').textContent(), /0\.7\.0/);
+  assert.match(await page.locator('#icon-artwork-download').textContent(), /0\.9\.0/);
+  assert.match(await page.locator('#icon-artwork-broad-download').textContent(), /preserved 0\.8\.0/);
+  assert.match(await page.locator('#icon-artwork-companion-download').textContent(), /preserved 0\.7\.0/);
   assert.match(await page.locator('#icon-artwork-monochrome-download').textContent(), /preserved 0\.6\.0/);
   assert.match(await page.locator('#icon-artwork-previous-download').textContent(), /preserved 0\.2\.0/);
   assert.match(await page.locator('#icon-artwork-legacy-download').textContent(), /original 0\.1\.0/);
@@ -726,9 +822,11 @@ async function checkIconGallery(page) {
 }
 
 async function checkIconMappingKeyboard(page) {
-  // Start at the last artwork download, then follow the real next Tab order
-  // through every store link. No store request or phone installation is made.
-  await page.locator('#icon-artwork-legacy-download').focus();
+  // The finder precedes the gallery when enhanced. Without script, the last
+  // archive is still its preceding focusable control. Follow actual Tab order
+  // through all store links without opening the store or installing anything.
+  await (await page.locator('#icon-finder').isVisible()
+    ? page.locator('#icon-clear') : page.locator('#icon-artwork-legacy-download')).focus();
   for (const [id, , packageId] of namedIconApps) {
     await page.keyboard.press('Tab');
     const active = await page.evaluate(() => {
@@ -744,6 +842,318 @@ async function checkIconMappingKeyboard(page) {
   }
   return { keyboardReachable: namedIconApps.length, scope: 'Exact official href and actual Tab focus; store page and installation unexecuted' };
 }
+
+// The full inventory above and the literal subsets below are independent of
+// the production matcher. Retain node identity as well as visible result text.
+async function snapshotFinderCatalog(page) {
+  await page.evaluate(() => {
+    window.finderOriginalCards = [...document.querySelectorAll('#icons article.icon-card')]
+      .map(node => ({ node, html: node.innerHTML }));
+  });
+}
+
+async function assertFinderResults(page, expected, { enhanced = true } = {}) {
+  const state = await page.evaluate(() => {
+    const cards = [...document.querySelectorAll('#icons article.icon-card')];
+    const visible = cards.filter(node => node.getClientRects().length && getComputedStyle(node).visibility === 'visible');
+    const originals = window.finderOriginalCards;
+    return { ids: visible.map(node => node.dataset.iconFunction), allIds: cards.map(node => node.dataset.iconFunction),
+      retained: originals && cards.length === originals.length && cards.every((node, index) =>
+        node === originals[index].node && node.innerHTML === originals[index].html),
+      hidden: cards.filter(node => node.hidden).map(node => node.dataset.iconFunction),
+      pairs: visible.map(node => ({ id: node.dataset.iconFunction,
+        captions: [...node.querySelectorAll('figcaption')].map(caption => caption.textContent),
+        images: [...node.querySelectorAll('img')].map(image => ({ path: image.getAttribute('src'),
+          width: image.getBoundingClientRect().width, height: image.getBoundingClientRect().height,
+          complete: image.complete, naturalWidth: image.naturalWidth })) })),
+      groups: ['app', 'function'].map(kind => {
+        const section = document.getElementById('icons-' + kind + '-heading').parentElement;
+        return { kind, hidden: section.hidden, visible: Boolean(section.getClientRects().length) };
+      }) };
+  });
+  assert.deepEqual(state.ids, expected, 'Finder must expose independently expected choices in original order');
+  assert.deepEqual(state.allIds, iconFunctions, 'Filtering must retain every original card');
+  assert.equal(state.retained, true, 'Filtering must retain nodes, artwork, labels and assignment contents');
+  if (enhanced) {
+    assert.deepEqual(state.hidden, iconFunctions.filter(id => !expected.includes(id)), 'Nonmatches must be hidden rather than transparent or focusable');
+    assert.equal(await page.locator('#icon-filter-status').innerText(), 'Showing ' + expected.length + ' of 175 choices.');
+    assert.equal(await page.locator('#icon-filter-empty').isVisible(), expected.length === 0);
+    for (const group of state.groups) {
+      const hasResults = expected.some(id => generalIconFunctions.includes(id) === (group.kind === 'function'));
+      assert.equal(group.hidden, !hasResults); assert.equal(group.visible, hasResults);
+    }
+  } else assert.deepEqual(state.hidden, [], 'Failed enhancement must retain the complete static gallery');
+  for (const pair of state.pairs) {
+    assert.deepEqual(pair.captions, ['Clair', 'Obscur']); assert.equal(pair.images.length, 2);
+    for (const [index, appearance] of ['Clair', 'Obscur'].entries()) {
+      const image = pair.images[index];
+      assert.equal(image.path, 'icons/' + appearance + '/' + pair.id + '.svg');
+      assert.ok(image.width > 0 && image.height > 0, pair.id + ' paired artwork is hidden');
+      assert.equal(image.complete, true); assert.equal(image.naturalWidth, 512);
+    }
+  }
+  return { visible: state.ids, originalNodesRetained: state.retained, pairedAppearances: true };
+}
+
+async function assertFinderControlLayout(page, { spacing = false } = {}) {
+  const state = await page.evaluate(() => ({ width: innerWidth, pageWidth: document.documentElement.scrollWidth,
+    controls: [...document.querySelectorAll('#icon-finder label, #icon-query, #icon-kind, #icon-clear, #icon-filter-status, #icon-filter-empty')]
+      .filter(node => node.getClientRects().length).map(node => {
+        const style = getComputedStyle(node), box = node.getBoundingClientRect(), textRects = [];
+        for (const child of node.childNodes) if (child.nodeType === Node.TEXT_NODE && child.textContent.trim()) {
+          const range = document.createRange(); range.selectNodeContents(child);
+          textRects.push(...[...range.getClientRects()].map(rect => ({ left: rect.left, right: rect.right, width: rect.width, height: rect.height })));
+        }
+        return { id: node.id || node.tagName + ':' + node.textContent.trim(), tag: node.tagName, text: node.textContent.trim(),
+          visibility: style.visibility, opacity: style.opacity, left: box.left, right: box.right, width: box.width, height: box.height,
+          textRects, fontSize: style.fontSize, lineHeight: style.lineHeight, letterSpacing: style.letterSpacing,
+          wordSpacing: style.wordSpacing, marginBlockEnd: style.marginBlockEnd };
+      }) }));
+  assert.ok(state.pageWidth <= state.width + 1, JSON.stringify(state));
+  const nativeSelect = [];
+  for (const control of state.controls) {
+    assert.equal(control.visibility, 'visible'); assert.ok(Number(control.opacity) > 0);
+    assert.ok(control.width > 0 && control.height > 0 && control.left >= -1 && control.right <= state.width + 1, JSON.stringify(control));
+    if (['INPUT', 'SELECT', 'BUTTON'].includes(control.tag)) assert.ok(control.height >= 44, JSON.stringify(control));
+    else assert.ok(control.textRects.length > 0, 'Finder text unavailable: ' + control.id);
+    for (const rect of control.textRects) assert.ok(rect.width > 0 && rect.height > 0 && rect.left >= control.left - 1 && rect.right <= control.right + 1,
+      'Finder text clipped: ' + JSON.stringify(control));
+    if (!spacing) continue;
+    const size = parseFloat(control.fontSize);
+    for (const [property, minimum] of [['lineHeight', 1.5], ['letterSpacing', .12], ['wordSpacing', .16]]) {
+      if (control.tag === 'SELECT' && property === 'lineHeight' && control.lineHeight === 'normal')
+        nativeSelect.push({ id: control.id, computed: 'normal', scope: 'Native select metric remains unverified, not admitted as 1.5' });
+      else assert.ok(parseFloat(control[property]) + .02 >= size * minimum, 'Finder spacing admission ' + property + ': ' + JSON.stringify(control));
+    }
+    if (control.tag === 'P') assert.ok(parseFloat(control.marginBlockEnd) + .02 >= size * 2, 'Finder paragraph spacing: ' + control.id);
+  }
+  return { ...state, nativeSelect };
+}
+
+async function finderKeyboardRecovery(page) {
+  const query = page.locator('#icon-query');
+  await query.fill('home'); await assertFinderResults(page, ['home-depot', 'google-home', 'home']);
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-query');
+  await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-kind');
+  await page.keyboard.press('Home'); await page.keyboard.press('ArrowDown'); await page.keyboard.press('Tab');
+  assert.equal(await page.locator('#icon-kind').inputValue(), 'app');
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-clear');
+  await assertFinderResults(page, ['home-depot', 'google-home']);
+  for (const [id, packageId] of [['home-depot', 'com.thehomedepot'], ['google-home', 'com.google.android.apps.chromecast.app']]) {
+    await page.keyboard.press('Tab');
+    assert.deepEqual(await page.evaluate(() => ({ id: document.activeElement.closest('[data-icon-function]')?.dataset.iconFunction,
+      href: document.activeElement.getAttribute('href'), visible: Boolean(document.activeElement.getClientRects().length) })),
+    { id, href: 'https://play.google.com/store/apps/details?id=' + packageId, visible: true });
+  }
+  await page.keyboard.press('Tab');
+  assert.equal(await page.evaluate(() => document.activeElement.closest('[data-icon-function]')?.dataset.iconFunction ?? null), null);
+  await page.locator('#icon-kind').focus(); await page.keyboard.press('Home');
+  await page.keyboard.press('ArrowDown'); await page.keyboard.press('ArrowDown'); await page.keyboard.press('Tab');
+  assert.equal(await page.locator('#icon-kind').inputValue(), 'function'); await assertFinderResults(page, ['home']);
+  await page.keyboard.press('Enter');
+  assert.equal(await query.inputValue(), ''); assert.equal(await page.locator('#icon-kind').inputValue(), 'all');
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-query'); await assertFinderResults(page, iconFunctions);
+  return { visibleStoreLinksReachedByTab: 2, appAndFunctionKinds: true, clearRestoredAllAndFocusedQuery: true };
+}
+
+test('icon finder matches labels, stable IDs and packages literally in both appearances and phone layouts', async () => {
+  const cases = [
+    // Google Home also matches "chrome" in its documented chromecast package ID.
+    ['  \t  ', iconFunctions], ['  gOoGlE  ChRoMe  ', ['google-chrome', 'google-home']], ['maps google', ['google-maps']], ['google maps', ['google-maps']],
+    ['  tasks\tgoogle  ', ['google-tasks']], ['COM.FITBIT.FITBITMOBILE', ['fitbit']], ['Google Health', ['fitbit']],
+    ['voice-recorder', ['voice-recorder']], ['cLáUdE', ['claude']],
+    ["McDonald's", ['mcdonalds']], ['McDonald’s', ['mcdonalds']], ['mcdonalds', ['mcdonalds']],
+    ['microsoft office', ['outlook', 'microsoft-word', 'microsoft-excel', 'microsoft-powerpoint', 'microsoft-copilot']],
+    ['office microsoft', ['outlook', 'microsoft-word', 'microsoft-excel', 'microsoft-powerpoint', 'microsoft-copilot']],
+    ['mail', ['gmail', 'proton-mail', 'yahoo-mail', 'mail']], ['Clair', []], ['Google Play listing', []],
+    ['this app does not exist 8675309', []], ['^(Google|Apple).*', []], ['[', []],
+    ['<img src=x onerror="window.finderInjected=true">', []],
+  ];
+  for (const width of [390, 1280]) {
+    const { context, page, consoleErrors } = await pageFor({ viewport: { width, height: 844 } });
+    try {
+      await snapshotFinderCatalog(page);
+      const form = page.getByRole('search', { name: 'Find an icon', exact: true });
+      assert.equal(await form.getAttribute('id'), 'icon-finder'); assert.ok(await form.isVisible());
+      const searchbox = page.getByRole('searchbox', { name: 'Find an icon', exact: true });
+      assert.equal(await searchbox.getAttribute('id'), 'icon-query');
+      assert.equal(await searchbox.getAttribute('type'), 'search');
+      assert.equal(await page.getByRole('combobox', { name: 'Icon type', exact: true }).getAttribute('id'), 'icon-kind');
+      assert.deepEqual(await page.locator('#icon-kind option').evaluateAll(nodes => nodes.map(node => node.value)), ['all', 'app', 'function']);
+      const status = page.locator('#icon-filter-status');
+      assert.equal(await status.getAttribute('role'), 'status'); assert.equal(await status.getAttribute('aria-live'), 'polite');
+      assert.equal(await status.getAttribute('aria-atomic'), 'true'); await assertFinderResults(page, iconFunctions);
+      for (const appearance of ['Obscur', 'Clair']) {
+        await page.getByRole('button', { name: appearance, exact: true }).click();
+        for (const [query, expected] of cases) {
+          await page.locator('#icon-query').fill(query); await assertFinderResults(page, expected);
+          assert.equal(await page.locator('#icon-query').inputValue(), query);
+          assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-query');
+        }
+        assert.equal(await page.evaluate(() => window.finderInjected), undefined);
+        assert.equal(await page.locator('#icon-finder img').count(), 0, 'Literal query markup must never become HTML');
+        await page.locator('#icon-query').fill('claude');
+        const before = { url: page.url(), timeOrigin: await page.evaluate(() => performance.timeOrigin) };
+        await page.keyboard.press('Enter'); await assertFinderResults(page, ['claude']);
+        assert.equal(page.url(), before.url); assert.equal(await page.evaluate(() => performance.timeOrigin), before.timeOrigin);
+        await page.getByRole('button', { name: appearance === 'Clair' ? 'Obscur' : 'Clair', exact: true }).click();
+        assert.equal(await page.locator('#icon-query').inputValue(), 'claude'); await assertFinderResults(page, ['claude']);
+        await page.locator('#icon-kind').selectOption('function'); await assertFinderResults(page, []);
+        assert.match(await page.locator('#icon-filter-empty').innerText(), /clear|different|another/i);
+        await page.getByRole('button', { name: 'Clear filters', exact: true }).click(); await assertFinderResults(page, iconFunctions);
+        assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-query');
+        await page.locator('#icon-kind').selectOption('app'); await assertFinderResults(page, namedIconApps.map(row => row[0]));
+        await page.locator('#icon-kind').selectOption('function'); await assertFinderResults(page, generalIconFunctions);
+        await page.locator('#icon-kind').selectOption('all'); await assertFinderResults(page, iconFunctions);
+        await assertFinderControlLayout(page);
+      }
+      const keyboard = await finderKeyboardRecovery(page); assert.deepEqual(consoleErrors, []);
+      results.scenarios.push({ name: 'literal icon finder and keyboard recovery', status: 'passed', width, cases: cases.length,
+        appearances: ['Clair', 'Obscur'], keyboard, nativePhoneVerified: false });
+    } finally { await context.close(); }
+  }
+});
+
+test('icon finder leaves exact artwork downloads and the independent platform chooser usable', async () => {
+  const { context, page, consoleErrors } = await pageFor({ viewport: { width: 390, height: 844 } });
+  try {
+    await snapshotFinderCatalog(page);
+    await page.locator('#package-target').selectOption('equicord'); await page.locator('#package-appearance').selectOption('Clair');
+    const chooserBefore = await page.locator('#package-choice-result').innerHTML();
+    await page.locator('#icon-query').fill('this app does not exist 8675309'); await assertFinderResults(page, []);
+    for (const id of ['icon-artwork-download', 'icon-artwork-broad-download', 'icon-artwork-companion-download',
+      'icon-artwork-monochrome-download', 'icon-artwork-third-app-download', 'icon-artwork-second-app-download',
+      'icon-artwork-first-app-download', 'icon-artwork-previous-download', 'icon-artwork-legacy-download', 'icon-artwork-checksums'])
+      assert.ok(await page.locator('#' + id).isVisible(), 'Filtering hid a download: ' + id);
+    await page.getByRole('button', { name: 'Obscur', exact: true }).click();
+    assert.equal(await page.locator('#package-choice-result').innerHTML(), chooserBefore);
+    assert.equal(await page.locator('#package-target').inputValue(), 'equicord');
+    assert.equal(await page.locator('#package-appearance').inputValue(), 'Clair');
+    assert.equal(await page.locator('#package-choice-file').getAttribute('href'), 'downloads/equicord/Clair-Equicord-0.1.2.theme.css');
+    const beforeUrl = page.url(); await page.locator('#icon-artwork-download').focus();
+    const [download] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }), page.keyboard.press('Enter')]);
+    assert.equal(await download.failure(), null); assert.equal(download.suggestedFilename(), path.basename(iconArchive));
+    const chunks = []; for await (const chunk of await download.createReadStream()) chunks.push(chunk);
+    const expectedBytes = await readFile(path.join(site, iconArchive)), actualBytes = Buffer.concat(chunks);
+    assert.deepEqual(actualBytes, expectedBytes); assert.equal(page.url(), beforeUrl);
+    const digest = crypto.createHash('sha256').update(actualBytes).digest('hex');
+    assert.ok((await readFile(path.join(site, 'icons/SVG-SHA256SUMS'), 'utf8')).includes(digest + '  ' + path.basename(iconArchive) + '\n'));
+    await page.locator('#icon-query').fill('claude'); await assertFinderResults(page, ['claude']);
+    const assignmentUrl = 'https://play.google.com/store/apps/details?id=com.anthropic.claude';
+    const interceptedAssignments = [];
+    // Exercise the actual result anchor without contacting the store.
+    await page.route(url => url.href === assignmentUrl, async route => {
+      interceptedAssignments.push({ url: route.request().url(), method: route.request().method() });
+      await route.fulfill({ contentType: 'text/html; charset=utf-8',
+        body: '<!doctype html><title>Assignment fixture</title><h1>Claude assignment fixture</h1>' });
+    });
+    await page.locator('#icon-clear').focus(); await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.closest('[data-icon-function]')?.dataset.iconFunction), 'claude');
+    assert.equal(await page.evaluate(() => document.activeElement.getAttribute('href')), assignmentUrl);
+    await Promise.all([page.waitForURL(assignmentUrl), page.keyboard.press('Enter')]);
+    assert.equal(page.url(), assignmentUrl);
+    assert.equal(await page.getByRole('heading', { name: 'Claude assignment fixture', exact: true }).textContent(), 'Claude assignment fixture');
+    assert.deepEqual(interceptedAssignments, [{ url: assignmentUrl, method: 'GET' }]);
+    assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: 'filtered icon acquisition and independent platform chooser', status: 'passed', sha256: digest,
+      resultLinkActivation: { url: assignmentUrl, method: 'keyboard Enter, exact page route fulfilled with an inert local response', externalStoreContacted: false },
+      scope: 'Exact browser-consumed SVG ZIP after zero results and actual result-anchor activation against a local fixture; no store, installation or native acceptance' });
+  } finally { await context.close(); }
+});
+
+test('icon finder spacing-only overrides preserve readable controls and real keyboard operations', async () => {
+  const { context, page, consoleErrors } = await pageFor();
+  try {
+    await snapshotFinderCatalog(page);
+    const baseline = await spacingContentBaseline(page);
+    assert.equal(baseline.width, 1280); assert.equal(baseline.rootFontSize, '16px');
+    await page.addStyleTag({ content: textSpacingOverride });
+    const wholePageAdmission = await assertTextSpacing(page, baseline), controls = [];
+    for (const appearance of ['Clair', 'Obscur']) {
+      await page.getByRole('button', { name: appearance, exact: true }).click();
+      controls.push(await assertFinderControlLayout(page, { spacing: true })); await finderKeyboardRecovery(page);
+      await page.locator('#icon-query').fill('no matching icon 8675309'); await assertFinderResults(page, []);
+      await assertFinderControlLayout(page, { spacing: true });
+      await page.locator('#icon-clear').focus(); await page.keyboard.press('Enter'); await assertFinderResults(page, iconFunctions);
+    }
+    assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: 'icon finder spacing only', status: 'passed', wholePageAdmission, controls,
+      scope: 'All four applicable overrides at unchanged 1280 px viewport and 16 px root; native select line-height separately labeled' });
+  } finally { await context.close(); }
+});
+
+test('icon finder narrow enlarged fallback spacing remains a separate additional stress case', async () => {
+  const { context, page, consoleErrors } = await pageFor({ viewport: { width: 320, height: 844 }, missingFont: true });
+  try {
+    await snapshotFinderCatalog(page); await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+    const baseline = await spacingContentBaseline(page);
+    assert.equal(baseline.width, 320); assert.equal(baseline.rootFontSize, '32px');
+    await page.addStyleTag({ content: textSpacingOverride });
+    const wholePageAdmission = await assertTextSpacing(page, baseline);
+    for (const appearance of ['Clair', 'Obscur']) {
+      await page.getByRole('button', { name: appearance, exact: true }).click();
+      await assertFinderControlLayout(page, { spacing: true }); await finderKeyboardRecovery(page);
+      await page.locator('#icon-query').fill('COM.FITBIT.FITBITMOBILE'); await assertFinderResults(page, ['fitbit']);
+      await assertFinderControlLayout(page, { spacing: true });
+      await page.locator('#icon-clear').focus(); await page.keyboard.press('Enter');
+    }
+    assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: 'icon finder responsive spacing stress', status: 'passed', width: 320, rootFontSize: '32px', wholePageAdmission,
+      scope: 'Combined narrow layout, enlarged root text and unavailable local Inter alias; separate from spacing-only acceptance and browser zoom' });
+  } finally { await context.close(); }
+});
+
+test('icon finder enhancement failure preserves every static choice and download', async () => {
+  for (const failure of ['no-script', 'blocked-script', 'missing-control', 'invalid-record']) {
+    const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: failure !== 'no-script', viewport: { width: 390, height: 844 },
+      setup: async (context, page) => {
+        if (failure === 'blocked-script') await page.route('**/preview.js', route => route.abort('blockedbyclient'));
+        if (failure === 'missing-control' || failure === 'invalid-record') await page.route(origin + '/', async route => {
+          const original = await readFile(path.join(site, 'index.html'), 'utf8');
+          const from = failure === 'missing-control' ? 'id="icon-query"' : 'data-icon-kind="app"';
+          const to = failure === 'missing-control' ? 'id="icon-query-unavailable"' : 'data-icon-kind="unknown"';
+          assert.ok(original.includes(from), 'Fallback fault must reach the intended current markup');
+          await route.fulfill({ contentType: 'text/html; charset=utf-8', body: original.replace(from, to) });
+        });
+      } });
+    try {
+      await snapshotFinderCatalog(page);
+      assert.ok(await page.locator('#icon-finder').isHidden(), failure + ' must not expose an inert finder');
+      await assertFinderResults(page, iconFunctions, { enhanced: false });
+      assert.deepEqual(await page.locator('#icons article.icon-card p a').evaluateAll(nodes => nodes.map(node => ({
+        id: node.closest('[data-icon-function]').dataset.iconFunction, href: node.getAttribute('href') }))),
+      namedIconApps.map(([id, , packageId]) => ({ id, href: 'https://play.google.com/store/apps/details?id=' + packageId })));
+      for (const id of ['icon-artwork-download', 'icon-artwork-broad-download', 'icon-artwork-companion-download',
+        'icon-artwork-monochrome-download', 'icon-artwork-third-app-download', 'icon-artwork-second-app-download',
+        'icon-artwork-first-app-download', 'icon-artwork-previous-download', 'icon-artwork-legacy-download']) assert.ok(await page.locator('#' + id).isVisible());
+      if (failure === 'missing-control' || failure === 'invalid-record') {
+        await page.locator('#sample-button').click(); assert.match(await page.locator('#control-status').innerText(), /Control activated/);
+        assert.deepEqual(consoleErrors, [], 'Failed finder admission must not break unrelated enhancement');
+      }
+      results.scenarios.push({ name: 'icon finder static fallback', failure, status: 'passed', retainedChoices: 175, retainedMappings: 151,
+        scope: 'Isolated fixture initialization fault or script absence, not a product defect' });
+    } finally { await context.close(); }
+  }
+});
+
+test('icon finder qualification rejects an initialized but inert query control', async () => {
+  const { context, page, consoleErrors } = await pageFor({ setup: async (context, page) => {
+    await page.route('**/preview.js', async route => {
+      const original = await readFile(path.join(site, 'preview.js'), 'utf8');
+      const listener = "query.addEventListener('input', updateIconFilter);";
+      assert.equal(original.split(listener).length - 1, 1, 'Fault must target exactly the current finder input listener');
+      await route.fulfill({ contentType: 'text/javascript', body: original.replace(listener, '/* disposable inert-query fault */') });
+    });
+  } });
+  try {
+    await snapshotFinderCatalog(page); assert.ok(await page.locator('#icon-finder').isVisible());
+    await assertFinderResults(page, iconFunctions); await page.locator('#icon-query').fill('claude');
+    await assert.rejects(assertFinderResults(page, ['claude']), /Finder must expose independently expected choices/);
+    assert.equal(await page.locator('#icon-query').inputValue(), 'claude'); assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: 'icon finder controlled operation failure', fault: 'input listener removed after valid initialization',
+      status: 'rejected as expected', scope: 'Disposable browser response fault, not a product defect' });
+  } finally { await context.close(); }
+});
 
 test('icon gallery decodes every current appearance at phone widths and enlarged fallback text', async () => {
   for (const scenario of [{ width: 390, enlarged: false }, { width: 320, enlarged: true }]) {
@@ -765,7 +1175,7 @@ test('icon gallery decodes every current appearance at phone widths and enlarged
   }
 });
 
-test('no-script keyboard navigation acquires current and all six preserved icon ZIPs with exact checksums', async () => {
+test('no-script keyboard navigation acquires current and all eight preserved icon ZIPs with exact checksums', async () => {
   const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false, viewport: { width: 320, height: 844 },
     setup: async (context, page) => page.route('**/preview.css', async route => route.fulfill({ contentType: 'text/css',
       body: await readFile(path.join(site, 'preview.css'), 'utf8') + '\nhtml { font-size: 200%; }\n' + textSpacingOverride })) });
@@ -797,6 +1207,26 @@ test('no-script keyboard navigation acquires current and all six preserved icon 
     const chunks = []; for await (const chunk of await checksumDownload.createReadStream()) chunks.push(chunk);
     const digest = crypto.createHash('sha256').update(bytes).digest('hex');
     assert.equal(Buffer.concat(chunks).toString('utf8'), iconChecksums(digest));
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-broad-download');
+    const [broadDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
+    assert.equal(await broadDownload.failure(), null);
+    assert.equal(broadDownload.suggestedFilename(), path.basename(broadIconArchive));
+    const broadArchivePath = path.join(temp, 'keyboard-icons-broad.zip');
+    await broadDownload.saveAs(broadArchivePath);
+    const broadBytes = await readFile(broadArchivePath);
+    assert.deepEqual(broadBytes, await readFile(path.join(site, ...broadIconArchive.split('/'))));
+    assert.equal(crypto.createHash('sha256').update(broadBytes).digest('hex'), broadIconDigest);
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-companion-download');
+    const [companionDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
+    assert.equal(await companionDownload.failure(), null);
+    assert.equal(companionDownload.suggestedFilename(), path.basename(companionIconArchive));
+    const companionArchivePath = path.join(temp, 'keyboard-icons-companion.zip');
+    await companionDownload.saveAs(companionArchivePath);
+    const companionBytes = await readFile(companionArchivePath);
+    assert.deepEqual(companionBytes, await readFile(path.join(site, ...companionIconArchive.split('/'))));
+    assert.equal(crypto.createHash('sha256').update(companionBytes).digest('hex'), companionIconDigest);
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-monochrome-download');
     const [monochromeDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
@@ -863,17 +1293,36 @@ test('no-script keyboard navigation acquires current and all six preserved icon 
       `functions=${JSON.stringify(iconManifestFunctions)}`,
       'expected={f"{appearance}/{function}.svg" for appearance in ("Clair","Obscur") for function in functions}',
       'with zipfile.ZipFile(archive_path) as archive:',
-      ' assert len(archive.namelist())==192 and set(archive.namelist())==expected|{"manifest.json","LICENSE.txt"}',
+      ' assert len(archive.namelist())==352 and set(archive.namelist())==expected|{"manifest.json","LICENSE.txt"}',
       ' assert archive.testzip() is None',
       ' for name in expected|{"manifest.json","LICENSE.txt"}:',
       '  assert archive.read(name)==(site/"icons"/name).read_bytes()',
       ' manifest=json.loads(archive.read("manifest.json"))',
-      ' assert manifest["version"]=="0.7.0" and manifest["stroke_width"]==16',
-      ' assert manifest["functions"]==functions and len(manifest["files"])==190',
+      ' assert manifest["version"]=="0.9.0" and manifest["stroke_width"]==16',
+      ' assert manifest["functions"]==functions and len(manifest["files"])==350',
       ' assert [entry["id"] for entry in manifest["catalog"]]==functions',
       ' for record in manifest["files"]:',
       '  assert hashlib.sha256(archive.read(record["path"])).hexdigest()==record["sha256"]',
     ].join('\n'), archivePath, site]);
+    run(['-c', [
+      'import hashlib,json,sys,zipfile',
+      `functions=${JSON.stringify([...generalIconFunctions, ...broadNamedIconApps.map(row => row[0])])}`,
+      'with zipfile.ZipFile(sys.argv[1]) as archive:',
+      ' assert archive.testzip() is None and len(archive.namelist())==256',
+      ' manifest=json.loads(archive.read("manifest.json"))',
+      ' assert manifest["version"]=="0.8.0" and manifest["stroke_width"]==16',
+      ' assert manifest["functions"]==functions and len(manifest["files"])==254',
+      ' assert hashlib.sha256(archive.read("manifest.json")).hexdigest()=="7a8a35d6ba1186a718e970e26c5c6b7b19bf4949010c7bc89af3cb6063b95252"',
+    ].join('\n'), broadArchivePath]);
+    run(['-c', [
+      'import json,sys,zipfile',
+      `functions=${JSON.stringify([...generalIconFunctions, ...companionNamedIconApps.map(row => row[0])])}`,
+      'with zipfile.ZipFile(sys.argv[1]) as archive:',
+      ' assert archive.testzip() is None and len(archive.namelist())==192',
+      ' manifest=json.loads(archive.read("manifest.json"))',
+      ' assert manifest["version"]=="0.7.0" and manifest["stroke_width"]==16',
+      ' assert manifest["functions"]==functions and len(manifest["files"])==190',
+    ].join('\n'), companionArchivePath]);
     run(['-c', [
       'import json,sys,zipfile',
       `functions=${JSON.stringify([...generalIconFunctions, ...monochromeNamedIconApps.map(row => row[0])])}`,
@@ -923,8 +1372,8 @@ test('no-script keyboard navigation acquires current and all six preserved icon 
     assert.equal(new URL(page.url()).hash, '#icons');
     assert.deepEqual(consoleErrors, []);
     results.scenarios.push({ name: 'no-script icon artwork keyboard acquisition', status: 'passed', tabs,
-      sha256: digest, monochromeSha256: monochromeIconDigest, secondAppSha256: secondAppIconDigest, firstAppSha256: firstAppIconDigest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
-      currentArchiveFiles: 192, monochromeArchiveFiles: 180, secondAppArchiveFiles: 164, firstAppArchiveFiles: 116, preservedArchiveFiles: 50, nativePhoneVerified: false,
+      sha256: digest, broadSha256: broadIconDigest, companionSha256: companionIconDigest, monochromeSha256: monochromeIconDigest, secondAppSha256: secondAppIconDigest, firstAppSha256: firstAppIconDigest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
+      currentArchiveFiles: 352, broadArchiveFiles: 256, companionArchiveFiles: 192, monochromeArchiveFiles: 180, secondAppArchiveFiles: 164, firstAppArchiveFiles: 116, preservedArchiveFiles: 50, nativePhoneVerified: false,
       width: 320, rootFontSize: '32px', spacingAdmission, mappingKeyboard,
       scope: 'Combined no-script, narrow, enlarged and spacing stress; separate from spacing-only acceptance' });
   } finally { await context.close(); }
@@ -2164,13 +2613,18 @@ test('relocated local guides cover every appearance by keyboard without external
   }
 });
 
-test('portable kit downloads, extracts and relocates into a complete offline file page', { timeout: 90000 }, async () => {
+for (const javaScriptEnabled of [true, false]) test(`portable kit downloads, extracts and relocates into a complete offline file page (${javaScriptEnabled ? 'scripted' : 'no-script'})`, { timeout: 90000 }, async () => {
+  const mode = javaScriptEnabled ? 'scripted' : 'no-script';
+  const modeTemp = path.join(temp, `portable-${mode}`);
+  await mkdir(modeTemp);
+  const modeEvidence = evidence && path.join(evidence, `portable-${mode}`);
+  if (modeEvidence) await mkdir(modeEvidence);
   const archiveName = 'Clair-Obscur-portable-preview.zip';
-  const archivePath = path.join(temp, archiveName);
-  const checksumPath = path.join(temp, 'portable-SHA256SUMS');
-  const extracted = path.join(temp, 'downloaded-kit');
-  const relocated = path.join(temp, 'moved-kit', 'preview');
-  const { context, page } = await pageFor({ viewport: { width: 390, height: 844 } });
+  const archivePath = path.join(modeTemp, archiveName);
+  const checksumPath = path.join(modeTemp, 'portable-SHA256SUMS');
+  const extracted = path.join(modeTemp, 'downloaded-kit');
+  const relocated = path.join(modeTemp, 'moved-kit', 'preview');
+  const { context, page } = await pageFor({ javaScriptEnabled, viewport: { width: 390, height: 844 } });
   let publicManifest;
   const downloadNames = {};
   try {
@@ -2192,9 +2646,9 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
   const checksum = await readFile(checksumPath, 'utf8');
   const digest = crypto.createHash('sha256').update(archiveBytes).digest('hex');
   assert.equal(checksum, `${digest}  ${archiveName}\n`);
-  if (evidence) {
-    await writeFile(path.join(evidence, archiveName), archiveBytes);
-    await writeFile(path.join(evidence, 'portable-SHA256SUMS'), checksum);
+  if (modeEvidence) {
+    await writeFile(path.join(modeEvidence, archiveName), archiveBytes);
+    await writeFile(path.join(modeEvidence, 'portable-SHA256SUMS'), checksum);
   }
   assert.deepEqual(publicManifest.distribution.portable_kit, {
     archive: archiveName, checksums: 'portable-SHA256SUMS', sha256: digest, bytes: archiveBytes.length,
@@ -2249,267 +2703,289 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
       return { localContext, localPage };
     } catch (error) { await localContext.close(); closedContexts++; throw error; }
   }
-  for (const javaScriptEnabled of [true, false]) {
-    for (const width of [320, 390]) {
-      const { localContext, localPage } = await filePage({ javaScriptEnabled, viewport: { width, height: 844 } });
+  for (const width of [320, 390]) {
+    const { localContext, localPage } = await filePage({ javaScriptEnabled, viewport: { width, height: 844 } });
+    try {
+      assert.match(await localPage.locator('#portable-delivery').textContent(), /extracted portable preview/);
+      assert.equal(await localPage.locator('#portable-preview, #portable-checksums').count(), 0);
+      assert.equal(await localPage.locator('#downloads .download-card').count(), 17);
+      const decodedIcons = await checkIconGallery(localPage);
+      for (const relative of decodedIcons) {
+        const bytes = await readFile(path.join(relocated, ...relative.split('/')));
+        assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'), inner.files[relative]);
+      }
+      await localPage.locator('#icon-artwork-download').focus();
+      const [iconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await iconDownload.failure(), null);
+      assert.equal(iconDownload.suggestedFilename(), path.basename(iconArchive));
+      const iconChunks = []; for await (const chunk of await iconDownload.createReadStream()) iconChunks.push(chunk);
+      const iconBytes = Buffer.concat(iconChunks), iconDigest = crypto.createHash('sha256').update(iconBytes).digest('hex');
+      assert.deepEqual(iconBytes, await readFile(path.join(relocated, ...iconArchive.split('/'))));
+      assert.equal(iconDigest, inner.files[iconArchive]);
+      assert.equal(await readFile(path.join(relocated, 'icons', 'SVG-SHA256SUMS'), 'utf8'), iconChecksums(iconDigest));
+      await localPage.locator('#icon-artwork-broad-download').focus();
+      const [broadIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await broadIconDownload.failure(), null);
+      assert.equal(broadIconDownload.suggestedFilename(), path.basename(broadIconArchive));
+      const broadChunks = []; for await (const chunk of await broadIconDownload.createReadStream()) broadChunks.push(chunk);
+      const broadIconBytes = Buffer.concat(broadChunks);
+      assert.deepEqual(broadIconBytes, await readFile(path.join(relocated, ...broadIconArchive.split('/'))));
+      assert.equal(crypto.createHash('sha256').update(broadIconBytes).digest('hex'), broadIconDigest);
+      assert.equal(inner.files[broadIconArchive], broadIconDigest);
+      await localPage.locator('#icon-artwork-companion-download').focus();
+      const [companionIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await companionIconDownload.failure(), null);
+      assert.equal(companionIconDownload.suggestedFilename(), path.basename(companionIconArchive));
+      const companionChunks = []; for await (const chunk of await companionIconDownload.createReadStream()) companionChunks.push(chunk);
+      const companionIconBytes = Buffer.concat(companionChunks);
+      assert.deepEqual(companionIconBytes, await readFile(path.join(relocated, ...companionIconArchive.split('/'))));
+      assert.equal(crypto.createHash('sha256').update(companionIconBytes).digest('hex'), companionIconDigest);
+      assert.equal(inner.files[companionIconArchive], companionIconDigest);
+      await localPage.locator('#icon-artwork-monochrome-download').focus();
+      const [monochromeIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await monochromeIconDownload.failure(), null);
+      assert.equal(monochromeIconDownload.suggestedFilename(), path.basename(monochromeIconArchive));
+      const monochromeChunks = []; for await (const chunk of await monochromeIconDownload.createReadStream()) monochromeChunks.push(chunk);
+      const monochromeIconBytes = Buffer.concat(monochromeChunks);
+      assert.deepEqual(monochromeIconBytes, await readFile(path.join(relocated, ...monochromeIconArchive.split('/'))));
+      assert.equal(crypto.createHash('sha256').update(monochromeIconBytes).digest('hex'), monochromeIconDigest);
+      assert.equal(inner.files[monochromeIconArchive], monochromeIconDigest);
+      await localPage.locator('#icon-artwork-third-app-download').focus();
+      const [thirdAppIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await thirdAppIconDownload.failure(), null);
+      assert.equal(thirdAppIconDownload.suggestedFilename(), path.basename(thirdAppIconArchive));
+      const thirdChunks = []; for await (const chunk of await thirdAppIconDownload.createReadStream()) thirdChunks.push(chunk);
+      const thirdAppIconBytes = Buffer.concat(thirdChunks);
+      assert.deepEqual(thirdAppIconBytes, await readFile(path.join(relocated, ...thirdAppIconArchive.split('/'))));
+      assert.equal(crypto.createHash('sha256').update(thirdAppIconBytes).digest('hex'), thirdAppIconDigest);
+      assert.equal(inner.files[thirdAppIconArchive], thirdAppIconDigest);
+      await localPage.locator('#icon-artwork-second-app-download').focus();
+      const [secondAppIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await secondAppIconDownload.failure(), null);
+      assert.equal(secondAppIconDownload.suggestedFilename(), path.basename(secondAppIconArchive));
+      const secondAppIconChunks = []; for await (const chunk of await secondAppIconDownload.createReadStream()) secondAppIconChunks.push(chunk);
+      const secondAppIconBytes = Buffer.concat(secondAppIconChunks);
+      assert.deepEqual(secondAppIconBytes, await readFile(path.join(relocated, ...secondAppIconArchive.split('/'))));
+      assert.equal(crypto.createHash('sha256').update(secondAppIconBytes).digest('hex'), secondAppIconDigest);
+      assert.equal(inner.files[secondAppIconArchive], secondAppIconDigest);
+      await localPage.locator('#icon-artwork-first-app-download').focus();
+      const [firstAppIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await firstAppIconDownload.failure(), null);
+      assert.equal(firstAppIconDownload.suggestedFilename(), path.basename(firstAppIconArchive));
+      const firstAppIconChunks = []; for await (const chunk of await firstAppIconDownload.createReadStream()) firstAppIconChunks.push(chunk);
+      const firstAppIconBytes = Buffer.concat(firstAppIconChunks);
+      assert.deepEqual(firstAppIconBytes, await readFile(path.join(relocated, ...firstAppIconArchive.split('/'))));
+      assert.equal(crypto.createHash('sha256').update(firstAppIconBytes).digest('hex'), firstAppIconDigest);
+      assert.equal(inner.files[firstAppIconArchive], firstAppIconDigest);
+      await localPage.locator('#icon-artwork-previous-download').focus();
+      const [previousIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await previousIconDownload.failure(), null);
+      assert.equal(previousIconDownload.suggestedFilename(), path.basename(previousIconArchive));
+      const previousIconChunks = []; for await (const chunk of await previousIconDownload.createReadStream()) previousIconChunks.push(chunk);
+      const previousIconBytes = Buffer.concat(previousIconChunks);
+      assert.deepEqual(previousIconBytes, await readFile(path.join(relocated, ...previousIconArchive.split('/'))));
+      assert.equal(crypto.createHash('sha256').update(previousIconBytes).digest('hex'), previousIconDigest);
+      assert.equal(inner.files[previousIconArchive], previousIconDigest);
+      await localPage.locator('#icon-artwork-legacy-download').focus();
+      const [legacyIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await legacyIconDownload.failure(), null);
+      assert.equal(legacyIconDownload.suggestedFilename(), path.basename(legacyIconArchive));
+      const legacyIconChunks = []; for await (const chunk of await legacyIconDownload.createReadStream()) legacyIconChunks.push(chunk);
+      const legacyIconBytes = Buffer.concat(legacyIconChunks);
+      assert.deepEqual(legacyIconBytes, await readFile(path.join(relocated, ...legacyIconArchive.split('/'))));
+      assert.equal(crypto.createHash('sha256').update(legacyIconBytes).digest('hex'), legacyIconDigest);
+      assert.equal(inner.files[legacyIconArchive], legacyIconDigest);
+      iconJourneys.push({ javaScriptEnabled, width, decoded: decodedIcons.length, sha256: iconDigest,
+        broadSha256: broadIconDigest, companionSha256: companionIconDigest, monochromeSha256: monochromeIconDigest, secondAppSha256: secondAppIconDigest, firstAppSha256: firstAppIconDigest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
+        method: 'saved included current and all eight preserved SVG archives' });
+      const terminalSpecimens = await checkTerminalSpecimens(localPage, terminalDocument);
+      await localPage.locator('#terminal-download').focus();
+      const [terminalZip] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await terminalZip.failure(), null);
+      assert.equal(terminalZip.suggestedFilename(), terminalArchive);
+      const terminalChunks = []; for await (const chunk of await terminalZip.createReadStream()) terminalChunks.push(chunk);
+      await localPage.keyboard.press('Tab');
+      assert.equal(await localPage.evaluate(() => document.activeElement.id), 'terminal-checksums');
+      const terminalSumUrl = pathToFileURL(path.join(relocated, 'terminal', 'SHA256SUMS')).href;
+      let terminalSumText;
       try {
-        assert.match(await localPage.locator('#portable-delivery').textContent(), /extracted portable preview/);
-        assert.equal(await localPage.locator('#portable-preview, #portable-checksums').count(), 0);
-        assert.equal(await localPage.locator('#downloads .download-card').count(), 17);
-        const decodedIcons = await checkIconGallery(localPage);
-        for (const relative of decodedIcons) {
-          const bytes = await readFile(path.join(relocated, ...relative.split('/')));
-          assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'), inner.files[relative]);
+        // Like the included CSS routes below, an extensionless local text
+        // file opens in the browser. Qualify that actual consumer behavior.
+        await Promise.all([localPage.waitForURL(terminalSumUrl, { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+        terminalSumText = await localPage.locator('pre').textContent();
+        assert.equal(terminalSumText, await readFile(path.join(relocated, 'terminal', 'SHA256SUMS'), 'utf8'));
+      } catch (error) {
+        failures.push({ scenario: 'portable Terminal checksum activation', javaScriptEnabled, width,
+          pageUrl: localPage.url(), error: error.message, observation: await localPage.evaluate(() => ({
+            focusedId: document.activeElement?.id, focusedHref: document.activeElement?.getAttribute('href'),
+            bodyText: document.body?.innerText.slice(0, 2400), title: document.title,
+          })) });
+        throw error;
+      }
+      const terminalAcquisition = await verifyTerminalDownloads(Buffer.concat(terminalChunks), Buffer.from(terminalSumText, 'utf8'), relocated);
+      assert.equal(terminalAcquisition.sha256, inner.files['terminal/' + terminalArchive]);
+      await localPage.goBack();
+      await localPage.locator('#terminal-checksums').focus();
+      await localPage.keyboard.press('Tab');
+      assert.equal(await localPage.evaluate(() => document.activeElement.id), 'terminal-guide');
+      const terminalGuideUrl = pathToFileURL(path.join(relocated, 'terminal', 'installation.md')).href;
+      await Promise.all([localPage.waitForURL(terminalGuideUrl), localPage.keyboard.press('Enter')]);
+      const terminalGuide = await readFile(path.join(relocated, 'terminal', 'installation.md'), 'utf8');
+      assert.equal((await localPage.locator('body').textContent()).trim(), terminalGuide.trim());
+      assert.equal(crypto.createHash('sha256').update(terminalGuide).digest('hex'), inner.files['terminal/installation.md']);
+      await localPage.goBack();
+      await localPage.evaluate(() => document.fonts.ready);
+      terminalJourneys.push({ javaScriptEnabled, width, ...terminalAcquisition, appearances: terminalSpecimens.map(card => card.appearance),
+        labeledSlots: 32, checksums: 'opened exact included plaintext and returned', guide: 'opened exact included Markdown and returned',
+        method: 'focused archive control, keyboard ZIP acquisition and exact local text routes' });
+      if (javaScriptEnabled) {
+        chooserJourneys.push({ width, ...await checkPackageChooser(localPage, packages, { delivery: 'portable' }) });
+        for (const textScale of [100, 200]) {
+          await localPage.evaluate(scale => document.documentElement.style.fontSize = scale + '%', textScale);
+          identificationJourneys.push({ width, ...await checkLocalPackageIdentification(localPage, packages, includedPayloads,
+            { delivery: 'portable', textScale }) });
         }
-        await localPage.locator('#icon-artwork-download').focus();
-        const [iconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-        assert.equal(await iconDownload.failure(), null);
-        assert.equal(iconDownload.suggestedFilename(), path.basename(iconArchive));
-        const iconChunks = []; for await (const chunk of await iconDownload.createReadStream()) iconChunks.push(chunk);
-        const iconBytes = Buffer.concat(iconChunks), iconDigest = crypto.createHash('sha256').update(iconBytes).digest('hex');
-        assert.deepEqual(iconBytes, await readFile(path.join(relocated, ...iconArchive.split('/'))));
-        assert.equal(iconDigest, inner.files[iconArchive]);
-        assert.equal(await readFile(path.join(relocated, 'icons', 'SVG-SHA256SUMS'), 'utf8'), iconChecksums(iconDigest));
-        await localPage.locator('#icon-artwork-monochrome-download').focus();
-        const [monochromeIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-        assert.equal(await monochromeIconDownload.failure(), null);
-        assert.equal(monochromeIconDownload.suggestedFilename(), path.basename(monochromeIconArchive));
-        const monochromeChunks = []; for await (const chunk of await monochromeIconDownload.createReadStream()) monochromeChunks.push(chunk);
-        const monochromeIconBytes = Buffer.concat(monochromeChunks);
-        assert.deepEqual(monochromeIconBytes, await readFile(path.join(relocated, ...monochromeIconArchive.split('/'))));
-        assert.equal(crypto.createHash('sha256').update(monochromeIconBytes).digest('hex'), monochromeIconDigest);
-        assert.equal(inner.files[monochromeIconArchive], monochromeIconDigest);
-        await localPage.locator('#icon-artwork-third-app-download').focus();
-        const [thirdAppIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-        assert.equal(await thirdAppIconDownload.failure(), null);
-        assert.equal(thirdAppIconDownload.suggestedFilename(), path.basename(thirdAppIconArchive));
-        const thirdChunks = []; for await (const chunk of await thirdAppIconDownload.createReadStream()) thirdChunks.push(chunk);
-        const thirdAppIconBytes = Buffer.concat(thirdChunks);
-        assert.deepEqual(thirdAppIconBytes, await readFile(path.join(relocated, ...thirdAppIconArchive.split('/'))));
-        assert.equal(crypto.createHash('sha256').update(thirdAppIconBytes).digest('hex'), thirdAppIconDigest);
-        assert.equal(inner.files[thirdAppIconArchive], thirdAppIconDigest);
-        await localPage.locator('#icon-artwork-second-app-download').focus();
-        const [secondAppIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-        assert.equal(await secondAppIconDownload.failure(), null);
-        assert.equal(secondAppIconDownload.suggestedFilename(), path.basename(secondAppIconArchive));
-        const secondAppIconChunks = []; for await (const chunk of await secondAppIconDownload.createReadStream()) secondAppIconChunks.push(chunk);
-        const secondAppIconBytes = Buffer.concat(secondAppIconChunks);
-        assert.deepEqual(secondAppIconBytes, await readFile(path.join(relocated, ...secondAppIconArchive.split('/'))));
-        assert.equal(crypto.createHash('sha256').update(secondAppIconBytes).digest('hex'), secondAppIconDigest);
-        assert.equal(inner.files[secondAppIconArchive], secondAppIconDigest);
-        await localPage.locator('#icon-artwork-first-app-download').focus();
-        const [firstAppIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-        assert.equal(await firstAppIconDownload.failure(), null);
-        assert.equal(firstAppIconDownload.suggestedFilename(), path.basename(firstAppIconArchive));
-        const firstAppIconChunks = []; for await (const chunk of await firstAppIconDownload.createReadStream()) firstAppIconChunks.push(chunk);
-        const firstAppIconBytes = Buffer.concat(firstAppIconChunks);
-        assert.deepEqual(firstAppIconBytes, await readFile(path.join(relocated, ...firstAppIconArchive.split('/'))));
-        assert.equal(crypto.createHash('sha256').update(firstAppIconBytes).digest('hex'), firstAppIconDigest);
-        assert.equal(inner.files[firstAppIconArchive], firstAppIconDigest);
-        await localPage.locator('#icon-artwork-previous-download').focus();
-        const [previousIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-        assert.equal(await previousIconDownload.failure(), null);
-        assert.equal(previousIconDownload.suggestedFilename(), path.basename(previousIconArchive));
-        const previousIconChunks = []; for await (const chunk of await previousIconDownload.createReadStream()) previousIconChunks.push(chunk);
-        const previousIconBytes = Buffer.concat(previousIconChunks);
-        assert.deepEqual(previousIconBytes, await readFile(path.join(relocated, ...previousIconArchive.split('/'))));
-        assert.equal(crypto.createHash('sha256').update(previousIconBytes).digest('hex'), previousIconDigest);
-        assert.equal(inner.files[previousIconArchive], previousIconDigest);
-        await localPage.locator('#icon-artwork-legacy-download').focus();
-        const [legacyIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-        assert.equal(await legacyIconDownload.failure(), null);
-        assert.equal(legacyIconDownload.suggestedFilename(), path.basename(legacyIconArchive));
-        const legacyIconChunks = []; for await (const chunk of await legacyIconDownload.createReadStream()) legacyIconChunks.push(chunk);
-        const legacyIconBytes = Buffer.concat(legacyIconChunks);
-        assert.deepEqual(legacyIconBytes, await readFile(path.join(relocated, ...legacyIconArchive.split('/'))));
-        assert.equal(crypto.createHash('sha256').update(legacyIconBytes).digest('hex'), legacyIconDigest);
-        assert.equal(inner.files[legacyIconArchive], legacyIconDigest);
-        iconJourneys.push({ javaScriptEnabled, width, decoded: decodedIcons.length, sha256: iconDigest,
-          monochromeSha256: monochromeIconDigest, secondAppSha256: secondAppIconDigest, firstAppSha256: firstAppIconDigest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
-          method: 'saved included current and all six preserved SVG archives' });
-        const terminalSpecimens = await checkTerminalSpecimens(localPage, terminalDocument);
-        await localPage.locator('#terminal-download').focus();
-        const [terminalZip] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-        assert.equal(await terminalZip.failure(), null);
-        assert.equal(terminalZip.suggestedFilename(), terminalArchive);
-        const terminalChunks = []; for await (const chunk of await terminalZip.createReadStream()) terminalChunks.push(chunk);
-        await localPage.keyboard.press('Tab');
-        assert.equal(await localPage.evaluate(() => document.activeElement.id), 'terminal-checksums');
-        const terminalSumUrl = pathToFileURL(path.join(relocated, 'terminal', 'SHA256SUMS')).href;
-        let terminalSumText;
-        try {
-          // Like the included CSS routes below, an extensionless local text
-          // file opens in the browser. Qualify that actual consumer behavior.
-          await Promise.all([localPage.waitForURL(terminalSumUrl, { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-          terminalSumText = await localPage.locator('pre').textContent();
-          assert.equal(terminalSumText, await readFile(path.join(relocated, 'terminal', 'SHA256SUMS'), 'utf8'));
-        } catch (error) {
-          failures.push({ scenario: 'portable Terminal checksum activation', javaScriptEnabled, width,
-            pageUrl: localPage.url(), error: error.message, observation: await localPage.evaluate(() => ({
-              focusedId: document.activeElement?.id, focusedHref: document.activeElement?.getAttribute('href'),
-              bodyText: document.body?.innerText.slice(0, 2400), title: document.title,
-            })) });
-          throw error;
-        }
-        const terminalAcquisition = await verifyTerminalDownloads(Buffer.concat(terminalChunks), Buffer.from(terminalSumText, 'utf8'), relocated);
-        assert.equal(terminalAcquisition.sha256, inner.files['terminal/' + terminalArchive]);
-        await localPage.goBack();
-        await localPage.locator('#terminal-checksums').focus();
-        await localPage.keyboard.press('Tab');
-        assert.equal(await localPage.evaluate(() => document.activeElement.id), 'terminal-guide');
-        const terminalGuideUrl = pathToFileURL(path.join(relocated, 'terminal', 'installation.md')).href;
-        await Promise.all([localPage.waitForURL(terminalGuideUrl), localPage.keyboard.press('Enter')]);
-        const terminalGuide = await readFile(path.join(relocated, 'terminal', 'installation.md'), 'utf8');
-        assert.equal((await localPage.locator('body').textContent()).trim(), terminalGuide.trim());
-        assert.equal(crypto.createHash('sha256').update(terminalGuide).digest('hex'), inner.files['terminal/installation.md']);
-        await localPage.goBack();
-        await localPage.evaluate(() => document.fonts.ready);
-        terminalJourneys.push({ javaScriptEnabled, width, ...terminalAcquisition, appearances: terminalSpecimens.map(card => card.appearance),
-          labeledSlots: 32, checksums: 'opened exact included plaintext and returned', guide: 'opened exact included Markdown and returned',
-          method: 'focused archive control, keyboard ZIP acquisition and exact local text routes' });
+        await localPage.evaluate(() => document.documentElement.style.fontSize = '100%');
+      } else {
+        assert.ok(await localPage.locator('#package-chooser').isHidden());
+        assert.ok(await localPage.locator('#local-package-checker').isHidden());
+      }
+      for (const [appearance, background] of [['Obscur', 'rgb(0, 0, 0)'], ['Clair', 'rgb(255, 255, 255)']]) {
+        assert.equal(await localPage.locator(`.palette[data-palette="${appearance}"]`).evaluate(node => getComputedStyle(node).backgroundColor), background);
         if (javaScriptEnabled) {
-          chooserJourneys.push({ width, ...await checkPackageChooser(localPage, packages, { delivery: 'portable' }) });
-          for (const textScale of [100, 200]) {
-            await localPage.evaluate(scale => document.documentElement.style.fontSize = scale + '%', textScale);
-            identificationJourneys.push({ width, ...await checkLocalPackageIdentification(localPage, packages, includedPayloads,
-              { delivery: 'portable', textScale }) });
-          }
-          await localPage.evaluate(() => document.documentElement.style.fontSize = '100%');
-        } else {
-          assert.ok(await localPage.locator('#package-chooser').isHidden());
-          assert.ok(await localPage.locator('#local-package-checker').isHidden());
-        }
-        for (const [appearance, background] of [['Obscur', 'rgb(0, 0, 0)'], ['Clair', 'rgb(255, 255, 255)']]) {
-          assert.equal(await localPage.locator(`.palette[data-palette="${appearance}"]`).evaluate(node => getComputedStyle(node).backgroundColor), background);
-          if (javaScriptEnabled) {
-            await localPage.getByRole('button', { name: appearance, exact: true }).focus();
-            await localPage.keyboard.press('Enter');
-            assert.equal(await localPage.locator('html').getAttribute('data-theme'), appearance);
-          }
-        }
-        if (javaScriptEnabled) {
-          await localPage.locator('#sample-button').focus();
+          await localPage.getByRole('button', { name: appearance, exact: true }).focus();
           await localPage.keyboard.press('Enter');
-          assert.match(await localPage.locator('#control-status').textContent(), /Control activated/);
+          assert.equal(await localPage.locator('html').getAttribute('data-theme'), appearance);
         }
-        let guideAppearances = 0;
-        for (const item of packages.downloads) {
-          const card = localPage.locator(`#${item.platform}-${item.platform === 'opera-gx' ? 'paired' : item.name.toLowerCase()}`);
-          await card.locator('a[download]').focus();
-          for (const name of item.platform === 'opera-gx' ? ['Clair', 'Obscur'] : [item.name]) {
-            const anchor = `guide-${item.platform}-${name.toLowerCase()}`;
-            await localPage.keyboard.press('Tab');
-            assert.equal(await localPage.evaluate(() => document.activeElement.getAttribute('href')), '#' + anchor);
-            await localPage.keyboard.press('Enter');
-            await waitForGuideDestination(localPage, anchor);
-            const section = localPage.locator('#' + anchor);
-            assert.ok(await section.isVisible());
-            assert.ok((await section.textContent()).includes(records.get(item.path).sha256));
-            assert.equal(await section.locator('.local-package-path code').textContent(), 'downloads/' + item.path);
-            const guide = localPage.locator('#guide-' + item.platform);
-            for (const heading of ['Prerequisites and status', 'Install', 'Switch', 'Remove and restore', 'Fonts', 'Troubleshooting']) {
-              assert.equal(await guide.getByRole('heading', { name: heading, exact: true }).count(), 1);
-            }
-            await card.locator(`a.guide-link[href="#${anchor}"]`).focus();
-            guideAppearances++;
+      }
+      if (javaScriptEnabled) {
+        await localPage.locator('#sample-button').focus();
+        await localPage.keyboard.press('Enter');
+        assert.match(await localPage.locator('#control-status').textContent(), /Control activated/);
+      }
+      let guideAppearances = 0;
+      for (const item of packages.downloads) {
+        const card = localPage.locator(`#${item.platform}-${item.platform === 'opera-gx' ? 'paired' : item.name.toLowerCase()}`);
+        await card.locator('a[download]').focus();
+        for (const name of item.platform === 'opera-gx' ? ['Clair', 'Obscur'] : [item.name]) {
+          const anchor = `guide-${item.platform}-${name.toLowerCase()}`;
+          await localPage.keyboard.press('Tab');
+          assert.equal(await localPage.evaluate(() => document.activeElement.getAttribute('href')), '#' + anchor);
+          await localPage.keyboard.press('Enter');
+          await waitForGuideDestination(localPage, anchor);
+          const section = localPage.locator('#' + anchor);
+          assert.ok(await section.isVisible());
+          assert.ok((await section.textContent()).includes(records.get(item.path).sha256));
+          assert.equal(await section.locator('.local-package-path code').textContent(), 'downloads/' + item.path);
+          const guide = localPage.locator('#guide-' + item.platform);
+          for (const heading of ['Prerequisites and status', 'Install', 'Switch', 'Remove and restore', 'Fonts', 'Troubleshooting']) {
+            assert.equal(await guide.getByRole('heading', { name: heading, exact: true }).count(), 1);
           }
+          await card.locator(`a.guide-link[href="#${anchor}"]`).focus();
+          guideAppearances++;
         }
-        assert.equal(guideAppearances, 18);
-        const geometry = await localPage.evaluate(() => ({ width: innerWidth, document: document.documentElement.scrollWidth }));
-        assert.ok(geometry.document <= geometry.width + 1, JSON.stringify(geometry));
-        journeys.push({ javaScriptEnabled, width, guideAppearances, scriptControls: javaScriptEnabled ? 'passed' : 'not applicable' });
-      } finally { await localContext.close(); closedContexts++; }
-    }
-    // Preserve deliberate palette journeys below Chromium's download burst
-    // threshold. Use every included choice in both modes. CSS opens as local
-    // text in Chrome, while these archive types produce actual downloads.
-    for (const name of ['Clair', 'Obscur', 'Clair and Obscur']) {
-      const { localContext, localPage } = await filePage({ javaScriptEnabled, viewport: { width: 390, height: 844 } });
-      try {
-        for (const item of packages.downloads.filter(item => item.name === name)) {
-          const link = localPage.locator(`#${item.platform}-downloads a[download][href="downloads/${item.path}"]`);
-          assert.match(await link.textContent(), /^Open included /);
-          const included = await readFile(path.join(relocated, 'downloads', ...item.path.split('/')));
-          const expected = records.get(item.path);
-          assert.equal(included.length, expected.bytes);
-          assert.equal(crypto.createHash('sha256').update(included).digest('hex'), expected.sha256);
-          await link.focus();
-          let method, matchingGuide = null;
-          try {
-            if (item.path.endsWith('.css')) {
-              const localUrl = pathToFileURL(path.join(relocated, 'downloads', ...item.path.split('/'))).href;
-              await Promise.all([localPage.waitForURL(localUrl, { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-              assert.equal(await localPage.locator('pre').textContent(), included.toString('utf8'));
-              await localPage.goBack();
-              assert.equal(await localPage.locator('#portable-delivery').count(), 1);
-              matchingGuide = `guide-${item.platform}-${item.name.toLowerCase()}`;
-              await localPage.locator(`#${item.platform}-${item.name.toLowerCase()} a.guide-link[href="#${matchingGuide}"]`).focus();
-              await localPage.keyboard.press('Enter');
-              await waitForGuideDestination(localPage, matchingGuide);
-              assert.ok(await localPage.locator('#' + matchingGuide).isVisible());
-              await localPage.goBack();
-              await localPage.waitForURL(pathToFileURL(path.join(relocated, 'index.html')).href, { timeout: 2000, waitUntil: 'commit' });
-              method = 'opened included CSS as exact text, returned and reached matching guide';
-            } else {
-              const [download] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
-              assert.equal(await download.failure(), null);
-              assert.equal(download.suggestedFilename(), path.basename(item.path));
-              const chunks = [];
-              for await (const chunk of await download.createReadStream()) chunks.push(chunk);
-              assert.equal(crypto.createHash('sha256').update(Buffer.concat(chunks)).digest('hex'), expected.sha256);
-              method = 'saved included archive';
-            }
-          }
-          catch (error) {
-            failures.push({ scenario: 'portable included package', javaScriptEnabled, platform: item.platform,
-              path: item.path, pageUrl: localPage.url(), requests, errors, error: error.message });
-            throw new Error(`Portable ${item.platform} ${item.name} journey failed (${item.path}): ${error.message}`, { cause: error });
-          }
-          assert.equal(localPage.url(), pathToFileURL(path.join(relocated, 'index.html')).href);
-          packageJourneys.push({ javaScriptEnabled, platform: item.platform, path: item.path, sha256: expected.sha256, method, matchingGuide });
-        }
-      } finally { await localContext.close(); closedContexts++; }
-    }
+      }
+      assert.equal(guideAppearances, 18);
+      const geometry = await localPage.evaluate(() => ({ width: innerWidth, document: document.documentElement.scrollWidth }));
+      assert.ok(geometry.document <= geometry.width + 1, JSON.stringify(geometry));
+      journeys.push({ javaScriptEnabled, width, guideAppearances, scriptControls: javaScriptEnabled ? 'passed' : 'not applicable' });
+    } finally { await localContext.close(); closedContexts++; }
   }
-  assert.equal(packageJourneys.length, 34);
-  assert.equal(iconJourneys.length, 4);
-  assert.equal(packageJourneys.filter(item => item.method === 'saved included archive').length, 22);
-  assert.equal(packageJourneys.filter(item => item.method === 'opened included CSS as exact text, returned and reached matching guide').length, 12);
-  const chosen = await filePage({ javaScriptEnabled: true, viewport: { width: 390, height: 844 } });
-  try {
-    for (const [target, appearance] of [['chrome', 'Obscur'], ['equicord', 'Clair']]) {
-      await chosen.localPage.locator('#package-target').selectOption(target);
-      await chosen.localPage.locator('#package-appearance').selectOption(appearance);
-      const item = packages.downloads.find(item => item.platform === target && item.name === appearance);
-      const included = await readFile(path.join(relocated, 'downloads', ...item.path.split('/')));
-      await chosen.localPage.locator('#package-choice-file').focus();
-      if (item.path.endsWith('.css')) {
-        const fileUrl = pathToFileURL(path.join(relocated, 'downloads', ...item.path.split('/'))).href;
-        await Promise.all([chosen.localPage.waitForURL(fileUrl, { timeout: 5000 }), chosen.localPage.keyboard.press('Enter')]);
-        assert.equal(await chosen.localPage.locator('pre').textContent(), included.toString('utf8'));
-        await chosen.localPage.goBack();
+  // Preserve deliberate palette journeys below Chromium's download burst
+  // threshold. Use every included choice in this mode. CSS opens as local
+  // text in Chrome, while these archive types produce actual downloads.
+  for (const name of ['Clair', 'Obscur', 'Clair and Obscur']) {
+    const { localContext, localPage } = await filePage({ javaScriptEnabled, viewport: { width: 390, height: 844 } });
+    try {
+      for (const item of packages.downloads.filter(item => item.name === name)) {
+        const link = localPage.locator(`#${item.platform}-downloads a[download][href="downloads/${item.path}"]`);
+        assert.match(await link.textContent(), /^Open included /);
+        const included = await readFile(path.join(relocated, 'downloads', ...item.path.split('/')));
+        const expected = records.get(item.path);
+        assert.equal(included.length, expected.bytes);
+        assert.equal(crypto.createHash('sha256').update(included).digest('hex'), expected.sha256);
+        await link.focus();
+        let method, matchingGuide = null;
+        try {
+          if (item.path.endsWith('.css')) {
+            const localUrl = pathToFileURL(path.join(relocated, 'downloads', ...item.path.split('/'))).href;
+            await Promise.all([localPage.waitForURL(localUrl, { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+            assert.equal(await localPage.locator('pre').textContent(), included.toString('utf8'));
+            await localPage.goBack();
+            assert.equal(await localPage.locator('#portable-delivery').count(), 1);
+            matchingGuide = `guide-${item.platform}-${item.name.toLowerCase()}`;
+            await localPage.locator(`#${item.platform}-${item.name.toLowerCase()} a.guide-link[href="#${matchingGuide}"]`).focus();
+            await localPage.keyboard.press('Enter');
+            await waitForGuideDestination(localPage, matchingGuide);
+            assert.ok(await localPage.locator('#' + matchingGuide).isVisible());
+            await localPage.goBack();
+            await localPage.waitForURL(pathToFileURL(path.join(relocated, 'index.html')).href, { timeout: 2000, waitUntil: 'commit' });
+            method = 'opened included CSS as exact text, returned and reached matching guide';
+          } else {
+            const [download] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+            assert.equal(await download.failure(), null);
+            assert.equal(download.suggestedFilename(), path.basename(item.path));
+            const chunks = [];
+            for await (const chunk of await download.createReadStream()) chunks.push(chunk);
+            assert.equal(crypto.createHash('sha256').update(Buffer.concat(chunks)).digest('hex'), expected.sha256);
+            method = 'saved included archive';
+          }
+        }
+        catch (error) {
+          failures.push({ scenario: 'portable included package', javaScriptEnabled, platform: item.platform,
+            path: item.path, pageUrl: localPage.url(), requests, errors, error: error.message });
+          throw new Error(`Portable ${item.platform} ${item.name} journey failed (${item.path}): ${error.message}`, { cause: error });
+        }
+        assert.equal(localPage.url(), pathToFileURL(path.join(relocated, 'index.html')).href);
+        packageJourneys.push({ javaScriptEnabled, platform: item.platform, path: item.path, sha256: expected.sha256, method, matchingGuide });
+      }
+    } finally { await localContext.close(); closedContexts++; }
+  }
+  assert.equal(packageJourneys.length, 17);
+  assert.equal(iconJourneys.length, 2);
+  assert.equal(packageJourneys.filter(item => item.method === 'saved included archive').length, 11);
+  assert.equal(packageJourneys.filter(item => item.method === 'opened included CSS as exact text, returned and reached matching guide').length, 6);
+  if (javaScriptEnabled) {
+    const chosen = await filePage({ javaScriptEnabled: true, viewport: { width: 390, height: 844 } });
+    try {
+      for (const [target, appearance] of [['chrome', 'Obscur'], ['equicord', 'Clair']]) {
         await chosen.localPage.locator('#package-target').selectOption(target);
         await chosen.localPage.locator('#package-appearance').selectOption(appearance);
-      } else {
-        const [download] = await Promise.all([chosen.localPage.waitForEvent('download', { timeout: 5000 }), chosen.localPage.keyboard.press('Enter')]);
-        assert.equal(await download.failure(), null);
-        const chunks = [];
-        for await (const chunk of await download.createReadStream()) chunks.push(chunk);
-        assert.deepEqual(Buffer.concat(chunks), included);
+        const item = packages.downloads.find(item => item.platform === target && item.name === appearance);
+        const included = await readFile(path.join(relocated, 'downloads', ...item.path.split('/')));
+        await chosen.localPage.locator('#package-choice-file').focus();
+        if (item.path.endsWith('.css')) {
+          const fileUrl = pathToFileURL(path.join(relocated, 'downloads', ...item.path.split('/'))).href;
+          await Promise.all([chosen.localPage.waitForURL(fileUrl, { timeout: 5000 }), chosen.localPage.keyboard.press('Enter')]);
+          assert.equal(await chosen.localPage.locator('pre').textContent(), included.toString('utf8'));
+          await chosen.localPage.goBack();
+          await chosen.localPage.locator('#package-target').selectOption(target);
+          await chosen.localPage.locator('#package-appearance').selectOption(appearance);
+        } else {
+          const [download] = await Promise.all([chosen.localPage.waitForEvent('download', { timeout: 5000 }), chosen.localPage.keyboard.press('Enter')]);
+          assert.equal(await download.failure(), null);
+          const chunks = [];
+          for await (const chunk of await download.createReadStream()) chunks.push(chunk);
+          assert.deepEqual(Buffer.concat(chunks), included);
+        }
+        const anchor = `guide-${target}-${appearance.toLowerCase()}`;
+        await chosen.localPage.locator('#package-choice-guide').focus();
+        await chosen.localPage.keyboard.press('Enter');
+        await waitForGuideDestination(chosen.localPage, anchor);
+        chooserJourneys.push({ target, appearance, path: item.path, method: item.path.endsWith('.css') ? 'opened included CSS and returned to matching guide' : 'saved included archive and reached matching guide' });
       }
-      const anchor = `guide-${target}-${appearance.toLowerCase()}`;
-      await chosen.localPage.locator('#package-choice-guide').focus();
-      await chosen.localPage.keyboard.press('Enter');
-      await waitForGuideDestination(chosen.localPage, anchor);
-      chooserJourneys.push({ target, appearance, path: item.path, method: item.path.endsWith('.css') ? 'opened included CSS and returned to matching guide' : 'saved included archive and reached matching guide' });
-    }
-  } finally { await chosen.localContext.close(); closedContexts++; }
+    } finally { await chosen.localContext.close(); closedContexts++; }
+  }
+  assert.equal(journeys.length, 2);
+  assert.equal(terminalJourneys.length, 2);
+  assert.equal(chooserJourneys.length, javaScriptEnabled ? 4 : 0);
+  assert.equal(identificationJourneys.length, javaScriptEnabled ? 4 : 0);
   assert.ok(requests.every(url => new URL(url).protocol === 'file:'), 'The extracted consumer must not request network resources');
   assert.deepEqual(errors, []);
-  if (evidence) {
-    await writeFile(path.join(evidence, 'portable-site-manifest.json'), JSON.stringify(inner, null, 2) + '\n');
+  if (modeEvidence) {
+    await writeFile(path.join(modeEvidence, 'portable-site-manifest.json'), JSON.stringify(inner, null, 2) + '\n');
   }
-  results.scenarios.push({ name: 'actual downloaded and relocated offline portable kit', status: 'passed',
+  results.scenarios.push({ name: `actual downloaded and relocated offline portable kit (${mode})`, status: 'passed', javaScriptEnabled,
     archive: archiveName, sha256: digest, bytes: archiveBytes.length, downloadNames, source: inner.source,
     protocol: 'file:', network: 'all external requests blocked', requests, errors, journeys, packageJourneys, chooserJourneys, identificationJourneys, iconJourneys, terminalJourneys,
     closedContexts, nativeAppsVerified: false });
