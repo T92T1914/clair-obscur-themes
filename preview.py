@@ -27,7 +27,8 @@ WEB_ASSETS = frozenset({'index.html', 'preview.css', 'preview.js'})
 REPOSITORY_URL = 'https://github.com/T92T1914/clair-obscur-themes'
 PORTABLE_ARCHIVE = 'Clair-Obscur-portable-preview.zip'
 PORTABLE_CHECKSUMS = 'portable-SHA256SUMS'
-ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.2.0.zip'
+ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.3.0.zip'
+PREVIOUS_ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.2.0.zip'
 LEGACY_ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.1.0.zip'
 ICON_CHECKSUMS = 'icons/SVG-SHA256SUMS'
 GARMIN_SOURCE_FILES = (
@@ -221,6 +222,13 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
         raise ValueError('Source license differs from the verified Clair focus package grant')
     icon_files = render_icons(document)
     icon_manifest = json.loads(icon_files['manifest.json'])
+    catalog = icon_manifest['catalog']
+    identifiers = [entry['id'] for entry in catalog]
+    if (identifiers != icon_manifest['functions'] or len(identifiers) != len(set(identifiers))
+            or any(entry.get('kind') not in ('app', 'function') or not entry.get('label') for entry in catalog)
+            or {path for path in icon_files if path.endswith('.svg')} != {
+                f'{appearance}/{identifier}.svg' for appearance in ('Clair', 'Obscur') for identifier in identifiers}):
+        raise ValueError('Icon catalog differs from the rendered artwork inventory')
     icon_license_comment = b'<!--\n' + license_bytes + b'\n-->'
     for path, payload in icon_files.items():
         if path.endswith('.svg') and icon_license_comment not in payload:
@@ -229,19 +237,20 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
     icon_files['LICENSE.txt'] = sources['LICENSE']
     files['icons/LICENSE.txt'] = sources['LICENSE']
     files[ICON_ARCHIVE] = _zip_bytes(icon_files)
-    legacy_icons = render_icons(document, version='0.1.0')
-    for path, payload in legacy_icons.items():
-        if path.endswith('.svg') and icon_license_comment not in payload:
-            raise ValueError('Source license differs from the generated icon grant')
-    legacy_icons['LICENSE.txt'] = sources['LICENSE']
-    files[LEGACY_ICON_ARCHIVE] = _zip_bytes(legacy_icons)
+    for revision, archive in (('0.2.0', PREVIOUS_ICON_ARCHIVE), ('0.1.0', LEGACY_ICON_ARCHIVE)):
+        retained_icons = render_icons(document, version=revision)
+        for path, payload in retained_icons.items():
+            if path.endswith('.svg') and icon_license_comment not in payload:
+                raise ValueError('Source license differs from the generated icon grant')
+        retained_icons['LICENSE.txt'] = sources['LICENSE']
+        files[archive] = _zip_bytes(retained_icons)
     files[ICON_CHECKSUMS] = (
         ''.join(f'{_digest(files[path])}  {Path(path).name}\n'
-                for path in (ICON_ARCHIVE, LEGACY_ICON_ARCHIVE)).encode()
+                for path in (ICON_ARCHIVE, PREVIOUS_ICON_ARCHIVE, LEGACY_ICON_ARCHIVE)).encode()
     )
-    icon_cards = []
-    for function in icon_manifest['functions']:
-        label = function.replace('-', ' ')
+    icon_cards = {'app': [], 'function': []}
+    for entry in catalog:
+        function, label, kind = entry['id'], entry['label'], entry['kind']
         figures = ''.join(
             f'<figure><img src="icons/{appearance}/{html.escape(function, quote=True)}.svg" '
             f'alt="{html.escape(appearance + " " + label + " icon", quote=True)}" '
@@ -249,10 +258,21 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
             f'<figcaption>{appearance}</figcaption></figure>'
             for appearance in ('Clair', 'Obscur')
         )
-        icon_cards.append(
-            f'<article class="icon-card" data-icon-function="{html.escape(function, quote=True)}">'
-            f'<h3>{html.escape(label.title())}</h3><div class="icon-pair">{figures}</div></article>'
+        assignment = (
+            f'<p class="muted"><a href="{html.escape(entry["store_url"], quote=True)}" rel="noreferrer">'
+            f'Google Play listing</a><br><code>{html.escape(entry["android_package"])}</code></p>'
+            if kind == 'app' else ''
         )
+        icon_cards[kind].append(
+            f'<article class="icon-card" data-icon-function="{html.escape(function, quote=True)}" '
+            f'data-icon-kind="{kind}"><h4>{html.escape(label)}</h4>'
+            f'<div class="icon-pair">{figures}</div>{assignment}</article>'
+        )
+    icon_gallery = ''.join(
+        f'<section aria-labelledby="icons-{kind}-heading"><h3 id="icons-{kind}-heading">{heading}</h3>'
+        f'<div class="icon-gallery">{"".join(icon_cards[kind])}</div></section>'
+        for kind, heading in (('app', 'Named apps'), ('function', 'General functions'))
+    )
     identity = source_identity(root, sources, expected_revision)
     terminal_files = render_terminal(document)
     if terminal_files['LICENSE.txt'] != license_bytes:
@@ -291,8 +311,9 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
     text = (files['index.html'].decode().replace('{{VERSION}}', html.escape(version))
             .replace('{{RELEASE_URL}}', html.escape(release_url, quote=True))
             .replace('{{SOURCE_DESCRIPTION}}', source_description)
-            .replace('{{ICON_GALLERY}}', '\n'.join(icon_cards))
+            .replace('{{ICON_GALLERY}}', icon_gallery)
             .replace('{{ICON_ARCHIVE}}', ICON_ARCHIVE)
+            .replace('{{PREVIOUS_ICON_ARCHIVE}}', PREVIOUS_ICON_ARCHIVE)
             .replace('{{LEGACY_ICON_ARCHIVE}}', LEGACY_ICON_ARCHIVE)
             .replace('{{ICON_CHECKSUMS}}', ICON_CHECKSUMS)
             .replace('{{TERMINAL_SPECIMENS}}', '\n'.join(terminal_cards))

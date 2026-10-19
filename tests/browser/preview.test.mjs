@@ -16,15 +16,39 @@ const results = { environment: {}, scenarios: [], fonts: {}, metrics: {} };
 const failures = [];
 const evidence = process.env.THEME_EVIDENCE_DIR;
 const python = process.platform === 'win32' ? ['py', '-3.11', '-X', 'utf8'] : ['python3'];
-const iconFunctions = [
+const generalIconFunctions = [
   'phone', 'messages', 'contacts', 'camera', 'gallery', 'settings', 'calendar', 'clock',
   'files', 'notes', 'mail', 'browser', 'maps', 'music', 'video', 'store', 'wallet',
   'calculator', 'weather', 'health', 'fitness', 'voice-recorder', 'home', 'search',
 ];
-const iconArchive = 'icons/Clair-Obscur-SVG-Icons-0.2.0.zip';
+const namedIconApps = [
+  ['google-chrome', 'Google Chrome', 'com.android.chrome'], ['youtube', 'YouTube', 'com.google.android.youtube'],
+  ['google-maps', 'Google Maps', 'com.google.android.apps.maps'], ['gmail', 'Gmail', 'com.google.android.gm'],
+  ['google-photos', 'Google Photos', 'com.google.android.apps.photos'], ['google-messages', 'Google Messages', 'com.google.android.apps.messaging'],
+  ['google-calendar', 'Google Calendar', 'com.google.android.calendar'], ['google-drive', 'Google Drive', 'com.google.android.apps.docs'],
+  ['samsung-browser', 'Samsung Browser', 'com.sec.android.app.sbrowser'], ['samsung-notes', 'Samsung Notes', 'com.samsung.android.app.notes'],
+  ['samsung-health', 'Samsung Health', 'com.sec.android.app.shealth'], ['garmin-connect', 'Garmin Connect', 'com.garmin.android.apps.connectmobile'],
+  ['whatsapp', 'WhatsApp', 'com.whatsapp'], ['messenger', 'Messenger', 'com.facebook.orca'],
+  ['instagram', 'Instagram', 'com.instagram.android'], ['facebook', 'Facebook', 'com.facebook.katana'],
+  ['snapchat', 'Snapchat', 'com.snapchat.android'], ['tiktok', 'TikTok', 'com.zhiliaoapp.musically'],
+  ['discord', 'Discord', 'com.discord'], ['reddit', 'Reddit', 'com.reddit.frontpage'],
+  ['pinterest', 'Pinterest', 'com.pinterest'], ['telegram', 'Telegram', 'org.telegram.messenger'],
+  ['spotify', 'Spotify', 'com.spotify.music'], ['netflix', 'Netflix', 'com.netflix.mediaclient'],
+  ['amazon-shopping', 'Amazon Shopping', 'com.amazon.mShop.android.shopping'], ['walmart', 'Walmart', 'com.walmart.android'],
+  ['temu', 'Temu', 'com.einnovation.temu'], ['uber', 'Uber', 'com.ubercab'], ['doordash', 'DoorDash', 'com.dd.doordash'],
+  ['paypal', 'PayPal', 'com.paypal.android.p2pmobile'], ['outlook', 'Microsoft Outlook', 'com.microsoft.office.outlook'],
+  ['chatgpt', 'ChatGPT', 'com.openai.chatgpt'], ['firefox', 'Firefox', 'org.mozilla.firefox'],
+];
+const iconFunctions = [...namedIconApps.map(row => row[0]), ...generalIconFunctions];
+const iconManifestFunctions = [...generalIconFunctions, ...namedIconApps.map(row => row[0])];
+const iconLabels = new Map([...generalIconFunctions.map(name => [name, name.replaceAll('-', ' ').replace(/\b[a-z]/g, letter => letter.toUpperCase())]),
+  ...namedIconApps.map(([id, label]) => [id, label])]);
+const iconArchive = 'icons/Clair-Obscur-SVG-Icons-0.3.0.zip';
+const previousIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.2.0.zip';
+const previousIconDigest = '6ae67a5aab7f4e0a50537bb6dcf3b383c5fc6e9e001d68db12a7413aaa376312';
 const legacyIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.1.0.zip';
 const legacyIconDigest = '040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34';
-const iconChecksums = digest => `${digest}  ${path.basename(iconArchive)}\n${legacyIconDigest}  ${path.basename(legacyIconArchive)}\n`;
+const iconChecksums = digest => `${digest}  ${path.basename(iconArchive)}\n${previousIconDigest}  ${path.basename(previousIconArchive)}\n${legacyIconDigest}  ${path.basename(legacyIconArchive)}\n`;
 const iconPaths = iconFunctions.flatMap(functionName => ['Clair', 'Obscur'].map(appearance => `icons/${appearance}/${functionName}.svg`));
 const terminalFragment = 'Clair-Obscur-Windows-Terminal-0.1.0.json';
 const terminalArchive = 'Clair-Obscur-Windows-Terminal-0.1.0.zip';
@@ -143,7 +167,7 @@ test('both appearances work at desktop and phone widths without horizontal overf
         if (evidence && width !== 2560) await page.screenshot({ path: path.join(evidence, `${name.toLowerCase()}-${width}-specimen.png`), fullPage: true });
       }
       assert.deepEqual([...new Set(network)].sort(), [origin + '/', ...['tokens.css', 'preview.css', 'preview.js', ...iconPaths].map(file => origin + '/' + file)].sort(),
-        'The page requests only its four original local assets and the 48 declared local SVGs');
+        'The page requests only its four original local assets and the 114 declared local SVGs');
       assert.deepEqual(consoleErrors, []);
     } finally { await context.close(); }
   }
@@ -416,13 +440,44 @@ test('static delivery remains usable without JavaScript and internal links resol
 async function checkIconGallery(page) {
   assert.equal(await page.locator('#icons').getAttribute('aria-labelledby'), 'icons-heading');
   assert.equal(await page.locator('#icons-heading').textContent(), 'Matching app icons');
+  assert.equal(await page.locator('#icons-app-heading').textContent(), 'Named apps');
+  assert.equal(await page.locator('#icons-function-heading').textContent(), 'General functions');
+  assert.equal(await page.locator('#icons [data-icon-kind="app"]').count(), 33);
+  assert.equal(await page.locator('#icons [data-icon-kind="function"]').count(), 24);
   assert.equal(await page.locator('#icon-artwork-download').getAttribute('href'), iconArchive);
+  assert.equal(await page.locator('#icon-artwork-previous-download').getAttribute('href'), previousIconArchive);
   assert.equal(await page.locator('#icon-artwork-legacy-download').getAttribute('href'), legacyIconArchive);
-  assert.match(await page.locator('#icon-artwork-download').textContent(), /0\.2\.0/);
+  assert.match(await page.locator('#icon-artwork-download').textContent(), /0\.3\.0/);
+  assert.match(await page.locator('#icon-artwork-previous-download').textContent(), /preserved 0\.2\.0/);
   assert.match(await page.locator('#icon-artwork-legacy-download').textContent(), /original 0\.1\.0/);
   assert.equal(await page.locator('#icon-artwork-checksums').getAttribute('href'), 'icons/SVG-SHA256SUMS');
-  const cards = await page.locator('#icons article.icon-card').evaluateAll(nodes => Promise.all(nodes.map(async card => ({
-    functionName: card.dataset.iconFunction, label: card.querySelector('h3')?.textContent,
+  const cards = await page.locator('#icons article.icon-card').evaluateAll(nodes => Promise.all(nodes.map(async card => {
+    const box = card.getBoundingClientRect(), textErrors = [];
+    const textNodes = [...card.querySelectorAll('h4, figcaption, p a, p code')];
+    for (const node of textNodes) {
+      const range = document.createRange(); range.selectNodeContents(node);
+      const rects = [...range.getClientRects()].filter(rect => rect.width > 0 && rect.height > 0);
+      if (!node.textContent.trim() || !rects.length) textErrors.push('text unavailable: ' + node.tagName);
+      for (const rect of rects) {
+        if (rect.left < box.left - 1 || rect.right > box.right + 1 || rect.left < -1 || rect.right > innerWidth + 1)
+          textErrors.push('text outside card or viewport: ' + node.textContent);
+      }
+      for (let ancestor = node; ancestor; ancestor = ancestor.parentElement) {
+        const style = getComputedStyle(ancestor), bounds = ancestor.getBoundingClientRect();
+        if (style.display === 'none' || style.visibility !== 'visible' || Number(style.opacity) === 0)
+          textErrors.push('text unavailable: ' + node.textContent);
+        for (const rect of rects) {
+          if (['hidden', 'clip'].includes(style.overflowX) && (rect.left < bounds.left - 1 || rect.right > bounds.right + 1))
+            textErrors.push('text clipped horizontally: ' + node.textContent);
+          if (['hidden', 'clip'].includes(style.overflowY) && (rect.top < bounds.top - 1 || rect.bottom > bounds.bottom + 1))
+            textErrors.push('text clipped vertically: ' + node.textContent);
+        }
+      }
+    }
+    return {
+    functionName: card.dataset.iconFunction, label: card.querySelector('h4')?.textContent, kind: card.dataset.iconKind,
+    mapping: card.querySelector('p a')?.getAttribute('href'), packageId: card.querySelector('p code')?.textContent,
+    textErrors, textNodes: textNodes.length, box: { left: box.left, right: box.right, width: box.width, height: box.height, viewport: innerWidth },
     pairs: card.querySelectorAll('.icon-pair').length,
     figures: await Promise.all([...card.querySelectorAll('.icon-pair figure')].map(async figure => {
       const node = figure.querySelector('img');
@@ -436,13 +491,26 @@ async function checkIconGallery(page) {
         width: box.width, height: box.height, left: box.left, right: box.right, viewport: innerWidth,
         display: style.display, visibility: style.visibility };
     })),
-  }))));
+  }; })));
   assert.deepEqual(cards.map(card => card.functionName), iconFunctions);
   const decoded = [];
   for (const card of cards) {
     const functionName = card.functionName;
-    const words = functionName.replaceAll('-', ' ');
-    assert.equal(card.label, words.replace(/\b[a-z]/g, letter => letter.toUpperCase()));
+    const words = iconLabels.get(functionName);
+    assert.equal(card.label, words);
+    assert.ok(card.box.width > 0 && card.box.height > 0 && card.box.left >= -1 && card.box.right <= card.box.viewport + 1,
+      JSON.stringify({ functionName, box: card.box }));
+    assert.deepEqual(card.textErrors, [], functionName);
+    const app = namedIconApps.find(row => row[0] === functionName);
+    assert.equal(card.kind, app ? 'app' : 'function');
+    if (app) {
+      assert.equal(card.textNodes, 5, 'Named cards expose a heading, two captions, mapping link and package ID');
+      assert.equal(card.mapping, `https://play.google.com/store/apps/details?id=${app[2]}`);
+      assert.equal(card.packageId, app[2]);
+    } else {
+      assert.equal(card.textNodes, 3);
+      assert.equal(card.mapping, undefined); assert.equal(card.packageId, undefined);
+    }
     assert.equal(card.pairs, 1);
     assert.equal(card.figures.length, 2);
     for (const [index, appearance] of ['Clair', 'Obscur'].entries()) {
@@ -465,6 +533,26 @@ async function checkIconGallery(page) {
   return decoded;
 }
 
+async function checkIconMappingKeyboard(page) {
+  // Start at the last artwork download, then follow the real next Tab order
+  // through every store link. No store request or phone installation is made.
+  await page.locator('#icon-artwork-legacy-download').focus();
+  for (const [id, , packageId] of namedIconApps) {
+    await page.keyboard.press('Tab');
+    const active = await page.evaluate(() => {
+      const node = document.activeElement, box = node.getBoundingClientRect();
+      return { id: node.closest('[data-icon-function]')?.dataset.iconFunction, href: node.getAttribute('href'),
+        text: node.textContent, focused: node.matches(':focus'),
+        left: box.left, right: box.right, top: box.top, bottom: box.bottom, width: innerWidth, height: innerHeight };
+    });
+    assert.equal(active.id, id); assert.equal(active.href, `https://play.google.com/store/apps/details?id=${packageId}`);
+    assert.equal(active.text, 'Google Play listing'); assert.equal(active.focused, true);
+    assert.ok(active.left >= -1 && active.right <= active.width + 1 && active.bottom > 0 && active.top < active.height,
+      JSON.stringify(active));
+  }
+  return { keyboardReachable: namedIconApps.length, scope: 'Exact official href and actual Tab focus; store page and installation unexecuted' };
+}
+
 test('icon gallery decodes every current appearance at phone widths and enlarged fallback text', async () => {
   for (const scenario of [{ width: 390, enlarged: false }, { width: 320, enlarged: true }]) {
     const { context, page, consoleErrors } = await pageFor({ viewport: { width: scenario.width, height: 844 }, missingFont: scenario.enlarged });
@@ -475,6 +563,7 @@ test('icon gallery decodes every current appearance at phone widths and enlarged
         assert.equal(await page.locator('html').getAttribute('data-theme'), appearance);
         const decoded = await checkIconGallery(page);
         assert.deepEqual(decoded, iconPaths);
+        await checkIconMappingKeyboard(page);
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
         results.scenarios.push({ name: 'complete paired icon gallery', ...scenario, appearance,
           decoded, nativePhoneVerified: false, status: 'passed' });
@@ -484,10 +573,15 @@ test('icon gallery decodes every current appearance at phone widths and enlarged
   }
 });
 
-test('no-script keyboard navigation acquires current and original icon ZIPs with exact checksums', async () => {
-  const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
+test('no-script keyboard navigation acquires current and both preserved icon ZIPs with exact checksums', async () => {
+  const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false, viewport: { width: 320, height: 844 },
+    setup: async (context, page) => page.route('**/preview.css', async route => route.fulfill({ contentType: 'text/css',
+      body: await readFile(path.join(site, 'preview.css'), 'utf8') + '\nhtml { font-size: 200%; }\n' + textSpacingOverride })) });
   try {
     await checkIconGallery(page);
+    const spacingBaseline = await spacingContentBaseline(page);
+    assert.equal(spacingBaseline.width, 320); assert.equal(spacingBaseline.rootFontSize, '32px');
+    const spacingAdmission = await assertTextSpacing(page, spacingBaseline);
     let tabs = 0;
     while (await page.evaluate(() => document.activeElement?.id) !== 'icon-gallery-link' && tabs < 40) {
       await page.keyboard.press('Tab'); tabs++;
@@ -512,6 +606,16 @@ test('no-script keyboard navigation acquires current and original icon ZIPs with
     const digest = crypto.createHash('sha256').update(bytes).digest('hex');
     assert.equal(Buffer.concat(chunks).toString('utf8'), iconChecksums(digest));
     await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-previous-download');
+    const [previousDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
+    assert.equal(await previousDownload.failure(), null);
+    assert.equal(previousDownload.suggestedFilename(), path.basename(previousIconArchive));
+    const previousArchivePath = path.join(temp, 'keyboard-icons-previous.zip');
+    await previousDownload.saveAs(previousArchivePath);
+    const previousBytes = await readFile(previousArchivePath);
+    assert.deepEqual(previousBytes, await readFile(path.join(site, ...previousIconArchive.split('/'))));
+    assert.equal(crypto.createHash('sha256').update(previousBytes).digest('hex'), previousIconDigest);
+    await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-legacy-download');
     const [legacyDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
     assert.equal(await legacyDownload.failure(), null);
@@ -524,32 +628,46 @@ test('no-script keyboard navigation acquires current and original icon ZIPs with
     run(['-c', [
       'import hashlib,json,pathlib,sys,zipfile',
       'archive_path,site=map(pathlib.Path,sys.argv[1:])',
-      `functions=${JSON.stringify(iconFunctions)}`,
+      `functions=${JSON.stringify(iconManifestFunctions)}`,
       'expected={f"{appearance}/{function}.svg" for appearance in ("Clair","Obscur") for function in functions}',
       'with zipfile.ZipFile(archive_path) as archive:',
-      ' assert len(archive.namelist())==50 and set(archive.namelist())==expected|{"manifest.json","LICENSE.txt"}',
+      ' assert len(archive.namelist())==116 and set(archive.namelist())==expected|{"manifest.json","LICENSE.txt"}',
       ' assert archive.testzip() is None',
       ' for name in expected|{"manifest.json","LICENSE.txt"}:',
       '  assert archive.read(name)==(site/"icons"/name).read_bytes()',
       ' manifest=json.loads(archive.read("manifest.json"))',
-      ' assert manifest["version"]=="0.2.0" and manifest["stroke_width"]==16',
-      ' assert manifest["functions"]==functions and len(manifest["files"])==48',
+      ' assert manifest["version"]=="0.3.0" and manifest["stroke_width"]==16',
+      ' assert manifest["functions"]==functions and len(manifest["files"])==114',
+      ' assert [entry["id"] for entry in manifest["catalog"]]==functions',
       ' for record in manifest["files"]:',
       '  assert hashlib.sha256(archive.read(record["path"])).hexdigest()==record["sha256"]',
     ].join('\n'), archivePath, site]);
     run(['-c', [
       'import json,pathlib,sys,zipfile',
-      `functions=${JSON.stringify(iconFunctions)}`,
+      `functions=${JSON.stringify(generalIconFunctions)}`,
       'with zipfile.ZipFile(sys.argv[1]) as archive:',
       ' assert archive.testzip() is None and len(archive.namelist())==50',
       ' manifest=json.loads(archive.read("manifest.json"))',
       ' assert manifest["version"]=="0.1.0" and manifest["stroke_width"]==12',
       ' assert manifest["functions"]==functions and len(manifest["files"])==48',
     ].join('\n'), legacyArchivePath]);
+    run(['-c', [
+      'import json,sys,zipfile',
+      `functions=${JSON.stringify(generalIconFunctions)}`,
+      'with zipfile.ZipFile(sys.argv[1]) as archive:',
+      ' assert archive.testzip() is None and len(archive.namelist())==50',
+      ' manifest=json.loads(archive.read("manifest.json"))',
+      ' assert manifest["version"]=="0.2.0" and manifest["stroke_width"]==16',
+      ' assert manifest["functions"]==functions and len(manifest["files"])==48',
+    ].join('\n'), previousArchivePath]);
+    const mappingKeyboard = await checkIconMappingKeyboard(page);
     assert.equal(new URL(page.url()).hash, '#icons');
     assert.deepEqual(consoleErrors, []);
     results.scenarios.push({ name: 'no-script icon artwork keyboard acquisition', status: 'passed', tabs,
-      sha256: digest, legacySha256: legacyIconDigest, filesPerArchive: 50, nativePhoneVerified: false });
+      sha256: digest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
+      currentArchiveFiles: 116, preservedArchiveFiles: 50, nativePhoneVerified: false,
+      width: 320, rootFontSize: '32px', spacingAdmission, mappingKeyboard,
+      scope: 'Combined no-script, narrow, enlarged and spacing stress; separate from spacing-only acceptance' });
   } finally { await context.close(); }
 });
 
@@ -560,10 +678,15 @@ test('icon gallery qualification rejects one missing image and recovers without 
   try {
     await assert.rejects(checkIconGallery(page), /Icon not decoded: icons\/Clair\/phone\.svg/);
     const failed = page.locator('#icons [data-icon-function="phone"] img').first();
-    assert.equal(await failed.getAttribute('alt'), 'Clair phone icon');
-    assert.equal(await page.locator('#icons [data-icon-function="phone"] h3').textContent(), 'Phone');
+    assert.equal(await failed.getAttribute('alt'), 'Clair Phone icon');
+    assert.equal(await page.locator('#icons [data-icon-function="phone"] h4').textContent(), 'Phone');
     await context.unroute('**/icons/Clair/phone.svg');
     await page.reload();
+    assert.deepEqual(await checkIconGallery(page), iconPaths);
+    const packageText = page.locator('#icons [data-icon-function="youtube"] p code');
+    await packageText.evaluate(node => { node.style.visibility = 'hidden'; });
+    await assert.rejects(checkIconGallery(page), /youtube/);
+    await packageText.evaluate(node => { node.style.visibility = ''; });
     assert.deepEqual(await checkIconGallery(page), iconPaths);
     results.scenarios.push({ name: 'controlled missing gallery image', status: 'rejected and recovered',
       scope: 'disposable missing-resource fault, not a product defect' });
@@ -858,7 +981,9 @@ async function assertTextSpacing(page, baseline) {
       if (expected.languageSpacing && JSON.stringify(expected.languageSpacing) !== JSON.stringify([style.lineHeight, style.letterSpacing, style.wordSpacing, style.marginBlockEnd])) errors.push(`writing-system sample spacing changed: ${label(node.parentElement)}`);
       counts.retained++;
     }
-    const elements = new Set(document.querySelectorAll('button, input:not([type="checkbox"]), select, summary'));
+    // Assignment paragraphs contain only a link, a break and code. The text
+    // walker reaches those children, so admit the paragraph's own spacing too.
+    const elements = new Set(document.querySelectorAll('button, input:not([type="checkbox"]), select, summary, #icons [data-icon-kind="app"] > p'));
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     for (let node; (node = walker.nextNode());) {
       const parent = node.parentElement;
@@ -1070,6 +1195,7 @@ test('text spacing alone preserves content and the keyboard package journey in b
       assert.equal(baseline.rootFontSize, '16px'); assert.equal(baseline.width, 1280);
       await page.addStyleTag({ content: textSpacingOverride });
       const admission = await assertTextSpacing(page, baseline);
+      await checkIconGallery(page);
       const journey = await spacingPackageJourney(page, appearance, baseline);
       const terminal = await terminalSpacingJourney(page, baseline);
       assert.deepEqual(consoleErrors, []);
@@ -1090,6 +1216,7 @@ test('text spacing with narrow layout and enlarged fallback text is separate add
         assert.equal(baseline.rootFontSize, scenario.scale === 200 ? '32px' : '16px');
         await page.addStyleTag({ content: textSpacingOverride });
         const admission = await assertTextSpacing(page, baseline);
+        await checkIconGallery(page);
         const journey = await spacingPackageJourney(page, appearance, baseline);
         const terminal = await terminalSpacingJourney(page, baseline);
         assert.deepEqual(consoleErrors, []);
@@ -1110,6 +1237,7 @@ test('text spacing keeps the no-script catalog and keyboard installation routes 
       body: await readFile(path.join(site, 'preview.css'), 'utf8') + textSpacingOverride }));
     await page.reload();
     const admission = await assertTextSpacing(page, baseline);
+    await checkIconGallery(page);
     assert.ok(await page.locator('#package-chooser').isHidden());
     assert.ok(await page.locator('#local-package-checker').isHidden());
     for (const appearance of ['Obscur', 'Clair']) {
@@ -1132,8 +1260,8 @@ test('text spacing keeps the no-script catalog and keyboard installation routes 
   } finally { await context.close(); }
 });
 
-test('text spacing qualification rejects a missing override, clipped prose and an inert chooser', async () => {
-  for (const fault of ['word-spacing', 'clipped-prose', 'inert-chooser']) {
+test('text spacing qualification rejects missing overrides, collapsed assignment spacing, clipped prose and an inert chooser', async () => {
+  for (const fault of ['word-spacing', 'gallery-paragraph-margin', 'clipped-prose', 'inert-chooser']) {
     const { context, page } = await pageFor({ setup: async context => {
       if (fault !== 'inert-chooser') return;
       const source = await readFile(path.join(site, 'preview.js'), 'utf8');
@@ -1145,6 +1273,14 @@ test('text spacing qualification rejects a missing override, clipped prose and a
       const baseline = await spacingContentBaseline(page);
       await page.addStyleTag({ content: fault === 'word-spacing' ? textSpacingOverride.replace('word-spacing: .16em !important;', '') : textSpacingOverride });
       if (fault === 'word-spacing') await assert.rejects(assertTextSpacing(page, baseline), /spacing admission wordSpacing/);
+      if (fault === 'gallery-paragraph-margin') {
+        const paragraph = page.locator('#icons [data-icon-function="youtube"] > p');
+        await paragraph.evaluate(node => node.style.setProperty('margin-block-end', '0px', 'important'));
+        assert.equal(await paragraph.evaluate(node => getComputedStyle(node).marginBlockEnd), '0px');
+        await assert.rejects(assertTextSpacing(page, baseline), /spacing admission paragraph: p/);
+        await paragraph.evaluate(node => node.style.removeProperty('margin-block-end'));
+        await assertTextSpacing(page, baseline);
+      }
       if (fault === 'clipped-prose') {
         await chooseSpacingPackage(page, 'Obscur');
         const clipping = await page.addStyleTag({ content: '#package-choice-result p { height: 1px !important; overflow: hidden !important; }' });
@@ -1875,6 +2011,15 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
         assert.deepEqual(iconBytes, await readFile(path.join(relocated, ...iconArchive.split('/'))));
         assert.equal(iconDigest, inner.files[iconArchive]);
         assert.equal(await readFile(path.join(relocated, 'icons', 'SVG-SHA256SUMS'), 'utf8'), iconChecksums(iconDigest));
+        await localPage.locator('#icon-artwork-previous-download').focus();
+        const [previousIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+        assert.equal(await previousIconDownload.failure(), null);
+        assert.equal(previousIconDownload.suggestedFilename(), path.basename(previousIconArchive));
+        const previousIconChunks = []; for await (const chunk of await previousIconDownload.createReadStream()) previousIconChunks.push(chunk);
+        const previousIconBytes = Buffer.concat(previousIconChunks);
+        assert.deepEqual(previousIconBytes, await readFile(path.join(relocated, ...previousIconArchive.split('/'))));
+        assert.equal(crypto.createHash('sha256').update(previousIconBytes).digest('hex'), previousIconDigest);
+        assert.equal(inner.files[previousIconArchive], previousIconDigest);
         await localPage.locator('#icon-artwork-legacy-download').focus();
         const [legacyIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
         assert.equal(await legacyIconDownload.failure(), null);
@@ -1885,7 +2030,8 @@ test('portable kit downloads, extracts and relocates into a complete offline fil
         assert.equal(crypto.createHash('sha256').update(legacyIconBytes).digest('hex'), legacyIconDigest);
         assert.equal(inner.files[legacyIconArchive], legacyIconDigest);
         iconJourneys.push({ javaScriptEnabled, width, decoded: decodedIcons.length, sha256: iconDigest,
-          legacySha256: legacyIconDigest, method: 'saved included current and original SVG archives' });
+          previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
+          method: 'saved included current and both preserved SVG archives' });
         const terminalSpecimens = await checkTerminalSpecimens(localPage, terminalDocument);
         await localPage.locator('#terminal-download').focus();
         const [terminalZip] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);

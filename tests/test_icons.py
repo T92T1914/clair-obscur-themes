@@ -14,11 +14,53 @@ from themeforge import icons
 
 
 ROOT = Path(__file__).resolve().parents[1]
-NAMES = (
+BASE_NAMES = (
     "phone messages contacts camera gallery settings calendar clock files notes mail "
     "browser maps music video store wallet calculator weather health fitness "
     "voice-recorder home search"
 ).split()
+APP_NAMES = (
+    "google-chrome youtube google-maps gmail google-photos google-messages google-calendar google-drive "
+    "samsung-browser samsung-notes samsung-health garmin-connect whatsapp messenger instagram facebook "
+    "snapchat tiktok discord reddit pinterest telegram spotify netflix amazon-shopping walmart temu uber "
+    "doordash paypal outlook chatgpt firefox"
+).split()
+NAMES = BASE_NAMES + APP_NAMES
+EXPECTED_APPS = {
+    "google-chrome": ("Google Chrome", "com.android.chrome"),
+    "youtube": ("YouTube", "com.google.android.youtube"),
+    "google-maps": ("Google Maps", "com.google.android.apps.maps"),
+    "gmail": ("Gmail", "com.google.android.gm"),
+    "google-photos": ("Google Photos", "com.google.android.apps.photos"),
+    "google-messages": ("Google Messages", "com.google.android.apps.messaging"),
+    "google-calendar": ("Google Calendar", "com.google.android.calendar"),
+    "google-drive": ("Google Drive", "com.google.android.apps.docs"),
+    "samsung-browser": ("Samsung Browser", "com.sec.android.app.sbrowser"),
+    "samsung-notes": ("Samsung Notes", "com.samsung.android.app.notes"),
+    "samsung-health": ("Samsung Health", "com.sec.android.app.shealth"),
+    "garmin-connect": ("Garmin Connect", "com.garmin.android.apps.connectmobile"),
+    "whatsapp": ("WhatsApp", "com.whatsapp"),
+    "messenger": ("Messenger", "com.facebook.orca"),
+    "instagram": ("Instagram", "com.instagram.android"),
+    "facebook": ("Facebook", "com.facebook.katana"),
+    "snapchat": ("Snapchat", "com.snapchat.android"),
+    "tiktok": ("TikTok", "com.zhiliaoapp.musically"),
+    "discord": ("Discord", "com.discord"),
+    "reddit": ("Reddit", "com.reddit.frontpage"),
+    "pinterest": ("Pinterest", "com.pinterest"),
+    "telegram": ("Telegram", "org.telegram.messenger"),
+    "spotify": ("Spotify", "com.spotify.music"),
+    "netflix": ("Netflix", "com.netflix.mediaclient"),
+    "amazon-shopping": ("Amazon Shopping", "com.amazon.mShop.android.shopping"),
+    "walmart": ("Walmart", "com.walmart.android"),
+    "temu": ("Temu", "com.einnovation.temu"),
+    "uber": ("Uber", "com.ubercab"),
+    "doordash": ("DoorDash", "com.dd.doordash"),
+    "paypal": ("PayPal", "com.paypal.android.p2pmobile"),
+    "outlook": ("Microsoft Outlook", "com.microsoft.office.outlook"),
+    "chatgpt": ("ChatGPT", "com.openai.chatgpt"),
+    "firefox": ("Firefox", "org.mozilla.firefox"),
+}
 NS = "{http://www.w3.org/2000/svg}"
 
 
@@ -77,10 +119,10 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(set(files), expected | {"manifest.json"})
         manifest = json.loads(files["manifest.json"])
         self.assertEqual(manifest["functions"], NAMES)
-        self.assertEqual(manifest["version"], "0.2.0")
+        self.assertEqual(manifest["version"], "0.3.0")
         self.assertEqual(manifest["token_schema"], 1)
         self.assertEqual(manifest["token_version"], "0.1.1")
-        self.assertEqual(len(manifest["files"]), 48)
+        self.assertEqual(len(manifest["files"]), 114)
         for record in manifest["files"]:
             self.assertEqual(record["path"], f'{record["appearance"]}/{record["function"]}.svg')
             payload = files[record["path"]]
@@ -89,8 +131,8 @@ class FunctionalIconTests(unittest.TestCase):
         # Relabeling the same drawing must not count as new geometry.
         relabeled = files["Clair/phone.svg"].replace(b'aria-label="phone"', b'aria-label="messages"')
         self.assertEqual(geometry(relabeled), geometry(files["Clair/phone.svg"]))
-        # The 24 meanings must not be aliases of one repeated glyph.
-        self.assertEqual(len({geometry(files[f"Clair/{name}.svg"]) for name in NAMES}), 24)
+        # Named choices must have different drawings, rather than relabeled aliases.
+        self.assertEqual(len({geometry(files[f"Clair/{name}.svg"]) for name in NAMES}), 57)
 
     def test_palette_roles_and_geometry_are_shared_without_hardcoded_colors(self):
         files = icons.render_icons(self.document)
@@ -130,7 +172,9 @@ class FunctionalIconTests(unittest.TestCase):
                 continue
             self.assertIn(license_body, payload.decode())
             root = ET.fromstring(payload)
-            self.assertEqual(root.get("aria-label"), Path(path).stem)
+            labels = {entry["id"]: entry["label"] for entry in icons.icon_catalog()}
+            name = Path(path).stem
+            self.assertEqual(root.get("aria-label"), labels[name] if name in APP_NAMES else name)
             for element in root.iter():
                 self.assertIn(element.tag.removeprefix(NS), allowed)
                 for key, value in element.attrib.items():
@@ -182,12 +226,21 @@ class FunctionalIconTests(unittest.TestCase):
         from themeforge.legal import license_text
         legacy = icons.render_icons(self.document, version="0.1.0")
         current = icons.render_icons(self.document)
+        refined = icons.render_icons(self.document, version="0.2.0")
         archived = {**legacy, "LICENSE.txt": license_text().encode("utf-8")}
         self.assertEqual(hashlib.sha256(_zip_bytes(archived)).hexdigest(),
                          "040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34")
         self.assertEqual(json.loads(legacy["manifest.json"])["stroke_width"], 12)
-        for name in NAMES:
+        refined_archive = {**refined, "LICENSE.txt": license_text().encode("utf-8")}
+        self.assertEqual(hashlib.sha256(_zip_bytes(refined_archive)).hexdigest(),
+                         "6ae67a5aab7f4e0a50537bb6dcf3b383c5fc6e9e001d68db12a7413aaa376312")
+        self.assertNotIn("catalog", json.loads(refined["manifest.json"]))
+        self.assertNotIn("catalog", json.loads(legacy["manifest.json"]))
+        self.assertEqual(json.loads(refined["manifest.json"])["functions"], BASE_NAMES)
+        for name in BASE_NAMES:
             self.assertNotEqual(current[f"Clair/{name}.svg"], legacy[f"Clair/{name}.svg"])
+            for appearance in ("Clair", "Obscur"):
+                self.assertEqual(current[f"{appearance}/{name}.svg"], refined[f"{appearance}/{name}.svg"])
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "legacy"
             icons.build_icons(self.document, output, version="0.1.0")
@@ -196,9 +249,44 @@ class FunctionalIconTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "differs"):
                 icons.build_icons(self.document, output, check=True)
             self.assertEqual(tree_snapshot(output), before)
-        for unsupported in ("0.0.0", "0.3.0", None, [], {}):
+        for unsupported in ("0.0.0", "0.4.0", None, [], {}):
             with self.subTest(version=unsupported), self.assertRaisesRegex(ValueError, "Unsupported"):
                 icons.render_icons(self.document, version=unsupported)
+
+    def test_named_catalog_has_explicit_unique_assignments_and_accessible_labels(self):
+        files = icons.render_icons(self.document)
+        manifest = json.loads(files["manifest.json"])
+        catalog = manifest["catalog"]
+        self.assertEqual([row["id"] for row in catalog], NAMES)
+        self.assertEqual([row["kind"] for row in catalog], ["function"] * 24 + ["app"] * 33)
+        apps = catalog[24:]
+        self.assertEqual(len({row["android_package"] for row in apps}), 33)
+        self.assertEqual({row["id"]: (row["label"], row["android_package"]) for row in apps}, EXPECTED_APPS)
+        for row in apps:
+            self.assertEqual(row["store_url"], "https://play.google.com/store/apps/details?id=" + row["android_package"])
+            for appearance in ("Clair", "Obscur"):
+                svg = ET.fromstring(files[f'{appearance}/{row["id"]}.svg'])
+                self.assertEqual(svg.get("aria-label"), row["label"])
+        self.assertIn("Not an ordered popularity chart", manifest["catalog_scope"])
+        self.assertEqual(manifest["catalog_date"], "2026-10-18")
+
+    def test_bad_named_catalog_fails_before_output_without_changing_existing_state(self):
+        changes = (
+            {"id": "../unsafe"}, {"id": "phone"}, {"label": " "},
+            {"android_package": "not-a-package"},
+            {"android_package": "com.google.android.youtube"},
+            {"store_url": "https://example.com/store/apps/details?id=com.android.chrome"},
+            {"store_url": "https://play.google.com/store/apps/details?id=com.wrong.app"},
+        )
+        for change in changes:
+            catalog = copy.deepcopy(icons.APP_CATALOG)
+            catalog[0].update(change)
+            with self.subTest(change=change), tempfile.TemporaryDirectory() as temporary:
+                output = Path(temporary) / "never-created"
+                with patch.object(icons, "APP_CATALOG", catalog), self.assertRaises(ValueError):
+                    icons.build_icons(self.document, output)
+                self.assertFalse(output.exists())
+                self.assertEqual(list(Path(temporary).iterdir()), [])
 
     def test_current_bubble_has_one_continuous_outline_and_calculator_has_open_equals(self):
         files = icons.render_icons(self.document)
@@ -223,7 +311,7 @@ class FunctionalIconTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "icons"
             result = icons.build_icons(self.document, output)
-            self.assertEqual(len(result["files"]), 48)
+            self.assertEqual(len(result["files"]), 114)
             before = tree_snapshot(output)
             self.assertEqual(before, icons.render_icons(self.document))
             icons.build_icons(self.document, output, check=True)

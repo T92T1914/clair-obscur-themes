@@ -1,5 +1,13 @@
 # Changes
 
+## Icon artwork 0.3.0
+
+- Add 33 named Android app interpretations beside the unchanged 24 general drawings, with paired Clair/Obscur geometry and explicit app/package/listing identities.
+- Group named apps and general functions in the static and portable gallery. Preserve exact 0.1.0 and 0.2.0 SVG archives beside the current download.
+- Extend existing PNG export to 228 current images and retain both historical 96-image inputs. Qualify assignment metadata and the catalog source before completion.
+- Admit the expanded portable inventory with a bounded 192-hash limit. Preserve the separate total-entry, byte, path and read limits.
+- Record the first collection's actual store-selection scope. Physical phone assignment, masking, fonts and restoration remain untested.
+
 ## Icon artwork 0.2.0
 
 - Strengthen the shared stroke, join the message-bubble outline, balance lighter silhouettes and open dense details for small-size rendering.

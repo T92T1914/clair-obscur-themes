@@ -99,6 +99,10 @@ result = {
     "files": [{**entry, "svg": expected[entry["path"]].decode("utf-8")}
               for entry in manifest["files"]],
 }
+if "catalog" in manifest:
+    result.update(catalog=manifest["catalog"], catalog_date=manifest["catalog_date"],
+                  catalog_scope=manifest["catalog_scope"],
+                  catalog_module_sha256=digest((ROOT / "themeforge/icon_apps.py").read_bytes()))
 output.parent.mkdir(parents=True, exist_ok=True)
 output = _safe_output(output)
 output.mkdir(exist_ok=False)
@@ -192,14 +196,20 @@ async function exportIcons(input, output) {
     assert.equal(sha(await readFile(path.join(input, 'manifest.json'))), source.source_manifest_sha256, 'SVG manifest changed during export');
     assert.equal(sha(await readFile(path.join(root, 'tokens.json'))), source.tokens_sha256, 'Tokens changed during export');
     assert.equal(sha(await readFile(path.join(root, 'themeforge/icons.py'))), source.generator_sha256, 'Generator changed during export');
+    if (source.catalog) {
+      assert.equal(sha(await readFile(path.join(root, 'themeforge/icon_apps.py'))), source.catalog_module_sha256,
+        'Named-app catalog module changed during export');
+    }
     assert.equal(sha(await readFile(path.join(root, 'LICENSE'))), source.license_sha256, 'License changed during export');
     const license = Buffer.from(source.license, 'utf8');
     await writeFile(path.join(output, 'LICENSE'), license, { flag: 'wx' });
     const manifest = {
-      schema_version: 1, generator: 'clair-obscur-png-export', exporter_version: '0.2.0',
+      schema_version: 1, generator: 'clair-obscur-png-export', exporter_version: '0.3.0',
       version: source.version,
       token_version: source.token_version, source_manifest_sha256: source.source_manifest_sha256,
       tokens_sha256: source.tokens_sha256, svg_generator_sha256: source.generator_sha256,
+      ...(source.catalog ? { catalog: source.catalog, catalog_date: source.catalog_date,
+        catalog_scope: source.catalog_scope, svg_catalog_sha256: source.catalog_module_sha256 } : {}),
       exporter_sha256: sha(await readFile(fileURLToPath(import.meta.url))),
       license: { path: 'LICENSE', bytes: license.length, sha256: source.license_sha256 },
       renderer: { browser: browser.version(), channel: process.env.THEME_BROWSER_CHANNEL || 'chrome',
