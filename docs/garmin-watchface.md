@@ -1,8 +1,8 @@
 # Clair and Obscur watch-face candidate
 
-This separate Connect IQ watch-face source targets `fenix9pro47mm`, the fēnix 9 Pro 47 mm AMOLED. Version 0.2.0 displays a dominant local clock, a compact English weekday and date, two selectable information fields and watch battery percentage. Clair and Obscur share the layout and use the existing semantic palette. A separate always-on view clears to true black and draws only the time.
+This separate Connect IQ watch-face source targets `fenix9pro47mm`, the fēnix 9 Pro 47 mm AMOLED. Version 0.3.0 displays a dominant local clock, a compact English weekday and date, two selectable information fields and watch battery percentage. Clair and Obscur share the layout and use `tokens-monochrome.json`: white backgrounds with black primary lettering in Clair, black backgrounds with white primary lettering in Obscur, and neutral gray for supporting information. The accepted 0.2.0 program and its earlier palette remain separate and unchanged. A separate always-on view clears to true black and draws only the time.
 
-The normal and test-enabled programs compiled for the exact target with Connect IQ SDK 9.2.0 and device package `ee244507b073c52779d26e77dc69b690d79098bd`. All 16 annotated Monkey C test groups passed in that target's simulator on October 16, 2026. Authorized native simulator checks also exercised the rendered face and configuration. These results establish the stated simulator behavior, not physical-watch installation, store acceptance or battery life. Earlier local candidates and all desktop package identities remain separate.
+The current 0.3.0 normal and test-enabled programs compiled for the exact target with Connect IQ SDK 9.2.0 and device package `ee244507b073c52779d26e77dc69b690d79098bd`. For the accepted 0.2.0 program, all 16 annotated Monkey C test groups passed in that target's simulator on October 16, 2026. Those historical native simulator checks also exercised the rendered face and configuration. Those results establish the stated 0.2.0 simulator behavior. A new 0.3.0 compile does not establish a new runtime pass, physical-watch installation, store acceptance or battery life. Earlier local candidates and all desktop package identities remain separate.
 
 ## Supported setup
 
@@ -14,7 +14,7 @@ Garmin also requires an RSA 4096-bit developer key to sign compiled programs. Ke
 
 ## Generate and compile
 
-The palette generator maps the validated semantic roles in `tokens.json` to Monkey C constants. It does not modify the desktop tokens or `dist/`.
+The palette generator maps the validated semantic roles in `tokens-monochrome.json` to Monkey C constants. It does not modify the desktop tokens or `dist/`. Explicit `--tokens tokens.json --output NEW_FILE` can generate the earlier palette colors for inspection without replacing the current generated source.
 
 ```powershell
 python -m themeforge.garmin
@@ -50,11 +50,17 @@ Every drawing clears the previous frame. Watch-face low-power callbacks and the 
 
 The public [device reference](https://developer.garmin.com/connect-iq/articles/device-reference/fenix9pro47mm.html) documents a 454 by 454 round display and a 131,072-byte watch-face memory budget. The installed exact-target metadata confirms those values. The admitted 192 by 64 rectangle is a conservative source-level bound below 10% of the round visible area, even if every admitted pixel were lit. The host geometry check counts pixel centers within an ideal circle and obtains an upper bound of about 7.59%. It does not measure native text pixels or runtime luminance.
 
-The desktop Obscur canvas is `#090909`. The always-on canvas is separately `#000000`. Garmin's [detailed AMOLED guidance](https://developer.garmin.com/connect-iq/articles/connect-iq-faq/How_Do_I_Make_a_Watch_Face_for_AMOLED_Products.html) distinguishes older pixel-protection rules from later-device luminance rules. The conservative pixel requirement here does not establish the exact target's firmware enforcement, burn-in flag or aging interval. Those remain part of target qualification.
+The current watch Obscur canvas and the separate always-on canvas are both `#000000`. Their rendering paths remain distinct. The preserved desktop packages retain their earlier `#090909` canvas. Garmin's [detailed AMOLED guidance](https://developer.garmin.com/connect-iq/articles/connect-iq-faq/How_Do_I_Make_a_Watch_Face_for_AMOLED_Products.html) distinguishes older pixel-protection rules from later-device luminance rules. The conservative pixel requirement here does not establish the exact target's firmware enforcement, burn-in flag or aging interval. Those remain part of target qualification.
 
-## Executed simulator checks and remaining acceptance
+## Current 0.3.0 qualification
 
-The 16 simulator test groups cover the original time, calendar, invalid-value, appearance and geometry cases, plus field formatting, font-scale validation, data settings and layout bounds. The first native execution exposed the battery NaN conversion failure. Its explicit rejection was verified before the expanded candidate passed. Pure test groups do not themselves execute every provider lifecycle or inspect pixels.
+On October 19, 2026, the normal and test-enabled 0.3.0 programs compiled for the exact target without compiler warnings. All 16 annotated test groups passed in that target's simulator. Bounded native observations exercised active Obscur, switching to Clair, Clair to Always-On, returning to active Clair, and switching back to Obscur. The always-on state displayed only a small time on black, without date, battery or information fields. The host-owned configuration menu retained Garmin's own colors.
+
+The final active status sample was 19.2 kB against the displayed 123.9 kB budget. Menu samples were 20.4 and 21.3 kB. These are observed samples, not a peak or sustained memory measurement. The simulator was left in Obscur with Weather and Steps, battery 50 percent and High Power before closing. No pre-test persistent-property backup was captured, so this does not establish exact restoration of every earlier simulator setting. A new 0.3.0 normal-restart trial and physical-watch acceptance remain open.
+
+## Preserved 0.2.0 simulator checks and remaining acceptance
+
+The accepted 0.2.0 simulator history below does not establish a new 0.3.0 runtime pass. The 16 simulator test groups cover the original time, calendar, invalid-value, appearance and geometry cases, plus field formatting, font-scale validation, data settings and layout bounds. The first native execution exposed the battery NaN conversion failure. Its explicit rejection was verified before the expanded candidate passed. Pure test groups do not themselves execute every provider lifecycle or inspect pixels.
 
 Native simulator observations covered both active appearances at scale 1.35, 12/24-hour switching, a return to scale 1.00, Weather cache-age labels, Steps and a changing Body Battery value. Appearance selection returned to the face. Canceling a highlighted Weather choice retained the previously saved Body Battery field. A complete simulator exit and relaunch of the same program retained Obscur and both selected fields.
 

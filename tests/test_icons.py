@@ -1,7 +1,9 @@
 """Original vector geometry, palette consumption and output-preservation checks."""
 
 import copy
+from contextlib import redirect_stderr, redirect_stdout
 import hashlib
+import io
 import json
 from pathlib import Path
 import re
@@ -119,8 +121,9 @@ def geometry(svg):
     root = ET.fromstring(svg)
     root.attrib.pop("aria-label", None)
     for element in root.iter():
-        element.attrib.pop("fill", None)
-        element.attrib.pop("stroke", None)
+        for role in ("fill", "stroke"):
+            if re.fullmatch(r"#[0-9a-fA-F]{6}", element.get(role, "")):
+                element.attrib.pop(role)
     return ET.tostring(root)
 
 
@@ -157,7 +160,8 @@ def path_hull(data):
 
 class FunctionalIconTests(unittest.TestCase):
     def setUp(self):
-        self.document = json.loads((ROOT / "tokens.json").read_text(encoding="utf-8"))
+        self.legacy_document = json.loads((ROOT / "tokens.json").read_text(encoding="utf-8"))
+        self.document = json.loads((ROOT / "tokens-monochrome.json").read_text(encoding="utf-8"))
 
     def test_exact_function_inventory_and_each_manifest_digest(self):
         files = icons.render_icons(self.document)
@@ -165,9 +169,10 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(set(files), expected | {"manifest.json"})
         manifest = json.loads(files["manifest.json"])
         self.assertEqual(manifest["functions"], NAMES)
-        self.assertEqual(manifest["version"], "0.5.0")
+        self.assertEqual(manifest["version"], "0.6.0")
         self.assertEqual(manifest["token_schema"], 1)
-        self.assertEqual(manifest["token_version"], "0.1.1")
+        self.assertEqual(manifest["token_version"], "1.0.0")
+        self.assertEqual(manifest["palette_variant"], "monochrome")
         self.assertEqual(len(manifest["files"]), 178)
         for record in manifest["files"]:
             self.assertEqual(record["path"], f'{record["appearance"]}/{record["function"]}.svg')
@@ -192,10 +197,13 @@ class FunctionalIconTests(unittest.TestCase):
                 colors = {value for element in root.iter() for key, value in element.attrib.items()
                           if key in ("stroke", "fill") and value != "none"}
                 self.assertEqual(colors, {palette["panel"], palette["text"], palette["accent"]})
-        changed = copy.deepcopy(self.document)
+        # The explicit-document library API remains useful for controlled palette
+        # experiments; the CLI and exporter admit the version's shared document.
+        files = icons.render_icons(self.legacy_document, version="0.5.0")
+        changed = copy.deepcopy(self.legacy_document)
         changed["themes"]["Clair"].update(panel="#fcfbf7", text="#252525", accent="#355e77")
         changed["version"] = "2.3.4"
-        updated = icons.render_icons(changed)
+        updated = icons.render_icons(changed, version="0.5.0")
         for name in NAMES:
             self.assertNotEqual(updated[f"Clair/{name}.svg"], files[f"Clair/{name}.svg"])
             self.assertEqual(updated[f"Obscur/{name}.svg"], files[f"Obscur/{name}.svg"])
@@ -209,6 +217,50 @@ class FunctionalIconTests(unittest.TestCase):
                                for name, values in reversed(list(self.document["themes"].items()))}
         self.assertEqual(icons.render_icons(reordered), icons.render_icons(self.document))
         self.assertEqual(self.document, before)
+
+    def test_current_monochrome_palette_rejects_color_and_impure_endpoints_before_output(self):
+        for appearance, background, foreground in (("Clair", "#ffffff", "#000000"),
+                                                    ("Obscur", "#000000", "#ffffff")):
+            palette = self.document["themes"][appearance]
+            self.assertEqual({palette[role].lower() for role in ("canvas", "panel")}, {background})
+            self.assertEqual({palette[role].lower() for role in ("text", "accent")}, {foreground})
+            self.assertTrue(all(len({color[index:index + 2].lower() for index in (1, 3, 5)}) == 1
+                                for color in palette.values()))
+        invalid = [self.legacy_document]
+        for role, value in (("muted", "#555554"), ("panel", "#fefefe"), ("accent", "#111111")):
+            document = copy.deepcopy(self.document)
+            document["themes"]["Clair"][role] = value
+            invalid.append(document)
+        for document in invalid:
+            with self.subTest(document=document), tempfile.TemporaryDirectory() as temporary:
+                output = Path(temporary) / "never-created"
+                with self.assertRaisesRegex(ValueError, "Monochrome"):
+                    icons.build_icons(document, output)
+                self.assertFalse(output.exists())
+
+    def test_cli_selects_versioned_tokens_and_accepts_only_an_explicit_matching_copy(self):
+        self.assertEqual(icons.token_path(), ROOT / "tokens-monochrome.json")
+        for version in ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0"):
+            self.assertEqual(icons.token_path(version), ROOT / "tokens.json")
+        for version, document in (("0.5.0", self.legacy_document), ("0.6.0", self.document)):
+            with self.subTest(version=version), tempfile.TemporaryDirectory() as temporary:
+                base = Path(temporary)
+                explicit = base / "explicit.json"
+                explicit.write_text(json.dumps(document, sort_keys=True), encoding="utf-8")
+                output = base / "icons"
+                with redirect_stdout(io.StringIO()):
+                    self.assertEqual(icons.main(["--version", version, "--tokens", str(explicit),
+                                                "--output", str(output)]), 0)
+                self.assertEqual(tree_snapshot(output), icons.render_icons(document, version=version))
+                wrong = self.document if version == "0.5.0" else self.legacy_document
+                explicit.write_text(json.dumps(wrong), encoding="utf-8")
+                unchanged = tree_snapshot(output)
+                refused = base / "never-created"
+                with redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as error:
+                    icons.main(["--version", version, "--tokens", str(explicit), "--output", str(refused)])
+                self.assertEqual(error.exception.code, 1)
+                self.assertFalse(refused.exists())
+                self.assertEqual(tree_snapshot(output), unchanged)
 
     def test_svg_has_only_local_geometric_primitives_and_embedded_project_license(self):
         license_body = (ROOT / "LICENSE").read_text(encoding="utf-8").replace("\r\n", "\n").rstrip() + "\n"
@@ -270,11 +322,12 @@ class FunctionalIconTests(unittest.TestCase):
     def test_original_version_rebuilds_exact_accepted_archive_and_stays_separate(self):
         from themeforge.build import _zip_bytes
         from themeforge.legal import license_text
-        legacy = icons.render_icons(self.document, version="0.1.0")
+        legacy = icons.render_icons(self.legacy_document, version="0.1.0")
         current = icons.render_icons(self.document)
-        refined = icons.render_icons(self.document, version="0.2.0")
-        first_apps = icons.render_icons(self.document, version="0.3.0")
-        second_apps = icons.render_icons(self.document, version="0.4.0")
+        refined = icons.render_icons(self.legacy_document, version="0.2.0")
+        first_apps = icons.render_icons(self.legacy_document, version="0.3.0")
+        second_apps = icons.render_icons(self.legacy_document, version="0.4.0")
+        third_apps = icons.render_icons(self.legacy_document, version="0.5.0")
         archived = {**legacy, "LICENSE.txt": license_text().encode("utf-8")}
         self.assertEqual(hashlib.sha256(_zip_bytes(archived)).hexdigest(),
                          "040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34")
@@ -288,6 +341,9 @@ class FunctionalIconTests(unittest.TestCase):
         second_archive = {**second_apps, "LICENSE.txt": license_text().encode("utf-8")}
         self.assertEqual(hashlib.sha256(_zip_bytes(second_archive)).hexdigest(),
                          "fc2540a7bf9a6d580a3238904b6e7e4f6b77ca5df5797cc7ce3a6de782cda0cf")
+        third_archive = {**third_apps, "LICENSE.txt": license_text().encode("utf-8")}
+        self.assertEqual(hashlib.sha256(_zip_bytes(third_archive)).hexdigest(),
+                         "2310c0151c0c3215e99d24a7aa92616a55dc726b2e38466427890223d778307a")
         first_manifest = json.loads(first_apps["manifest.json"])
         current_manifest = json.loads(current["manifest.json"])
         self.assertEqual(first_manifest["functions"], PREVIOUS_NAMES)
@@ -297,7 +353,7 @@ class FunctionalIconTests(unittest.TestCase):
         for appearance in ("Clair", "Obscur"):
             for name in PREVIOUS_NAMES:
                 path = f"{appearance}/{name}.svg"
-                self.assertEqual(current[path], first_apps[path])
+                self.assertEqual(third_apps[path], first_apps[path])
         second_manifest = json.loads(second_apps["manifest.json"])
         self.assertEqual(second_manifest["functions"], SECOND_NAMES)
         self.assertEqual(second_manifest["catalog_date"], "2026-10-19")
@@ -306,23 +362,29 @@ class FunctionalIconTests(unittest.TestCase):
         for appearance in ("Clair", "Obscur"):
             for name in SECOND_NAMES:
                 path = f"{appearance}/{name}.svg"
-                self.assertEqual(current[path], second_apps[path])
+                self.assertEqual(third_apps[path], second_apps[path])
+        self.assertEqual(json.loads(third_apps["manifest.json"])["catalog"], current_manifest["catalog"])
+        self.assertNotIn("palette_variant", json.loads(third_apps["manifest.json"]))
+        for path in third_apps:
+            if path.endswith(".svg"):
+                self.assertNotEqual(current[path], third_apps[path])
+                self.assertEqual(geometry(current[path]), geometry(third_apps[path]), path)
         self.assertNotIn("catalog", json.loads(refined["manifest.json"]))
         self.assertNotIn("catalog", json.loads(legacy["manifest.json"]))
         self.assertEqual(json.loads(refined["manifest.json"])["functions"], BASE_NAMES)
         for name in BASE_NAMES:
             self.assertNotEqual(current[f"Clair/{name}.svg"], legacy[f"Clair/{name}.svg"])
             for appearance in ("Clair", "Obscur"):
-                self.assertEqual(current[f"{appearance}/{name}.svg"], refined[f"{appearance}/{name}.svg"])
+                self.assertEqual(third_apps[f"{appearance}/{name}.svg"], refined[f"{appearance}/{name}.svg"])
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "legacy"
-            icons.build_icons(self.document, output, version="0.1.0")
+            icons.build_icons(self.legacy_document, output, version="0.1.0")
             before = tree_snapshot(output)
-            icons.build_icons(self.document, output, version="0.1.0", check=True)
+            icons.build_icons(self.legacy_document, output, version="0.1.0", check=True)
             with self.assertRaisesRegex(ValueError, "differs"):
                 icons.build_icons(self.document, output, check=True)
             self.assertEqual(tree_snapshot(output), before)
-        for unsupported in ("0.0.0", "0.6.0", None, [], {}):
+        for unsupported in ("0.0.0", "0.7.0", None, [], {}):
             with self.subTest(version=unsupported), self.assertRaisesRegex(ValueError, "Unsupported"):
                 icons.render_icons(self.document, version=unsupported)
 
@@ -362,14 +424,14 @@ class FunctionalIconTests(unittest.TestCase):
                 self.assertEqual(list(Path(temporary).iterdir()), [])
 
     def test_new_catalog_refusals_do_not_change_the_accepted_first_collection(self):
-        previous = icons.render_icons(self.document, version="0.3.0")
+        previous = icons.render_icons(self.legacy_document, version="0.3.0")
         for change in ({"id": "youtube"}, {"android_package": "com.android.chrome"},
                        {"label": " "}, {"store_title": ""},
                        {"store_url": "https://play.google.com/store/apps/details?id=com.wrong.app"}):
             invalid = copy.deepcopy(icons.NEW_APP_CATALOG)
             invalid[0].update(change)
             with self.subTest(change=change), patch.object(icons, "NEW_APP_CATALOG", invalid):
-                self.assertEqual(icons.render_icons(self.document, version="0.3.0"), previous)
+                self.assertEqual(icons.render_icons(self.legacy_document, version="0.3.0"), previous)
                 with tempfile.TemporaryDirectory() as temporary:
                     output = Path(temporary) / "never-created"
                     with self.assertRaises(ValueError):
@@ -377,7 +439,7 @@ class FunctionalIconTests(unittest.TestCase):
                     self.assertFalse(output.exists())
 
     def test_third_catalog_refusals_preserve_both_accepted_named_collections(self):
-        previous = {version: icons.render_icons(self.document, version=version)
+        previous = {version: icons.render_icons(self.legacy_document, version=version)
                     for version in ("0.3.0", "0.4.0")}
         changes = ({"id": "x"}, {"android_package": "com.android.chrome"},
                    {"label": " "}, {"store_title": ""}, {"category": ""},
@@ -388,7 +450,7 @@ class FunctionalIconTests(unittest.TestCase):
             invalid[0].update(change)
             with self.subTest(change=change), patch.object(icons, "THIRD_APP_CATALOG", invalid):
                 for version, files in previous.items():
-                    self.assertEqual(icons.render_icons(self.document, version=version), files)
+                    self.assertEqual(icons.render_icons(self.legacy_document, version=version), files)
                 with tempfile.TemporaryDirectory() as temporary:
                     output = Path(temporary) / "never-created"
                     with self.assertRaises(ValueError):
@@ -401,7 +463,7 @@ class FunctionalIconTests(unittest.TestCase):
             else:
                 drawings["x"] = drawings["linkedin"]
             with self.subTest(drawings=fault), patch.object(icons, "THIRD_APP_GLYPHS", drawings):
-                self.assertEqual(icons.render_icons(self.document, version="0.4.0"), previous["0.4.0"])
+                self.assertEqual(icons.render_icons(self.legacy_document, version="0.4.0"), previous["0.4.0"])
                 with tempfile.TemporaryDirectory() as temporary:
                     output = Path(temporary) / "never-created"
                     with self.assertRaises(ValueError):

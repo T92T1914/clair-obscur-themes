@@ -1,4 +1,4 @@
-// Generated from tokens.json by themeforge.garmin. Do not edit.
+// Generated from validated semantic tokens by themeforge.garmin. Do not edit.
 /*
 MIT License
 
@@ -24,40 +24,41 @@ SOFTWARE.
 */
 
 module ThemePalette {
+    const WATCHFACE_VERSION = "0.3.0";
     const TOKEN_SCHEMA = 1;
-    const TOKEN_VERSION = "0.1.1";
-    const CLAIR_ACCENT = 0x365F78;
-    const CLAIR_BORDER = 0x7F7D76;
-    const CLAIR_CANVAS = 0xF8F7F3;
-    const CLAIR_CODE = 0xEEECE5;
-    const CLAIR_CONTROL = 0xECEBE6;
-    const CLAIR_DISABLED = 0x686760;
-    const CLAIR_DIVIDER = 0xB8B6AE;
-    const CLAIR_ERROR = 0xA32E32;
-    const CLAIR_FOCUS = 0x315977;
-    const CLAIR_HOVER = 0xE0DED7;
-    const CLAIR_MUTED = 0x595854;
+    const TOKEN_VERSION = "1.0.0";
+    const CLAIR_ACCENT = 0x000000;
+    const CLAIR_BORDER = 0x666666;
+    const CLAIR_CANVAS = 0xFFFFFF;
+    const CLAIR_CODE = 0xF5F5F5;
+    const CLAIR_CONTROL = 0xF0F0F0;
+    const CLAIR_DISABLED = 0x666666;
+    const CLAIR_DIVIDER = 0xAAAAAA;
+    const CLAIR_ERROR = 0x000000;
+    const CLAIR_FOCUS = 0x000000;
+    const CLAIR_HOVER = 0xE0E0E0;
+    const CLAIR_MUTED = 0x444444;
     const CLAIR_ON_ACCENT = 0xFFFFFF;
-    const CLAIR_PANEL = 0xFDFCF8;
-    const CLAIR_SELECTED = 0xE7E4DA;
-    const CLAIR_SUCCESS = 0x276548;
-    const CLAIR_TEXT = 0x242424;
-    const CLAIR_WARNING = 0x805100;
-    const OBSCUR_ACCENT = 0xB3C8D8;
-    const OBSCUR_BORDER = 0x858585;
-    const OBSCUR_CANVAS = 0x090909;
-    const OBSCUR_CODE = 0x111111;
-    const OBSCUR_CONTROL = 0x252525;
-    const OBSCUR_DISABLED = 0xA4A4A4;
-    const OBSCUR_DIVIDER = 0x494949;
-    const OBSCUR_ERROR = 0xF2A3A3;
-    const OBSCUR_FOCUS = 0xC2D7E6;
-    const OBSCUR_HOVER = 0x373737;
-    const OBSCUR_MUTED = 0xBCBCBC;
-    const OBSCUR_ON_ACCENT = 0x15212C;
-    const OBSCUR_PANEL = 0x151515;
-    const OBSCUR_SELECTED = 0x333333;
-    const OBSCUR_SUCCESS = 0x8ECB9B;
-    const OBSCUR_TEXT = 0xF4F4F4;
-    const OBSCUR_WARNING = 0xE3BF79;
+    const CLAIR_PANEL = 0xFFFFFF;
+    const CLAIR_SELECTED = 0xE8E8E8;
+    const CLAIR_SUCCESS = 0x000000;
+    const CLAIR_TEXT = 0x000000;
+    const CLAIR_WARNING = 0x000000;
+    const OBSCUR_ACCENT = 0xFFFFFF;
+    const OBSCUR_BORDER = 0x999999;
+    const OBSCUR_CANVAS = 0x000000;
+    const OBSCUR_CODE = 0x080808;
+    const OBSCUR_CONTROL = 0x151515;
+    const OBSCUR_DISABLED = 0xAAAAAA;
+    const OBSCUR_DIVIDER = 0x505050;
+    const OBSCUR_ERROR = 0xFFFFFF;
+    const OBSCUR_FOCUS = 0xFFFFFF;
+    const OBSCUR_HOVER = 0x252525;
+    const OBSCUR_MUTED = 0xCCCCCC;
+    const OBSCUR_ON_ACCENT = 0x000000;
+    const OBSCUR_PANEL = 0x000000;
+    const OBSCUR_SELECTED = 0x202020;
+    const OBSCUR_SUCCESS = 0xFFFFFF;
+    const OBSCUR_TEXT = 0xFFFFFF;
+    const OBSCUR_WARNING = 0xFFFFFF;
 }

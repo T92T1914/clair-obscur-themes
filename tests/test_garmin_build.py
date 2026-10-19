@@ -34,6 +34,7 @@ class GarminBuildFailureTests(unittest.TestCase):
             self.assertEqual(main(self.arguments), 1)
         self.assertEqual((self.output / "compiler.log").read_bytes(), b"resource error before timeout\n")
         report = json.loads((self.output / "build.json").read_text())
+        self.assertEqual(report["version"], "0.3.0")
         self.assertEqual(report["status"], "failed")
         self.assertIn("timeout", report["error"])
         self.assertNotIn("program", report)

@@ -92,7 +92,7 @@ const secondFunctions = [...baseFunctions, ...secondApps.map(([id]) => id)];
 const functions = [...baseFunctions, ...apps.map(([id]) => id)];
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 let temporary, source, sourceBefore, legacySource, legacyBefore, previousSource, previousBefore,
-  firstSource, firstBefore, secondSource, secondBefore;
+  firstSource, firstBefore, secondSource, secondBefore, thirdSource, thirdBefore;
 
 function execute(command, args, options = {}) {
   return spawnSync(command, args, { cwd: root, encoding: 'utf8', windowsHide: true,
@@ -211,6 +211,13 @@ before(async () => {
   secondBefore = await snapshot(secondSource);
   assert.equal(secondBefore['manifest.json'], 'e41b32db1e23c63564957f253d81c449f8aa1f85493890cc07908ad1906c7527',
     'The accepted second-collection manifest remains exact');
+  thirdSource = path.join(temporary, 'third-app-svg');
+  const third = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', thirdSource, '--version', '0.5.0']);
+  assert.ifError(third.error);
+  assert.equal(third.status, 0, third.stdout + third.stderr);
+  thirdBefore = await snapshot(thirdSource);
+  assert.equal(thirdBefore['manifest.json'], 'e40a9bd7ae62f677078fb10a48e0ced5901a43bfff06c8684270d560ca4529c8',
+    'The accepted third-collection manifest remains exact');
 });
 
 after(async () => {
@@ -221,7 +228,7 @@ after(async () => {
   }
 });
 
-test('PNG command exports all 356 usable icons with independent saved-file decoding and assignment identities', async () => {
+test('PNG command exports 356 monochrome icons with independent neutral-pixel decoding and assignment identities', async () => {
   const output = path.join(temporary, 'png');
   const result = exportTo(source, output);
   assert.ifError(result.error);
@@ -230,12 +237,15 @@ test('PNG command exports all 356 usable icons with independent saved-file decod
   const manifestBytes = await readFile(path.join(output, 'manifest.json'));
   const manifest = JSON.parse(manifestBytes);
   const expected = ['manifest.json', 'LICENSE'];
-  assert.equal(manifest.version, '0.5.0');
-  assert.equal(manifest.exporter_version, '0.5.0');
+  assert.equal(manifest.version, '0.6.0');
+  assert.equal(manifest.exporter_version, '0.6.0');
+  assert.equal(manifest.palette_variant, 'monochrome');
+  assert.equal(manifest.token_version, '1.0.0');
   assert.equal(manifest.files.length, 356);
   assert.deepEqual(manifest.functions, functions);
   assert.equal(manifest.source_manifest_sha256, sourceBefore['manifest.json']);
-  assert.equal(manifest.tokens_sha256, sha(await readFile(path.join(root, 'tokens.json'))));
+  assert.equal(manifest.tokens_file, 'tokens-monochrome.json');
+  assert.equal(manifest.tokens_sha256, sha(await readFile(path.join(root, 'tokens-monochrome.json'))));
   assert.equal(manifest.svg_generator_sha256, sha(await readFile(path.join(root, 'themeforge/icons.py'))));
   assert.equal(manifest.svg_catalog_sha256, sha(await readFile(path.join(root, 'themeforge/icon_apps.py'))));
   const svgManifest = JSON.parse(await readFile(path.join(source, 'manifest.json')));
@@ -260,7 +270,6 @@ test('PNG command exports all 356 usable icons with independent saved-file decod
   assert.ok(manifest.renderer.browser && manifest.renderer.playwright && manifest.renderer.node);
   assert.equal(manifestBytes.toString().includes(root), false, 'No checkout path enters the export manifest');
   assert.equal(manifestBytes.toString().includes(temporary), false, 'No temporary or user path enters the export manifest');
-  const palettes = JSON.parse(await readFile(path.join(root, 'tokens.json'))).themes;
   const records = new Map(manifest.files.map(record => [record.path, record]));
   assert.equal(records.size, 356);
   for (const appearance of ['Clair', 'Obscur']) for (const size of [512, 1024]) {
@@ -278,30 +287,33 @@ test('PNG command exports all 356 usable icons with independent saved-file decod
     assert.equal(record.source_svg_sha256, sourceBefore[`${appearance}/${name}.svg`]);
     assert.equal(record.width, size); assert.equal(record.height, size);
     assert.equal(record.pixel_check.nontransparent_border_pixels, 0);
-    assert.ok(record.pixel_check.counts.text > 100 && record.pixel_check.counts.accent > 20);
+    assert.equal(record.pixel_check.nonneutral_pixels, 0);
+    assert.deepEqual(Object.keys(record.pixel_check.counts).sort(), ['glyph', 'panel', 'transparent']);
+    assert.ok(record.pixel_check.counts.glyph > 100, 'One combined glyph color is measured');
     const rgba = decodeRgba(bytes, size);
-    const colors = ['panel', 'text', 'accent'].map(role => {
-      const value = palettes[appearance][role];
-      return [1, 3, 5].map(offset => parseInt(value.slice(offset, offset + 2), 16));
-    });
-    const counts = [0, 0, 0];
-    let transparent = 0;
+    const tile = appearance === 'Clair' ? 255 : 0;
+    const foreground = appearance === 'Clair' ? 0 : 255;
+    const counts = { panel: 0, glyph: 0, transparent: 0 };
+    let nonneutral = 0;
     for (let y = 0; y < size; y += 1) for (let x = 0; x < size; x += 1) {
       const index = (y * size + x) * 4, alpha = rgba[index + 3];
-      if (alpha === 0) transparent += 1;
+      if (alpha === 0) counts.transparent += 1;
+      else if (rgba[index] !== rgba[index + 1] || rgba[index + 1] !== rgba[index + 2]) nonneutral += 1;
       if (x < size / 16 || y < size / 16 || x >= size * 15 / 16 || y >= size * 15 / 16) assert.equal(alpha, 0, 'Full outer margin stays transparent');
       if (alpha !== 255) continue;
-      for (let role = 0; role < colors.length; role += 1) {
-        if (rgba[index] === colors[role][0] && rgba[index + 1] === colors[role][1] && rgba[index + 2] === colors[role][2]) counts[role] += 1;
-      }
+      if (rgba[index] === tile) counts.panel += 1;
+      if (rgba[index] === foreground) counts.glyph += 1;
     }
-    assert.ok(transparent > 0 && counts[0] > size * size / 3 && counts[1] > 100 && counts[2] > 20, `${relative} preserves its visible drawing`);
+    assert.ok(counts.transparent > 0 && counts.panel > size * size / 3 && counts.glyph > 100,
+      `${relative} preserves its pure tile, pure foreground and transparent margin`);
+    assert.equal(nonneutral, 0, 'Every visible RGB triple is neutral; antialias grays are valid');
+    assert.deepEqual(record.pixel_check.counts, counts);
   }
   assert.deepEqual(Object.keys(await snapshot(output)).sort(), expected.sort());
   assert.deepEqual(await snapshot(source), sourceBefore);
 });
 
-for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
+for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
   const historical = {
     '0.1.0': { input: legacySource, before: legacyBefore, functions: baseFunctions, images: 96 },
     '0.2.0': { input: previousSource, before: previousBefore, functions: baseFunctions, images: 96 },
@@ -309,6 +321,8 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0']) test(`accepted ${ver
       apps: firstApps, date: '2026-10-18' },
     '0.4.0': { input: secondSource, before: secondBefore, functions: secondFunctions, images: 324,
       apps: secondApps, date: '2026-10-19' },
+    '0.5.0': { input: thirdSource, before: thirdBefore, functions, images: 356,
+      apps, date: '2026-10-19' },
   }[version];
   const historicalSource = historical.input, historicalBefore = historical.before;
   const historicalFunctions = historical.functions, imageCount = historical.images;
@@ -319,7 +333,11 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0']) test(`accepted ${ver
   assert.match(result.stdout, new RegExp(`Exported ${imageCount} PNG icons`));
   const manifest = JSON.parse(await readFile(path.join(output, 'manifest.json')));
   assert.equal(manifest.version, version);
-  assert.equal(manifest.exporter_version, '0.5.0');
+  assert.equal(manifest.exporter_version, '0.6.0');
+  assert.equal(manifest.tokens_file, 'tokens.json');
+  assert.equal(manifest.tokens_sha256, sha(await readFile(path.join(root, 'tokens.json'))));
+  assert.equal(manifest.token_version, '0.1.1');
+  assert.equal(Object.hasOwn(manifest, 'palette_variant'), false);
   assert.equal(manifest.source_manifest_sha256, historicalBefore['manifest.json']);
   assert.deepEqual(manifest.functions, historicalFunctions);
   if (historical.apps) {
@@ -367,7 +385,7 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0']) test(`accepted ${ver
 
 test('unknown and mismatched artwork versions are refused before output reservation or browser launch', async () => {
   const admitted = [['0.1.0', legacySource], ['0.2.0', previousSource], ['0.3.0', firstSource],
-    ['0.4.0', secondSource], ['0.5.0', source]];
+    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', source]];
   const cases = [['unknown', source, '9.9.9']];
   for (const [actual, original] of admitted) for (const [claimed] of admitted) {
     if (actual !== claimed) cases.push([`${actual}-as-${claimed}`, original, claimed]);
@@ -390,20 +408,22 @@ test('unknown and mismatched artwork versions are refused before output reservat
 test('altered app assignments and mixed previous/current artwork fail admission without changing their evidence', async () => {
   for (const mutation of ['label', 'android_package', 'store_url', 'store_title', 'category',
     'selection_basis', 'catalog_date', 'catalog_scope', 'historical-first-label', 'historical-second-label',
-    'mixed-version-svg', 'mixed-version-manifest']) {
+    'historical-third-label', 'mixed-version-svg', 'mixed-version-manifest']) {
     const input = path.join(temporary, `assignment-${mutation}`);
     await cp(mutation === 'historical-first-label' ? firstSource :
-      mutation === 'historical-second-label' ? secondSource : source, input, { recursive: true });
+      mutation === 'historical-second-label' ? secondSource :
+      mutation === 'historical-third-label' ? thirdSource : source, input, { recursive: true });
     const manifestPath = path.join(input, 'manifest.json');
     const manifest = JSON.parse(await readFile(manifestPath));
     if (mutation === 'mixed-version-svg') {
-      await cp(path.join(secondSource, 'Clair', 'x.svg'), path.join(input, 'Clair', 'github.svg'));
+      await cp(path.join(thirdSource, 'Clair', 'github.svg'), path.join(input, 'Clair', 'github.svg'));
     } else if (mutation === 'mixed-version-manifest') {
-      await cp(path.join(secondSource, 'manifest.json'), manifestPath);
+      await cp(path.join(thirdSource, 'manifest.json'), manifestPath);
     } else {
       if (mutation.startsWith('catalog_')) manifest[mutation] = 'unqualified replacement';
       else if (mutation === 'historical-first-label') manifest.catalog.find(entry => entry.id === 'google-chrome').label = 'unqualified replacement';
       else if (mutation === 'historical-second-label') manifest.catalog.find(entry => entry.id === 'google-meet').label = 'unqualified replacement';
+      else if (mutation === 'historical-third-label') manifest.catalog.find(entry => entry.id === 'microsoft-authenticator').label = 'unqualified replacement';
       else manifest.catalog.find(entry => entry.id === 'github')[mutation] = 'unqualified replacement';
       await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
     }
@@ -415,14 +435,14 @@ test('altered app assignments and mixed previous/current artwork fail admission 
   }
 });
 
-test('a catalog module edit during export refuses the final manifest and preserves rendered evidence', async () => {
+for (const drift of ['catalog', 'tokens']) test(`a ${drift} edit during export refuses the final manifest and preserves rendered evidence`, async () => {
   // A disposable source copy introduces a harmless module edit at the final
   // qualification boundary. The admitted drawings and input manifest stay valid,
   // so the catalog identity check, rather than an unrelated parse error, must fail.
-  const fixture = path.join(temporary, 'catalog-drift-fixture');
+  const fixture = path.join(temporary, `${drift}-drift-fixture`);
   await mkdir(path.join(fixture, 'tools'), { recursive: true });
   await cp(path.join(root, 'themeforge'), path.join(fixture, 'themeforge'), { recursive: true });
-  for (const name of ['tokens.json', 'LICENSE', 'package.json']) {
+  for (const name of ['tokens.json', 'tokens-monochrome.json', 'LICENSE', 'package.json']) {
     await cp(path.join(root, name), path.join(fixture, name));
   }
   await symlink(path.join(root, 'node_modules'), path.join(fixture, 'node_modules'),
@@ -431,21 +451,22 @@ test('a catalog module edit during export refuses the final manifest and preserv
   const boundary = '    // Retain any partial output if source changes or final qualification fails.\n';
   assert.equal(original.split(boundary).length, 2, 'One explicit final qualification boundary is instrumented');
   const fixtureExporter = path.join(fixture, 'tools', 'export-icons.mjs');
+  const edited = drift === 'catalog' ? 'themeforge/icon_apps.py' : 'tokens-monochrome.json';
+  const append = drift === 'catalog' ? '\\n# Owned drift fixture\\n' : '\\n';
   await writeFile(fixtureExporter, original.replace(boundary, boundary +
-    "    await writeFile(path.join(root, 'themeforge/icon_apps.py'), '\\n# Owned drift fixture\\n', { flag: 'a' });\n"));
-  const output = path.join(temporary, 'catalog-drift-output');
+    `    await writeFile(path.join(root, '${edited}'), '${append}', { flag: 'a' });\n`));
+  const output = path.join(temporary, `${drift}-drift-output`);
   const result = execute(process.execPath, [fixtureExporter, '--input', source, '--output', output]);
   assert.ifError(result.error);
   assert.equal(result.status, 1, result.stdout + result.stderr);
-  assert.match(result.stderr, /Named-app catalog module changed during export/);
+  assert.match(result.stderr, drift === 'catalog' ? /Named-app catalog module changed during export/ : /Tokens changed during export/);
   assert.doesNotMatch(result.stderr, /Icon output differs|browserType\.launch|SyntaxError|ModuleNotFoundError/);
   assert.equal((await lstat(path.join(output, 'Clair', '512', 'google-chrome.png'))).isFile(), true,
     'The source-change refusal retains completed image evidence');
   await assert.rejects(lstat(path.join(output, 'manifest.json')), { code: 'ENOENT' });
   assert.deepEqual(await snapshot(source), sourceBefore);
   assert.equal(await readFile(exporter, 'utf8'), original, 'The real exporter was never patched');
-  assert.notEqual(sha(await readFile(path.join(fixture, 'themeforge/icon_apps.py'))),
-    sha(await readFile(path.join(root, 'themeforge/icon_apps.py'))));
+  assert.notEqual(sha(await readFile(path.join(fixture, edited))), sha(await readFile(path.join(root, edited))));
 });
 
 test('changed, missing and extra SVG or manifest inputs fail before browser launch and preserve evidence', async () => {

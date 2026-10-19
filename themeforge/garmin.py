@@ -9,15 +9,19 @@ from .legal import license_comment
 from .tokens import load, validate
 
 
+VERSION = "0.3.0"
+
+
 def render_palette(document: dict) -> str:
     """Map every validated semantic role to a literal Monkey C color."""
     if not isinstance(document, dict) or type(document.get("schema_version")) is not int:
         raise ValueError("Expected a token document with an integer schema version")
     validate(document)
     lines = [
-        "// Generated from tokens.json by themeforge.garmin. Do not edit.\n",
+        "// Generated from validated semantic tokens by themeforge.garmin. Do not edit.\n",
         license_comment(),
         "\nmodule ThemePalette {\n",
+        f'    const WATCHFACE_VERSION = "{VERSION}";\n',
         f'    const TOKEN_SCHEMA = {document["schema_version"]};\n',
         f'    const TOKEN_VERSION = "{document["version"]}";\n',
     ]
@@ -31,7 +35,8 @@ def render_palette(document: dict) -> str:
 def main(argv: list[str] | None = None) -> int:
     root = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--tokens", type=Path, default=root / "tokens.json")
+    parser.add_argument("--tokens", type=Path, default=root / "tokens-monochrome.json",
+                        help="Current monochrome tokens by default; select tokens.json for the legacy palette")
     parser.add_argument("--output", type=Path, default=root / "garmin/watchface/source/GeneratedPalette.mc")
     parser.add_argument("--check", action="store_true", help="Compare only; never write source")
     options = parser.parse_args(argv)

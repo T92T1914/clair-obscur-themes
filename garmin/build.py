@@ -45,7 +45,7 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("The Windows compiler launcher requires paths without shell metacharacters.")
 
     sys.path.insert(0, str(ROOT))
-    from themeforge.garmin import main as check_palette
+    from themeforge.garmin import VERSION, main as check_palette
     check_palette(["--check"])
     output.mkdir(parents=True)
     program = output / ("ClairObscur-tests.prg" if options.tests else "ClairObscur.prg")
@@ -58,7 +58,7 @@ def main(argv: list[str] | None = None) -> int:
     environment.pop("_JAVA_OPTIONS", None)
     environment.pop("JDK_JAVA_OPTIONS", None)
     environment["JAVA_TOOL_OPTIONS"] = "-Djava.awt.headless=true -Xmx1g -XX:ActiveProcessorCount=2"
-    report = {"target": TARGET, "test_build": options.tests, "status": "running",
+    report = {"version": VERSION, "target": TARGET, "test_build": options.tests, "status": "running",
               "scope": "compiler diagnostics only; no simulator, device or runtime test execution"}
     receipt = output / "build.json"
     receipt.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

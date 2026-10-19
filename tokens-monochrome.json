@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "version": "1.0.0",
+  "provenance": {
+    "project": "Clair and Obscur",
+    "basis": "T's October 19, 2026 correction: black and white backgrounds, lettering and app icons",
+    "accepted_source": "f945342eda3196864f325312e61e3904e21e3258",
+    "legacy_tokens": "tokens.json"
+  },
+  "themes": {
+    "Obscur": {
+      "canvas": "#000000", "panel": "#000000", "text": "#ffffff",
+      "muted": "#cccccc", "divider": "#505050", "control": "#151515",
+      "hover": "#252525", "selected": "#202020", "border": "#999999",
+      "accent": "#ffffff", "on_accent": "#000000", "focus": "#ffffff",
+      "success": "#ffffff", "warning": "#ffffff", "error": "#ffffff",
+      "code": "#080808", "disabled": "#aaaaaa"
+    },
+    "Clair": {
+      "canvas": "#ffffff", "panel": "#ffffff", "text": "#000000",
+      "muted": "#444444", "divider": "#aaaaaa", "control": "#f0f0f0",
+      "hover": "#e0e0e0", "selected": "#e8e8e8", "border": "#666666",
+      "accent": "#000000", "on_accent": "#ffffff", "focus": "#000000",
+      "success": "#000000", "warning": "#000000", "error": "#000000",
+      "code": "#f5f5f5", "disabled": "#666666"
+    }
+  }
+}

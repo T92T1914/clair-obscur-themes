@@ -66,7 +66,7 @@ function checkInput(input, version) {
 const preflight = String.raw`
 import hashlib, json, sys
 from pathlib import Path
-from themeforge.icons import ROOT, VERSIONS, _safe_output, build_icons, render_icons
+from themeforge.icons import ROOT, VERSIONS, _safe_output, build_icons, render_icons, token_path
 from themeforge.tokens import load
 
 source = _safe_output(Path(sys.argv[1]))
@@ -78,7 +78,8 @@ if source == output or source in output.parents:
     raise ValueError("PNG output must not be inside the SVG input tree")
 if output.exists():
     raise ValueError("PNG export requires a new output directory; existing entries are preserved")
-document = load(ROOT / "tokens.json")
+document_path = token_path(version)
+document = load(document_path)
 build_icons(document, source, check=True, version=version)
 expected = render_icons(document, version=version)
 manifest = json.loads(expected["manifest.json"])
@@ -89,7 +90,8 @@ result = {
     "version": manifest["version"],
     "token_version": manifest["token_version"],
     "source_manifest_sha256": digest(expected["manifest.json"]),
-    "tokens_sha256": digest((ROOT / "tokens.json").read_bytes()),
+    "tokens_file": document_path.name,
+    "tokens_sha256": digest(document_path.read_bytes()),
     "generator_sha256": digest((ROOT / "themeforge/icons.py").read_bytes()),
     "license": license_payload.decode("utf-8"),
     "license_sha256": digest(license_payload),
@@ -99,6 +101,8 @@ result = {
     "files": [{**entry, "svg": expected[entry["path"]].decode("utf-8")}
               for entry in manifest["files"]],
 }
+if "palette_variant" in manifest:
+    result["palette_variant"] = manifest["palette_variant"]
 if "catalog" in manifest:
     result.update(catalog=manifest["catalog"], catalog_date=manifest["catalog_date"],
                   catalog_scope=manifest["catalog_scope"],
@@ -136,7 +140,8 @@ async function exportIcons(input, output) {
     }
     for (const file of source.files) {
       for (const size of sizes) {
-        const rendered = await page.evaluate(async ({ svg, size, palette }) => {
+        const monochrome = source.palette_variant === 'monochrome';
+        const rendered = await page.evaluate(async ({ svg, size, palette, monochrome }) => {
           const image = new Image();
           image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
           await image.decode();
@@ -154,15 +159,17 @@ async function exportIcons(input, output) {
           const dc = check.getContext('2d', { willReadFrequently: true });
           dc.drawImage(decoded, 0, 0);
           const pixels = dc.getImageData(0, 0, size, size).data;
-          const colors = Object.fromEntries(Object.entries(palette).map(([role, color]) =>
+          const pixelPalette = monochrome ? { panel: palette.panel, glyph: palette.text } : palette;
+          const colors = Object.fromEntries(Object.entries(pixelPalette).map(([role, color]) =>
             [role, [1, 3, 5].map(offset => parseInt(color.slice(offset, offset + 2), 16))]));
           const colorEntries = Object.entries(colors);
-          const counts = { panel: 0, text: 0, accent: 0, transparent: 0 };
+          const counts = Object.fromEntries([...Object.keys(colors), 'transparent'].map(role => [role, 0]));
           const bounds = { left: size, top: size, right: -1, bottom: -1 };
-          let border = 0;
+          let border = 0, nonneutral = 0;
           for (let y = 0; y < size; y += 1) for (let x = 0; x < size; x += 1) {
             const index = (y * size + x) * 4;
             if (pixels[index + 3] === 0) { counts.transparent += 1; continue; }
+            if (monochrome && (pixels[index] !== pixels[index + 1] || pixels[index + 1] !== pixels[index + 2])) nonneutral += 1;
             bounds.left = Math.min(bounds.left, x); bounds.top = Math.min(bounds.top, y);
             bounds.right = Math.max(bounds.right, x); bounds.bottom = Math.max(bounds.bottom, y);
             if (x === 0 || y === 0 || x === size - 1 || y === size - 1) border += 1;
@@ -171,13 +178,20 @@ async function exportIcons(input, output) {
               if (pixels[index] === rgb[0] && pixels[index + 1] === rgb[1] && pixels[index + 2] === rgb[2]) counts[role] += 1;
             }
           }
-          return { png: encoded.split(',')[1], counts, bounds, border };
-        }, { svg: file.svg, size, palette: source.palettes[file.appearance] });
+          return { png: encoded.split(',')[1], counts, bounds, border, nonneutral };
+        }, { svg: file.svg, size, palette: source.palettes[file.appearance], monochrome });
         assert.equal(rendered.border, 0, 'PNG must retain a transparent outer margin');
         assert.deepEqual(rendered.bounds, { left: size / 16, top: size / 16,
           right: size * 15 / 16 - 1, bottom: size * 15 / 16 - 1 });
-        assert.ok(rendered.counts.transparent > 0 && rendered.counts.panel > size * size / 3 &&
-          rendered.counts.text > 100 && rendered.counts.accent > 20, 'PNG must retain its tile and both visible glyph colors');
+        assert.ok(rendered.counts.transparent > 0 && rendered.counts.panel > size * size / 3,
+          'PNG must retain its visible tile and transparent margin');
+        if (monochrome) {
+          assert.equal(rendered.nonneutral, 0, 'Every visible monochrome pixel must have equal RGB channels');
+          assert.ok(rendered.counts.glyph > 100, 'PNG must retain the combined visible glyph color');
+        } else {
+          assert.ok(rendered.counts.text > 100 && rendered.counts.accent > 20,
+            'PNG must retain both visible glyph colors');
+        }
         const payload = Buffer.from(rendered.png, 'base64');
         const relative = `${file.appearance}/${size}/${file.function}.png`;
         await writeFile(path.join(output, relative), payload, { flag: 'wx' });
@@ -185,7 +199,8 @@ async function exportIcons(input, output) {
           width: size, height: size, bytes: payload.length, sha256: sha(payload),
           source_svg_sha256: file.sha256,
           pixel_check: { counts: rendered.counts, bounds: rendered.bounds,
-            nontransparent_border_pixels: rendered.border } });
+            nontransparent_border_pixels: rendered.border,
+            ...(monochrome ? { nonneutral_pixels: rendered.nonneutral } : {}) } });
       }
     }
     assert.deepEqual(network, [], 'No network request is permitted');
@@ -194,7 +209,7 @@ async function exportIcons(input, output) {
     checkInput(input, version);
     for (const file of source.files) assert.equal(sha(await readFile(path.join(input, file.path))), file.sha256, 'SVG input changed during export');
     assert.equal(sha(await readFile(path.join(input, 'manifest.json'))), source.source_manifest_sha256, 'SVG manifest changed during export');
-    assert.equal(sha(await readFile(path.join(root, 'tokens.json'))), source.tokens_sha256, 'Tokens changed during export');
+    assert.equal(sha(await readFile(path.join(root, source.tokens_file))), source.tokens_sha256, 'Tokens changed during export');
     assert.equal(sha(await readFile(path.join(root, 'themeforge/icons.py'))), source.generator_sha256, 'Generator changed during export');
     if (source.catalog) {
       assert.equal(sha(await readFile(path.join(root, 'themeforge/icon_apps.py'))), source.catalog_module_sha256,
@@ -204,10 +219,11 @@ async function exportIcons(input, output) {
     const license = Buffer.from(source.license, 'utf8');
     await writeFile(path.join(output, 'LICENSE'), license, { flag: 'wx' });
     const manifest = {
-      schema_version: 1, generator: 'clair-obscur-png-export', exporter_version: '0.5.0',
+      schema_version: 1, generator: 'clair-obscur-png-export', exporter_version: '0.6.0',
       version: source.version,
       token_version: source.token_version, source_manifest_sha256: source.source_manifest_sha256,
-      tokens_sha256: source.tokens_sha256, svg_generator_sha256: source.generator_sha256,
+      tokens_file: source.tokens_file, tokens_sha256: source.tokens_sha256, svg_generator_sha256: source.generator_sha256,
+      ...(source.palette_variant ? { palette_variant: source.palette_variant } : {}),
       ...(source.catalog ? { catalog: source.catalog, catalog_date: source.catalog_date,
         catalog_scope: source.catalog_scope, svg_catalog_sha256: source.catalog_module_sha256 } : {}),
       exporter_sha256: sha(await readFile(fileURLToPath(import.meta.url))),
