@@ -14,12 +14,15 @@ import xml.etree.ElementTree as ET
 
 from .legal import license_text
 from .tokens import load, validate
-from .icon_apps import APP_CATALOG, CATALOG_DATE, CATALOG_SCOPE
+from .icon_apps import (
+    APP_CATALOG, CATALOG_DATE, CATALOG_SCOPE,
+    NEW_APP_CATALOG, NEW_CATALOG_DATE, NEW_CATALOG_SCOPE,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.0"
-VERSIONS = ("0.1.0", "0.2.0", VERSION)
+VERSION = "0.4.0"
+VERSIONS = ("0.1.0", "0.2.0", "0.3.0", VERSION)
 SIZE = 512
 STROKE = 16
 FUNCTIONS = (
@@ -405,16 +408,156 @@ APP_GLYPHS = {
 }
 
 
+# New drawings remain separate so the accepted 0.3.0 catalog and its geometry
+# retain their own exact inventory and manifest when the current set grows.
+# Original geometric interpretations for the second named-app collection.
+# Shared 16-unit outlines and 112..400 control hulls retain the existing family.
+NEW_APP_GLYPHS = {
+    "x": [
+        _path("M152 128 L360 384"),
+        _path("M360 128 L152 384", accent=True),
+    ],
+    "threads": [
+        _path("M352 200 C344 152 312 128 256 128 C176 128 144 176 144 256 "
+              "C144 336 184 384 264 384 C328 384 368 352 368 304 "
+              "C368 256 336 232 280 232 C232 232 200 256 200 288 "
+              "C200 320 224 336 256 336 C304 336 320 296 312 248 "
+              "C304 208 280 184 248 184 C224 184 208 192 200 208"),
+        _path("M208 272 C232 248 280 248 304 272", accent=True),
+    ],
+    "signal": [
+        _path("M208 128 Q256 112 304 128 M344 152 Q376 176 384 224 "
+              "M384 272 Q376 320 344 344 M304 376 Q272 392 224 376 "
+              "M184 360 L144 384 L160 328 M136 288 Q120 256 136 224 "
+              "M152 184 Q168 160 184 152"),
+        _path("M200 232 H312 M200 280 H280", accent=True),
+    ],
+    "twitch": [
+        _path("M144 128 H384 V304 L304 384 H240 L200 400 V352 H144 Z"),
+        _path("M256 192 V272 M320 192 V272", accent=True),
+    ],
+    "capcut": [
+        _path("M128 168 L384 344 V368 L128 216 Z"),
+        _path("M128 344 L384 168 V144 L128 296 Z", accent=True),
+    ],
+    "disney-plus": [
+        _path("M184 192 V368 H248 C360 368 360 192 248 192 Z"),
+        _path("M128 168 C200 112 304 112 360 152 "
+              "M352 216 H400 M376 192 V240", accent=True),
+    ],
+    "prime-video": [
+        _shape("rect", x=128, y=144, width=256, height=208, rx=32),
+        _path("M168 232 H280 L312 256 L280 280 H168", accent=True),
+        _path("M160 384 C216 400 304 400 360 368 M336 368 H360 V392"),
+    ],
+    "microsoft-teams": [
+        _shape("circle", cx=312, cy=168, r=32),
+        _path("M312 240 H344 Q376 240 376 272 V320 Q376 352 344 352 H312"),
+        _shape("rect", x=128, y=200, width=160, height=176, rx=24),
+        _path("M168 248 H248 M208 248 V328", accent=True),
+    ],
+    "zoom": [
+        _shape("circle", cx=256, cy=256, r=136),
+        _shape("rect", x=176, y=216, width=104, height=96, rx=16, stroke="accent"),
+        _path("M280 240 L336 208 V320 L280 288", accent=True),
+    ],
+    "google-meet": [
+        _path("M128 192 L176 144 H304 V368 H128 Z"),
+        _path("M304 224 L384 176 V336 L304 288", accent=True),
+    ],
+    "google-docs": [
+        _path("M160 120 H296 L368 192 V392 H160 Z"),
+        _path("M296 120 V192 H368"),
+        _path("M208 248 H320 M208 296 H320 M208 344 H280", accent=True),
+    ],
+    "google-sheets": [
+        _path("M160 120 H296 L368 192 V392 H160 Z"),
+        _path("M296 120 V192 H368"),
+        _shape("rect", x=200, y=232, width=128, height=128, rx=8, stroke="accent"),
+        _path("M200 272 H328 M200 312 H328 M240 232 V360", accent=True),
+    ],
+    "onedrive": [
+        _path("M176 352 C120 352 112 272 168 256 C152 208 208 176 248 208 "
+              "C288 144 360 192 352 240 C400 248 400 336 352 352 Z"),
+        _path("M184 304 C232 280 280 280 328 304", accent=True),
+    ],
+    "google-translate": [
+        _shape("rect", x=128, y=136, width=184, height=224, rx=24),
+        _path("M312 208 H360 Q384 208 384 232 V376 H232 V360"),
+        _path("M168 304 L220 192 L272 304 M188 264 H252", accent=True),
+        _path("M320 248 V264 M296 280 H352 "
+              "M304 280 Q312 320 352 336 M344 280 Q336 312 304 336"),
+    ],
+    "google-keep": [
+        _path("M160 128 H304 L368 192 V384 H160 Z"),
+        _path("M224 304 C224 280 200 264 200 232 C200 168 312 168 312 232 "
+              "C312 264 288 280 288 304 Z", accent=True),
+        _path("M232 336 H280"),
+    ],
+    "google-wallet": [
+        _path("M144 208 L184 144 H328 L352 208"),
+        _shape("rect", x=128, y=208, width=256, height=168, rx=32),
+        _path("M144 264 H368 M304 312 H344", accent=True),
+    ],
+    "cash-app": [
+        _shape("rect", x=144, y=128, width=224, height=256, rx=48),
+        _path("M304 200 C288 176 224 176 208 208 C184 240 224 256 256 264 "
+              "C296 272 320 288 304 320 C288 352 224 352 208 328 "
+              "M256 152 V360", accent=True),
+    ],
+    "venmo": [
+        _path("M152 152 L240 384 H288 L368 152"),
+        _path("M208 152 L264 304 L312 152", accent=True),
+    ],
+    "ebay": [
+        _path("M144 128 H288 L392 232 L240 384 L128 272 V144 Q128 128 144 128 Z"),
+        _shape("circle", cx=184, cy=184, r=20, stroke="accent"),
+        _path("M216 272 L296 192 M256 312 L336 232", accent=True),
+    ],
+    "mcdonalds": [
+        _path("M128 376 V232 C128 112 256 112 256 232 V376"),
+        _path("M256 232 C256 112 384 112 384 232 V376", accent=True),
+    ],
+    "starbucks": [
+        _path("M160 208 H336 L312 376 H184 Z"),
+        _path("M144 208 H352 V176 H144 Z"),
+        _path("M216 144 Q200 128 216 112 M280 144 Q264 128 280 112 "
+              "M248 232 L256 256 L280 264 L256 272 L248 296 "
+              "L240 272 L216 264 L240 256 Z", accent=True),
+    ],
+    "duolingo": [
+        _path("M152 144 L216 184 Q256 168 296 184 L360 144 V288 "
+              "C360 392 152 392 152 288 Z"),
+        _shape("ellipse", cx=212, cy=248, rx=32, ry=40),
+        _shape("ellipse", cx=300, cy=248, rx=32, ry=40),
+        _path("M240 296 L256 312 L272 296 Z", accent=True),
+    ],
+    "waze": [
+        _path("M256 144 C184 144 136 192 136 256 C136 296 160 320 192 328 "
+              "H312 L368 272 V256 C368 192 320 144 256 144 Z"),
+        _shape("circle", cx=200, cy=360, r=24),
+        _shape("circle", cx=312, cy=360, r=24),
+        _path("M208 280 H280 L304 256", accent=True),
+    ],
+    "canva": [
+        _path("M352 184 C328 144 296 128 256 128 C176 128 128 184 128 256 "
+              "C128 328 176 384 256 384 C296 384 328 368 352 328"),
+        _path("M208 312 L320 200 L352 232 L240 344 H208 Z", accent=True),
+    ],
+}
+
+
 def icon_catalog(version: str = VERSION) -> list[dict]:
     """Return labels and explicit assignment identities for an admitted revision."""
     if version not in VERSIONS:
         raise ValueError("Unsupported icon artwork version")
     catalog = [{"id": name, "label": name.replace("-", " ").title(), "kind": "function",
                 "category": "general"} for name in FUNCTIONS]
-    if version != VERSION:
+    if version in ("0.1.0", "0.2.0"):
         return catalog
     seen, packages = set(FUNCTIONS), set()
-    for app in APP_CATALOG:
+    apps = APP_CATALOG if version == "0.3.0" else (*APP_CATALOG, *NEW_APP_CATALOG)
+    for app in apps:
         if not isinstance(app, dict):
             raise ValueError("Malformed named-app catalog")
         identifier, package = app.get("id"), app.get("android_package")
@@ -434,7 +577,12 @@ def icon_catalog(version: str = VERSION) -> list[dict]:
         seen.add(identifier)
         packages.add(package)
         catalog.append(dict(app))
-    if set(APP_GLYPHS) != seen - set(FUNCTIONS):
+    drawings = set(APP_GLYPHS)
+    if version == "0.4.0":
+        if drawings & set(NEW_APP_GLYPHS):
+            raise ValueError("New named-app drawings replace an accepted ID")
+        drawings |= set(NEW_APP_GLYPHS)
+    if drawings != seen - set(FUNCTIONS):
         raise ValueError("Named-app catalog and drawings differ")
     return catalog
 
@@ -462,7 +610,8 @@ def _render_icon(function: str, appearance: str, document: dict, grant: str, *, 
         "stroke-width": str(12 if version == "0.1.0" else STROKE),
         "stroke-linecap": "round", "stroke-linejoin": "round"})
     drawings = (GLYPHS if version == "0.1.0" else
-                CURRENT_GLYPHS if function in CURRENT_GLYPHS else APP_GLYPHS)
+                CURRENT_GLYPHS if function in CURRENT_GLYPHS else
+                APP_GLYPHS if function in APP_GLYPHS else NEW_APP_GLYPHS)
     for tag, attributes in drawings[function]:
         ET.SubElement(group, tag, {
             key: palette[value] if value in ("accent", "text") else value
@@ -503,8 +652,10 @@ def render_icons(document: dict, *, version: str = VERSION) -> dict[str, bytes]:
         "functions": names, "files": records,
         "scope": "Original functional glyphs; no brand logos, font assets or phone installation",
     }
-    if version == VERSION:
-        manifest.update(catalog=catalog, catalog_date=CATALOG_DATE, catalog_scope=CATALOG_SCOPE,
+    if version in ("0.3.0", "0.4.0"):
+        date, scope = ((CATALOG_DATE, CATALOG_SCOPE) if version == "0.3.0"
+                       else (NEW_CATALOG_DATE, NEW_CATALOG_SCOPE))
+        manifest.update(catalog=catalog, catalog_date=date, catalog_scope=scope,
                         scope="Original themed interpretations for named apps and general functions; "
                               "app names identify intended assignments, not publisher endorsement or installation")
     files["manifest.json"] = (json.dumps(manifest, sort_keys=True, indent=2) + "\n").encode("utf-8")

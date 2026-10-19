@@ -1,5 +1,13 @@
 # Changes
 
+## Icon artwork 0.4.0
+
+- Add 24 source-verified app interpretations for work, documents, payments, navigation, learning, media and communication. The collection now has 57 named apps and 24 general functions in both appearances.
+- Preserve the first named-app 0.3.0 archive and all its SVG bytes, catalog and metadata alongside unchanged 0.2.0 and 0.1.0 downloads.
+- Export 324 current PNGs and retain exact-version admission and decoding for all historical collections. Keep app identities and selection limits explicit.
+- Admit the expanded portable inventory within a 224-hash bound. Preserve the separate total-entry, byte, path and read limits.
+- Physical phone assignment, masking, labels, fonts and restoration remain untested.
+
 ## Icon artwork 0.3.0
 
 - Add 33 named Android app interpretations beside the unchanged 24 general drawings, with paired Clair/Obscur geometry and explicit app/package/listing identities.
