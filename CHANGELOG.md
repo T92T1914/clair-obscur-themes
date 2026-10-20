@@ -1,5 +1,14 @@
 # Changes
 
+## Icon artwork 0.12.0
+
+- Add ten inspected banking, card and investment assignments in both black and white appearances. The collection now has 183 named apps and 24 general functions.
+- Keep visible names and exact Android package identities, including distinct Discover and Capital One choices. Use different main silhouettes within the existing inset and stroke system.
+- Preserve all 394 accepted 0.11.0 SVGs, all eleven earlier SVG archives, all desktop and Terminal packages and Garmin 0.5.0 inputs.
+- Include the choices in the existing finder, individual PNG buttons, static gallery, portable kit and 828-image two-size PNG export.
+- Admit the measured 477 declared hashes and 497-entry kit within a 501-entry cap, preserving four-entry extra-file reporting headroom and every existing byte, path, link, depth and read guard.
+- Keep actual phone assignment and native/device typography, persistence and restoration separate from artwork and browser checks.
+
 ## Individual preview PNG downloads
 
 - Prepare a selected icon as a 512-pixel PNG from either appearance in the hosted gallery, using the existing local SVG and browser canvas.

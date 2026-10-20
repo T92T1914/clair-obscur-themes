@@ -209,7 +209,20 @@ const travelApps = [
   ['tripit', 'TripIt', 'com.tripit'],
   ['hopper', 'Hopper', 'com.hopper.mountainview.play'],
 ];
-const apps = [...foodApps, ...travelApps];
+const financeApps = [
+  ['bank-of-america', 'Bank of America', 'com.infonow.bofa'],
+  ['wells-fargo', 'Wells Fargo', 'com.wf.wellsfargomobile'],
+  ['us-bank', 'U.S. Bank', 'com.usbank.mobilebanking'],
+  ['pnc', 'PNC', 'com.pnc.ecommerce.mobile'],
+  ['discover', 'Discover', 'com.discoverfinancial.mobile'],
+  ['amex', 'Amex', 'com.americanexpress.android.acctsvcs.us'],
+  ['fidelity-investments', 'Fidelity Investments', 'com.fidelity.android'],
+  ['schwab', 'Schwab', 'com.schwab.mobile'],
+  ['sofi', 'SoFi', 'com.sofi.mobile'],
+  ['robinhood', 'Robinhood', 'com.robinhood.android'],
+];
+const travelCatalogApps = [...foodApps, ...travelApps];
+const apps = [...travelCatalogApps, ...financeApps];
 const firstFunctions = [...baseFunctions, ...firstApps.map(([id]) => id)];
 const secondFunctions = [...baseFunctions, ...secondApps.map(([id]) => id)];
 const retainedFunctions = [...baseFunctions, ...retainedApps.map(([id]) => id)];
@@ -217,12 +230,13 @@ const companionFunctions = [...baseFunctions, ...companionApps.map(([id]) => id)
 const broadFunctions = [...baseFunctions, ...broadApps.map(([id]) => id)];
 const everydayFunctions = [...baseFunctions, ...everydayApps.map(([id]) => id)];
 const foodFunctions = [...baseFunctions, ...foodApps.map(([id]) => id)];
+const travelFunctions = [...baseFunctions, ...travelCatalogApps.map(([id]) => id)];
 const functions = [...baseFunctions, ...apps.map(([id]) => id)];
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 let temporary, source, sourceBefore, legacySource, legacyBefore, previousSource, previousBefore,
   firstSource, firstBefore, secondSource, secondBefore, thirdSource, thirdBefore,
   monochromeSource, monochromeBefore, companionSource, companionBefore, broadSource, broadBefore, everydaySource, everydayBefore,
-  foodSource, foodBefore;
+  foodSource, foodBefore, travelSource, travelBefore;
 
 function execute(command, args, options = {}) {
   return spawnSync(command, args, { cwd: root, encoding: 'utf8', windowsHide: true,
@@ -426,7 +440,18 @@ before(async () => {
     'The accepted food-order manifest remains exact');
   for (const appearance of ['Clair', 'Obscur']) for (const name of foodFunctions) {
     assert.equal(sourceBefore[`${appearance}/${name}.svg`], foodBefore[`${appearance}/${name}.svg`],
-      'All 374 accepted food-order SVG bytes remain unchanged in the travel collection');
+      'All 374 accepted food-order SVG bytes remain unchanged in the expanded collection');
+  }
+  travelSource = path.join(temporary, 'travel-svg');
+  const travel = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', travelSource, '--version', '0.11.0']);
+  assert.ifError(travel.error);
+  assert.equal(travel.status, 0, travel.stdout + travel.stderr);
+  travelBefore = await snapshot(travelSource);
+  assert.equal(travelBefore['manifest.json'], '1ebc36ff9e29aa9b71a504c393a0028c3338cdd4d341a91dff5f6d6361a2bb57',
+    'The accepted travel manifest remains exact');
+  for (const appearance of ['Clair', 'Obscur']) for (const name of travelFunctions) {
+    assert.equal(sourceBefore[`${appearance}/${name}.svg`], travelBefore[`${appearance}/${name}.svg`],
+      'All 394 accepted travel SVG bytes remain unchanged in the finance collection');
   }
 });
 
@@ -438,20 +463,20 @@ after(async () => {
   }
 });
 
-test('PNG command exports 788 monochrome icons with independent neutral-pixel decoding and assignment identities', async () => {
+test('PNG command exports 828 monochrome icons with independent neutral-pixel decoding and assignment identities', async () => {
   const output = path.join(temporary, 'png');
   const result = exportTo(source, output);
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.match(result.stdout, /Exported 788 PNG icons/);
+  assert.match(result.stdout, /Exported 828 PNG icons/);
   const manifestBytes = await readFile(path.join(output, 'manifest.json'));
   const manifest = JSON.parse(manifestBytes);
   const expected = ['manifest.json', 'LICENSE'];
-  assert.equal(manifest.version, '0.11.0');
+  assert.equal(manifest.version, '0.12.0');
   assert.equal(manifest.exporter_version, '0.11.0');
   assert.equal(manifest.palette_variant, 'monochrome');
   assert.equal(manifest.token_version, '1.0.0');
-  assert.equal(manifest.files.length, 788);
+  assert.equal(manifest.files.length, 828);
   assert.deepEqual(manifest.functions, functions);
   assert.equal(manifest.source_manifest_sha256, sourceBefore['manifest.json']);
   assert.equal(manifest.tokens_file, 'tokens-monochrome.json');
@@ -460,7 +485,7 @@ test('PNG command exports 788 monochrome icons with independent neutral-pixel de
   assert.equal(manifest.svg_catalog_sha256, sha(await readFile(path.join(root, 'themeforge/icon_apps.py'))));
   const svgManifest = JSON.parse(await readFile(path.join(source, 'manifest.json')));
   assert.deepEqual(manifest.catalog, svgManifest.catalog, 'Complete admitted assignment metadata survives PNG export');
-  assert.equal(manifest.catalog.length, 197);
+  assert.equal(manifest.catalog.length, 207);
   assert.equal(manifest.catalog_date, '2026-10-20');
   assert.equal(manifest.catalog_scope, svgManifest.catalog_scope);
   assert.match(manifest.catalog_scope, /Not an ordered popularity chart or exhaustive catalog/);
@@ -590,6 +615,17 @@ test('PNG command exports 788 monochrome icons with independent neutral-pixel de
     tripit: 'TripIt: Travel Planner',
     hopper: 'Hopper: Hotels, Flights & Cars',
   });
+  assert.deepEqual(Object.fromEntries(manifest.catalog.filter(entry => financeApps.some(([id]) => id === entry.id))
+    .map(entry => [entry.id, entry.store_title])), {
+    'bank-of-america': 'Bank of America Mobile Banking',
+    'wells-fargo': 'Wells Fargo Mobile\u00ae',
+    'us-bank': 'U.S. Bank Mobile Banking',
+    pnc: 'PNC Mobile', discover: 'Discover Mobile', amex: 'Amex',
+    'fidelity-investments': 'Fidelity Investments', schwab: 'Schwab Mobile',
+    sofi: 'SoFi: Bank, Invest & Crypto', robinhood: 'Robinhood: Trading & Investing',
+  });
+  assert.equal(manifest.catalog.find(entry => entry.id === 'discover').android_package, 'com.discoverfinancial.mobile');
+  assert.equal(manifest.catalog.find(entry => entry.id === 'capital-one').android_package, 'com.konylabs.capitalone');
   assert.equal(manifest.exporter_sha256, sha(await readFile(exporter)));
   const license = await readFile(path.join(output, 'LICENSE'));
   assert.deepEqual(license, await readFile(path.join(root, 'LICENSE')));
@@ -600,10 +636,10 @@ test('PNG command exports 788 monochrome icons with independent neutral-pixel de
   assert.equal(manifestBytes.toString().includes(root), false, 'No checkout path enters the export manifest');
   assert.equal(manifestBytes.toString().includes(temporary), false, 'No temporary or user path enters the export manifest');
   const records = new Map(manifest.files.map(record => [record.path, record]));
-  assert.equal(records.size, 788);
+  assert.equal(records.size, 828);
   for (const appearance of ['Clair', 'Obscur']) for (const size of [512, 1024]) {
     const hashes = functions.map(name => records.get(`${appearance}/${size}/${name}.png`)?.sha256);
-    assert.equal(new Set(hashes).size, 197, `${appearance}/${size} retains 197 distinct drawings`);
+    assert.equal(new Set(hashes).size, 207, `${appearance}/${size} retains 207 distinct drawings`);
     assert.equal(hashes.includes(undefined), false);
   }
   for (const appearance of ['Clair', 'Obscur']) for (const size of [512, 1024]) for (const name of functions) {
@@ -621,7 +657,7 @@ test('PNG command exports 788 monochrome icons with independent neutral-pixel de
   assert.deepEqual(await snapshot(source), sourceBefore);
 });
 
-for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
+for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
   const historical = {
     '0.1.0': { input: legacySource, before: legacyBefore, functions: baseFunctions, images: 96 },
     '0.2.0': { input: previousSource, before: previousBefore, functions: baseFunctions, images: 96 },
@@ -641,6 +677,8 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
       apps: everydayApps, date: '2026-10-19', monochrome: true },
     '0.10.0': { input: foodSource, before: foodBefore, functions: foodFunctions, images: 748,
       apps: foodApps, date: '2026-10-19', monochrome: true },
+    '0.11.0': { input: travelSource, before: travelBefore, functions: travelFunctions, images: 788,
+      apps: travelCatalogApps, date: '2026-10-20', monochrome: true },
   }[version];
   const historicalSource = historical.input, historicalBefore = historical.before;
   const historicalFunctions = historical.functions, imageCount = historical.images;
@@ -706,12 +744,12 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
 
 test('unknown and mismatched artwork versions are refused before output reservation or browser launch', async () => {
   const admitted = [['0.1.0', legacySource], ['0.2.0', previousSource], ['0.3.0', firstSource],
-    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', foodSource], ['0.11.0', source]];
-  const cases = [['unknown', source, '0.12.0']];
+    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', foodSource], ['0.11.0', travelSource], ['0.12.0', source]];
+  const cases = [['unknown', source, '0.13.0']];
   for (const [actual, original] of admitted) for (const [claimed] of admitted) {
     if (actual !== claimed) cases.push([`${actual}-as-${claimed}`, original, claimed]);
   }
-  assert.equal(cases.length, 111, 'All 110 cross-version claims and one unsupported future version are exercised');
+  assert.equal(cases.length, 133, 'All 132 cross-version claims and one unsupported future version are exercised');
   for (const [name, original, version] of cases) {
     const input = path.join(temporary, name);
     await cp(original, input, { recursive: true });
@@ -736,7 +774,10 @@ test('altered app assignments and mixed previous/current artwork fail admission 
     'previous-broad-manifest', 'new-svg-in-historical-broad', 'historical-everyday-label',
     'previous-everyday-manifest', 'new-svg-in-historical-everyday', 'historical-food-label',
     'previous-food-manifest', 'new-svg-in-historical-food', 'travel-label', 'travel-android_package',
-    'travel-store_url', 'travel-store_title', 'travel-category', 'travel-selection_basis']) {
+    'travel-store_url', 'travel-store_title', 'travel-category', 'travel-selection_basis',
+    'historical-travel-label', 'previous-travel-manifest', 'new-svg-in-historical-travel',
+    'finance-label', 'finance-android_package', 'finance-store_url', 'finance-store_title',
+    'finance-category', 'finance-selection_basis']) {
     const input = path.join(temporary, `assignment-${mutation}`);
     await cp(mutation === 'historical-first-label' ? firstSource :
       mutation === 'historical-second-label' ? secondSource :
@@ -745,10 +786,15 @@ test('altered app assignments and mixed previous/current artwork fail admission 
       ['historical-companion-label', 'new-svg-in-historical-companion'].includes(mutation) ? companionSource :
       ['historical-broad-label', 'new-svg-in-historical-broad'].includes(mutation) ? broadSource :
       ['historical-everyday-label', 'new-svg-in-historical-everyday'].includes(mutation) ? everydaySource :
-      ['historical-food-label', 'new-svg-in-historical-food'].includes(mutation) ? foodSource : source, input, { recursive: true });
+      ['historical-food-label', 'new-svg-in-historical-food'].includes(mutation) ? foodSource :
+      ['historical-travel-label', 'new-svg-in-historical-travel'].includes(mutation) ? travelSource : source, input, { recursive: true });
     const manifestPath = path.join(input, 'manifest.json');
     const manifest = JSON.parse(await readFile(manifestPath));
-    if (mutation === 'new-svg-in-historical-food') {
+    if (mutation === 'new-svg-in-historical-travel') {
+      await cp(path.join(source, 'Clair', 'bank-of-america.svg'), path.join(input, 'Clair', 'bank-of-america.svg'));
+    } else if (mutation === 'previous-travel-manifest') {
+      await cp(path.join(travelSource, 'manifest.json'), manifestPath);
+    } else if (mutation === 'new-svg-in-historical-food') {
       await cp(path.join(source, 'Clair', 'fly-delta.svg'), path.join(input, 'Clair', 'fly-delta.svg'));
     } else if (mutation === 'previous-food-manifest') {
       await cp(path.join(foodSource, 'manifest.json'), manifestPath);
@@ -782,6 +828,8 @@ test('altered app assignments and mixed previous/current artwork fail admission 
       else if (mutation === 'historical-broad-label') manifest.catalog.find(entry => entry.id === 'youtube-music').label = 'unqualified replacement';
       else if (mutation === 'historical-everyday-label') manifest.catalog.find(entry => entry.id === 'slack').label = 'unqualified replacement';
       else if (mutation === 'historical-food-label') manifest.catalog.find(entry => entry.id === 'chipotle').label = 'unqualified replacement';
+      else if (mutation === 'historical-travel-label') manifest.catalog.find(entry => entry.id === 'fly-delta').label = 'unqualified replacement';
+      else if (mutation.startsWith('finance-')) manifest.catalog.find(entry => entry.id === 'bank-of-america')[mutation.slice(8)] = 'unqualified replacement';
       else if (mutation.startsWith('travel-')) manifest.catalog.find(entry => entry.id === 'fly-delta')[mutation.slice(7)] = 'unqualified replacement';
       else manifest.catalog.find(entry => entry.id === 'slack')[mutation] = 'unqualified replacement';
       await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
@@ -884,7 +932,7 @@ test('linked or junction output ancestors are refused before browser launch with
 test('a linked child manifest is refused before parsing its owned target or launching a browser', async t => {
   for (const [name, contents] of [
     ['malformed', '{owned malformed JSON fixture'],
-    ['unsupported', JSON.stringify({ version: '0.12.0' })],
+    ['unsupported', JSON.stringify({ version: '0.13.0' })],
   ]) {
     const input = path.join(temporary, `linked-manifest-${name}`);
     await cp(source, input, { recursive: true });

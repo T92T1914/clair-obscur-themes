@@ -27,7 +27,8 @@ WEB_ASSETS = frozenset({'index.html', 'preview.css', 'preview.js'})
 REPOSITORY_URL = 'https://github.com/T92T1914/clair-obscur-themes'
 PORTABLE_ARCHIVE = 'Clair-Obscur-portable-preview.zip'
 PORTABLE_CHECKSUMS = 'portable-SHA256SUMS'
-ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.11.0.zip'
+ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.12.0.zip'
+TRAVEL_ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.11.0.zip'
 FOOD_ORDER_ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.10.0.zip'
 EVERYDAY_ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.9.0.zip'
 BROAD_ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.8.0.zip'
@@ -255,9 +256,9 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
     icon_files['LICENSE.txt'] = sources['LICENSE']
     files['icons/LICENSE.txt'] = sources['LICENSE']
     files[ICON_ARCHIVE] = _zip_bytes(icon_files)
-    for revision, archive in (('0.10.0', FOOD_ORDER_ICON_ARCHIVE), ('0.9.0', EVERYDAY_ICON_ARCHIVE), ('0.8.0', BROAD_ICON_ARCHIVE), ('0.7.0', COMPANION_ICON_ARCHIVE), ('0.6.0', MONOCHROME_ICON_ARCHIVE), ('0.5.0', THIRD_APP_ICON_ARCHIVE), ('0.4.0', SECOND_APP_ICON_ARCHIVE), ('0.3.0', FIRST_APP_ICON_ARCHIVE),
+    for revision, archive in (('0.11.0', TRAVEL_ICON_ARCHIVE), ('0.10.0', FOOD_ORDER_ICON_ARCHIVE), ('0.9.0', EVERYDAY_ICON_ARCHIVE), ('0.8.0', BROAD_ICON_ARCHIVE), ('0.7.0', COMPANION_ICON_ARCHIVE), ('0.6.0', MONOCHROME_ICON_ARCHIVE), ('0.5.0', THIRD_APP_ICON_ARCHIVE), ('0.4.0', SECOND_APP_ICON_ARCHIVE), ('0.3.0', FIRST_APP_ICON_ARCHIVE),
                               ('0.2.0', PREVIOUS_ICON_ARCHIVE), ('0.1.0', LEGACY_ICON_ARCHIVE)):
-        retained_icons = render_icons(identity_document if revision in ('0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0') else document, version=revision)
+        retained_icons = render_icons(identity_document if revision in ('0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0') else document, version=revision)
         for path, payload in retained_icons.items():
             if path.endswith('.svg') and icon_license_comment not in payload:
                 raise ValueError('Source license differs from the generated icon grant')
@@ -265,7 +266,7 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
         files[archive] = _zip_bytes(retained_icons)
     files[ICON_CHECKSUMS] = (
         ''.join(f'{_digest(files[path])}  {Path(path).name}\n'
-                for path in (ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
+                for path in (ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
                              PREVIOUS_ICON_ARCHIVE, LEGACY_ICON_ARCHIVE)).encode()
     )
     icon_cards = {'app': [], 'function': []}
@@ -338,6 +339,7 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
             .replace('{{SOURCE_DESCRIPTION}}', source_description)
             .replace('{{ICON_GALLERY}}', icon_gallery)
             .replace('{{ICON_ARCHIVE}}', ICON_ARCHIVE)
+            .replace('{{TRAVEL_ICON_ARCHIVE}}', TRAVEL_ICON_ARCHIVE)
             .replace('{{FOOD_ORDER_ICON_ARCHIVE}}', FOOD_ORDER_ICON_ARCHIVE)
             .replace('{{EVERYDAY_ICON_ARCHIVE}}', EVERYDAY_ICON_ARCHIVE)
             .replace('{{BROAD_ICON_ARCHIVE}}', BROAD_ICON_ARCHIVE)
