@@ -1708,6 +1708,108 @@ test('individual PNG failures report the problem and permit a successful retry w
   }
 });
 
+test('individual PNG shared busy state is exposed on other controls and restored after success or failure', async () => {
+  for (const outcome of ['success', 'failure']) {
+    const { context, page, consoleErrors } = await pageFor();
+    const downloads = []; page.on('download', download => downloads.push(download));
+    try {
+      await page.locator('#package-target').selectOption('equicord');
+      await page.locator('#package-appearance').selectOption('Clair');
+      await page.locator('#icon-query').fill('phone');
+      assert.deepEqual(await page.locator('.icon-card:visible').evaluateAll(nodes => nodes.map(node => node.dataset.iconFunction)), ['phone']);
+      const originalStates = await page.locator('[data-icon-png]').evaluateAll(nodes =>
+        nodes.map(node => [node.getAttribute('aria-disabled'), node.disabled]));
+      assert.equal(originalStates.length, 434);
+      await page.evaluate(outcome => {
+        const image = document.querySelector('[data-icon-function="phone"] figure img');
+        const original = image.decode, decode = original.bind(image);
+        const fixture = { image, original, held: false, settled: false };
+        image.decode = () => new Promise((resolve, reject) => {
+          fixture.held = true;
+          const settle = action => { if (!fixture.settled) { fixture.settled = true; action(); } };
+          fixture.release = () => settle(() => outcome === 'success' ? decode().then(resolve, reject) :
+            reject(new DOMException('Controlled first PNG decode failure', 'EncodingError')));
+          fixture.cancel = () => settle(() => reject(new DOMException('Owned PNG fixture cleanup', 'AbortError')));
+        });
+        window.pngBusyFixture = fixture;
+      }, outcome);
+      const first = iconPngButton(page, 'phone', 'Clair'), opposite = iconPngButton(page, 'phone', 'Obscur');
+      const initial = await iconPngSurroundings(page);
+      await first.focus(); await page.keyboard.press('Enter');
+      await page.waitForFunction(() => window.pngBusyFixture.held);
+      assert.equal(await page.locator('#icon-png-status').innerText(), 'Preparing Clair-Obscur-0.13.0-Clair-phone-512.png...');
+      await tabToIconAction(page, 'phone', 'Obscur');
+      await page.keyboard.press('Enter');
+      assert.equal(await opposite.getAttribute('aria-disabled'), 'true',
+        'An opposite-appearance action blocked by pending PNG work must expose its unavailability');
+      const busy = await page.locator('[data-icon-png]').evaluateAll(nodes =>
+        nodes.map(node => ({ unavailable: node.getAttribute('aria-disabled'), nativeDisabled: node.disabled })));
+      assert.equal(busy.length, 434);
+      assert.ok(busy.every(node => node.unavailable === 'true'), 'Every serially blocked PNG action must expose its busy state');
+      assert.ok(busy.every(node => !node.nativeDisabled), 'Temporary unavailability retains the controls in keyboard order');
+      assert.equal(await opposite.evaluate(node => node === document.activeElement), true);
+      assert.equal(downloads.length, 0); assert.deepEqual(await iconPngSurroundings(page), initial);
+
+      await page.locator('#icon-query').focus(); await page.keyboard.press('Control+A');
+      await page.keyboard.type('com.weather.Weather');
+      assert.equal(await page.locator('#icon-query').inputValue(), 'com.weather.Weather');
+      assert.deepEqual(await page.locator('.icon-card:visible').evaluateAll(nodes => nodes.map(node => node.dataset.iconFunction)), ['weather-channel']);
+      for (const id of ['icon-kind', 'icon-clear', 'icon-history-summary']) {
+        await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => document.activeElement.id), id);
+      }
+      await tabToIconAction(page, 'weather-channel', 'Clair');
+      const other = iconPngButton(page, 'weather-channel', 'Clair'), filtered = await iconPngSurroundings(page);
+      await page.keyboard.press('Enter');
+      assert.equal(await other.getAttribute('aria-disabled'), 'true');
+      assert.equal(await other.evaluate(node => node === document.activeElement), true);
+      assert.equal(await page.locator('#icon-png-status').innerText(), 'Preparing Clair-Obscur-0.13.0-Clair-phone-512.png...');
+      assert.equal(downloads.length, 0); assert.deepEqual(await iconPngSurroundings(page), filtered);
+
+      let firstAcquisition;
+      if (outcome === 'success') {
+        const completed = page.waitForEvent('download', { timeout: 5000 });
+        await page.evaluate(() => window.pngBusyFixture.release());
+        const download = await completed;
+        assert.equal(await download.failure(), null);
+        assert.equal(download.suggestedFilename(), 'Clair-Obscur-0.13.0-Clair-phone-512.png');
+        const chunks = []; for await (const chunk of await download.createReadStream()) chunks.push(chunk);
+        firstAcquisition = await assertDownloadedIconPng(page, Buffer.concat(chunks), 'phone', 'Clair');
+        assert.equal(downloads.length, 1);
+      } else {
+        await page.evaluate(() => window.pngBusyFixture.release());
+        await page.waitForFunction(() => document.querySelector('#icon-png-status').textContent.startsWith('Could not prepare'));
+        assert.equal(downloads.length, 0);
+      }
+      await page.waitForFunction(() => [...document.querySelectorAll('[data-icon-png]')]
+        .every(node => node.getAttribute('aria-disabled') !== 'true'));
+      assert.deepEqual(await page.locator('[data-icon-png]').evaluateAll(nodes =>
+        nodes.map(node => [node.getAttribute('aria-disabled'), node.disabled])), originalStates);
+      assert.equal(await other.evaluate(node => node === document.activeElement), true);
+      assert.deepEqual(await iconPngSurroundings(page), filtered);
+      const bytes = await acquireIconPng(page, 'weather-channel', 'Clair');
+      const retried = await assertDownloadedIconPng(page, bytes, 'weather-channel', 'Clair');
+      assert.equal(downloads.length, outcome === 'success' ? 2 : 1);
+      assert.deepEqual(await page.locator('[data-icon-png]').evaluateAll(nodes =>
+        nodes.map(node => [node.getAttribute('aria-disabled'), node.disabled])), originalStates);
+      assert.equal(await other.evaluate(node => node === document.activeElement), true);
+      assert.deepEqual(await iconPngSurroundings(page), filtered);
+      assert.equal(await page.evaluate(() => window.pngBusyFixture.settled), true);
+      assert.deepEqual(consoleErrors, []);
+      results.scenarios.push({ name: 'serial PNG cross-control busy state and recovery', outcome, status: 'passed',
+        pendingControls: busy.length, ignoredAttempts: ['phone/Obscur', 'weather-channel/Clair'],
+        firstAcquisition, retried, downloads: downloads.length,
+        scope: 'Controlled delay in a real image decode, keyboard activation, actual downloads and independent PNG pixels. No timing or native-device claim.' });
+    } finally {
+      try {
+        await page.evaluate(() => {
+          const fixture = window.pngBusyFixture;
+          if (fixture) { fixture.cancel?.(); fixture.image.decode = fixture.original; }
+        });
+      } finally { await context.close(); }
+    }
+  }
+});
+
 test('individual PNG duplicate activation is bounded and its object URL is retired', async () => {
   const { context, page, consoleErrors } = await pageFor();
   const downloads = []; page.on('download', download => downloads.push(download));

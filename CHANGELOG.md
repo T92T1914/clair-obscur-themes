@@ -1,5 +1,10 @@
 # Changes
 
+## PNG download availability
+
+- Expose the shared PNG preparation state on every affected download button. Keep keyboard focus and restore all controls after success or failure.
+- Preserve every artwork revision and theme package. The correction changes the gallery interaction, with a regression for another appearance and app during a pending operation.
+
 ## Current icon acquisition
 
 - Put current downloads, the icon finder and individual PNG guidance before preserved SVG collections.

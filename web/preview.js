@@ -84,7 +84,7 @@ const choices = [...document.querySelectorAll('[data-appearance]')];
     button.addEventListener('click', async () => {
       if (preparing) return;
       preparing = true;
-      button.setAttribute('aria-disabled', 'true');
+      for (const pending of records) pending.button.setAttribute('aria-disabled', 'true');
       status.textContent = `Preparing ${filename}...`;
       try {
         if (!image.complete || image.naturalWidth !== 512 || image.naturalHeight !== 512 ||
@@ -113,7 +113,7 @@ const choices = [...document.querySelectorAll('[data-appearance]')];
       } catch {
         status.textContent = 'Could not prepare this PNG. Try again after the image loads, or use the SVG archive and PNG export instructions below.';
       } finally {
-        button.removeAttribute('aria-disabled');
+        for (const pending of records) pending.button.removeAttribute('aria-disabled');
         preparing = false;
       }
     });
