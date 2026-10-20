@@ -1,6 +1,6 @@
 # Design and implementation
 
-The current identity is black and white. Clair uses white backgrounds with black lettering and symbols. Obscur uses black backgrounds with white lettering and symbols. Neutral gray carries secondary information, borders and control separation. The source is [tokens-monochrome.json](../tokens-monochrome.json). It drives the preview, icon artwork 0.6.0 and watch face 0.3.0. Inter remains the intended text family where supported. Native browser and watch fonts retain their existing platform limits.
+The current identity is black and white. Clair uses white backgrounds with black lettering and symbols. Obscur uses black backgrounds with white lettering and symbols. Neutral gray carries secondary information, borders and control separation. The source is [tokens-monochrome.json](../tokens-monochrome.json). It drives the current preview, icon artwork and watch face source. The [icon guide](samsung-icons.md) and [watch guide](garmin-watchface.md) identify each version and its separate qualification. Inter remains the intended text family where supported. Native browser and watch fonts retain their existing platform limits.
 
 The desktop downloads and historical icon versions retain the earlier palette described below. Their identities and accepted bytes are unchanged. A current webpage specimen does not establish that an older installed package has changed colors.
 
