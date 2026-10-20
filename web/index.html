@@ -141,7 +141,7 @@ preserve_native_scaling = True</code></pre>
       <p><a id="icon-artwork-legacy-download" class="secondary-link" href="{{LEGACY_ICON_ARCHIVE}}" download>Download the preserved original 0.1.0 SVG artwork</a></p>
       <p class="muted">The ZIP contains 394 SVG drawings, their identity and app-assignment manifest and the project license. The PNG exporter produces 788 images at two sizes. These are independent themed interpretations. App names and identifying marks belong to their respective owners, and no affiliation or endorsement is implied. The ZIP contains no PNGs, fonts or installer. This gallery is an artwork preview, not a Samsung launcher screenshot.</p>
       <form id="icon-finder" class="icon-finder" role="search" aria-label="Find an icon" hidden>
-        <p id="icon-filter-help">Search names, icon IDs or Android package IDs. Multiple words must all match. Each choice keeps both appearances, and downloads include the whole collection.</p>
+        <p id="icon-filter-help">Search names, icon IDs or Android package IDs. Multiple words must all match. Each choice keeps both appearances. The SVG downloads above include the whole collection.</p>
         <div class="icon-filter-controls">
           <label for="icon-query">Find an icon<input id="icon-query" type="search" autocomplete="off" spellcheck="false" aria-describedby="icon-filter-help"></label>
           <label for="icon-kind">Icon type<select id="icon-kind"><option value="all">All icons</option><option value="app">Named apps</option><option value="function">General functions</option></select></label>
@@ -150,9 +150,12 @@ preserve_native_scaling = True</code></pre>
         <p id="icon-filter-status" role="status" aria-live="polite" aria-atomic="true"></p>
         <p id="icon-filter-empty" hidden>No icons match. Try a different name or package ID, or clear the filters.</p>
       </form>
+      <p id="icon-png-help">For individual PNG images, use the hosted preview's PNG 512 buttons when supported, or the full PNG export instructions below. The collection downloads above contain SVGs.</p>
+      <p id="icon-png-status" role="status" aria-live="polite" aria-atomic="true"></p>
       {{ICON_GALLERY}}
       <details id="icon-png-instructions"><summary>Need PNG images for a phone?</summary>
-        <p>The <a href="#current-source">current source snapshot</a> includes the existing PNG exporter and <code>docs/samsung-icons.md</code>. From that extracted source, generate a fresh SVG directory, then export it with the project's pinned Playwright dependency and headless Google Chrome:</p>
+        <p>The hosted preview can prepare a chosen 512-pixel PNG beside each icon appearance. This needs JavaScript and browser canvas support on HTTP or HTTPS. An extracted local-file preview retains SVG downloads and these source-export instructions. No icon is uploaded or installed by a PNG download.</p>
+        <p>For every icon at both 512 and 1024 pixels, the <a href="#current-source">current source snapshot</a> includes the existing PNG exporter and <code>docs/samsung-icons.md</code>. From that extracted source, generate a fresh SVG directory, then export it with the project's pinned Playwright dependency and headless Google Chrome:</p>
         <pre tabindex="0" aria-label="Generate SVG masters and export PNG images"><code>python -m themeforge.icons --output outputs/samsung-icons-svg-01
 node tools/export-icons.mjs --input outputs/samsung-icons-svg-01 --output outputs/samsung-icons-png-01</code></pre>
         <p>Use fresh output directories. The exporter produces every drawing at 512 and 1024 pixels and preserves existing output. The SVG artwork ZIP above is a separate viewing download; generate the exporter's exact input from source with the first command.</p>

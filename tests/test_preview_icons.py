@@ -237,7 +237,7 @@ class IconMarkup(HTMLParser):
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         if tag == 'article' and 'icon-card' in attrs.get('class', '').split():
-            self.card = {'attrs': attrs, 'images': [], 'heading': '', 'links': [], 'package': ''}
+            self.card = {'attrs': attrs, 'images': [], 'heading': '', 'links': [], 'buttons': [], 'package': ''}
             self.cards.append(self.card)
         elif tag == 'img' and self.card is not None:
             self.card['images'].append(attrs)
@@ -245,6 +245,8 @@ class IconMarkup(HTMLParser):
             self.heading = True
         elif tag == 'code' and self.card is not None:
             self.code = True
+        elif tag == 'button' and self.card is not None:
+            self.card['buttons'].append(attrs)
         if tag == 'a':
             self.links.append(attrs)
             if self.card is not None:
@@ -420,6 +422,7 @@ class PreviewIconTests(unittest.TestCase):
                     label = LABELS[function]
                     self.assertEqual(card['heading'], label)
                     self.assertEqual(card['attrs']['data-icon-kind'], 'function' if function in FUNCTIONS else 'app')
+                    self.assertEqual(card['attrs']['data-icon-version'], '0.11.0')
                     package = app_packages.get(function, '')
                     self.assertEqual(card['package'], package)
                     self.assertEqual(card['links'], [] if not package else [{
@@ -428,6 +431,18 @@ class PreviewIconTests(unittest.TestCase):
                     }])
                     self.assertNotIn('hidden', card['attrs'])
                     self.assertEqual(len(card['images']), 2)
+                    self.assertEqual(len(card['buttons']), 2)
+                    for appearance, button in zip(('Clair', 'Obscur'), card['buttons']):
+                        self.assertEqual(button['type'], 'button')
+                        self.assertIn('data-icon-png', button)
+                        self.assertEqual(button['data-icon-appearance'], appearance)
+                        self.assertEqual(button['data-icon-filename'],
+                                         f'Clair-Obscur-0.11.0-{appearance}-{function}-512.png')
+                        self.assertIn('hidden', button, 'Unenhanced PNG controls must not be inert visible buttons')
+                        self.assertNotIn('data-appearance', button,
+                                         'Icon acquisition must not join the page-appearance switcher')
+                        self.assertIn(appearance, button['aria-label'])
+                        self.assertIn(label, button['aria-label'])
                     for appearance, image in zip(('Clair', 'Obscur'), card['images']):
                         path = f'icons/{appearance}/{function}.svg'
                         self.assertEqual(image['src'], path)

@@ -8,6 +8,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import http from 'node:http';
 import crypto from 'node:crypto';
+import { inflateSync } from 'node:zlib';
 import { assertRenderedFace } from './font-evidence.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -726,6 +727,7 @@ test('released source stays separate from the current preview snapshot', async (
 test('static delivery remains usable without JavaScript and internal links resolve', async () => {
   const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
   try {
+    await assertIconPngFallback(page);
     assert.equal(await page.locator('#downloads .download-card a[download]').count(), 17);
     assert.ok(await page.locator('#local-package-checker').isHidden());
     assert.match(await page.locator('#downloads .status').textContent(), /preview builds/);
@@ -862,23 +864,38 @@ async function checkIconGallery(page) {
 async function checkIconMappingKeyboard(page) {
   // The finder precedes the gallery when enhanced. Without script, the last
   // archive is still its preceding focusable control. Follow actual Tab order
-  // through all store links without opening the store or installing anything.
+  // through the PNG actions and every store link without activating either.
   await (await page.locator('#icon-finder').isVisible()
     ? page.locator('#icon-clear') : page.locator('#icon-artwork-legacy-download')).focus();
+  const pngEnabled = await page.locator('[data-icon-png]').first().isVisible();
   for (const [id, , packageId] of namedIconApps) {
-    await page.keyboard.press('Tab');
-    const active = await page.evaluate(() => {
-      const node = document.activeElement, box = node.getBoundingClientRect();
-      return { id: node.closest('[data-icon-function]')?.dataset.iconFunction, href: node.getAttribute('href'),
-        text: node.textContent, focused: node.matches(':focus'),
-        left: box.left, right: box.right, top: box.top, bottom: box.bottom, width: innerWidth, height: innerHeight };
-    });
-    assert.equal(active.id, id); assert.equal(active.href, `https://play.google.com/store/apps/details?id=${packageId}`);
-    assert.equal(active.text, 'Google Play listing'); assert.equal(active.focused, true);
-    assert.ok(active.left >= -1 && active.right <= active.width + 1 && active.bottom > 0 && active.top < active.height,
-      JSON.stringify(active));
+    for (const action of pngEnabled ? ['Clair', 'Obscur', 'store'] : ['store'])
+      await tabToIconAction(page, id, action, packageId);
   }
-  return { keyboardReachable: namedIconApps.length, scope: 'Exact official href and actual Tab focus; store page and installation unexecuted' };
+  return { keyboardReachable: namedIconApps.length, pngActionsReached: pngEnabled ? namedIconApps.length * 2 : 0,
+    scope: 'Exact official href, PNG metadata and actual Tab focus; store page and installation unexecuted' };
+}
+
+async function tabToIconAction(page, id, action, packageId) {
+  await page.keyboard.press('Tab');
+  const active = await page.evaluate(() => {
+    const node = document.activeElement, box = node.getBoundingClientRect();
+    return { id: node.closest('[data-icon-function]')?.dataset.iconFunction, href: node.getAttribute('href'),
+      tag: node.tagName, appearance: node.dataset.iconAppearance, filename: node.dataset.iconFilename,
+      png: node.hasAttribute('data-icon-png'), text: node.textContent, focused: node.matches(':focus'),
+      left: box.left, right: box.right, top: box.top, bottom: box.bottom, width: innerWidth, height: innerHeight };
+  });
+  assert.equal(active.id, id); assert.equal(active.focused, true);
+  if (action === 'store') {
+    assert.equal(active.href, `https://play.google.com/store/apps/details?id=${packageId}`);
+    assert.equal(active.text, 'Google Play listing');
+  } else {
+    assert.equal(active.tag, 'BUTTON'); assert.equal(active.png, true);
+    assert.equal(active.appearance, action);
+    assert.equal(active.filename, `Clair-Obscur-0.11.0-${action}-${id}-512.png`);
+  }
+  assert.ok(active.left >= -1 && active.right <= active.width + 1 && active.bottom > 0 && active.top < active.height,
+    JSON.stringify(active));
 }
 
 // The full inventory above and the literal subsets below are independent of
@@ -977,11 +994,10 @@ async function finderKeyboardRecovery(page) {
   assert.equal(await page.locator('#icon-kind').inputValue(), 'app');
   assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-clear');
   await assertFinderResults(page, ['home-depot', 'google-home']);
+  const pngEnabled = await page.locator('[data-icon-function="home-depot"] [data-icon-png]').first().isVisible();
   for (const [id, packageId] of [['home-depot', 'com.thehomedepot'], ['google-home', 'com.google.android.apps.chromecast.app']]) {
-    await page.keyboard.press('Tab');
-    assert.deepEqual(await page.evaluate(() => ({ id: document.activeElement.closest('[data-icon-function]')?.dataset.iconFunction,
-      href: document.activeElement.getAttribute('href'), visible: Boolean(document.activeElement.getClientRects().length) })),
-    { id, href: 'https://play.google.com/store/apps/details?id=' + packageId, visible: true });
+    for (const action of pngEnabled ? ['Clair', 'Obscur', 'store'] : ['store'])
+      await tabToIconAction(page, id, action, packageId);
   }
   await page.keyboard.press('Tab');
   assert.equal(await page.evaluate(() => document.activeElement.closest('[data-icon-function]')?.dataset.iconFunction ?? null), null);
@@ -991,7 +1007,8 @@ async function finderKeyboardRecovery(page) {
   await page.keyboard.press('Enter');
   assert.equal(await query.inputValue(), ''); assert.equal(await page.locator('#icon-kind').inputValue(), 'all');
   assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-query'); await assertFinderResults(page, iconFunctions);
-  return { visibleStoreLinksReachedByTab: 2, appAndFunctionKinds: true, clearRestoredAllAndFocusedQuery: true };
+  return { visibleStoreLinksReachedByTab: 2, visiblePngActionsReachedByTab: pngEnabled ? 4 : 0,
+    appAndFunctionKinds: true, clearRestoredAllAndFocusedQuery: true };
 }
 
 test('icon finder matches labels, stable IDs and packages literally in both appearances and phone layouts', async () => {
@@ -1092,7 +1109,8 @@ test('icon finder leaves exact artwork downloads and the independent platform ch
       await route.fulfill({ contentType: 'text/html; charset=utf-8',
         body: '<!doctype html><title>Assignment fixture</title><h1>Claude assignment fixture</h1>' });
     });
-    await page.locator('#icon-clear').focus(); await page.keyboard.press('Tab');
+    await page.locator('#icon-clear').focus();
+    for (const action of ['Clair', 'Obscur', 'store']) await tabToIconAction(page, 'claude', action, 'com.anthropic.claude');
     assert.equal(await page.evaluate(() => document.activeElement.closest('[data-icon-function]')?.dataset.iconFunction), 'claude');
     assert.equal(await page.evaluate(() => document.activeElement.getAttribute('href')), assignmentUrl);
     await Promise.all([page.waitForURL(assignmentUrl), page.keyboard.press('Enter')]);
@@ -1200,6 +1218,314 @@ test('icon finder qualification rejects an initialized but inert query control',
   } finally { await context.close(); }
 });
 
+const iconPngButton = (page, id, appearance) => page.locator(
+  `[data-icon-function="${id}"] button[data-icon-png][data-icon-appearance="${appearance}"]`);
+
+// Decode the downloaded bytes in Node, independently of the page's canvas code.
+function decodeIconPng(bytes) {
+  assert.deepEqual([...bytes.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
+  const crc32 = data => {
+    let crc = 0xffffffff;
+    for (const value of data) {
+      crc ^= value;
+      for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ ((crc & 1) ? 0xedb88320 : 0);
+    }
+    return (crc ^ 0xffffffff) >>> 0;
+  };
+  const compressed = [];
+  let offset = 8, header = false, end = false;
+  while (offset < bytes.length) {
+    const length = bytes.readUInt32BE(offset), kind = bytes.toString('ascii', offset + 4, offset + 8);
+    assert.ok(offset + 12 + length <= bytes.length, 'Complete PNG chunk');
+    assert.equal(crc32(bytes.subarray(offset + 4, offset + 8 + length)), bytes.readUInt32BE(offset + 8 + length));
+    const data = bytes.subarray(offset + 8, offset + 8 + length);
+    if (kind === 'IHDR') {
+      assert.equal(header, false); header = true;
+      assert.equal(length, 13); assert.equal(data.readUInt32BE(0), 512); assert.equal(data.readUInt32BE(4), 512);
+      assert.deepEqual([...data.subarray(8)], [8, 6, 0, 0, 0], '512 px, 8-bit noninterlaced RGBA');
+    } else if (kind === 'IDAT') compressed.push(data);
+    else if (kind === 'IEND') { assert.equal(length, 0); end = true; }
+    offset += length + 12;
+    if (end) break;
+  }
+  assert.ok(header && end && compressed.length); assert.equal(offset, bytes.length);
+  const stride = 512 * 4, raw = inflateSync(Buffer.concat(compressed), { maxOutputLength: (stride + 1) * 512 });
+  assert.equal(raw.length, (stride + 1) * 512);
+  const rgba = Buffer.alloc(stride * 512);
+  const paeth = (a, b, c) => {
+    const p = a + b - c, pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
+    return pa <= pb && pa <= pc ? a : pb <= pc ? b : c;
+  };
+  for (let y = 0; y < 512; y++) {
+    const filter = raw[y * (stride + 1)]; assert.ok(filter <= 4);
+    for (let x = 0; x < stride; x++) {
+      const index = y * stride + x, left = x >= 4 ? rgba[index - 4] : 0;
+      const above = y ? rgba[index - stride] : 0, corner = y && x >= 4 ? rgba[index - stride - 4] : 0;
+      const prediction = filter === 0 ? 0 : filter === 1 ? left : filter === 2 ? above :
+        filter === 3 ? Math.floor((left + above) / 2) : paeth(left, above, corner);
+      rgba[index] = (raw[y * (stride + 1) + x + 1] + prediction) & 255;
+    }
+  }
+  return rgba;
+}
+
+async function assertDownloadedIconPng(page, bytes, id, appearance) {
+  const rgba = decodeIconPng(bytes), counts = { panel: 0, glyph: 0, transparent: 0 };
+  const panel = appearance === 'Clair' ? 255 : 0, glyph = 255 - panel;
+  for (let y = 0; y < 512; y++) for (let x = 0; x < 512; x++) {
+    const index = (y * 512 + x) * 4, [red, green, blue, alpha] = rgba.subarray(index, index + 4);
+    if (!alpha) counts.transparent++;
+    else { assert.equal(red, green, 'Neutral red/green'); assert.equal(green, blue, 'Neutral green/blue'); }
+    if (x < 32 || y < 32 || x >= 480 || y >= 480) assert.equal(alpha, 0, 'Transparent 32 px outer margin');
+    if (alpha === 255 && red === panel) counts.panel++;
+    if (alpha === 255 && red === glyph) counts.glyph++;
+  }
+  // Select a literal source file from the independent requested identity, never
+  // the button metadata, clicked DOM image, handler result or a downloaded name.
+  const source = await readFile(path.join(site, 'icons', appearance, id + '.svg'));
+  const expected = await page.evaluate(async source64 => {
+    const image = new Image(); image.src = 'data:image/svg+xml;base64,' + source64; await image.decode();
+    const canvas = document.createElement('canvas'); canvas.width = canvas.height = 512;
+    const context = canvas.getContext('2d'); context.drawImage(image, 0, 0, 512, 512);
+    const pixels = context.getImageData(0, 0, 512, 512).data;
+    return [...new Uint8Array(await crypto.subtle.digest('SHA-256', pixels))]
+      .map(byte => byte.toString(16).padStart(2, '0')).join('');
+  }, source.toString('base64'));
+  const actual = crypto.createHash('sha256').update(rgba).digest('hex');
+  assert.equal(actual, expected, 'Downloaded PNG must match the independently selected icon and appearance');
+  assert.ok(counts.panel > 10000 && counts.glyph > 100 && counts.transparent > 10000, JSON.stringify(counts));
+  return { id, appearance, size: 512, pngSha256: crypto.createHash('sha256').update(bytes).digest('hex'), rgbaSha256: actual, counts };
+}
+
+async function acquireIconPng(page, id, appearance, { timeout = 5000 } = {}) {
+  const button = iconPngButton(page, id, appearance);
+  assert.ok(await button.isVisible()); assert.notEqual(await button.getAttribute('aria-disabled'), 'true');
+  await button.focus();
+  const [download] = await Promise.all([page.waitForEvent('download', { timeout }), page.keyboard.press('Enter')]);
+  assert.equal(download.suggestedFilename(), `Clair-Obscur-0.11.0-${appearance}-${id}-512.png`);
+  assert.equal(await download.failure(), null);
+  const chunks = []; for await (const chunk of await download.createReadStream()) chunks.push(chunk);
+  await page.waitForFunction(({ id, appearance }) => document.querySelector(
+    `[data-icon-function="${id}"] [data-icon-png][data-icon-appearance="${appearance}"]`).getAttribute('aria-disabled') !== 'true', { id, appearance });
+  return Buffer.concat(chunks);
+}
+
+async function iconPngSurroundings(page) {
+  return page.evaluate(() => ({ url: location.href, appearance: document.documentElement.dataset.theme,
+    pageSwitches: [...document.querySelectorAll('[data-appearance]')].map(node => [node.dataset.appearance, node.getAttribute('aria-pressed')]),
+    query: document.querySelector('#icon-query').value, kind: document.querySelector('#icon-kind').value,
+    chooser: document.querySelector('#package-choice-result').innerHTML,
+    target: document.querySelector('#package-target').value, selectedAppearance: document.querySelector('#package-appearance').value,
+    visibleIds: [...document.querySelectorAll('#icons .icon-card')].filter(node => node.getClientRects().length).map(node => node.dataset.iconFunction),
+    originals: [...document.querySelectorAll('#icons .icon-card')].map(node => [node.dataset.iconFunction,
+      node.querySelector('h4').textContent, [...node.querySelectorAll('img')].map(image => image.getAttribute('src'))]) }));
+}
+
+async function assertIconPngLayout(page, { spacing = false } = {}) {
+  const state = await page.evaluate(() => ({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth,
+    controls: [...document.querySelectorAll('[data-icon-png], #icon-png-help, #icon-png-status')]
+      .filter(node => node.getClientRects().length && node.textContent.trim()).map(node => {
+        const style = getComputedStyle(node), box = node.getBoundingClientRect(), range = document.createRange();
+        range.selectNodeContents(node);
+        return { tag: node.tagName, text: node.textContent, width: box.width, height: box.height, left: box.left, right: box.right,
+          visibility: style.visibility, opacity: style.opacity, fontSize: style.fontSize, lineHeight: style.lineHeight,
+          letterSpacing: style.letterSpacing, wordSpacing: style.wordSpacing, marginBlockEnd: style.marginBlockEnd,
+          textRects: [...range.getClientRects()].filter(rect => rect.width && rect.height)
+            .map(rect => ({ left: rect.left, right: rect.right, width: rect.width, height: rect.height })) };
+      }) }));
+  assert.ok(state.scrollWidth <= state.width + 1);
+  for (const control of state.controls) {
+    assert.equal(control.visibility, 'visible'); assert.ok(Number(control.opacity) > 0);
+    assert.ok(control.width > 0 && control.height > 0 && control.left >= -1 && control.right <= state.width + 1, JSON.stringify(control));
+    assert.ok(control.textRects.length, 'PNG control text remains present');
+    for (const rect of control.textRects) assert.ok(rect.left >= control.left - 1 && rect.right <= control.right + 1, JSON.stringify(control));
+    if (control.tag === 'BUTTON') assert.ok(control.height >= 44, JSON.stringify(control));
+    if (!spacing) continue;
+    const size = parseFloat(control.fontSize);
+    for (const [property, ratio] of [['lineHeight', 1.5], ['letterSpacing', .12], ['wordSpacing', .16]])
+      assert.ok(parseFloat(control[property]) + .02 >= size * ratio, 'PNG spacing admission ' + property + ': ' + JSON.stringify(control));
+    if (control.tag === 'P') assert.ok(parseFloat(control.marginBlockEnd) + .02 >= size * 2, JSON.stringify(control));
+  }
+  return { visibleControls: state.controls.length, spacing, width: state.width };
+}
+
+async function assertIconPngFallback(page) {
+  assert.equal(await page.locator('[data-icon-png]').count(), 394);
+  assert.equal(await page.locator('[data-icon-png]:visible').count(), 0);
+  assert.ok(await page.locator('#icon-artwork-download').isVisible());
+  assert.equal(await page.locator('#icon-artwork-download').getAttribute('href'), iconArchive);
+  assert.match(await page.locator('#icon-png-help').textContent(), /hosted|HTTPS?/i);
+  assert.match(await page.locator('#icon-png-help').textContent(), /SVG/i);
+}
+
+test('individual PNG controls bind all 394 local drawings and keyboard acquisition preserves surrounding choices', async () => {
+  for (const width of [390, 1280]) {
+    const { context, page, consoleErrors, network } = await pageFor({ viewport: { width, height: 900 } });
+    try {
+      const controls = await page.locator('[data-icon-png]').evaluateAll(nodes => nodes.map(node => ({
+        id: node.closest('[data-icon-function]')?.dataset.iconFunction, appearance: node.dataset.iconAppearance,
+        filename: node.dataset.iconFilename, source: node.closest('figure')?.querySelector('img')?.getAttribute('src'),
+        type: node.type, hidden: node.hidden, name: node.getAttribute('aria-label'), pageAppearance: node.hasAttribute('data-appearance') })));
+      assert.equal(controls.length, 394);
+      const expected = iconFunctions.flatMap(id => ['Clair', 'Obscur'].map(appearance => ({ id, appearance,
+        filename: `Clair-Obscur-0.11.0-${appearance}-${id}-512.png`, source: `icons/${appearance}/${id}.svg` })));
+      assert.deepEqual(controls.map(({ id, appearance, filename, source }) => ({ id, appearance, filename, source })), expected);
+      for (const control of controls) {
+        assert.equal(control.type, 'button'); assert.equal(control.hidden, false); assert.equal(control.pageAppearance, false);
+        assert.ok(control.name.includes(control.appearance) && control.name.includes(iconLabels.get(control.id)));
+      }
+      assert.equal(await page.locator('#icon-png-status').getAttribute('role'), 'status');
+      await assertIconPngLayout(page);
+      const downloads = [];
+      for (const appearance of ['Clair', 'Obscur']) for (const id of ['phone', 'fly-delta']) {
+        await page.getByRole('button', { name: appearance === 'Clair' ? 'Obscur' : 'Clair', exact: true }).click();
+        await page.locator('#package-target').selectOption('equicord'); await page.locator('#package-appearance').selectOption('Clair');
+        await page.locator('#icon-query').fill(id); const before = await iconPngSurroundings(page), requestsBefore = network.length;
+        const bytes = await acquireIconPng(page, id, appearance);
+        downloads.push(await assertDownloadedIconPng(page, bytes, id, appearance));
+        assert.deepEqual(await iconPngSurroundings(page), before);
+        assert.equal(network.length, requestsBefore, 'On-demand PNG preparation uses the already loaded local image without a fetch or upload');
+        assert.equal(await iconPngButton(page, id, appearance).evaluate(node => node === document.activeElement), true);
+      }
+      assert.deepEqual(consoleErrors, []);
+      results.scenarios.push({ name: 'individual PNG keyboard acquisition', status: 'passed', width, controls: controls.length, downloads,
+        scope: 'Browser-downloaded bytes independently decoded and compared with an explicitly selected source SVG; no phone installation or native acceptance' });
+    } finally { await context.close(); }
+  }
+});
+
+test('individual PNG capability and metadata admission preserve the static SVG fallback', async () => {
+  for (const fault of ['toBlob', 'object-url', 'wrong-filename']) {
+    const { context, page, consoleErrors } = await pageFor({ setup: async (context, page) => {
+      if (fault === 'wrong-filename') await page.route(origin + '/', async route => {
+        const html = await readFile(path.join(site, 'index.html'), 'utf8');
+        const filename = 'Clair-Obscur-0.11.0-Clair-google-chrome-512.png';
+        assert.equal(html.split(filename).length - 1, 1);
+        await route.fulfill({ contentType: 'text/html', body: html.replace(filename, '../untrusted.png') });
+      });
+      else await context.addInitScript(fault => {
+        if (fault === 'toBlob') HTMLCanvasElement.prototype.toBlob = undefined;
+        else URL.createObjectURL = undefined;
+      }, fault);
+    } });
+    try {
+      await assertIconPngFallback(page);
+      await snapshotFinderCatalog(page);
+      await page.locator('#icon-query').fill('fly-delta'); await assertFinderResults(page, ['fly-delta']);
+      await page.getByRole('button', { name: 'Clair', exact: true }).click();
+      assert.equal(await page.locator('html').getAttribute('data-theme'), 'Clair');
+      assert.deepEqual(consoleErrors, []);
+      results.scenarios.push({ name: 'individual PNG admission fallback', fault, status: 'passed', controlsExposed: 0 });
+    } finally { await context.close(); }
+  }
+});
+
+test('individual PNG failures report the problem and permit a successful retry without changing the page', async () => {
+  for (const fault of ['image-decode', 'null-blob', 'missing-context']) {
+    const { context, page, consoleErrors } = await pageFor();
+    const downloads = []; page.on('download', download => downloads.push(download));
+    try {
+      await page.locator('#icon-query').fill('fly-delta'); const before = await iconPngSurroundings(page);
+      await page.evaluate(fault => {
+        const image = document.querySelector('[data-icon-function="fly-delta"] figure img');
+        window.pngFailureFixture = { image, decode: image.decode, toBlob: HTMLCanvasElement.prototype.toBlob,
+          getContext: HTMLCanvasElement.prototype.getContext };
+        if (fault === 'image-decode') image.decode = async () => { throw new DOMException('Controlled decode failure', 'EncodingError'); };
+        if (fault === 'null-blob') HTMLCanvasElement.prototype.toBlob = callback => callback(null);
+        if (fault === 'missing-context') HTMLCanvasElement.prototype.getContext = () => null;
+      }, fault);
+      const button = iconPngButton(page, 'fly-delta', 'Clair'); await button.focus(); await page.keyboard.press('Enter');
+      await page.waitForFunction(() => document.querySelector('#icon-png-status').textContent.startsWith('Could not prepare'));
+      assert.equal(downloads.length, 0); assert.notEqual(await button.getAttribute('aria-disabled'), 'true');
+      assert.deepEqual(await iconPngSurroundings(page), before);
+      await page.evaluate(() => {
+        const fixture = window.pngFailureFixture; fixture.image.decode = fixture.decode;
+        HTMLCanvasElement.prototype.toBlob = fixture.toBlob; HTMLCanvasElement.prototype.getContext = fixture.getContext;
+      });
+      const bytes = await acquireIconPng(page, 'fly-delta', 'Clair');
+      await assertDownloadedIconPng(page, bytes, 'fly-delta', 'Clair');
+      assert.equal(downloads.length, 1); assert.deepEqual(await iconPngSurroundings(page), before);
+      assert.deepEqual(consoleErrors, []);
+      results.scenarios.push({ name: 'individual PNG failure and recovery', fault, status: 'passed', failedDownloads: 0, recoveredDownloads: 1 });
+    } finally { await context.close(); }
+  }
+});
+
+test('individual PNG duplicate activation is bounded and its object URL is retired', async () => {
+  const { context, page, consoleErrors } = await pageFor();
+  const downloads = []; page.on('download', download => downloads.push(download));
+  try {
+    await page.locator('#icon-query').fill('phone');
+    await page.evaluate(() => {
+      const image = document.querySelector('[data-icon-function="phone"] figure img'), decode = image.decode.bind(image);
+      image.decode = () => new Promise((resolve, reject) => { window.releasePngDecode = () => decode().then(resolve, reject); });
+      window.pngUrls = { created: [], revoked: [] };
+      const create = URL.createObjectURL.bind(URL), revoke = URL.revokeObjectURL.bind(URL);
+      URL.createObjectURL = blob => { const url = create(blob); window.pngUrls.created.push(url); return url; };
+      URL.revokeObjectURL = url => { window.pngUrls.revoked.push(url); return revoke(url); };
+    });
+    const button = iconPngButton(page, 'phone', 'Clair'); await button.focus();
+    await page.keyboard.press('Enter'); await page.keyboard.press('Enter');
+    assert.equal(await button.getAttribute('aria-disabled'), 'true'); assert.equal(downloads.length, 0);
+    const completed = page.waitForEvent('download', { timeout: 5000 }); await page.evaluate(() => window.releasePngDecode());
+    const download = await completed; assert.equal(await download.failure(), null);
+    assert.equal(download.suggestedFilename(), 'Clair-Obscur-0.11.0-Clair-phone-512.png');
+    await page.waitForFunction(() => window.pngUrls.created.length === 1 && window.pngUrls.revoked.length === 1);
+    assert.equal(downloads.length, 1);
+    const urls = await page.evaluate(() => window.pngUrls); assert.deepEqual(urls.revoked, urls.created);
+    assert.notEqual(await button.getAttribute('aria-disabled'), 'true'); assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: 'individual PNG duplicate activation and URL retirement', status: 'passed', downloads: 1, createdUrls: 1, retiredUrls: 1 });
+  } finally { await context.close(); }
+});
+
+for (const stress of [false, true]) test(`individual PNG ${stress ? 'narrow enlarged fallback stress' : 'spacing-only'} keeps real controls operable`, async () => {
+  const { context, page, consoleErrors } = await pageFor({ viewport: { width: stress ? 320 : 1280, height: 900 }, missingFont: stress });
+  try {
+    await snapshotFinderCatalog(page);
+    if (stress) await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+    const baseline = await spacingContentBaseline(page);
+    assert.equal(baseline.width, stress ? 320 : 1280); assert.equal(baseline.rootFontSize, stress ? '32px' : '16px');
+    await page.addStyleTag({ content: textSpacingOverride });
+    const admission = await assertTextSpacing(page, baseline);
+    const controls = await assertIconPngLayout(page, { spacing: true });
+    const acquired = [];
+    for (const appearance of ['Clair', 'Obscur']) {
+      await page.getByRole('button', { name: appearance, exact: true }).click();
+      await page.locator('#icon-query').fill('fly-delta');
+      await assertFinderResults(page, ['fly-delta']); await assertIconPngLayout(page, { spacing: true });
+      acquired.push(await assertDownloadedIconPng(page, await acquireIconPng(page, 'fly-delta', appearance), 'fly-delta', appearance));
+    }
+    assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: stress ? 'individual PNG additional reflow stress' : 'individual PNG spacing only', status: 'passed', admission, controls, acquired,
+      scope: stress ? 'Separate combined stress at 320 px, 200% root text and unavailable Inter, not browser zoom' :
+        'All four applicable SC 1.4.12 overrides at unchanged 1280 px viewport and 16 px root' });
+  } finally { await context.close(); }
+});
+
+test('individual PNG qualification rejects an inert listener and a wrong-appearance image response', async () => {
+  for (const fault of ['inert-listener', 'wrong-appearance']) {
+    const { context, page, consoleErrors } = await pageFor({ setup: async (context, page) => {
+      if (fault === 'wrong-appearance') await page.route('**/icons/Clair/phone.svg', async route => route.fulfill({
+        contentType: 'image/svg+xml', body: await readFile(path.join(site, 'icons', 'Obscur', 'phone.svg')) }));
+    } });
+    try {
+      await page.locator('#icon-query').fill('phone');
+      if (fault === 'inert-listener') {
+        const control = iconPngButton(page, 'phone', 'Clair'); assert.ok(await control.isVisible());
+        await control.evaluate(node => node.replaceWith(node.cloneNode(true)));
+        await assert.rejects(acquireIconPng(page, 'phone', 'Clair', { timeout: 500 }), error => error.name === 'TimeoutError');
+      } else {
+        const bytes = await acquireIconPng(page, 'phone', 'Clair');
+        await assert.rejects(assertDownloadedIconPng(page, bytes, 'phone', 'Clair'),
+          error => error.code === 'ERR_ASSERTION' && /independently selected icon and appearance/.test(error.message));
+      }
+      assert.deepEqual(consoleErrors, []);
+      results.scenarios.push({ name: 'individual PNG controlled acceptance failure', fault, status: 'rejected as expected',
+        scope: 'Disposable DOM or response fault, not a reported product defect' });
+    } finally { await context.close(); }
+  }
+});
+
 test('icon gallery decodes every current appearance at phone widths and enlarged fallback text', async () => {
   for (const scenario of [{ width: 390, enlarged: false }, { width: 320, enlarged: true }]) {
     const { context, page, consoleErrors } = await pageFor({ viewport: { width: scenario.width, height: 844 }, missingFont: scenario.enlarged });
@@ -1225,6 +1551,7 @@ test('no-script keyboard navigation acquires current and all ten preserved icon 
     setup: async (context, page) => page.route('**/preview.css', async route => route.fulfill({ contentType: 'text/css',
       body: await readFile(path.join(site, 'preview.css'), 'utf8') + '\nhtml { font-size: 200%; }\n' + textSpacingOverride })) });
   try {
+    await assertIconPngFallback(page);
     await checkIconGallery(page);
     const spacingBaseline = await spacingContentBaseline(page);
     assert.equal(spacingBaseline.width, 320); assert.equal(spacingBaseline.rootFontSize, '32px');
@@ -2797,6 +3124,7 @@ for (const javaScriptEnabled of [true, false]) test(`portable kit downloads, ext
       assert.match(await localPage.locator('#portable-delivery').textContent(), /extracted portable preview/);
       assert.equal(await localPage.locator('#portable-preview, #portable-checksums').count(), 0);
       assert.equal(await localPage.locator('#downloads .download-card').count(), 17);
+      await assertIconPngFallback(localPage);
       const decodedIcons = await checkIconGallery(localPage);
       for (const relative of decodedIcons) {
         const bytes = await readFile(path.join(relocated, ...relative.split('/')));

@@ -275,7 +275,12 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
             f'<figure><img src="icons/{appearance}/{html.escape(function, quote=True)}.svg" '
             f'alt="{html.escape(appearance + " " + label + " icon", quote=True)}" '
             f'width="512" height="512" decoding="async">'
-            f'<figcaption>{appearance}</figcaption></figure>'
+            f'<figcaption>{appearance}</figcaption>'
+            f'<button type="button" class="icon-png" data-icon-png '
+            f'data-icon-appearance="{appearance}" '
+            f'data-icon-filename="Clair-Obscur-{icon_manifest["version"]}-{appearance}-{html.escape(function, quote=True)}-512.png" '
+            f'aria-label="Download {html.escape(appearance + " " + label, quote=True)} PNG, 512 pixels" '
+            f'hidden>PNG 512</button></figure>'
             for appearance in ('Clair', 'Obscur')
         )
         assignment = (
@@ -285,7 +290,7 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
         )
         icon_cards[kind].append(
             f'<article class="icon-card" data-icon-function="{html.escape(function, quote=True)}" '
-            f'data-icon-kind="{kind}"><h4>{html.escape(label)}</h4>'
+            f'data-icon-kind="{kind}" data-icon-version="{icon_manifest["version"]}"><h4>{html.escape(label)}</h4>'
             f'<div class="icon-pair">{figures}</div>{assignment}</article>'
         )
     icon_gallery = ''.join(
