@@ -40,6 +40,12 @@ LEGACY_ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.1.0.zip'
 ICON_CHECKSUMS = 'icons/SVG-SHA256SUMS'
 GARMIN_SOURCE_FILES = (
     'garmin/build.py', 'garmin/watchface/manifest.xml', 'garmin/watchface/monkey.jungle',
+    'garmin/generate_clock_font.py',
+    'garmin/watchface/resources/fonts/clair-obscur-clock-108.fnt',
+    'garmin/watchface/resources/fonts/clair-obscur-clock-108.png',
+    'garmin/watchface/resources/fonts/fonts.xml',
+    'garmin/watchface/resources/fonts/LICENSE.txt',
+    'garmin/watchface/resources/fonts/provenance.json',
     'garmin/watchface/resources/settings/properties.xml',
     'garmin/watchface/resources/settings/settings.xml',
     'garmin/watchface/resources/strings/strings.xml',

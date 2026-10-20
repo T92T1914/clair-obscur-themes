@@ -9,6 +9,7 @@ class ClairObscurView extends WatchUi.WatchFace {
     var _sleeping as Lang.Boolean = false;
     var _fontScale as Lang.Float = 0.0;
     var _fontLayout as Lang.Number = -1;
+    var _interClock as Graphics.FontReference or Null = null;
     var _clockFonts as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont> = [];
     var _calendarFonts as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont> = [];
     var _valueFonts as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont> = [];
@@ -16,7 +17,11 @@ class ClairObscurView extends WatchUi.WatchFace {
     var _detailFonts as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont> = [];
     var _batteryFonts as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont> = [];
 
-    function initialize() { WatchFace.initialize(); }
+    function initialize() {
+        WatchFace.initialize();
+        // One bounded resource, loaded outside the update handler.
+        _interClock = WatchUi.loadResource(Rez.Fonts.InterClock) as Graphics.FontReference;
+    }
     function onEnterSleep() as Void { _sleeping = true; WatchUi.requestUpdate(); }
     function onExitSleep() as Void { _sleeping = false; WatchUi.requestUpdate(); }
 
@@ -81,6 +86,24 @@ class ClairObscurView extends WatchUi.WatchFace {
         return true;
     }
 
+    function interClock(dc as Graphics.Dc, text as Lang.String) as Lang.Boolean {
+        if (!FaceModel.interClockEligible(_fontLayout, _fontScale) ||
+                !FaceModel.interClockText(text)) { return false; }
+        var font = _interClock;
+        if (font == null || dc.getTextWidthInPixels(text, font) > FaceModel.TIME_WIDTH ||
+                dc.getFontHeight(font) > FaceModel.TIME_BOTTOM - FaceModel.TIME_TOP) {
+            return false;
+        }
+        var height = dc.getFontHeight(font);
+        dc.setClip(((dc.getWidth() - FaceModel.TIME_WIDTH) / 2).toNumber(),
+            FaceModel.TIME_TOP, FaceModel.TIME_WIDTH, FaceModel.TIME_BOTTOM - FaceModel.TIME_TOP);
+        dc.drawText(dc.getWidth() / 2,
+            FaceModel.TIME_TOP + ((FaceModel.TIME_BOTTOM - FaceModel.TIME_TOP - height) / 2),
+            font, text, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.clearClip();
+        return true;
+    }
+
     function onUpdate(dc as Graphics.Dc) as Void {
         var mode = FaceModel.drawMode(_sleeping, System.getDisplayMode());
         if (dc.getWidth() != FaceModel.DISPLAY_SIZE || dc.getHeight() != FaceModel.DISPLAY_SIZE) {
@@ -119,7 +142,9 @@ class ClairObscurView extends WatchUi.WatchFace {
         line(dc, date, _calendarFonts, FaceModel.CALENDAR_WIDTH,
             FaceModel.CALENDAR_TOP, FaceModel.CALENDAR_BOTTOM);
         dc.setColor(text, canvas);
-        line(dc, time, _clockFonts, FaceModel.TIME_WIDTH, FaceModel.TIME_TOP, FaceModel.TIME_BOTTOM);
+        if (!interClock(dc, time)) {
+            line(dc, time, _clockFonts, FaceModel.TIME_WIDTH, FaceModel.TIME_TOP, FaceModel.TIME_BOTTOM);
+        }
         drawSlot(dc, left, 77, 140, FaceModel.DATA_TOP, FaceModel.DATA_BOTTOM, text, muted, canvas);
         drawSlot(dc, right, 237, 140, FaceModel.DATA_TOP, FaceModel.DATA_BOTTOM, text, muted, canvas);
         dc.setColor(accent, canvas);

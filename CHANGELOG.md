@@ -1,5 +1,12 @@
 # Changes
 
+## Garmin watch face 0.5.0
+
+- Add a licensed twelve-glyph Inter Bold resource for the digital time at default font scale. Measure the resource before drawing and retain native candidates for other scales, unsupported text or a failed fit.
+- Preserve the analog layout, native labels and information fields, existing settings and separate sparse native-font always-on view.
+- Keep the original font file outside the source package. Include the derived resource, exact source identity, OFL notice and a reproducible explicit-input generator.
+- Qualify host metrics and exact-target compilation separately from unexecuted simulator, memory, power and physical-watch checks. Preserve all earlier programs, icon artwork and desktop packages.
+
 ## Icon artwork 0.10.0
 
 - Add twelve inspected restaurant and ordering app interpretations in both black and white appearances. The current collection has 163 named apps and 24 general functions.

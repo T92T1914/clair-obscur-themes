@@ -152,9 +152,9 @@ class GarminPaletteTests(unittest.TestCase):
     def test_current_palette_has_exact_black_white_and_neutral_roles(self):
         current = json.loads((ROOT / "tokens-monochrome.json").read_text(encoding="utf-8"))
         source = render_palette(current)
-        self.assertEqual(VERSION, "0.4.0")
+        self.assertEqual(VERSION, "0.5.0")
         self.assertEqual(colors(source), EXPECTED_MONOCHROME_COLORS)
-        self.assertIn('const WATCHFACE_VERSION = "0.4.0";', source)
+        self.assertIn('const WATCHFACE_VERSION = "0.5.0";', source)
         self.assertIn('const TOKEN_VERSION = "1.0.0";', source)
         for color in colors(source).values():
             self.assertEqual((color >> 16) & 255, (color >> 8) & 255)
@@ -189,7 +189,7 @@ class GarminPaletteTests(unittest.TestCase):
                          ["fenix9pro47mm"])
         properties = ET.parse(face / "resources/settings/properties.xml").getroot()
         self.assertEqual([(node.get("id"), node.get("type"), node.text) for node in properties],
-                         [("appVersion", "string", "0.4.0"), ("appearance", "number", "1"),
+                         [("appVersion", "string", "0.5.0"), ("appearance", "number", "1"),
                           ("layout", "number", "0"),
                           ("leftData", "number", "0"), ("rightData", "number", "1")])
         view = (face / "source/ClairObscurView.mc").read_text(encoding="utf-8")
