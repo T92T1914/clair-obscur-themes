@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "derivative_name": "Clair Obscur Clock",
+  "source": {
+    "release": "Inter v4.1",
+    "file": "Inter-Bold.ttf",
+    "sha256": "288316099b1e0a47a4716d159098005eef7c0066921f34e3200393dbdb01947f",
+    "family": "Inter",
+    "style": "Bold",
+    "embedded_version": "Version 4.001;git-9221beed3",
+    "copyright": "Copyright 2016 The Inter Project Authors",
+    "release_url": "https://github.com/rsms/inter/releases/tag/v4.1"
+  },
+  "license": {
+    "id": "OFL-1.1",
+    "file": "LICENSE.txt",
+    "sha256": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a",
+    "url": "https://github.com/rsms/inter/blob/v4.1/LICENSE.txt"
+  },
+  "generation": {
+    "producer": "garmin/generate_clock_font.py",
+    "producer_sha256": "c839cfe5c758dde56d3c725ae263f6ec4471a9330b8b0d41faed6c0e74cc6f8d",
+    "renderer": {
+      "pillow": "12.3.0",
+      "freetype": "2.14.3",
+      "fonttools": "4.63.0",
+      "png_zlib": "1.3.1.zlib-ng"
+    },
+    "pixels_per_em": 108,
+    "characters": "-0123456789:",
+    "layout": "Per-glyph proportional advances, no kerning or OpenType feature shaping",
+    "source_outline_scaling": "Uniform scale only; no condensed outlines or stretched digits",
+    "line_height": 132,
+    "baseline": 105,
+    "atlas": {
+      "width": 664,
+      "height": 83,
+      "mode": "RGBA",
+      "rgb": "white",
+      "glyph_channel": "alpha"
+    }
+  },
+  "files": {
+    "LICENSE.txt": {
+      "bytes": 4380,
+      "sha256": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a"
+    },
+    "clair-obscur-clock-108.fnt": {
+      "bytes": 1373,
+      "sha256": "e58b70779796a3066d544c5b92d2bcdf5f83a98cc6aabd622fef256269923782"
+    },
+    "clair-obscur-clock-108.png": {
+      "bytes": 11613,
+      "sha256": "dec10b9e62553fcf410444e15d4a81e2bded0a137039423eab6fff255a42656c"
+    },
+    "fonts.xml": {
+      "bytes": 121,
+      "sha256": "1aff1cff5479951bd090accd34523a56c7b3fdecfedcd7498baa733a27a1c6a4"
+    }
+  },
+  "references": [
+    "https://developer.garmin.com/connect-iq/articles/core-topics/Resources.html#fonts",
+    "https://www.angelcode.com/products/bmfont/doc/file_format.html"
+  ],
+  "scope": "Derived bitmap subset for the active digital clock. No original TTF is distributed. Host metrics and raster identity do not establish Garmin rendering, runtime RAM, font-scale behavior, persistence, always-on performance or physical-watch acceptance."
+}

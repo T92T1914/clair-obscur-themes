@@ -22,6 +22,7 @@ module FaceModel {
     const BATTERY_WIDTH = 172;
     const LAYOUT_ANALOG = 0;
     const LAYOUT_DIGITAL = 1;
+    const INTER_CLOCK_CHARACTERS = "0123456789:-";
     const DIAL_CENTER = 227;
     const TICK_OUTER = 208;
     const TICK_INNER = 202;
@@ -44,6 +45,22 @@ module FaceModel {
         if (!(value instanceof Lang.Number)) { return false; }
         var choice = value as Lang.Number;
         return choice == LAYOUT_ANALOG || choice == LAYOUT_DIGITAL;
+    }
+
+    function interClockEligible(layout as Lang.Number, scale as Lang.Float) as Lang.Boolean {
+        // Fixed bitmap metrics never replace the device's scaled native type.
+        return layout == LAYOUT_DIGITAL && scale == 1.0;
+    }
+
+    function interClockText(text as Lang.String) as Lang.Boolean {
+        if (text.length() == 0) { return false; }
+        for (var index = 0; index < text.length(); index += 1) {
+            var glyph = text.substring(index, index + 1);
+            if (glyph == null || INTER_CLOCK_CHARACTERS.find(glyph) == null) {
+                return false;
+            }
+        }
+        return true;
     }
 
     function sanitizeLayout(value as Lang.Object or Null) as Lang.Number {

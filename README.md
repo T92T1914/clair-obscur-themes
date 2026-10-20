@@ -68,16 +68,17 @@ See [development and verification](docs/development.md) for reproducible command
 
 The shared palette also supports a [Garmin watch face candidate](docs/garmin-watchface.md)
 and [original phone icon artwork](docs/samsung-icons.md). The watch face targets
-`fenix9pro47mm`. Version 0.4.0 adds an original analog dial with a digital layout
-option, selectable information fields and a separate time only always on view.
-Both current programs compile for the exact target. Their 20 annotated test
-groups and current rendering, settings persistence and runtime memory remain
-unexecuted in the simulator. The preserved 0.3.0 program passed all 16 of its
+`fenix9pro47mm`. Version 0.5.0 adds a licensed Inter Bold resource for the digital
+time at default font scale. It preserves the analog layout, information fields,
+native scaled fallbacks and separate sparse native-font always-on view. Both
+current programs compile for the exact target. Their 21 annotated test groups
+and current rendering, settings persistence and runtime memory remain unexecuted
+in the simulator. The preserved 0.3.0 program passed all 16 of its
 exact-target simulator test groups, with bounded appearance, switching and
 always-on observations. The broader 0.2.0 history remains separately labeled.
 The transferred earlier face was later reported present on the physical watch.
 Exact on-device version, switching, always-on behavior, persistence, USB
-restoration and power use remain open. No 0.4.0 device installation is claimed.
+restoration and power use remain open. No 0.4.0 or 0.5.0 device installation is claimed.
 
 The phone gallery's 0.10.0 black and white collection pairs 163 named Android apps with 24 general symbols, giving 187 choices in both appearances. A local finder searches names, icon IDs and Android package IDs, with separate named-app and general-function filters. Both appearances stay together, and the full catalog remains available without JavaScript. The latest twelve additions fill restaurant and food-ordering gaps, including Chipotle, Taco Bell, Domino's and the separately identified KFC US app. Checked app labels, package IDs and official listings support manual assignment. All nine earlier SVG archives remain unchanged, and all ten revisions support the local PNG exporter. Coverage is a growing selection, not a complete store catalog or an ordered popularity chart.
 

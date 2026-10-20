@@ -24,7 +24,7 @@ SOFTWARE.
 */
 
 module ThemePalette {
-    const WATCHFACE_VERSION = "0.4.0";
+    const WATCHFACE_VERSION = "0.5.0";
     const TOKEN_SCHEMA = 1;
     const TOKEN_VERSION = "1.0.0";
     const CLAIR_ACCENT = 0x000000;

@@ -167,3 +167,18 @@ function activeBandAdmission(logger as Test.Logger) as Lang.Boolean {
     Test.assert(!FaceModel.fitsActiveBand(200, 66, 200, 360, 425));
     return true;
 }
+
+(:test)
+function interClockScope(logger as Test.Logger) as Lang.Boolean {
+    Test.assert(FaceModel.interClockEligible(FaceModel.LAYOUT_DIGITAL, 1.0));
+    Test.assert(!FaceModel.interClockEligible(FaceModel.LAYOUT_ANALOG, 1.0));
+    Test.assert(!FaceModel.interClockEligible(FaceModel.LAYOUT_DIGITAL, 0.8));
+    Test.assert(!FaceModel.interClockEligible(FaceModel.LAYOUT_DIGITAL, 1.35));
+    Test.assert(FaceModel.interClockText("00:00"));
+    Test.assert(FaceModel.interClockText("23:59"));
+    Test.assert(FaceModel.interClockText("--:--"));
+    Test.assert(!FaceModel.interClockText(""));
+    Test.assert(!FaceModel.interClockText("AM 1:00"));
+    Test.assert(!FaceModel.interClockText("12/34"));
+    return true;
+}
