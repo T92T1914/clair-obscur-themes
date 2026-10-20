@@ -1,8 +1,10 @@
 # Clair and Obscur
 
-Two appearances built around black and white. Clair uses a white background with black lettering and symbols. Obscur uses a black background with white lettering and symbols. Neutral gray separates secondary information. The current app icons and watch-face source use this palette, with Inter where the host supports it and native font fallbacks elsewhere. Preserved desktop packages still use their earlier colors and versions.
+Clair and Obscur are two appearances built around black and white. Clair uses a white background with black lettering and symbols. Obscur reverses that relationship, with neutral gray for secondary information. The family includes application themes, phone icons and a Garmin watch face candidate.
 
-This is an experimental preview. Both themes have limited native Equibop evidence for loading, matching and opposite appearances, switching and scoped restoration. Obscur and Clair 0.1.1 each installed in the retained isolated ordinary Chrome profile, with only the recorded interface surfaces inspected. Complete native interface and typography coverage, Chrome switching, removal and cleanup remain open. The webpage specimen is not a screenshot of either application's interface. See the [compatibility and acceptance record](docs/acceptance.md) for the observed surfaces and remaining checks.
+The current icons, preview and watch source use this palette, with Inter where the host supports it and native font fallbacks elsewhere. Earlier desktop packages keep their accepted colors and versions. Downloads remain previews, and native acceptance depends on the application and exact version.
+
+Limited earlier Equibop and Chrome 0.1.1 observations do not establish complete native interface or typography coverage. Chrome switching, removal and cleanup remain open. The webpage specimen is not an application screenshot. The [compatibility and acceptance record](docs/acceptance.md) separates observed behavior from checks still open.
 
 ## Choose your theme
 
@@ -15,12 +17,12 @@ Open the [live preview and downloads](https://t92t1914.github.io/clair-obscur-th
 | Firefox desktop | Manual warm light static theme | Manual deep neutral static theme | Native browser font, unsigned 0.2.0 candidate |
 | Microsoft Edge | Original Chrome artifact for native testing | Original Chrome artifact for native testing | Native browser font, native acceptance pending |
 | Brave desktop | Original Chrome artifact for native testing | Original Chrome artifact for native testing | Native browser font, host surfaces unverified |
-| Vivaldi desktop | Color-only shareable settings | Color-only shareable settings | Native font, import and derived colors unverified |
-| Opera GX desktop | Light appearance in one paired package | Dark appearance in the same package | Host-derived HSL colors, loading and contrast unverified |
+| Vivaldi desktop | Shareable color settings | Shareable color settings | Native font, import and derived colors unverified |
+| Opera GX desktop | Light appearance in one paired package | Dark appearance in the same package | HSL colors derived by the host, loading and contrast unverified |
 | Vencord | CSS with native Light appearance | CSS with native dark appearance | Local Inter and system fallback, separate client checks pending |
 | BetterDiscord | CSS with native Light appearance | CSS with native dark appearance | Local Inter and system fallback, native check pending |
 
-The Chrome downloads are native color themes, not replacement browsers or website restylers. The Equicord downloads are self-contained local CSS files. They preserve code fonts, icons, emoji and language fallbacks. Neither platform's theme downloads fonts, runs scripts or collects data.
+The Chrome downloads are native color themes, not replacement browsers or website restylers. The Equicord downloads are self contained local CSS files. They preserve code fonts, icons, emoji and language fallbacks. Neither platform's theme downloads fonts, runs scripts or collects data.
 
 ## Build and try the preview
 
@@ -34,7 +36,7 @@ python preview.py --output outputs/preview-0.1.1
 
 Open the generated `index.html` to compare both palettes and select a platform candidate. Choose a fresh output folder when preserving an earlier preview. These commands generate a local copy. They do not update the published preview.
 
-Reviewed changes merged into `main` publish the checked preview automatically after Linux, Windows and browser CI succeed. Website and documentation updates can advance without replacing the v0.1.1 release. The download page distinguishes the original released source from its current-source snapshot.
+Reviewed changes merged into `main` publish the checked preview automatically after Linux, Windows and browser CI succeed. Website and documentation updates can advance without replacing the v0.1.1 release. The download page distinguishes the original released source from the current source snapshot.
 
 | Artifact | Output |
 | --- | --- |
@@ -52,7 +54,7 @@ Reviewed changes merged into `main` publish the checked preview automatically af
 
 Use a separate Chrome test profile or a recoverable Equicord configuration for either appearance, and keep the remaining native checks in view. In Chrome, extract the ZIP and use **Load unpacked** in `chrome://extensions`. In Equibop, use Equicord's **Open Themes Folder** control and copy the CSS there. Do not paste it over QuickCSS or install another Discord client.
 
-The [installation and removal guide](docs/installation.md) covers the exact steps, theme conflicts, Inter, switching and restoration. Chrome uses **Settings > Appearance > Reset to default** for removal. Equicord restoration means disabling the candidate and restoring the appearance and theme selections recorded before the test. No monitor, HDR or color-profile changes are required.
+The [installation and removal guide](docs/installation.md) covers the exact steps, theme conflicts, Inter, switching and restoration. Chrome uses **Settings > Appearance > Reset to default** for removal. Equicord restoration means disabling the candidate and restoring the appearance and theme selections recorded before the test. No monitor, HDR or color profile changes are required.
 
 ## How it is built
 
@@ -62,7 +64,7 @@ The browser specimen exercises readable components, local font resolution, keybo
 
 Inter verification checks rendered Regular, SemiBold and Bold faces and their genuine italic counterparts. Strict isolated checks observed all six installed faces after a later Windows boot, before font intervention in that continuation. Native Equibop evidence remains narrower. Clair 0.1.2 has scoped observations for five faces, while Bold Italic, complete coverage across both appearances, native code and exact language fallback remain unverified. Earlier restart failures remain in the record, and the later boot observation does not prove permanent persistence. The [acceptance record](docs/acceptance.md#installed-font-investigation) separates these observations and their remaining limits. A readable fallback is a separate result, not a passed Inter check.
 
-See [development and verification](docs/development.md) for reproducible commands, [design](docs/design.md) for the color and typography choices, and [research](research/research.md) for the source-backed concerns behind the native checks. The [publication guide](docs/publication.md) separates a downloadable preview, native acceptance and store approval.
+See [development and verification](docs/development.md) for reproducible commands, [design](docs/design.md) for the color and typography choices, and [research](research/research.md) for the sources and concerns that informed the native checks. The [publication guide](docs/publication.md) separates a downloadable preview, native acceptance and store approval.
 
 ## Watch and phone candidates
 
@@ -70,19 +72,19 @@ The shared palette also supports a [Garmin watch face candidate](docs/garmin-wat
 and [original phone icon artwork](docs/samsung-icons.md). The watch face targets
 `fenix9pro47mm`. Version 0.5.0 adds a licensed Inter Bold resource for the digital
 time at default font scale. It preserves the analog layout, information fields,
-native scaled fallbacks and separate sparse native-font always-on view. Both
+native scaled fallbacks and separate sparse always on view with native fonts. Both
 current programs compile for the exact target. Their 21 annotated test groups
 and current rendering, settings persistence and runtime memory remain unexecuted
 in the simulator. The preserved 0.3.0 program passed all 16 of its
-exact-target simulator test groups, with bounded appearance, switching and
-always-on observations. The broader 0.2.0 history remains separately labeled.
+simulator test groups for the exact target, with bounded appearance, switching and
+always on observations. The broader 0.2.0 history remains separately labeled.
 The transferred earlier face was later reported present on the physical watch.
-Exact on-device version, switching, always-on behavior, persistence, USB
+Exact version on the device, switching, always on behavior, persistence, USB
 restoration and power use remain open. No 0.4.0 or 0.5.0 device installation is claimed.
 
-The phone gallery's 0.12.0 black and white collection pairs 183 named Android apps with 24 general symbols, giving 207 choices in both appearances. A local finder searches names, icon IDs and Android package IDs, with separate named-app and general-function filters. Both appearances stay together, and the full catalog remains available without JavaScript. The latest ten additions cover banking, cards and investing. Their drawings use different main forms, with visible names and exact package identities retained for manual assignment. All 394 accepted 0.11.0 SVGs and eleven earlier archives remain unchanged, and all twelve revisions support the local PNG exporter. Coverage is a growing selection, not a complete store catalog or an ordered popularity chart.
+The phone gallery's 0.12.0 black and white collection pairs 183 named Android apps with 24 general symbols, giving 207 choices in both appearances. A local finder searches names, icon IDs and Android package IDs, with separate filters for named apps and general functions. Both appearances stay together, and the full catalog remains available without JavaScript. The latest ten additions cover banking, cards and investing. Their drawings use different main forms, with visible names and exact package identities retained for manual assignment. All 394 accepted 0.11.0 SVGs and eleven earlier archives remain unchanged, and all twelve revisions support the local PNG exporter. Coverage is a growing selection, not a complete store catalog or an ordered popularity chart.
 
-The hosted gallery can prepare an individual 512-pixel PNG beside either appearance. It uses the corresponding local SVG in your browser, with no upload or phone installation. The extracted local-file preview keeps the SVG downloads and full source-export instructions because browser origin restrictions prevent that canvas export. The existing exporter still produces every icon at 512 and 1024 pixels.
+The hosted gallery can prepare an individual PNG at 512 pixels beside either appearance. It uses the corresponding local SVG in your browser, with no upload or phone installation. The extracted preview opened as a local file keeps the SVG downloads and full instructions for exporting from source because browser origin restrictions prevent that canvas export. The existing exporter still produces every icon at 512 and 1024 pixels.
 
 A scoped Samsung Theme Park check saved and applied a local ObscurBW icon theme, with its selection checkmark observed. That pack combined one earlier general drawing, one 0.6.0 named drawing and neutral fallback artwork. It does not establish assignment of the full collection or the later 0.7.0 through 0.12.0 additions. Actual launcher masking, labels, phone fonts, switching and restoration remain separate checks.
 
@@ -90,4 +92,4 @@ A scoped Samsung Theme Park check saved and applied a local ObscurBW icon theme,
 
 Include the theme and application versions, native Light or Dark setting, the affected surface and the steps that reproduce it. For Equicord, mention relevant theme or font overrides without exporting your full settings. Crop private names and messages from any screenshots. A missing glyph, unreadable code block or ambiguous switch state is useful evidence even when the rest of the interface looks right.
 
-Original source, documentation and generated theme assets use the [MIT license](LICENSE). Inter is installed separately from its [official distribution](https://rsms.me/inter/). No third-party theme implementation or font binary is bundled.
+Original source, documentation and generated theme assets use the [MIT license](LICENSE). Inter is installed separately from its [official distribution](https://rsms.me/inter/). No third party theme implementation or font binary is bundled.
