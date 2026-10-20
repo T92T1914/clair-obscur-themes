@@ -487,12 +487,12 @@ class PreviewTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
         exported = json.loads((self.base / 'extracted-icons/manifest.json').read_bytes())
-        self.assertEqual(exported['version'], '0.12.0')
-        self.assertEqual(len(exported['functions']), 207)
-        self.assertEqual(len(exported['files']), 414)
+        self.assertEqual(exported['version'], '0.13.0')
+        self.assertEqual(len(exported['functions']), 217)
+        self.assertEqual(len(exported['files']), 434)
         self.assertEqual([entry['id'] for entry in exported['catalog']][-10:],
-                         ['bank-of-america', 'wells-fargo', 'us-bank', 'pnc', 'discover',
-                          'amex', 'fidelity-investments', 'schwab', 'sofi', 'robinhood'])
+                         ['accuweather', 'weather-channel', 'weather-underground', 'windy-com', 'myradar',
+                          'weatherbug', 'one-weather', 'clime', 'windfinder', 'rainviewer'])
 
     def test_vscode_candidate_builds_from_the_actual_source_snapshot(self):
         extracted = self.base / 'vscode-source'
