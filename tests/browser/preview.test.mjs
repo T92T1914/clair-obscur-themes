@@ -879,12 +879,210 @@ async function checkIconGallery(page) {
   return decoded;
 }
 
+const iconHistoryArchives = [
+  ['icon-artwork-travel-download', travelIconArchive, travelIconDigest],
+  ['icon-artwork-food-order-download', foodOrderIconArchive, foodOrderIconDigest],
+  ['icon-artwork-everyday-download', everydayIconArchive, everydayIconDigest],
+  ['icon-artwork-broad-download', broadIconArchive, broadIconDigest],
+  ['icon-artwork-companion-download', companionIconArchive, companionIconDigest],
+  ['icon-artwork-monochrome-download', monochromeIconArchive, monochromeIconDigest],
+  ['icon-artwork-third-app-download', thirdAppIconArchive, thirdAppIconDigest],
+  ['icon-artwork-second-app-download', secondAppIconArchive, secondAppIconDigest],
+  ['icon-artwork-first-app-download', firstAppIconArchive, firstAppIconDigest],
+  ['icon-artwork-previous-download', previousIconArchive, previousIconDigest],
+  ['icon-artwork-legacy-download', legacyIconArchive, legacyIconDigest],
+];
+
+async function assertIconHistoryStructure(page, { open } = {}) {
+  const structure = await page.evaluate(() => {
+    const history = document.querySelector('#icon-history'), summary = document.querySelector('#icon-history-summary');
+    const nodes = ['#icon-artwork-download', '#icon-artwork-checksums', '#icon-finder', '#icon-png-help',
+      '#icon-png-status', '#icon-history', '#icons .icon-card'].map(selector => document.querySelector(selector));
+    return { tag: history?.tagName, summaryTag: summary?.tagName, summaryText: summary?.textContent.trim(),
+      summaryIsFirstChild: history?.firstElementChild === summary, open: history?.open,
+      outsideCards: Boolean(history && !history.closest('.icon-card')),
+      ordered: nodes.every(Boolean) && nodes.slice(1).every((node, index) =>
+        Boolean(nodes[index].compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING)),
+      links: [...(history?.querySelectorAll('a') || [])].map(node => ({ id: node.id,
+        href: node.getAttribute('href'), download: node.hasAttribute('download') })) };
+  });
+  assert.equal(structure.tag, 'DETAILS'); assert.equal(structure.summaryTag, 'SUMMARY');
+  assert.equal(structure.summaryText, 'Preserved SVG collections'); assert.equal(structure.summaryIsFirstChild, true);
+  assert.equal(structure.outsideCards, true);
+  assert.equal(structure.ordered, true, 'Current acquisition precedes preserved history and the static gallery');
+  assert.deepEqual(structure.links, iconHistoryArchives.map(([id, href]) => ({ id, href, download: true })),
+    'Preserved archive identities must remain exact');
+  if (open !== undefined) assert.equal(structure.open, open, 'Expected native history disclosure state');
+  return structure;
+}
+
+async function setIconHistoryOpen(page, open, key = 'Enter') {
+  const history = page.locator('#icon-history'), summary = page.locator('#icon-history-summary');
+  if (await history.evaluate(node => node.open) !== open) {
+    await summary.focus(); await page.keyboard.press(key);
+    assert.equal(await history.evaluate(node => node.open), open, 'History keyboard toggle must change the native open state');
+    assert.equal(await summary.evaluate(node => node === document.activeElement), true, 'History toggle retains summary focus');
+  }
+}
+
+async function focusBeforeIconCards(page) {
+  await setIconHistoryOpen(page, false);
+  await (await page.locator('#icon-finder').isVisible() ? page.locator('#icon-clear') : page.locator('#icon-artwork-checksums')).focus();
+  await page.keyboard.press('Tab');
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-history-summary');
+  assert.equal(await page.locator('#icon-history a:visible').count(), 0, 'Closed history must not add archive keyboard stops');
+}
+
+async function acquirePreservedIconArchive(page, [id, relative, digest]) {
+  const link = page.locator('#' + id);
+  assert.equal(await link.evaluate(node => document.activeElement === node), true);
+  const beforeUrl = page.url();
+  const [download] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }), page.keyboard.press('Enter')]);
+  assert.equal(await download.failure(), null);
+  const chunks = []; for await (const chunk of await download.createReadStream()) chunks.push(chunk);
+  const bytes = Buffer.concat(chunks); assert.ok(bytes.length > 0, 'Acquire actual archive bytes before identity checks');
+  assert.equal(download.suggestedFilename(), path.basename(relative), 'Preserved archive filename identity');
+  assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'), digest, 'Preserved archive digest identity');
+  assert.deepEqual(bytes, await readFile(path.join(site, relative))); assert.equal(page.url(), beforeUrl);
+  return { id, path: relative, bytes: bytes.length, sha256: digest };
+}
+
+async function assertIconHistoryLayout(page, { spacing = false } = {}) {
+  const metrics = await page.locator('#icon-history summary, #icon-history > p, #icon-history a').evaluateAll(nodes => nodes.map(node => {
+    const box = node.getBoundingClientRect(), style = getComputedStyle(node), range = document.createRange();
+    range.selectNodeContents(node);
+    return { tag: node.tagName, text: node.textContent.trim(), left: box.left, right: box.right, width: box.width, height: box.height,
+      viewport: innerWidth, visibility: style.visibility, opacity: style.opacity, fontSize: style.fontSize,
+      lineHeight: style.lineHeight, letterSpacing: style.letterSpacing, wordSpacing: style.wordSpacing,
+      marginBlockEnd: style.marginBlockEnd, rects: [...range.getClientRects()].map(rect => ({ left: rect.left, right: rect.right,
+        top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height })) };
+  }));
+  assert.equal(metrics.length, 23, 'Admit the summary, all eleven archive paragraphs and their actual links');
+  for (const node of metrics) {
+    assert.ok(node.text && node.width > 0 && node.height > 0 && node.visibility === 'visible' && Number(node.opacity) > 0,
+      'History text unavailable: ' + JSON.stringify(node));
+    assert.ok(node.left >= -1 && node.right <= node.viewport + 1, 'History outside viewport: ' + JSON.stringify(node));
+    assert.ok(node.rects.length > 0 && node.rects.every(rect => rect.width > 0 && rect.height > 0 && rect.left >= -1 && rect.right <= node.viewport + 1),
+      'History text clipped: ' + JSON.stringify(node));
+    if (!spacing) continue;
+    const size = parseFloat(node.fontSize);
+    for (const [property, minimum] of [['lineHeight', 1.5], ['letterSpacing', .12], ['wordSpacing', .16]])
+      assert.ok(parseFloat(node[property]) + .02 >= size * minimum, 'History spacing admission ' + property + ': ' + JSON.stringify(node));
+    if (node.tag === 'P') assert.ok(parseFloat(node.marginBlockEnd) + .02 >= size * 2, 'History paragraph spacing: ' + JSON.stringify(node));
+  }
+  return { nodes: metrics.length, paragraphs: metrics.filter(node => node.tag === 'P').length, spacing };
+}
+
+test('current icon acquisition precedes preserved history with native keyboard disclosure', async () => {
+  for (const width of [390, 1280]) {
+    const { context, page, consoleErrors } = await pageFor({ viewport: { width, height: 900 } });
+    try {
+      await snapshotFinderCatalog(page);
+      const acquisitions = [];
+      for (const appearance of ['Obscur', 'Clair']) {
+        await page.getByRole('button', { name: appearance, exact: true }).click();
+        await assertIconHistoryStructure(page, { open: false });
+        await page.locator('#icon-artwork-download').focus();
+        for (const id of ['icon-artwork-checksums', 'icon-query', 'icon-kind', 'icon-clear', 'icon-history-summary']) {
+          await page.keyboard.press('Tab');
+          assert.equal(await page.evaluate(() => document.activeElement.id), id, 'Current task keyboard order before preserved links');
+        }
+        assert.equal(await page.locator('#icon-history a:visible').count(), 0);
+        await page.locator('#icon-query').fill('fidelity-investments'); await assertFinderResults(page, ['fidelity-investments']);
+        const surroundings = await iconPngSurroundings(page);
+        await setIconHistoryOpen(page, true, 'Enter'); await assertIconHistoryLayout(page);
+        for (const [index, item] of iconHistoryArchives.entries()) {
+          await page.keyboard.press('Tab');
+          assert.equal(await page.evaluate(() => document.activeElement.id), item[0]);
+          assert.equal(await page.locator('#' + item[0]).isVisible(), true);
+          if (index === 0 || index === iconHistoryArchives.length - 1) acquisitions.push(await acquirePreservedIconArchive(page, item));
+        }
+        await setIconHistoryOpen(page, false, 'Space');
+        await tabToIconAction(page, 'fidelity-investments', 'Clair', 'com.fidelity.android');
+        const png = await acquireIconPng(page, 'fidelity-investments', appearance);
+        acquisitions.push(await assertDownloadedIconPng(page, png, 'fidelity-investments', appearance));
+        assert.deepEqual(await iconPngSurroundings(page), surroundings);
+        assert.equal(await page.locator('#icon-history').evaluate(node => node.open), false);
+      }
+      assert.deepEqual(consoleErrors, []);
+      results.scenarios.push({ name: 'current-first icon acquisition and native history disclosure', width, appearances: ['Obscur', 'Clair'],
+        historicalLinksReached: 22, acquisitions, status: 'passed', nativePhoneVerified: false });
+    } finally { await context.close(); }
+  }
+});
+
+test('current icon acquisition keeps opened history spacing-only and additional responsive stress distinct', async () => {
+  for (const scenario of [{ width: 1280, scale: 100, missingFont: false, spacingOnly: true },
+    { width: 390, scale: 100, missingFont: false, spacingOnly: false },
+    { width: 320, scale: 200, missingFont: true, spacingOnly: false }]) {
+    const { context, page, consoleErrors } = await pageFor({ viewport: { width: scenario.width, height: 844 }, missingFont: scenario.missingFont });
+    try {
+      if (scenario.scale === 200) await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+      await snapshotFinderCatalog(page);
+      for (const appearance of ['Obscur', 'Clair']) {
+        await page.getByRole('button', { name: appearance, exact: true }).click();
+        await setIconHistoryOpen(page, true);
+        const baseline = await spacingContentBaseline(page);
+        assert.equal(baseline.rootFontSize, scenario.scale === 200 ? '32px' : '16px'); assert.equal(baseline.width, scenario.width);
+        const style = await page.addStyleTag({ content: textSpacingOverride });
+        const admission = await assertTextSpacing(page, baseline), history = await assertIconHistoryLayout(page, { spacing: true });
+        await setIconHistoryOpen(page, false, 'Space'); await setIconHistoryOpen(page, true, 'Enter');
+        await page.keyboard.press('Tab');
+        const archive = await acquirePreservedIconArchive(page, iconHistoryArchives[0]);
+        await page.locator('#icon-query').fill('fidelity-investments'); await assertFinderResults(page, ['fidelity-investments']);
+        const before = await iconPngSurroundings(page);
+        const bytes = await acquireIconPng(page, 'fidelity-investments', appearance);
+        const png = await assertDownloadedIconPng(page, bytes, 'fidelity-investments', appearance);
+        assert.equal(await page.locator('#icon-png-status').innerText(),
+          `Prepared Clair-Obscur-0.12.0-${appearance}-fidelity-investments-512.png. Your browser handles the download.`);
+        assert.deepEqual(await iconPngSurroundings(page), before); assert.equal(await page.locator('#icon-history').evaluate(node => node.open), true);
+        await page.locator('#icon-clear').focus(); await page.keyboard.press('Enter'); await assertFinderResults(page, iconFunctions);
+        await assertTextSpacing(page, baseline); await assertIconHistoryLayout(page, { spacing: true });
+        await setIconHistoryOpen(page, false); await style.evaluate(node => node.remove());
+        results.scenarios.push({ name: scenario.spacingOnly ? 'current acquisition opened-history spacing only' : 'current acquisition opened-history additional stress',
+          ...scenario, appearance, admission, history, archive, png, status: 'passed',
+          scope: 'Actual four computed overrides and keyboard operations. Narrow layout/enlarged fallback are separate stress, not native-device or broad WCAG acceptance.' });
+      }
+      assert.deepEqual(consoleErrors, []);
+    } finally { await context.close(); }
+  }
+});
+
+test('current icon acquisition qualification rejects earlier history, an inert disclosure and an altered archive link', async () => {
+  for (const fault of ['history-first', 'inert-disclosure', 'altered-archive-link']) {
+    const { context, page, consoleErrors } = await pageFor();
+    try {
+      await assertIconHistoryStructure(page, { open: false });
+      if (fault === 'history-first') {
+        await page.evaluate(() => document.querySelector('#icon-finder').before(document.querySelector('#icon-history')));
+        assert.equal(await page.locator('#icon-history').evaluate(node => Boolean(node.compareDocumentPosition(document.querySelector('#icon-finder')) & Node.DOCUMENT_POSITION_FOLLOWING)), true);
+        await assert.rejects(assertIconHistoryStructure(page), /Current acquisition precedes preserved history/);
+      } else if (fault === 'inert-disclosure') {
+        await page.locator('#icon-history-summary').evaluate(node => {
+          window.preventedHistoryToggles = 0;
+          node.addEventListener('click', event => { event.preventDefault(); window.preventedHistoryToggles++; });
+        });
+        for (const key of ['Enter', 'Space']) await assert.rejects(setIconHistoryOpen(page, true, key), /History keyboard toggle/);
+        assert.equal(await page.evaluate(() => window.preventedHistoryToggles), 2);
+        assert.equal(await page.locator('#icon-history').evaluate(node => node.open), false);
+      } else {
+        await page.locator('#icon-artwork-travel-download').evaluate(node => node.setAttribute('href', 'icons/Clair-Obscur-SVG-Icons-0.1.0.zip'));
+        assert.equal(await page.locator('#icon-artwork-travel-download').getAttribute('href'), legacyIconArchive);
+        await assert.rejects(assertIconHistoryStructure(page), /Preserved archive identities/);
+        await setIconHistoryOpen(page, true); await page.keyboard.press('Tab');
+        await assert.rejects(acquirePreservedIconArchive(page, iconHistoryArchives[0]), /Preserved archive filename identity/);
+      }
+      assert.deepEqual(consoleErrors, []);
+      results.scenarios.push({ name: 'current acquisition controlled qualification failure', fault, status: 'rejected as expected',
+        scope: 'Deliberate fault in a disposable page, not a product defect or modified deliverable' });
+    } finally { await context.close(); }
+  }
+});
+
 async function checkIconMappingKeyboard(page) {
-  // The finder precedes the gallery when enhanced. Without script, the last
-  // archive is still its preceding focusable control. Follow actual Tab order
-  // through the PNG actions and every store link without activating either.
-  await (await page.locator('#icon-finder').isVisible()
-    ? page.locator('#icon-clear') : page.locator('#icon-artwork-legacy-download')).focus();
+  // Traverse the closed history summary before the gallery in either mode.
+  // Historical links remain available through its separate keyboard journey.
+  await focusBeforeIconCards(page);
   const pngEnabled = await page.locator('[data-icon-png]').first().isVisible();
   for (const [id, , packageId] of namedIconApps) {
     for (const action of pngEnabled ? ['Clair', 'Obscur', 'store'] : ['store'])
@@ -1012,6 +1210,7 @@ async function finderKeyboardRecovery(page) {
   assert.equal(await page.locator('#icon-kind').inputValue(), 'app');
   assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-clear');
   await assertFinderResults(page, ['home-depot', 'google-home']);
+  await focusBeforeIconCards(page);
   const pngEnabled = await page.locator('[data-icon-function="home-depot"] [data-icon-png]').first().isVisible();
   for (const [id, packageId] of [['home-depot', 'com.thehomedepot'], ['google-home', 'com.google.android.apps.chromecast.app']]) {
     for (const action of pngEnabled ? ['Clair', 'Obscur', 'store'] : ['store'])
@@ -1108,6 +1307,7 @@ test('icon finder leaves exact artwork downloads and the independent platform ch
     await page.locator('#package-target').selectOption('equicord'); await page.locator('#package-appearance').selectOption('Clair');
     const chooserBefore = await page.locator('#package-choice-result').innerHTML();
     await page.locator('#icon-query').fill('this app does not exist 8675309'); await assertFinderResults(page, []);
+    await setIconHistoryOpen(page, true);
     for (const id of ['icon-artwork-download', 'icon-artwork-food-order-download', 'icon-artwork-everyday-download', 'icon-artwork-broad-download', 'icon-artwork-companion-download',
       'icon-artwork-monochrome-download', 'icon-artwork-third-app-download', 'icon-artwork-second-app-download',
       'icon-artwork-first-app-download', 'icon-artwork-previous-download', 'icon-artwork-legacy-download', 'icon-artwork-checksums'])
@@ -1134,7 +1334,7 @@ test('icon finder leaves exact artwork downloads and the independent platform ch
       await route.fulfill({ contentType: 'text/html; charset=utf-8',
         body: '<!doctype html><title>Assignment fixture</title><h1>Claude assignment fixture</h1>' });
     });
-    await page.locator('#icon-clear').focus();
+    await focusBeforeIconCards(page);
     for (const action of ['Clair', 'Obscur', 'store']) await tabToIconAction(page, 'claude', action, 'com.anthropic.claude');
     assert.equal(await page.evaluate(() => document.activeElement.closest('[data-icon-function]')?.dataset.iconFunction), 'claude');
     assert.equal(await page.evaluate(() => document.activeElement.getAttribute('href')), assignmentUrl);
@@ -1208,6 +1408,7 @@ test('icon finder enhancement failure preserves every static choice and download
       await snapshotFinderCatalog(page);
       assert.ok(await page.locator('#icon-finder').isHidden(), failure + ' must not expose an inert finder');
       await assertFinderResults(page, iconFunctions, { enhanced: false });
+      await setIconHistoryOpen(page, true);
       assert.deepEqual(await page.locator('#icons article.icon-card p a').evaluateAll(nodes => nodes.map(node => ({
         id: node.closest('[data-icon-function]').dataset.iconFunction, href: node.getAttribute('href') }))),
       namedIconApps.map(([id, , packageId]) => ({ id, href: 'https://play.google.com/store/apps/details?id=' + packageId })));
@@ -1578,6 +1779,7 @@ test('no-script keyboard navigation acquires current and all eleven preserved ic
   try {
     await assertIconPngFallback(page);
     await checkIconGallery(page);
+    await assertIconHistoryStructure(page, { open: false });
     const spacingBaseline = await spacingContentBaseline(page);
     assert.equal(spacingBaseline.width, 320); assert.equal(spacingBaseline.rootFontSize, '32px');
     const spacingAdmission = await assertTextSpacing(page, spacingBaseline);
@@ -1604,6 +1806,12 @@ test('no-script keyboard navigation acquires current and all eleven preserved ic
     const chunks = []; for await (const chunk of await checksumDownload.createReadStream()) chunks.push(chunk);
     const digest = crypto.createHash('sha256').update(bytes).digest('hex');
     assert.equal(Buffer.concat(chunks).toString('utf8'), iconChecksums(digest));
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-history-summary');
+    assert.equal(await page.locator('#icon-history').evaluate(node => node.open), false);
+    await page.keyboard.press('Enter');
+    assert.equal(await page.locator('#icon-history').evaluate(node => node.open), true);
+    await assertIconHistoryLayout(page, { spacing: true });
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-travel-download');
     const [travelDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
@@ -1719,6 +1927,10 @@ test('no-script keyboard navigation acquires current and all eleven preserved ic
     const legacyBytes = await readFile(legacyArchivePath);
     assert.deepEqual(legacyBytes, await readFile(path.join(site, ...legacyIconArchive.split('/'))));
     assert.equal(crypto.createHash('sha256').update(legacyBytes).digest('hex'), legacyIconDigest);
+    await setIconHistoryOpen(page, false, 'Space');
+    await setIconHistoryOpen(page, true, 'Enter');
+    await assertIconHistoryLayout(page, { spacing: true });
+    await assertTextSpacing(page, spacingBaseline);
     run(['-c', [
       'import hashlib,json,pathlib,sys,zipfile',
       'archive_path,site=map(pathlib.Path,sys.argv[1:])',
@@ -2101,7 +2313,8 @@ async function spacingContentBaseline(page) {
     const nodes = [];
     for (let node; (node = walker.nextNode());) {
       const parent = node.parentElement;
-      if (!node.textContent.trim() || parent.closest('script, style, noscript, option, legend, .skip, #package-chooser, #local-package-checker, #appearance-status, #control-status')) continue;
+      // Live result text may change after its separately asserted operation.
+      if (!node.textContent.trim() || parent.closest('script, style, noscript, option, legend, .skip, #package-chooser, #local-package-checker, #appearance-status, #control-status, #icon-png-status')) continue;
       const range = document.createRange(); range.selectNodeContents(node);
       if (!range.getClientRects().length || getComputedStyle(parent).visibility !== 'visible') continue;
       const steps = [];
@@ -2397,13 +2610,16 @@ test('text spacing with narrow layout and enlarged fallback text is separate add
 test('text spacing keeps the no-script catalog and keyboard installation routes readable', async () => {
   const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false });
   try {
+    await setIconHistoryOpen(page, true);
     const baseline = await spacingContentBaseline(page);
     // Loading CSS does not depend on page script or a script-driven style-load
     // promise. Preserve the real script-disabled route throughout this check.
     await page.route('**/preview.css', async route => route.fulfill({ contentType: 'text/css',
       body: await readFile(path.join(site, 'preview.css'), 'utf8') + textSpacingOverride }));
     await page.reload();
+    await setIconHistoryOpen(page, true);
     const admission = await assertTextSpacing(page, baseline);
+    await assertIconHistoryLayout(page, { spacing: true });
     await checkIconGallery(page);
     assert.ok(await page.locator('#package-chooser').isHidden());
     assert.ok(await page.locator('#local-package-checker').isHidden());
@@ -3183,6 +3399,7 @@ for (const javaScriptEnabled of [true, false]) test(`portable kit downloads, ext
       assert.deepEqual(iconBytes, await readFile(path.join(relocated, ...iconArchive.split('/'))));
       assert.equal(iconDigest, inner.files[iconArchive]);
       assert.equal(await readFile(path.join(relocated, 'icons', 'SVG-SHA256SUMS'), 'utf8'), iconChecksums(iconDigest));
+      await setIconHistoryOpen(localPage, true);
       await localPage.locator('#icon-artwork-travel-download').focus();
       const [travelIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
       assert.equal(await travelIconDownload.failure(), null);
