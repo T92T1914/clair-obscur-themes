@@ -313,7 +313,7 @@ class ManifestAdmissionTests(KitFixture):
         (self.kit / 'site-manifest.json').write_bytes(b' ' * 65_537)
         self.assert_refused(message='File byte limit')
         self.document = manifest_document(self.files)
-        for number in range(457 - len(self.document['files'])):
+        for number in range(478 - len(self.document['files'])):
             self.document['files'][f'file{number}.txt'] = '0' * 64
         self.write_manifest()
         self.assert_refused(message='declared file count')
@@ -329,15 +329,15 @@ class ManifestAdmissionTests(KitFixture):
         for name in self.document['files']:
             parts = name.split('/')
             expected_entries.update('/'.join(parts[:end]) for end in range(1, len(parts) + 1))
-        self.assertLess(len(self.document['files']), 456)
-        self.assertGreater(len(expected_entries), 480)
+        self.assertLess(len(self.document['files']), 477)
+        self.assertGreater(len(expected_entries), 501)
         self.write_manifest()
         self.assert_refused(message='Combined inventory')
 
-    def test_expanded_declared_inventory_accepts_prior_and_456_hashes_and_refuses_457(self):
+    def test_expanded_declared_inventory_accepts_prior_and_477_hashes_and_refuses_478(self):
         # Exercise a complete comparison at the published limit. The current
         # named-app portable kit also runs through ProducerInclusionTests.
-        for count in (192, 224, 240, 248, 256, 313, 320, 410, 416, 435, 448, 456):
+        for count in (192, 224, 240, 248, 256, 313, 320, 410, 416, 435, 448, 456, 477):
             while len(self.files) < count:
                 number = len(self.files)
                 name = f'expanded{number}.txt'
@@ -353,12 +353,15 @@ class ManifestAdmissionTests(KitFixture):
         self.document['files']['one-too-many.txt'] = '0' * 64
         self.write_manifest()
         before = self.snapshot()
-        self.assert_refused(message='declared file count')
+        with patch.object(verifier, '_read', wraps=verifier._read) as reads:
+            self.assert_refused(message='declared file count')
+        self.assertEqual([call.args[1] for call in reads.call_args_list], ['site-manifest.json'],
+                         'The 478th declaration is refused before any declared member is read')
         self.assertEqual(self.snapshot(), before)
 
     def test_actual_inventory_depth_and_unsafe_extra_are_refused_before_reads(self):
         extra_count = 0
-        for admitted_count in (352, 448, 480):
+        for admitted_count in (352, 448, 480, 501):
             additional = admitted_count - len(verifier.inventory(self.kit))
             for number in range(extra_count, extra_count + additional):
                 (self.kit / f'extra{number}.txt').touch()
@@ -787,6 +790,18 @@ class ProducerInclusionTests(KitFixture):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
         self.assertEqual(verifier.verify(extracted)[0], 0)
+        # The real 0.12 kit has 497 entries. Preserve room to diagnose ordinary
+        # extras rather than refusing its first extra entry as unsupported.
+        self.assertEqual(len(portable['files']), 477)
+        self.assertEqual(len(verifier.inventory(extracted)), 497)
+        (extracted / 'unassigned-extra.txt').write_bytes(b'preserved extra file\n')
+        before = {name.relative_to(extracted).as_posix(): name.read_bytes()
+                  for name in extracted.rglob('*') if name.is_file()}
+        status, report = verifier.verify(extracted)
+        self.assertEqual(status, 1)
+        self.assertIn(b'extra FILE "unassigned-extra.txt"\n', report)
+        self.assertEqual({name.relative_to(extracted).as_posix(): name.read_bytes()
+                          for name in extracted.rglob('*') if name.is_file()}, before)
 
 
 if __name__ == '__main__':

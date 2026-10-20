@@ -1496,3 +1496,113 @@ EIGHTH_APP_CATALOG = ({'id': 'fly-delta',
                      'Google Play listing inspected. Publisher support search record corroborated Android '
                      'distribution, while its subsequent open returned no extracted body. Listing identity '
                      'does not establish installation or device compatibility.'})
+
+
+NINTH_CATALOG_DATE = '2026-10-20'
+NINTH_CATALOG_SCOPE = ('Finance and banking assignments from inspected official Google Play identities and category gaps. '
+                       'Ten original paired interpretations retain visible names and exact package assignments. '
+                       'Not an ordered popularity chart or exhaustive catalog. Canonical listing locales varied, '
+                       'and listing identity does not establish installation, account eligibility or device availability.')
+
+NINTH_APP_CATALOG = (
+    {
+        "id": "bank-of-america",
+        "label": "Bank of America",
+        "store_title": "Bank of America Mobile Banking",
+        "kind": "app",
+        "category": "banking",
+        "android_package": "com.infonow.bofa",
+        "store_url": "https://play.google.com/store/apps/details?id=com.infonow.bofa",
+        "selection_basis": "Missing named Bank of America finance assignment; official Google Play identity inspected on October 20, 2026. Listing identity does not establish personal installation or device availability.",
+    },
+    {
+        "id": "wells-fargo",
+        "label": "Wells Fargo",
+        "store_title": "Wells Fargo Mobile®",
+        "kind": "app",
+        "category": "banking",
+        "android_package": "com.wf.wellsfargomobile",
+        "store_url": "https://play.google.com/store/apps/details?id=com.wf.wellsfargomobile",
+        "selection_basis": "Missing named Wells Fargo finance assignment; official Google Play identity inspected on October 20, 2026. Listing identity does not establish personal installation or device availability.",
+    },
+    {
+        "id": "us-bank",
+        "label": "U.S. Bank",
+        "store_title": "U.S. Bank Mobile Banking",
+        "kind": "app",
+        "category": "banking",
+        "android_package": "com.usbank.mobilebanking",
+        "store_url": "https://play.google.com/store/apps/details?id=com.usbank.mobilebanking",
+        "selection_basis": "Missing named U.S. Bank finance assignment; official Google Play identity inspected on October 20, 2026. Listing identity does not establish personal installation or device availability.",
+    },
+    {
+        "id": "pnc",
+        "label": "PNC",
+        "store_title": "PNC Mobile",
+        "kind": "app",
+        "category": "banking",
+        "android_package": "com.pnc.ecommerce.mobile",
+        "store_url": "https://play.google.com/store/apps/details?id=com.pnc.ecommerce.mobile",
+        "selection_basis": "Missing named PNC finance assignment; official Google Play identity inspected on October 20, 2026. Listing identity does not establish personal installation or device availability.",
+    },
+    {
+        "id": "discover",
+        "label": "Discover",
+        "store_title": "Discover Mobile",
+        "kind": "app",
+        "category": "finance",
+        "android_package": "com.discoverfinancial.mobile",
+        "store_url": "https://play.google.com/store/apps/details?id=com.discoverfinancial.mobile",
+        "selection_basis": "Missing named Discover finance assignment; official Google Play identity inspected on October 20, 2026. Listing identity does not establish personal installation or device availability.",
+    },
+    {
+        "id": "amex",
+        "label": "Amex",
+        "store_title": "Amex",
+        "kind": "app",
+        "category": "finance",
+        "android_package": "com.americanexpress.android.acctsvcs.us",
+        "store_url": "https://play.google.com/store/apps/details?id=com.americanexpress.android.acctsvcs.us",
+        "selection_basis": "Missing named Amex finance assignment; official Google Play identity inspected on October 20, 2026. Listing identity does not establish personal installation or device availability.",
+    },
+    {
+        "id": "fidelity-investments",
+        "label": "Fidelity Investments",
+        "store_title": "Fidelity Investments",
+        "kind": "app",
+        "category": "finance",
+        "android_package": "com.fidelity.android",
+        "store_url": "https://play.google.com/store/apps/details?id=com.fidelity.android",
+        "selection_basis": "Missing named Fidelity Investments finance assignment; official Google Play identity inspected on October 20, 2026. Listing identity does not establish personal installation or device availability.",
+    },
+    {
+        "id": "schwab",
+        "label": "Schwab",
+        "store_title": "Schwab Mobile",
+        "kind": "app",
+        "category": "finance",
+        "android_package": "com.schwab.mobile",
+        "store_url": "https://play.google.com/store/apps/details?id=com.schwab.mobile",
+        "selection_basis": "Missing named Schwab finance assignment; official Google Play identity inspected on October 20, 2026. Listing identity does not establish personal installation or device availability.",
+    },
+    {
+        "id": "sofi",
+        "label": "SoFi",
+        "store_title": "SoFi: Bank, Invest & Crypto",
+        "kind": "app",
+        "category": "finance",
+        "android_package": "com.sofi.mobile",
+        "store_url": "https://play.google.com/store/apps/details?id=com.sofi.mobile",
+        "selection_basis": "Missing named SoFi finance assignment; official Google Play identity inspected on October 20, 2026. Listing identity does not establish personal installation or device availability.",
+    },
+    {
+        "id": "robinhood",
+        "label": "Robinhood",
+        "store_title": "Robinhood: Trading & Investing",
+        "kind": "app",
+        "category": "finance",
+        "android_package": "com.robinhood.android",
+        "store_url": "https://play.google.com/store/apps/details?id=com.robinhood.android",
+        "selection_basis": "Missing named Robinhood finance assignment; official Google Play identity inspected on October 20, 2026. Listing identity does not establish personal installation or device availability.",
+    },
+)
