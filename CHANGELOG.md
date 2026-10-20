@@ -1,5 +1,10 @@
 # Changes
 
+## Current icon acquisition
+
+- Put current downloads, the icon finder and individual PNG guidance before preserved SVG collections.
+- Keep all eleven earlier collection links in a native keyboard-operable disclosure that works without JavaScript. Artwork versions, archive bytes and the full gallery remain unchanged.
+
 ## Icon artwork 0.12.0
 
 - Add ten inspected banking, card and investment assignments in both black and white appearances. The collection now has 183 named apps and 24 general functions.
