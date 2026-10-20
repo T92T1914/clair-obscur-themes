@@ -1,4 +1,10 @@
 <settings>
+    <setting propertyKey="@Properties.layout" title="@Strings.LayoutTitle">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.AnalogLabel</listEntry>
+            <listEntry value="1">@Strings.DigitalLabel</listEntry>
+        </settingConfig>
+    </setting>
     <setting propertyKey="@Properties.appearance" title="@Strings.AppearanceTitle">
         <settingConfig type="list">
             <listEntry value="0">@Strings.ClairLabel</listEntry>

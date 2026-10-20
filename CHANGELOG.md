@@ -1,5 +1,13 @@
 # Changes
 
+## Garmin watch face 0.4.0
+
+- Add an original analog dial with distinct hour and minute hands, a double twelve marker and a restrained minute track. Retain the digital layout, existing information fields and separate time-only always-on view.
+- Add a persistent Analog/Digital choice without changing the existing appearance and field keys, application identity or data permission. Build and cache only the selected layout's native font candidates.
+- Measure all three analog information rows together before drawing within the smaller bands. Keep time in front when hands cross inner readings and document that visibility tradeoff.
+- Compile normal and test-enabled programs for `fenix9pro47mm` with SDK 9.2.0. Add four annotated test groups for analog geometry and layout settings, plus host geometry and resource checks. Current simulator rendering, execution of all 20 groups, persistence, memory and physical-device acceptance remain open.
+- Preserve earlier watch programs, simulator observations, transfer evidence, icon artwork and desktop package bytes.
+
 ## Preview icon finder
 
 - Find existing drawings by name, stable icon ID or Android package ID, with named-app and general-function filters.

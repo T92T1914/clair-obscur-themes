@@ -1,6 +1,9 @@
 <strings>
     <string id="AppName">Clair and Obscur</string>
     <string id="AppearanceTitle">Appearance</string>
+    <string id="LayoutTitle">Layout</string>
+    <string id="AnalogLabel">Analog</string>
+    <string id="DigitalLabel">Digital</string>
     <string id="ClairLabel">Clair</string>
     <string id="ObscurLabel">Obscur</string>
     <string id="SelectedLabel">Selected</string>

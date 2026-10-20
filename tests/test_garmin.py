@@ -152,9 +152,9 @@ class GarminPaletteTests(unittest.TestCase):
     def test_current_palette_has_exact_black_white_and_neutral_roles(self):
         current = json.loads((ROOT / "tokens-monochrome.json").read_text(encoding="utf-8"))
         source = render_palette(current)
-        self.assertEqual(VERSION, "0.3.0")
+        self.assertEqual(VERSION, "0.4.0")
         self.assertEqual(colors(source), EXPECTED_MONOCHROME_COLORS)
-        self.assertIn('const WATCHFACE_VERSION = "0.3.0";', source)
+        self.assertIn('const WATCHFACE_VERSION = "0.4.0";', source)
         self.assertIn('const TOKEN_VERSION = "1.0.0";', source)
         for color in colors(source).values():
             self.assertEqual((color >> 16) & 255, (color >> 8) & 255)
@@ -189,7 +189,8 @@ class GarminPaletteTests(unittest.TestCase):
                          ["fenix9pro47mm"])
         properties = ET.parse(face / "resources/settings/properties.xml").getroot()
         self.assertEqual([(node.get("id"), node.get("type"), node.text) for node in properties],
-                         [("appVersion", "string", "0.3.0"), ("appearance", "number", "1"),
+                         [("appVersion", "string", "0.4.0"), ("appearance", "number", "1"),
+                          ("layout", "number", "0"),
                           ("leftData", "number", "0"), ("rightData", "number", "1")])
         view = (face / "source/ClairObscurView.mc").read_text(encoding="utf-8")
         self.assertIn('(clair ? ThemePalette.CLAIR_CANVAS : ThemePalette.OBSCUR_CANVAS) : 0x000000;', view)
@@ -280,10 +281,14 @@ class GarminActiveBandGeometryTests(unittest.TestCase):
                 r"^    const ([A-Z]+)_(TOP|BOTTOM|WIDTH) = (\d+);$", model, re.MULTILINE):
             cls.bands.setdefault(name, {})[edge] = int(value)
         cls.view = (source / "ClairObscurView.mc").read_text(encoding="utf-8")
+        # Keep the accepted digital font contract explicit while the analog
+        # branch has its own, separately qualified candidates.
+        refresh = cls.view.split("function refreshFonts(", 1)[1].split("    function pickFont(", 1)[0]
+        analog, digital = refresh.split("        } else {", 1)
         cls.fonts = {}
         declarations = re.findall(
             r'_(\w+)Fonts\s*=\s*fonts\("([A-Za-z]+)",\s*\[([\d, ]+)\],\s*'
-            r'Graphics\.(FONT_[A-Z_]+),\s*scale\);', cls.view)
+            r'Graphics\.(FONT_[A-Z_]+),\s*scale\);', digital)
         for role, face, sizes, fallback in declarations:
             if role in cls.fonts:
                 raise AssertionError("Duplicate active font candidate declaration")
@@ -293,7 +298,7 @@ class GarminActiveBandGeometryTests(unittest.TestCase):
             r"_(\w+)Fonts,\s*FaceModel\.([A-Z]+)_WIDTH,\s*"
             r"FaceModel\.([A-Z]+)_TOP,\s*FaceModel\.([A-Z]+)_BOTTOM\);", cls.view)
         cls.slots = [(name, int(left), int(width)) for name, left, width in re.findall(
-            r"drawSlot\(dc,\s*(left|right),\s*(\d+),\s*(\d+),\s*text,\s*muted,\s*canvas\);",
+            r"drawSlot\(dc,\s*(left|right),\s*(\d+),\s*(\d+),\s*FaceModel\.DATA_TOP,\s*FaceModel\.DATA_BOTTOM,\s*text,\s*muted,\s*canvas\);",
             cls.view)]
         cls.row_caps = {role: int(height) for role, height in re.findall(
             r'pickFont\(dc,\s*data\["(label|detail)"\],\s*_\1Fonts,\s*width,\s*(\d+)\);',
@@ -353,8 +358,8 @@ class GarminActiveBandGeometryTests(unittest.TestCase):
                 self.assertLessEqual(left + width, data_left + data["WIDTH"])
             previous_right = left + width
         self.assertEqual(self.slots[1][1] - (self.slots[0][1] + self.slots[0][2]), 20)
-        self.assertIn("var height = FaceModel.DATA_BOTTOM - FaceModel.DATA_TOP;", self.view)
-        self.assertIn("dc.setClip(x, FaceModel.DATA_TOP, width, height);", self.view)
+        self.assertIn("var height = bottom - top;", self.view)
+        self.assertIn("dc.setClip(x, top, width, height);", self.view)
         self.assertEqual(re.findall(
             r"var (left|right) = FaceData\.readSlot\(FaceSettings\.readSlot\(([01])\), moment\.value\(\)\);",
             self.view), [("left", "0"), ("right", "1")])
@@ -366,7 +371,7 @@ class GarminActiveBandGeometryTests(unittest.TestCase):
         total_gap = sum(int(gap) for _, gap in gaps)
         self.assertIn("var available = height - dc.getFontHeight(label) - dc.getFontHeight(detail) - 6;",
                       self.view)
-        self.assertIn('var value = pickFont(dc, data["value"], _valueFonts, width, available);',
+        self.assertIn('value = pickFont(dc, data["value"], _valueFonts, width, available);',
                       self.view)
         self.assertEqual(total_gap, 6)
         available_height = self.bands["DATA"]["BOTTOM"] - self.bands["DATA"]["TOP"]
@@ -392,6 +397,109 @@ class GarminActiveBandGeometryTests(unittest.TestCase):
         self.assertRegex(self.view,
                          r"dc\.getTextWidthInPixels\(text, candidates\[i\]\) <= width &&\s*"
                          r"dc\.getFontHeight\(candidates\[i\]\) <= height")
+
+
+class GarminAnalogGeometryTests(unittest.TestCase):
+    """Executable source/resource bounds, separate from Monkey C runtime tests."""
+
+    @classmethod
+    def setUpClass(cls):
+        source = ROOT / "garmin/watchface/source"
+        cls.model = (source / "FaceModel.mc").read_text(encoding="utf-8")
+        cls.view = (source / "ClairObscurView.mc").read_text(encoding="utf-8")
+        cls.constants = {name: int(value) for name, value in re.findall(
+            r"^    const ([A-Z_]+) = (\d+);$", cls.model, re.MULTILINE)}
+
+    def test_marker_track_and_distinct_hands_fit_the_round_display(self):
+        c = self.constants
+        self.assertEqual(c["DISPLAY_SIZE"], 454)
+        self.assertEqual(c["DIAL_CENTER"], 227)
+        self.assertLess(c["HOUR_HAND_LENGTH"] * 1.3, c["MINUTE_HAND_LENGTH"])
+        self.assertLess(c["MINUTE_HAND_LENGTH"], c["MARKER_OUTER"])
+        self.assertLess(c["MARKER_OUTER"], c["TICK_INNER"])
+        self.assertLess(c["TICK_INNER"], c["TICK_OUTER"])
+        # Include half the one-pixel track stroke and worst coordinate rounding.
+        self.assertLess(c["TICK_OUTER"] + 0.5 + math.sqrt(0.5), 454 / 2)
+        # Double-twelve offset and baton half-width total ten pixels.
+        self.assertLess(math.hypot(c["MARKER_OUTER"], 10), c["TICK_INNER"])
+
+    def test_all_three_analog_text_regions_stay_inside_the_circle(self):
+        c = self.constants
+        rectangles = [
+            ((454 - c["ANALOG_DATE_WIDTH"]) / 2, c["ANALOG_DATE_TOP"],
+             c["ANALOG_DATE_WIDTH"], c["ANALOG_DATE_BOTTOM"] - c["ANALOG_DATE_TOP"]),
+            (c["ANALOG_LEFT_X"], c["ANALOG_DATA_TOP"], c["ANALOG_DATA_WIDTH"],
+             c["ANALOG_DATA_BOTTOM"] - c["ANALOG_DATA_TOP"]),
+            (c["ANALOG_RIGHT_X"], c["ANALOG_DATA_TOP"], c["ANALOG_DATA_WIDTH"],
+             c["ANALOG_DATA_BOTTOM"] - c["ANALOG_DATA_TOP"]),
+            ((454 - c["ANALOG_CHARGE_WIDTH"]) / 2, c["ANALOG_CHARGE_TOP"],
+             c["ANALOG_CHARGE_WIDTH"], c["ANALOG_CHARGE_BOTTOM"] - c["ANALOG_CHARGE_TOP"]),
+        ]
+        self.assertGreaterEqual(c["ANALOG_DATA_BOTTOM"] - c["ANALOG_DATA_TOP"], 82)
+        self.assertLess(c["ANALOG_LEFT_X"] + c["ANALOG_DATA_WIDTH"], c["ANALOG_RIGHT_X"])
+        self.assertLess(c["ANALOG_DATE_BOTTOM"], c["ANALOG_DATA_TOP"])
+        self.assertLess(c["ANALOG_DATA_BOTTOM"], c["ANALOG_CHARGE_TOP"])
+        for left, top, width, height in rectangles:
+            self.assertGreater(width, 0)
+            self.assertGreater(height, 0)
+            for x in (left, left + width - 1):
+                for y in (top, top + height - 1):
+                    with self.subTest(rect=(left, top, width, height), corner=(x, y)):
+                        self.assertLess((x + 0.5 - 227) ** 2 + (y + 0.5 - 227) ** 2, 227 ** 2)
+        # Bind those measured regions to the actual renderer, not unused constants.
+        for band in ("DATE", "CHARGE"):
+            self.assertRegex(self.view, rf"FaceModel\.ANALOG_{band}_WIDTH,\s*"
+                             rf"FaceModel\.ANALOG_{band}_TOP,\s*FaceModel\.ANALOG_{band}_BOTTOM")
+        for side in ("LEFT", "RIGHT"):
+            self.assertRegex(self.view, rf"FaceModel\.ANALOG_{side}_X,\s*FaceModel\.ANALOG_DATA_WIDTH,\s*"
+                             r"FaceModel\.ANALOG_DATA_TOP,\s*FaceModel\.ANALOG_DATA_BOTTOM")
+
+    def test_layout_resource_is_numeric_analog_default_with_digital_alternative(self):
+        resources = ROOT / "garmin/watchface/resources"
+        properties = ET.parse(resources / "settings/properties.xml").getroot()
+        layout = properties.findall("property[@id='layout']")
+        self.assertEqual(len(layout), 1)
+        self.assertEqual((layout[0].get("type"), layout[0].text), ("number", "0"))
+        settings = ET.parse(resources / "settings/settings.xml").getroot()
+        selection = settings.findall("setting[@propertyKey='@Properties.layout']")
+        self.assertEqual(len(selection), 1)
+        strings = {node.get("id"): node.text for node in
+                   ET.parse(resources / "strings/strings.xml").getroot().findall("string")}
+        config = selection[0].find("settingConfig")
+        self.assertEqual(config.get("type"), "list")
+        self.assertEqual([(entry.get("value"), strings[entry.text.removeprefix("@Strings.")])
+                          for entry in config], [("0", "Analog"), ("1", "Digital")])
+        self.assertEqual((self.constants["LAYOUT_ANALOG"], self.constants["LAYOUT_DIGITAL"]), (0, 1))
+        namespace = {"iq": "http://www.garmin.com/xml/connectiq"}
+        manifest = ET.parse(ROOT / "garmin/watchface/manifest.xml").getroot()
+        permissions = manifest.findall("iq:application/iq:permissions/iq:uses-permission", namespace)
+        self.assertEqual([node.get("id") for node in permissions], ["ComplicationSubscriber"])
+
+    def test_original_aod_body_and_early_exit_remain_independent_of_layout(self):
+        import hashlib
+        start = self.view.index("    function drawAlwaysOn(")
+        opening = self.view.index("{", start)
+        depth = 0
+        closing = None
+        for index in range(opening, len(self.view)):
+            if self.view[index] == "{":
+                depth += 1
+            elif self.view[index] == "}":
+                depth -= 1
+                if depth == 0:
+                    closing = index + 1
+                    break
+        self.assertIsNotNone(closing)
+        body = self.view[start:closing]
+        # Independently captured accepted 0.3 method, not recomputed from current output.
+        self.assertEqual(hashlib.sha256(body.encode()).hexdigest(),
+                         "c6a3beb2f450153cf7ef1fb116c66d5dfd6f55ab8b66809eaf1ffc82ce0adbbd")
+        self.assertEqual((self.constants["AOD_MAX_WIDTH"], self.constants["AOD_MAX_HEIGHT"]), (192, 64))
+        on_update = self.view.split("function onUpdate(", 1)[1].split("function analogSlotFonts(", 1)[0]
+        early = on_update.index("if (mode == :aod)")
+        self.assertLess(early, on_update.index("FaceSettings.readLayout()"))
+        self.assertLess(early, on_update.index("refreshFonts(layout)"))
+        self.assertLess(early, on_update.index("FaceData.readSlot("))
 
 
 class GarminSettingsResourcesTests(unittest.TestCase):
