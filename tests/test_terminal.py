@@ -358,13 +358,14 @@ class TerminalPreviewTests(unittest.TestCase):
     def test_terminal_preview_preserves_desktop_downloads_and_all_icon_revisions(self):
         from preview import (FIRST_APP_ICON_ARCHIVE, ICON_ARCHIVE, ICON_CHECKSUMS,
                              LEGACY_ICON_ARCHIVE, PREVIOUS_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE,
-                             MONOCHROME_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, PORTABLE_ARCHIVE, preview_files)
+                             MONOCHROME_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE,
+                             PORTABLE_ARCHIVE, preview_files)
         from themeforge.icons import render_icons
         desktop = snapshot(self.artifacts)
         self.assertEqual(len(desktop), 32)
         icons = render_icons(json.loads((ROOT / 'tokens-monochrome.json').read_bytes()))
         current_svg = {path: payload for path, payload in icons.items() if path.endswith(".svg")}
-        self.assertEqual(len(current_svg), 350)
+        self.assertEqual(len(current_svg), 374)
         token_bytes = (ROOT / "tokens.json").read_bytes()
         files = preview_files(ROOT, self.artifacts)
         with zipfile.ZipFile(io.BytesIO(files[PORTABLE_ARCHIVE])) as portable:
@@ -396,11 +397,21 @@ class TerminalPreviewTests(unittest.TestCase):
                 self.assertEqual(json.loads(previous_broad.read("manifest.json"))["version"], "0.8.0")
                 self.assertEqual(hashlib.sha256(previous_broad.read("manifest.json")).hexdigest(),
                                  "7a8a35d6ba1186a718e970e26c5c6b7b19bf4949010c7bc89af3cb6063b95252")
+            self.assertEqual(hashlib.sha256(delivery[EVERYDAY_ICON_ARCHIVE]).hexdigest(),
+                             "994ce1d819414b06062d5cd32a03eeb8891e9074b09491dfb2c774a55ae5a3b1")
+            with zipfile.ZipFile(io.BytesIO(delivery[EVERYDAY_ICON_ARCHIVE])) as previous_everyday:
+                self.assertEqual(json.loads(previous_everyday.read("manifest.json"))["version"], "0.9.0")
+                self.assertEqual(hashlib.sha256(previous_everyday.read("manifest.json")).hexdigest(),
+                                 "7f3e3137cc2b3e72a4861368b6864158de8f5a17e5b2a57a2b0489c5ca0f78b5")
+                previous_svg = {name: previous_everyday.read(name) for name in previous_everyday.namelist()
+                                if name.endswith(".svg")}
+                self.assertEqual(len(previous_svg), 350)
+                self.assertEqual({name: current_svg[name] for name in previous_svg}, previous_svg)
             with zipfile.ZipFile(io.BytesIO(delivery[ICON_ARCHIVE])) as current:
-                self.assertEqual(json.loads(current.read("manifest.json"))["version"], "0.9.0")
+                self.assertEqual(json.loads(current.read("manifest.json"))["version"], "0.10.0")
             self.assertEqual(delivery[ICON_CHECKSUMS],
                              ''.join(f'{hashlib.sha256(delivery[path]).hexdigest()}  {Path(path).name}\n'
-                                      for path in (ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
+                                      for path in (ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
                                                   PREVIOUS_ICON_ARCHIVE, LEGACY_ICON_ARCHIVE)).encode())
         self.assertEqual(snapshot(self.artifacts), desktop)
         self.assertEqual((ROOT / "tokens.json").read_bytes(), token_bytes)

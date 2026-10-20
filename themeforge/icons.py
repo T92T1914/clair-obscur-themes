@@ -21,12 +21,13 @@ from .icon_apps import (
     FOURTH_APP_CATALOG, FOURTH_CATALOG_DATE, FOURTH_CATALOG_SCOPE,
     FIFTH_APP_CATALOG, FIFTH_CATALOG_DATE, FIFTH_CATALOG_SCOPE,
     SIXTH_APP_CATALOG, SIXTH_CATALOG_DATE, SIXTH_CATALOG_SCOPE,
+    SEVENTH_APP_CATALOG, SEVENTH_CATALOG_DATE, SEVENTH_CATALOG_SCOPE,
 )
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.9.0"
-VERSIONS = ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", VERSION)
+VERSION = "0.10.0"
+VERSIONS = ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0", VERSION)
 SIZE = 512
 STROKE = 16
 FUNCTIONS = (
@@ -1080,6 +1081,104 @@ SIXTH_APP_GLYPHS = {
 }
 
 
+# Original 0.10 drawings share the accepted inset and stroke.
+SEVENTH_APP_GLYPHS = {
+    "chipotle": [
+        _path("M208 192 C168 208 168 264 208 312 "
+              "C248 360 312 384 368 360 C320 352 296 312 304 264 "
+              "C312 216 280 184 240 192 Z"),
+        _path("M240 192 C240 152 272 128 304 136 "
+              "M208 232 Q200 288 264 328", accent=True),
+    ],
+    "taco-bell": [
+        _path("M152 312 H360 L336 272 V224 "
+              "C336 128 176 128 176 224 V272 Z"),
+        _path("M256 128 V144 M224 352 Q256 384 288 352", accent=True),
+    ],
+    "wendys": [
+        _path("M192 216 C144 192 120 224 136 256 "
+              "C112 288 144 320 184 296 L192 264 Z "
+              "M320 216 C368 192 392 224 376 256 "
+              "C400 288 368 320 328 296 L320 264 Z"),
+        _path("M192 216 C192 160 224 144 256 144 "
+              "C288 144 320 160 320 216 V248 "
+              "C320 288 288 320 256 320 C224 320 192 288 192 248 Z"),
+        _path("M192 208 Q224 208 240 168 Q264 208 320 208 "
+              "M232 264 Q256 280 280 264", accent=True),
+        _path("M160 384 Q184 336 224 336 L256 360 L288 336 "
+              "Q328 336 352 384"),
+    ],
+    "burger-king": [
+        _path("M184 192 L168 128 L232 160 L256 120 "
+              "L280 160 L344 128 L328 192 Z", accent=True),
+        _path("M152 248 C168 200 344 200 360 248 Z"),
+        _path("M160 288 H352", accent=True),
+        _path("M152 320 H360 Q352 368 320 368 H192 "
+              "Q160 368 152 320 Z"),
+    ],
+    "dunkin": [
+        _shape("circle", cx=248, cy=256, r=120),
+        _shape("circle", cx=248, cy=256, r=44, stroke="accent"),
+        _path("M176 184 L192 200 M288 160 L280 184 "
+              "M328 256 H304 M192 320 L208 304 "
+              "M280 336 L288 352", accent=True),
+    ],
+    "chick-fil-a": [
+        _path("M184 376 V312 C152 288 144 256 152 224 "
+              "C160 192 192 176 224 176 H264 "
+              "C312 176 336 208 336 248 L384 272 L336 296 "
+              "V336 Q336 376 296 376 Z"),
+        _path("M192 184 C160 160 184 128 208 152 "
+              "C208 112 256 112 256 152 C280 128 312 160 288 184"),
+        _shape("circle", cx=280, cy=232, r=12, fill="accent", stroke="accent"),
+        _path("M200 312 Q232 280 272 304 Q288 328 272 344", accent=True),
+    ],
+    "dominos": [
+        _path("M128 248 L264 112 L392 240 L256 376 Z"),
+        _path("M196 180 L324 308", accent=True),
+        _shape("circle", cx=292, cy=220, r=16, fill="accent", stroke="accent"),
+        _shape("circle", cx=200, cy=260, r=16, fill="accent", stroke="accent"),
+        _shape("circle", cx=248, cy=308, r=16, fill="accent", stroke="accent"),
+    ],
+    "pizza-hut": [
+        _path("M128 216 L256 144 L384 216 M160 216 H352"),
+        _path("M176 264 H336 L256 392 Z"),
+        _path("M176 264 Q256 232 336 264", accent=True),
+        _shape("circle", cx=256, cy=304, r=14, stroke="accent"),
+    ],
+    "subway": [
+        _path("M144 304 L296 152 C328 120 360 120 376 144 "
+              "C400 168 392 200 368 224 L216 376 "
+              "C184 400 152 392 136 368 C120 344 120 328 144 304 Z"),
+        _path("M160 352 L352 160", accent=True),
+        _path("M168 280 L184 296 M224 224 L240 240 "
+              "M280 168 L296 184"),
+    ],
+    "panera-bread": [
+        _path("M128 320 V280 C128 224 184 200 256 200 "
+              "C328 200 384 224 384 280 V320 "
+              "Q384 368 336 368 H176 Q128 368 128 320 Z"),
+        _path("M184 280 L216 248 M240 288 L272 248 "
+              "M296 280 L328 248", accent=True),
+        _path("M256 200 V120 M256 152 L232 136 M256 176 L280 152"),
+    ],
+    "kfc-us": [
+        _path("M144 232 H368 L344 384 H168 Z"),
+        _shape("rect", x=136, y=200, width=240, height=32, rx=8),
+        _path("M208 264 C176 264 176 312 208 328 "
+              "C232 344 256 328 256 304 L288 336 L312 312 "
+              "L280 280 C256 248 232 248 208 264 Z", accent=True),
+    ],
+    "grubhub": [
+        _path("M144 312 C144 192 336 192 336 312 Z M128 344 H352"),
+        _shape("circle", cx=240, cy=184, r=16, stroke="accent"),
+        _path("M240 200 V216", accent=True),
+        _path("M376 192 V376 M352 192 V240 "
+              "Q352 264 376 264 Q400 264 400 240 V192", accent=True),
+    ],
+}
+
+
 def icon_catalog(version: str = VERSION) -> list[dict]:
     """Return labels and explicit assignment identities for an admitted revision."""
     if version not in VERSIONS:
@@ -1099,8 +1198,10 @@ def icon_catalog(version: str = VERSION) -> list[dict]:
         apps = (*APP_CATALOG, *NEW_APP_CATALOG, *THIRD_APP_CATALOG, *FOURTH_APP_CATALOG)
     elif version == "0.8.0":
         apps = (*APP_CATALOG, *NEW_APP_CATALOG, *THIRD_APP_CATALOG, *FOURTH_APP_CATALOG, *FIFTH_APP_CATALOG)
-    else:
+    elif version == "0.9.0":
         apps = (*APP_CATALOG, *NEW_APP_CATALOG, *THIRD_APP_CATALOG, *FOURTH_APP_CATALOG, *FIFTH_APP_CATALOG, *SIXTH_APP_CATALOG)
+    else:
+        apps = (*APP_CATALOG, *NEW_APP_CATALOG, *THIRD_APP_CATALOG, *FOURTH_APP_CATALOG, *FIFTH_APP_CATALOG, *SIXTH_APP_CATALOG, *SEVENTH_APP_CATALOG)
     for app in apps:
         if not isinstance(app, dict):
             raise ValueError("Malformed named-app catalog")
@@ -1122,26 +1223,30 @@ def icon_catalog(version: str = VERSION) -> list[dict]:
         packages.add(package)
         catalog.append(dict(app))
     drawings = set(APP_GLYPHS)
-    if version in ("0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0"):
+    if version in ("0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0"):
         if drawings & set(NEW_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(NEW_APP_GLYPHS)
-    if version in ("0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0"):
+    if version in ("0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0"):
         if drawings & set(THIRD_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(THIRD_APP_GLYPHS)
-    if version in ("0.7.0", "0.8.0", "0.9.0"):
+    if version in ("0.7.0", "0.8.0", "0.9.0", "0.10.0"):
         if drawings & set(FOURTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(FOURTH_APP_GLYPHS)
-    if version in ("0.8.0", "0.9.0"):
+    if version in ("0.8.0", "0.9.0", "0.10.0"):
         if drawings & set(FIFTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(FIFTH_APP_GLYPHS)
-    if version == "0.9.0":
+    if version in ("0.9.0", "0.10.0"):
         if drawings & set(SIXTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(SIXTH_APP_GLYPHS)
+    if version == "0.10.0":
+        if drawings & set(SEVENTH_APP_GLYPHS):
+            raise ValueError("New named-app drawings replace an accepted ID")
+        drawings |= set(SEVENTH_APP_GLYPHS)
     if drawings != seen - set(FUNCTIONS):
         raise ValueError("Named-app catalog and drawings differ")
     return catalog
@@ -1160,7 +1265,7 @@ def token_path(version: str = VERSION) -> Path:
     """Select the shared palette without changing a historical artwork revision."""
     if version not in VERSIONS:
         raise ValueError("Unsupported icon artwork version")
-    return ROOT / ("tokens-monochrome.json" if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0") else "tokens.json")
+    return ROOT / ("tokens-monochrome.json" if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0") else "tokens.json")
 
 
 def load_icon_tokens(version: str = VERSION, path: Path | None = None) -> dict:
@@ -1205,7 +1310,8 @@ def _render_icon(function: str, appearance: str, document: dict, grant: str, *, 
                 NEW_APP_GLYPHS if function in NEW_APP_GLYPHS else
                 THIRD_APP_GLYPHS if function in THIRD_APP_GLYPHS else
                 FOURTH_APP_GLYPHS if function in FOURTH_APP_GLYPHS else
-                FIFTH_APP_GLYPHS if function in FIFTH_APP_GLYPHS else SIXTH_APP_GLYPHS)
+                FIFTH_APP_GLYPHS if function in FIFTH_APP_GLYPHS else
+                SIXTH_APP_GLYPHS if function in SIXTH_APP_GLYPHS else SEVENTH_APP_GLYPHS)
     for tag, attributes in drawings[function]:
         ET.SubElement(group, tag, {
             key: palette[value] if value in ("accent", "text") else value
@@ -1220,7 +1326,7 @@ def render_icons(document: dict, *, version: str = VERSION) -> dict[str, bytes]:
     _validated(document)
     if version not in VERSIONS:
         raise ValueError("Unsupported icon artwork version")
-    if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0"):
+    if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0"):
         _monochrome(document)
     catalog = icon_catalog(version)
     names = [entry["id"] for entry in catalog]
@@ -1248,7 +1354,7 @@ def render_icons(document: dict, *, version: str = VERSION) -> dict[str, bytes]:
         "functions": names, "files": records,
         "scope": "Original functional glyphs; no brand logos, font assets or phone installation",
     }
-    if version in ("0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0"):
+    if version in ("0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0"):
         if version == "0.3.0":
             date, scope = CATALOG_DATE, CATALOG_SCOPE
         elif version == "0.4.0":
@@ -1259,12 +1365,14 @@ def render_icons(document: dict, *, version: str = VERSION) -> dict[str, bytes]:
             date, scope = FOURTH_CATALOG_DATE, FOURTH_CATALOG_SCOPE
         elif version == "0.8.0":
             date, scope = FIFTH_CATALOG_DATE, FIFTH_CATALOG_SCOPE
-        else:
+        elif version == "0.9.0":
             date, scope = SIXTH_CATALOG_DATE, SIXTH_CATALOG_SCOPE
+        else:
+            date, scope = SEVENTH_CATALOG_DATE, SEVENTH_CATALOG_SCOPE
         manifest.update(catalog=catalog, catalog_date=date, catalog_scope=scope,
                         scope="Original themed interpretations for named apps and general functions; "
                               "app names identify intended assignments, not publisher endorsement or installation")
-    if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0"):
+    if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0"):
         manifest["palette_variant"] = "monochrome"
     files["manifest.json"] = (json.dumps(manifest, sort_keys=True, indent=2) + "\n").encode("utf-8")
     return files

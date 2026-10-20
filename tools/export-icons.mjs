@@ -219,7 +219,7 @@ async function exportIcons(input, output) {
     const license = Buffer.from(source.license, 'utf8');
     await writeFile(path.join(output, 'LICENSE'), license, { flag: 'wx' });
     const manifest = {
-      schema_version: 1, generator: 'clair-obscur-png-export', exporter_version: '0.9.0',
+      schema_version: 1, generator: 'clair-obscur-png-export', exporter_version: '0.10.0',
       version: source.version,
       token_version: source.token_version, source_manifest_sha256: source.source_manifest_sha256,
       tokens_file: source.tokens_file, tokens_sha256: source.tokens_sha256, svg_generator_sha256: source.generator_sha256,
