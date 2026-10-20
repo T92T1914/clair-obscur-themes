@@ -487,12 +487,12 @@ class PreviewTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
         exported = json.loads((self.base / 'extracted-icons/manifest.json').read_bytes())
-        self.assertEqual(exported['version'], '0.10.0')
-        self.assertEqual(len(exported['functions']), 187)
-        self.assertEqual(len(exported['files']), 374)
-        self.assertEqual([entry['id'] for entry in exported['catalog']][-12:],
-                         ['chipotle', 'taco-bell', 'wendys', 'burger-king', 'dunkin', 'chick-fil-a',
-                          'dominos', 'pizza-hut', 'subway', 'panera-bread', 'kfc-us', 'grubhub'])
+        self.assertEqual(exported['version'], '0.11.0')
+        self.assertEqual(len(exported['functions']), 197)
+        self.assertEqual(len(exported['files']), 394)
+        self.assertEqual([entry['id'] for entry in exported['catalog']][-10:],
+                         ['fly-delta', 'united-airlines', 'american-airlines', 'southwest-airlines',
+                          'amtrak', 'transit', 'moovit', 'citymapper', 'tripit', 'hopper'])
 
     def test_vscode_candidate_builds_from_the_actual_source_snapshot(self):
         extracted = self.base / 'vscode-source'

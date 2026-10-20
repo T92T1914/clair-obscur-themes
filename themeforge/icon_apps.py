@@ -1388,3 +1388,111 @@ SEVENTH_APP_CATALOG = ({'id': 'chipotle',
   'android_package': 'com.grubhub.android',
   'store_url': 'https://play.google.com/store/apps/details?id=com.grubhub.android',
   'selection_basis': 'Food-delivery coverage; actual listing download band'})
+
+
+EIGHTH_CATALOG_DATE = '2026-10-20'
+EIGHTH_CATALOG_SCOPE = 'Travel and public-transport assignments from inspected official Google Play identities and category gaps. Ten original paired interpretations retain visible names and exact package assignments. Not an ordered popularity chart or exhaustive catalog. Listing identity does not establish installation or device availability.'
+
+EIGHTH_APP_CATALOG = ({'id': 'fly-delta',
+  'label': 'Fly Delta',
+  'store_title': 'Fly Delta',
+  'kind': 'app',
+  'category': 'travel',
+  'android_package': 'com.delta.mobile.android',
+  'store_url': 'https://play.google.com/store/apps/details?id=com.delta.mobile.android',
+  'selection_basis': 'Missing named Delta airline-travel assignment; actual official Google Play identity '
+                     'and publisher download link inspected. Listing identity does not establish '
+                     'installation or device compatibility.'},
+ {'id': 'united-airlines',
+  'label': 'United Airlines',
+  'store_title': 'United Airlines',
+  'kind': 'app',
+  'category': 'travel',
+  'android_package': 'com.united.mobile.android',
+  'store_url': 'https://play.google.com/store/apps/details?id=com.united.mobile.android',
+  'selection_basis': 'Missing named United airline-travel assignment; actual official Google Play listing '
+                     'inspected. The publisher app page returned a JavaScript-required shell. Listing '
+                     'identity does not establish installation or device compatibility.'},
+ {'id': 'american-airlines',
+  'label': 'American Airlines',
+  'store_title': 'American Airlines',
+  'kind': 'app',
+  'category': 'travel',
+  'android_package': 'com.aa.android',
+  'store_url': 'https://play.google.com/store/apps/details?id=com.aa.android',
+  'selection_basis': 'Missing named American airline-travel assignment; actual official Google Play listing '
+                     'and publisher app page inspected. Listing identity does not establish installation or '
+                     'device compatibility.'},
+ {'id': 'southwest-airlines',
+  'label': 'Southwest Airlines',
+  'store_title': 'Southwest Airlines: Travel App',
+  'kind': 'app',
+  'category': 'travel',
+  'android_package': 'com.southwestairlines.mobile',
+  'store_url': 'https://play.google.com/store/apps/details?id=com.southwestairlines.mobile',
+  'selection_basis': 'Missing named Southwest airline-travel assignment; actual official Google Play listing '
+                     'and publisher Android redirect inspected. Listing identity does not establish '
+                     'installation or device compatibility.'},
+ {'id': 'amtrak',
+  'label': 'Amtrak',
+  'store_title': 'Amtrak',
+  'kind': 'app',
+  'category': 'travel',
+  'android_package': 'com.amtrak.rider',
+  'store_url': 'https://play.google.com/store/apps/details?id=com.amtrak.rider',
+  'selection_basis': 'Missing named intercity rail-travel assignment; actual official Google Play listing '
+                     'and publisher mobile-app page inspected. Listing identity does not establish '
+                     'installation or device compatibility.'},
+ {'id': 'transit',
+  'label': 'Transit',
+  'store_title': 'Transit - Subway & Bus Times',
+  'kind': 'app',
+  'category': 'navigation',
+  'android_package': 'com.thetransitapp.droid',
+  'store_url': 'https://play.google.com/store/apps/details?id=com.thetransitapp.droid',
+  'selection_basis': 'Missing named public-transport assignment; actual US-English official Google Play '
+                     'listing and publisher site inspected. Kept separate from the existing Subway '
+                     'restaurant assignment. Listing identity does not establish installation or local '
+                     'service coverage.'},
+ {'id': 'moovit',
+  'label': 'Moovit',
+  'store_title': 'Moovit: Your Transit Tracker',
+  'kind': 'app',
+  'category': 'navigation',
+  'android_package': 'com.tranzmate',
+  'store_url': 'https://play.google.com/store/apps/details?id=com.tranzmate',
+  'selection_basis': 'Missing named public-transport assignment; actual US-English official Google Play '
+                     'title and publisher site inspected. Alternate locale title was not substituted for the '
+                     'inspected US-English title. Listing identity does not establish installation or local '
+                     'service coverage.'},
+ {'id': 'citymapper',
+  'label': 'Citymapper',
+  'store_title': 'Citymapper',
+  'kind': 'app',
+  'category': 'navigation',
+  'android_package': 'com.citymapper.app.release',
+  'store_url': 'https://play.google.com/store/apps/details?id=com.citymapper.app.release',
+  'selection_basis': 'Missing named multimodal city-navigation assignment; actual official Google Play '
+                     'listing and publisher Android redirect inspected. Listing identity does not establish '
+                     'installation, supported city or device compatibility.'},
+ {'id': 'tripit',
+  'label': 'TripIt',
+  'store_title': 'TripIt: Travel Planner',
+  'kind': 'app',
+  'category': 'travel',
+  'android_package': 'com.tripit',
+  'store_url': 'https://play.google.com/store/apps/details?id=com.tripit',
+  'selection_basis': 'Missing named itinerary-planning assignment; actual US-English official Google Play '
+                     'listing and publisher download link inspected. Listing identity does not establish '
+                     'installation or device compatibility.'},
+ {'id': 'hopper',
+  'label': 'Hopper',
+  'store_title': 'Hopper: Hotels, Flights & Cars',
+  'kind': 'app',
+  'category': 'travel',
+  'android_package': 'com.hopper.mountainview.play',
+  'store_url': 'https://play.google.com/store/apps/details?id=com.hopper.mountainview.play',
+  'selection_basis': 'Missing named travel-booking and price-watch assignment; actual US-English official '
+                     'Google Play listing inspected. Publisher support search record corroborated Android '
+                     'distribution, while its subsequent open returned no extracted body. Listing identity '
+                     'does not establish installation or device compatibility.'})

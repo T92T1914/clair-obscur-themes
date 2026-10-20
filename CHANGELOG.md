@@ -1,5 +1,14 @@
 # Changes
 
+## Icon artwork 0.11.0
+
+- Add ten inspected airline, rail, public-transport and trip-planning assignments in both black and white appearances. The current collection has 173 named apps and 24 general functions.
+- Use distinct large compositions, visible app labels and exact Android package identities. Keep Transit separate from the existing Subway restaurant assignment.
+- Preserve all 374 accepted 0.10.0 SVGs, all ten earlier SVG archives, Garmin 0.5.0 source and every accepted desktop and Terminal package.
+- Include the new choices in the existing finder, static gallery, portable kit and PNG exporter. Current export contains 788 PNGs at two dimensions per appearance.
+- Admit the portable kit's 456 declared hashes while retaining the 480-entry cap and existing byte, path, link, depth and read protections.
+- Keep actual phone assignment, launcher rendering and native/device acceptance separate from artwork and browser qualification.
+
 ## Garmin watch face 0.5.0
 
 - Add a licensed twelve-glyph Inter Bold resource for the digital time at default font scale. Measure the resource before drawing and retain native candidates for other scales, unsupported text or a failed fit.
