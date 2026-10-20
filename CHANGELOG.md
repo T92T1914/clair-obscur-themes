@@ -5,6 +5,13 @@
 - Put current downloads, the icon finder and individual PNG guidance before preserved SVG collections.
 - Keep all eleven earlier collection links in a native keyboard-operable disclosure that works without JavaScript. Artwork versions, archive bytes and the full gallery remain unchanged.
 
+## Icon artwork 0.13.0
+
+- Add ten weather-app assignments in both black and white appearances, with inspected package identities and original weather drawings. The current collection has 193 named apps and 24 general functions.
+- Preserve all 414 accepted 0.12.0 SVGs and all twelve earlier archives. Desktop, Terminal and Garmin package inputs remain unchanged.
+- Include the additions in the finder, static gallery, individual PNG buttons and portable kit, with 868 images in the two-size PNG export.
+- Admit the measured 498 declared hashes and 518-entry portable kit within a 522-entry cap. Preserve four-entry extra-file reporting headroom and the existing byte, path, link, depth and read guards.
+
 ## Icon artwork 0.12.0
 
 - Add ten inspected banking, card and investment assignments in both black and white appearances. The collection now has 183 named apps and 24 general functions.
