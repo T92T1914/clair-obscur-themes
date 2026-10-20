@@ -40,6 +40,10 @@ The public preview's **Matching app icons** gallery groups the named apps and ge
 
 `themeforge/icons.py` consumes validated `tokens-monochrome.json` for 0.6.0 through 0.11.0. Versions 0.1.0 through 0.5.0 continue to use the original `tokens.json`. Each appearance uses `panel` for the tile, `text` for the main drawing and `accent` for emphasis. The two appearances share geometry. Each 512 by 512 SVG has a rounded 448-pixel tile and a transparent outer margin. Current strokes are 16 pixels, compared with 12 in the original set. At a 48-pixel specimen those widths become 1.5 and 1.125 CSS pixels. The drawings use local vector primitives, with no scripts, remote assets or fonts. Each SVG includes the project's MIT license.
 
+The hosted gallery also offers a PNG 512 button beside each appearance when JavaScript and browser canvas are available. It prepares the chosen current SVG as a 512 by 512 PNG in your browser, with the icon ID, appearance and artwork version in the suggested filename. Choosing a Clair download while viewing Obscur still produces Clair artwork. No image is uploaded and no phone setting changes. Failed preparation leaves the SVG archives and source-export route available.
+
+Direct gallery PNG downloads require an HTTP or HTTPS page. An extracted local-file preview keeps the full SVG gallery and downloads, with PNG controls hidden. Its browser origin restrictions are preserved. Use the exporter below for the complete collection, offline acquisition or 1024-pixel images.
+
 The raster exporter produces 788 transparent PNGs: every current master at 512 and 1024 pixels. The gallery and assignment catalog identify named apps and general functions in each appearance. Those dimensions and the rounded tile are project design choices. They are not documented Samsung import requirements or a guarantee of the phone's final mask. Labels appear in the gallery, assignment catalog and SVG accessibility metadata. They are separate from the icon drawing and do not replace launcher app labels.
 
 ## Generate and check the masters

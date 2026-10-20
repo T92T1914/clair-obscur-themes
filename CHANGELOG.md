@@ -1,5 +1,12 @@
 # Changes
 
+## Individual preview PNG downloads
+
+- Prepare a selected icon as a 512-pixel PNG from either appearance in the hosted gallery, using the existing local SVG and browser canvas.
+- Keep download appearance separate from page appearance, finder filters and the platform chooser. Failed rendering retains the controls and SVG/export fallback.
+- Keep PNG controls hidden without script, browser support or an HTTP/HTTPS page. Extracted local-file previews retain the full SVG collection and source-export instructions.
+- Preserve artwork 0.11.0, every SVG archive, the two-size CLI exporter, portable inventory limits and all accepted desktop and watch packages.
+
 ## Icon artwork 0.11.0
 
 - Add ten inspected airline, rail, public-transport and trip-planning assignments in both black and white appearances. The current collection has 173 named apps and 24 general functions.

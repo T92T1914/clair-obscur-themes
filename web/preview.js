@@ -46,6 +46,82 @@ const choices = [...document.querySelectorAll('[data-appearance]')];
   finder.hidden = false;
 })();
 
+// PNGs are prepared only on request from the corresponding local SVG image.
+// Local-file pages keep the SVG fallback because their canvases are not origin-clean.
+(() => {
+  const help = document.querySelector('#icon-png-help');
+  const status = document.querySelector('#icon-png-status');
+  const buttons = [...document.querySelectorAll('#icons [data-icon-png]')];
+  if (!help || !status || !buttons.length) return;
+  if (!['http:', 'https:'].includes(location.protocol)) {
+    help.textContent = 'Direct PNG downloads require the hosted preview. This local copy keeps every SVG archive and the full PNG export instructions below.';
+    return;
+  }
+  const probe = document.createElement('canvas');
+  try {
+    if (typeof probe.toBlob !== 'function' || !probe.getContext('2d') ||
+        typeof URL.createObjectURL !== 'function' || typeof URL.revokeObjectURL !== 'function') return;
+  } catch { return; }
+  const records = buttons.map(button => {
+    const card = button.closest('[data-icon-function]');
+    const image = button.closest('figure')?.querySelector('img');
+    const id = card?.dataset.iconFunction;
+    const version = card?.dataset.iconVersion;
+    const appearance = button.dataset.iconAppearance;
+    if (!image || !/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/u.test(id || '') ||
+        !/^\d+\.\d+\.\d+$/u.test(version || '') || !['Clair', 'Obscur'].includes(appearance)) return null;
+    const source = `icons/${appearance}/${id}.svg`;
+    const filename = `Clair-Obscur-${version}-${appearance}-${id}-512.png`;
+    if (image.getAttribute('src') !== source || button.dataset.iconFilename !== filename) return null;
+    const url = new URL(source, location.href);
+    if (url.origin !== location.origin) return null;
+    return { button, image, source: url.href, filename };
+  });
+  if (records.some(record => !record)) return;
+  let preparing = false;
+  for (const record of records) {
+    const { button, image, source, filename } = record;
+    button.addEventListener('click', async () => {
+      if (preparing) return;
+      preparing = true;
+      button.setAttribute('aria-disabled', 'true');
+      status.textContent = `Preparing ${filename}...`;
+      try {
+        if (!image.complete || image.naturalWidth !== 512 || image.naturalHeight !== 512 ||
+            image.currentSrc !== source) throw new Error('The icon image is unavailable');
+        await image.decode();
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 512;
+        const context = canvas.getContext('2d');
+        if (!context) throw new Error('PNG rendering is unavailable');
+        context.drawImage(image, 0, 0, 512, 512);
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        if (!blob || blob.type !== 'image/png' || !blob.size) throw new Error('PNG encoding failed');
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.hidden = true;
+        document.body.append(link);
+        try { link.click(); }
+        finally {
+          link.remove();
+          // Let the browser acquire the blob before releasing its temporary URL.
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+        status.textContent = `Prepared ${filename}. Your browser handles the download.`;
+      } catch {
+        status.textContent = 'Could not prepare this PNG. Try again after the image loads, or use the SVG archive and PNG export instructions below.';
+      } finally {
+        button.removeAttribute('aria-disabled');
+        preparing = false;
+      }
+    });
+    button.hidden = false;
+  }
+  help.textContent = 'Use PNG 512 beside an appearance to prepare that individual image in your browser. Each file is 512 by 512 pixels with a transparent outer margin. The full SVG archives and two-size PNG export remain available.';
+})();
+
 for (const choice of choices) {
   choice.addEventListener('click', () => {
     const appearance = choice.dataset.appearance;
