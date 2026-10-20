@@ -1,5 +1,14 @@
 # Changes
 
+## Icon artwork 0.10.0
+
+- Add twelve inspected restaurant and ordering app interpretations in both black and white appearances. The current collection has 163 named apps and 24 general functions.
+- Preserve all 350 accepted 0.9.0 SVGs and all nine earlier archives, plus the accepted desktop, Terminal and Garmin package identities.
+- Keep the KFC US assignment separate from the Indonesian KFCKU app. Retain observed store titles, exact package IDs and device-availability limits.
+- Include the new choices in the existing local finder, static gallery, portable kit and PNG exporter. Current export contains 748 PNGs at two dimensions per appearance.
+- Admit the larger portable inventory within 448 declared hashes and 480 files/directories, retaining existing byte, path, link, depth and read protections.
+- Keep current phone assignment and native/device acceptance separate from generated artwork and browser checks.
+
 ## Garmin watch face 0.4.0
 
 - Add an original analog dial with distinct hour and minute hands, a double twelve marker and a restrained minute track. Retain the digital layout, existing information fields and separate time-only always-on view.

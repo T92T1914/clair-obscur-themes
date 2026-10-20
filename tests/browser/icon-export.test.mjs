@@ -181,17 +181,33 @@ const sixthApps = [
   ["ups", "UPS", "com.ups.mobile.android"],
   ["fedex", "FedEx", "com.fedex.ida.android"],
 ];
-const apps = [...broadApps, ...sixthApps];
+const everydayApps = [...broadApps, ...sixthApps];
+const foodOrderApps = [
+  ["chipotle", "Chipotle", "com.chipotle.ordering"],
+  ["taco-bell", "Taco Bell", "com.tacobell.ordering"],
+  ["wendys", "Wendy's", "com.wendys.nutritiontool"],
+  ["burger-king", "Burger King", "com.emn8.mobilem8.nativeapp.bk"],
+  ["dunkin", "Dunkin'", "com.dunkinbrands.otgo"],
+  ["chick-fil-a", "Chick-fil-A", "com.chickfila.cfaflagship"],
+  ["dominos", "Domino's", "com.dominospizza"],
+  ["pizza-hut", "Pizza Hut", "com.yum.pizzahut"],
+  ["subway", "Subway", "com.subway.mobile.subwayapp03"],
+  ["panera-bread", "Panera Bread", "com.panera.bread"],
+  ["kfc-us", "KFC US", "com.kfc.us.mobile"],
+  ["grubhub", "Grubhub", "com.grubhub.android"],
+];
+const apps = [...everydayApps, ...foodOrderApps];
 const firstFunctions = [...baseFunctions, ...firstApps.map(([id]) => id)];
 const secondFunctions = [...baseFunctions, ...secondApps.map(([id]) => id)];
 const retainedFunctions = [...baseFunctions, ...retainedApps.map(([id]) => id)];
 const companionFunctions = [...baseFunctions, ...companionApps.map(([id]) => id)];
 const broadFunctions = [...baseFunctions, ...broadApps.map(([id]) => id)];
+const everydayFunctions = [...baseFunctions, ...everydayApps.map(([id]) => id)];
 const functions = [...baseFunctions, ...apps.map(([id]) => id)];
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 let temporary, source, sourceBefore, legacySource, legacyBefore, previousSource, previousBefore,
   firstSource, firstBefore, secondSource, secondBefore, thirdSource, thirdBefore,
-  monochromeSource, monochromeBefore, companionSource, companionBefore, broadSource, broadBefore;
+  monochromeSource, monochromeBefore, companionSource, companionBefore, broadSource, broadBefore, everydaySource, everydayBefore;
 
 function execute(command, args, options = {}) {
   return spawnSync(command, args, { cwd: root, encoding: 'utf8', windowsHide: true,
@@ -375,6 +391,17 @@ before(async () => {
     assert.equal(sourceBefore[`${appearance}/${name}.svg`], broadBefore[`${appearance}/${name}.svg`],
       'All 254 accepted broad SVG bytes remain unchanged in the everyday collection');
   }
+  everydaySource = path.join(temporary, 'everyday-svg');
+  const everyday = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', everydaySource, '--version', '0.9.0']);
+  assert.ifError(everyday.error);
+  assert.equal(everyday.status, 0, everyday.stdout + everyday.stderr);
+  everydayBefore = await snapshot(everydaySource);
+  assert.equal(everydayBefore['manifest.json'], '7f3e3137cc2b3e72a4861368b6864158de8f5a17e5b2a57a2b0489c5ca0f78b5',
+    'The accepted everyday-collection manifest remains exact');
+  for (const appearance of ['Clair', 'Obscur']) for (const name of everydayFunctions) {
+    assert.equal(sourceBefore[`${appearance}/${name}.svg`], everydayBefore[`${appearance}/${name}.svg`],
+      'All 350 accepted everyday SVG bytes remain unchanged in the food-order collection');
+  }
 });
 
 after(async () => {
@@ -385,20 +412,20 @@ after(async () => {
   }
 });
 
-test('PNG command exports 700 monochrome icons with independent neutral-pixel decoding and assignment identities', async () => {
+test('PNG command exports 748 monochrome icons with independent neutral-pixel decoding and assignment identities', async () => {
   const output = path.join(temporary, 'png');
   const result = exportTo(source, output);
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.match(result.stdout, /Exported 700 PNG icons/);
+  assert.match(result.stdout, /Exported 748 PNG icons/);
   const manifestBytes = await readFile(path.join(output, 'manifest.json'));
   const manifest = JSON.parse(manifestBytes);
   const expected = ['manifest.json', 'LICENSE'];
-  assert.equal(manifest.version, '0.9.0');
-  assert.equal(manifest.exporter_version, '0.9.0');
+  assert.equal(manifest.version, '0.10.0');
+  assert.equal(manifest.exporter_version, '0.10.0');
   assert.equal(manifest.palette_variant, 'monochrome');
   assert.equal(manifest.token_version, '1.0.0');
-  assert.equal(manifest.files.length, 700);
+  assert.equal(manifest.files.length, 748);
   assert.deepEqual(manifest.functions, functions);
   assert.equal(manifest.source_manifest_sha256, sourceBefore['manifest.json']);
   assert.equal(manifest.tokens_file, 'tokens-monochrome.json');
@@ -407,7 +434,7 @@ test('PNG command exports 700 monochrome icons with independent neutral-pixel de
   assert.equal(manifest.svg_catalog_sha256, sha(await readFile(path.join(root, 'themeforge/icon_apps.py'))));
   const svgManifest = JSON.parse(await readFile(path.join(source, 'manifest.json')));
   assert.deepEqual(manifest.catalog, svgManifest.catalog, 'Complete admitted assignment metadata survives PNG export');
-  assert.equal(manifest.catalog.length, 175);
+  assert.equal(manifest.catalog.length, 187);
   assert.equal(manifest.catalog_date, '2026-10-19');
   assert.equal(manifest.catalog_scope, svgManifest.catalog_scope);
   assert.match(manifest.catalog_scope, /Not an ordered popularity chart or exhaustive catalog/);
@@ -509,6 +536,21 @@ test('PNG command exports 700 monochrome icons with independent neutral-pixel de
     "ups": "UPS",
     "fedex": "FedEx Mobile"
 });
+  assert.deepEqual(Object.fromEntries(manifest.catalog.filter(entry => foodOrderApps.some(([id]) => id === entry.id))
+    .map(entry => [entry.id, entry.store_title])), {
+    "chipotle": "Chipotle",
+    "taco-bell": "Taco Bell Fast Food & Delivery",
+    "wendys": "Wendy’s",
+    "burger-king": "BURGER KING® App",
+    "dunkin": "Dunkin’",
+    "chick-fil-a": "Chick-fil-A®",
+    "dominos": "Domino's Pizza USA",
+    "pizza-hut": "Pizza Hut - Delivery & Takeout",
+    "subway": "Subway®",
+    "panera-bread": "Panera Bread",
+    "kfc-us": "KFC US: Ordering & Delivery",
+    "grubhub": "Grubhub: Food Delivery"
+});
   assert.equal(manifest.exporter_sha256, sha(await readFile(exporter)));
   const license = await readFile(path.join(output, 'LICENSE'));
   assert.deepEqual(license, await readFile(path.join(root, 'LICENSE')));
@@ -519,10 +561,10 @@ test('PNG command exports 700 monochrome icons with independent neutral-pixel de
   assert.equal(manifestBytes.toString().includes(root), false, 'No checkout path enters the export manifest');
   assert.equal(manifestBytes.toString().includes(temporary), false, 'No temporary or user path enters the export manifest');
   const records = new Map(manifest.files.map(record => [record.path, record]));
-  assert.equal(records.size, 700);
+  assert.equal(records.size, 748);
   for (const appearance of ['Clair', 'Obscur']) for (const size of [512, 1024]) {
     const hashes = functions.map(name => records.get(`${appearance}/${size}/${name}.png`)?.sha256);
-    assert.equal(new Set(hashes).size, 175, `${appearance}/${size} retains 175 distinct drawings`);
+    assert.equal(new Set(hashes).size, 187, `${appearance}/${size} retains 187 distinct drawings`);
     assert.equal(hashes.includes(undefined), false);
   }
   for (const appearance of ['Clair', 'Obscur']) for (const size of [512, 1024]) for (const name of functions) {
@@ -540,7 +582,7 @@ test('PNG command exports 700 monochrome icons with independent neutral-pixel de
   assert.deepEqual(await snapshot(source), sourceBefore);
 });
 
-for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
+for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
   const historical = {
     '0.1.0': { input: legacySource, before: legacyBefore, functions: baseFunctions, images: 96 },
     '0.2.0': { input: previousSource, before: previousBefore, functions: baseFunctions, images: 96 },
@@ -556,6 +598,8 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
       apps: companionApps, date: '2026-10-19', monochrome: true },
     '0.8.0': { input: broadSource, before: broadBefore, functions: broadFunctions, images: 508,
       apps: broadApps, date: '2026-10-19', monochrome: true },
+    '0.9.0': { input: everydaySource, before: everydayBefore, functions: everydayFunctions, images: 700,
+      apps: everydayApps, date: '2026-10-19', monochrome: true },
   }[version];
   const historicalSource = historical.input, historicalBefore = historical.before;
   const historicalFunctions = historical.functions, imageCount = historical.images;
@@ -566,7 +610,7 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
   assert.match(result.stdout, new RegExp(`Exported ${imageCount} PNG icons`));
   const manifest = JSON.parse(await readFile(path.join(output, 'manifest.json')));
   assert.equal(manifest.version, version);
-  assert.equal(manifest.exporter_version, '0.9.0');
+  assert.equal(manifest.exporter_version, '0.10.0');
   const tokenFile = historical.monochrome ? 'tokens-monochrome.json' : 'tokens.json';
   assert.equal(manifest.tokens_file, tokenFile);
   assert.equal(manifest.tokens_sha256, sha(await readFile(path.join(root, tokenFile))));
@@ -621,12 +665,12 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
 
 test('unknown and mismatched artwork versions are refused before output reservation or browser launch', async () => {
   const admitted = [['0.1.0', legacySource], ['0.2.0', previousSource], ['0.3.0', firstSource],
-    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', source]];
-  const cases = [['unknown', source, '0.10.0']];
+    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', source]];
+  const cases = [['unknown', source, '0.11.0']];
   for (const [actual, original] of admitted) for (const [claimed] of admitted) {
     if (actual !== claimed) cases.push([`${actual}-as-${claimed}`, original, claimed]);
   }
-  assert.equal(cases.length, 73, 'All 72 cross-version claims and one unsupported future version are exercised');
+  assert.equal(cases.length, 91, 'All 90 cross-version claims and one unsupported future version are exercised');
   for (const [name, original, version] of cases) {
     const input = path.join(temporary, name);
     await cp(original, input, { recursive: true });
@@ -648,17 +692,23 @@ test('altered app assignments and mixed previous/current artwork fail admission 
     'historical-third-label', 'historical-monochrome-label', 'mixed-version-svg', 'mixed-version-manifest',
     'previous-monochrome-manifest', 'new-svg-in-historical-monochrome', 'historical-companion-label',
     'previous-companion-manifest', 'new-svg-in-historical-companion', 'historical-broad-label',
-    'previous-broad-manifest', 'new-svg-in-historical-broad']) {
+    'previous-broad-manifest', 'new-svg-in-historical-broad', 'historical-everyday-label',
+    'previous-everyday-manifest', 'new-svg-in-historical-everyday']) {
     const input = path.join(temporary, `assignment-${mutation}`);
     await cp(mutation === 'historical-first-label' ? firstSource :
       mutation === 'historical-second-label' ? secondSource :
       mutation === 'historical-third-label' ? thirdSource :
       ['historical-monochrome-label', 'new-svg-in-historical-monochrome'].includes(mutation) ? monochromeSource :
       ['historical-companion-label', 'new-svg-in-historical-companion'].includes(mutation) ? companionSource :
-      ['historical-broad-label', 'new-svg-in-historical-broad'].includes(mutation) ? broadSource : source, input, { recursive: true });
+      ['historical-broad-label', 'new-svg-in-historical-broad'].includes(mutation) ? broadSource :
+      ['historical-everyday-label', 'new-svg-in-historical-everyday'].includes(mutation) ? everydaySource : source, input, { recursive: true });
     const manifestPath = path.join(input, 'manifest.json');
     const manifest = JSON.parse(await readFile(manifestPath));
-    if (mutation === 'new-svg-in-historical-broad') {
+    if (mutation === 'new-svg-in-historical-everyday') {
+      await cp(path.join(source, 'Clair', 'chipotle.svg'), path.join(input, 'Clair', 'chipotle.svg'));
+    } else if (mutation === 'previous-everyday-manifest') {
+      await cp(path.join(everydaySource, 'manifest.json'), manifestPath);
+    } else if (mutation === 'new-svg-in-historical-broad') {
       await cp(path.join(source, 'Clair', 'slack.svg'), path.join(input, 'Clair', 'slack.svg'));
     } else if (mutation === 'previous-broad-manifest') {
       await cp(path.join(broadSource, 'manifest.json'), manifestPath);
@@ -682,6 +732,7 @@ test('altered app assignments and mixed previous/current artwork fail admission 
       else if (mutation === 'historical-monochrome-label') manifest.catalog.find(entry => entry.id === 'github').label = 'unqualified replacement';
       else if (mutation === 'historical-companion-label') manifest.catalog.find(entry => entry.id === 'good-lock').label = 'unqualified replacement';
       else if (mutation === 'historical-broad-label') manifest.catalog.find(entry => entry.id === 'youtube-music').label = 'unqualified replacement';
+      else if (mutation === 'historical-everyday-label') manifest.catalog.find(entry => entry.id === 'slack').label = 'unqualified replacement';
       else manifest.catalog.find(entry => entry.id === 'slack')[mutation] = 'unqualified replacement';
       await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
     }
@@ -783,7 +834,7 @@ test('linked or junction output ancestors are refused before browser launch with
 test('a linked child manifest is refused before parsing its owned target or launching a browser', async t => {
   for (const [name, contents] of [
     ['malformed', '{owned malformed JSON fixture'],
-    ['unsupported', JSON.stringify({ version: '0.10.0' })],
+    ['unsupported', JSON.stringify({ version: '0.11.0' })],
   ]) {
     const input = path.join(temporary, `linked-manifest-${name}`);
     await cp(source, input, { recursive: true });

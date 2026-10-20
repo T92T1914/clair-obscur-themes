@@ -313,7 +313,7 @@ class ManifestAdmissionTests(KitFixture):
         (self.kit / 'site-manifest.json').write_bytes(b' ' * 65_537)
         self.assert_refused(message='File byte limit')
         self.document = manifest_document(self.files)
-        for number in range(417 - len(self.document['files'])):
+        for number in range(449 - len(self.document['files'])):
             self.document['files'][f'file{number}.txt'] = '0' * 64
         self.write_manifest()
         self.assert_refused(message='declared file count')
@@ -323,21 +323,21 @@ class ManifestAdmissionTests(KitFixture):
         self.write_manifest()
         # The former nested-path boundary is admitted by the expanded cap.
         self.assertEqual(verifier.verify(self.kit)[0], 1)
-        for number in range(48, 56):
+        for number in range(48, 64):
             self.document['files'][f'a{number}/b/c/d/e/f/g/file'] = '0' * 64
         expected_entries = {'site-manifest.json'}
         for name in self.document['files']:
             parts = name.split('/')
             expected_entries.update('/'.join(parts[:end]) for end in range(1, len(parts) + 1))
-        self.assertLess(len(self.document['files']), 416)
-        self.assertGreater(len(expected_entries), 448)
+        self.assertLess(len(self.document['files']), 448)
+        self.assertGreater(len(expected_entries), 480)
         self.write_manifest()
         self.assert_refused(message='Combined inventory')
 
-    def test_expanded_declared_inventory_accepts_prior_and_416_hashes_and_refuses_417(self):
+    def test_expanded_declared_inventory_accepts_prior_and_448_hashes_and_refuses_449(self):
         # Exercise a complete comparison at the published limit. The current
         # named-app portable kit also runs through ProducerInclusionTests.
-        for count in (192, 224, 240, 248, 256, 313, 320, 410, 416):
+        for count in (192, 224, 240, 248, 256, 313, 320, 410, 416, 435, 448):
             while len(self.files) < count:
                 number = len(self.files)
                 name = f'expanded{number}.txt'
@@ -358,7 +358,7 @@ class ManifestAdmissionTests(KitFixture):
 
     def test_actual_inventory_depth_and_unsafe_extra_are_refused_before_reads(self):
         extra_count = 0
-        for admitted_count in (352, 448):
+        for admitted_count in (352, 448, 480):
             additional = admitted_count - len(verifier.inventory(self.kit))
             for number in range(extra_count, extra_count + additional):
                 (self.kit / f'extra{number}.txt').touch()
