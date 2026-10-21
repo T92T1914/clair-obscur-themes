@@ -356,7 +356,7 @@ class TerminalPreviewTests(unittest.TestCase):
                         self.assertEqual(context, f"on {partner}" if partner else "on default")
 
     def test_terminal_preview_preserves_desktop_downloads_and_all_icon_revisions(self):
-        from preview import (WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE, ICON_ARCHIVE, ICON_CHECKSUMS,
+        from preview import (RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE, ICON_ARCHIVE, ICON_CHECKSUMS,
                              LEGACY_ICON_ARCHIVE, PREVIOUS_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE,
                              MONOCHROME_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE,
                              PORTABLE_ARCHIVE, preview_files)
@@ -365,7 +365,7 @@ class TerminalPreviewTests(unittest.TestCase):
         self.assertEqual(len(desktop), 32)
         icons = render_icons(json.loads((ROOT / 'tokens-monochrome.json').read_bytes()))
         current_svg = {path: payload for path, payload in icons.items() if path.endswith(".svg")}
-        self.assertEqual(len(current_svg), 450)
+        self.assertEqual(len(current_svg), 466)
         token_bytes = (ROOT / "tokens.json").read_bytes()
         files = preview_files(ROOT, self.artifacts)
         with zipfile.ZipFile(io.BytesIO(files[PORTABLE_ARCHIVE])) as portable:
@@ -455,11 +455,27 @@ class TerminalPreviewTests(unittest.TestCase):
                 for name in previous_weather.namelist():
                     if name.endswith(".svg"):
                         self.assertEqual(previous_weather.read(name), delivery['icons/' + name])
+            with zipfile.ZipFile(io.BytesIO(delivery[RUNNING_TRAINING_ICON_ARCHIVE])) as previous_running:
+                self.assertEqual(hashlib.sha256(delivery[RUNNING_TRAINING_ICON_ARCHIVE]).hexdigest(),
+                                 "4b3324d30b0b6e94a52e0d51a206e499e6e2b6be82052752963da9446c44e6c1")
+                running_manifest = previous_running.read("manifest.json")
+                self.assertEqual(hashlib.sha256(running_manifest).hexdigest(),
+                                 "4ac31c55d2723a0e27ee4892eb29d59dbdcb179443f496fced7b69337c0699df")
+                running_catalog = json.loads(running_manifest)
+                self.assertEqual(running_catalog["version"], "0.14.0")
+                self.assertEqual(len(running_catalog["files"]), 450)
+                self.assertEqual(len(running_catalog["catalog"]), 225)
+                self.assertEqual(json.loads(icons["manifest.json"])["catalog"][:225],
+                                 running_catalog["catalog"])
+                previous_svg = {name: previous_running.read(name) for name in previous_running.namelist()
+                                if name.endswith(".svg")}
+                self.assertEqual(len(previous_svg), 450)
+                self.assertEqual({name: current_svg[name] for name in previous_svg}, previous_svg)
             with zipfile.ZipFile(io.BytesIO(delivery[ICON_ARCHIVE])) as current:
-                self.assertEqual(json.loads(current.read("manifest.json"))["version"], "0.14.0")
+                self.assertEqual(json.loads(current.read("manifest.json"))["version"], "0.15.0")
             self.assertEqual(delivery[ICON_CHECKSUMS],
                              ''.join(f'{hashlib.sha256(delivery[path]).hexdigest()}  {Path(path).name}\n'
-                                      for path in (ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
+                                      for path in (ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
                                                   PREVIOUS_ICON_ARCHIVE, LEGACY_ICON_ARCHIVE)).encode())
         self.assertEqual(snapshot(self.artifacts), desktop)
         self.assertEqual((ROOT / "tokens.json").read_bytes(), token_bytes)

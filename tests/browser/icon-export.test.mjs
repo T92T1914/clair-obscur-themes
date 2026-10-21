@@ -246,7 +246,18 @@ const runningTrainingApps = [
   ['zwift-companion', 'Zwift Companion', 'com.zwift.android.prod'],
   ['relive', 'Relive', 'cc.relive.reliveapp'],
 ];
-const apps = [...weatherCatalogApps, ...runningTrainingApps];
+const runningCatalogApps = [...weatherCatalogApps, ...runningTrainingApps];
+const learningApps = [
+  ['google-classroom', 'Google Classroom', 'com.google.android.apps.classroom'],
+  ['khan-academy', 'Khan Academy', 'org.khanacademy.android'],
+  ['coursera', 'Coursera', 'org.coursera.android'],
+  ['udemy', 'Udemy', 'com.udemy.android'],
+  ['edx', 'edX', 'org.edx.mobile'],
+  ['quizlet', 'Quizlet', 'com.quizlet.quizletandroid'],
+  ['photomath', 'Photomath', 'com.microblink.photomath'],
+  ['brainly', 'Brainly', 'co.brainly'],
+];
+const apps = [...runningCatalogApps, ...learningApps];
 const firstFunctions = [...baseFunctions, ...firstApps.map(([id]) => id)];
 const secondFunctions = [...baseFunctions, ...secondApps.map(([id]) => id)];
 const retainedFunctions = [...baseFunctions, ...retainedApps.map(([id]) => id)];
@@ -257,12 +268,13 @@ const foodFunctions = [...baseFunctions, ...foodApps.map(([id]) => id)];
 const travelFunctions = [...baseFunctions, ...travelCatalogApps.map(([id]) => id)];
 const financeFunctions = [...baseFunctions, ...financeCatalogApps.map(([id]) => id)];
 const weatherFunctions = [...baseFunctions, ...weatherCatalogApps.map(([id]) => id)];
+const runningFunctions = [...baseFunctions, ...runningCatalogApps.map(([id]) => id)];
 const functions = [...baseFunctions, ...apps.map(([id]) => id)];
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 let temporary, source, sourceBefore, legacySource, legacyBefore, previousSource, previousBefore,
   firstSource, firstBefore, secondSource, secondBefore, thirdSource, thirdBefore,
   monochromeSource, monochromeBefore, companionSource, companionBefore, broadSource, broadBefore, everydaySource, everydayBefore,
-  foodSource, foodBefore, travelSource, travelBefore, financeSource, financeBefore, weatherSource, weatherBefore;
+  foodSource, foodBefore, travelSource, travelBefore, financeSource, financeBefore, weatherSource, weatherBefore, runningSource, runningBefore;
 
 function execute(command, args, options = {}) {
   return spawnSync(command, args, { cwd: root, encoding: 'utf8', windowsHide: true,
@@ -501,6 +513,18 @@ before(async () => {
     assert.equal(sourceBefore[appearance + '/' + name + '.svg'], weatherBefore[appearance + '/' + name + '.svg'],
       'All 434 accepted weather SVG bytes remain unchanged in the running/training collection');
   }
+  runningSource = path.join(temporary, 'running-svg');
+  const running = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', runningSource, '--version', '0.14.0']);
+  assert.ifError(running.error);
+  assert.equal(running.status, 0, running.stdout + running.stderr);
+  runningBefore = await snapshot(runningSource);
+  assert.equal(runningBefore['manifest.json'], '4ac31c55d2723a0e27ee4892eb29d59dbdcb179443f496fced7b69337c0699df',
+    'The accepted running and training manifest remains exact');
+  for (const appearance of ['Clair', 'Obscur']) for (const name of runningFunctions) {
+    assert.equal(sourceBefore[appearance + '/' + name + '.svg'], runningBefore[appearance + '/' + name + '.svg'],
+      'All 450 accepted running and training SVG bytes remain unchanged in the learning collection');
+  }
+
 });
 
 after(async () => {
@@ -511,20 +535,20 @@ after(async () => {
   }
 });
 
-test('PNG command exports 900 monochrome icons with independent neutral-pixel decoding and assignment identities', async () => {
+test('PNG command exports 932 monochrome icons with independent neutral-pixel decoding and assignment identities', async () => {
   const output = path.join(temporary, 'png');
   const result = exportTo(source, output);
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.match(result.stdout, /Exported 900 PNG icons/);
+  assert.match(result.stdout, /Exported 932 PNG icons/);
   const manifestBytes = await readFile(path.join(output, 'manifest.json'));
   const manifest = JSON.parse(manifestBytes);
   const expected = ['manifest.json', 'LICENSE'];
-  assert.equal(manifest.version, '0.14.0');
+  assert.equal(manifest.version, '0.15.0');
   assert.equal(manifest.exporter_version, '0.11.0');
   assert.equal(manifest.palette_variant, 'monochrome');
   assert.equal(manifest.token_version, '1.0.0');
-  assert.equal(manifest.files.length, 900);
+  assert.equal(manifest.files.length, 932);
   assert.deepEqual(manifest.functions, functions);
   assert.equal(manifest.source_manifest_sha256, sourceBefore['manifest.json']);
   assert.equal(manifest.tokens_file, 'tokens-monochrome.json');
@@ -533,10 +557,10 @@ test('PNG command exports 900 monochrome icons with independent neutral-pixel de
   assert.equal(manifest.svg_catalog_sha256, sha(await readFile(path.join(root, 'themeforge/icon_apps.py'))));
   const svgManifest = JSON.parse(await readFile(path.join(source, 'manifest.json')));
   assert.deepEqual(manifest.catalog, svgManifest.catalog, 'Complete admitted assignment metadata survives PNG export');
-  assert.equal(manifest.catalog.length, 225);
-  assert.equal(manifest.catalog_date, '2026-10-20');
+  assert.equal(manifest.catalog.length, 233);
+  assert.equal(manifest.catalog_date, '2026-10-21');
   assert.equal(manifest.catalog_scope, svgManifest.catalog_scope);
-  assert.match(manifest.catalog_scope, /No popularity ranking, training recommendation, publisher endorsement or installation claim/);
+  assert.match(manifest.catalog_scope, /No popularity ranking, educational recommendation, publisher endorsement or installation claim/);
   assert.deepEqual(manifest.catalog.filter(entry => entry.kind === 'function').map(entry => entry.id), baseFunctions);
   assert.deepEqual(manifest.catalog.filter(entry => entry.kind === 'app').map(entry =>
     [entry.id, entry.label, entry.android_package]), apps);
@@ -699,6 +723,13 @@ test('PNG command exports 900 monochrome icons with independent neutral-pixel de
     relive: 'Relive: Run, Ride, Hike & more',
   });
   assert.equal(manifest.catalog.find(entry => entry.id === 'asics-runkeeper').android_package, 'com.fitnesskeeper.runkeeper.pro');
+  assert.deepEqual(Object.fromEntries(manifest.catalog.filter(entry => learningApps.some(([id]) => id === entry.id))
+    .map(entry => [entry.id, entry.store_title])), {
+    'google-classroom': 'Google Classroom', 'khan-academy': 'Khan Academy',
+    coursera: 'Coursera: Grow your career', udemy: 'Udemy - Online Courses',
+    edx: 'edX online learning', quizlet: 'Quizlet: More than Flashcards',
+    photomath: 'Photomath', brainly: 'Brainly: AI Homework Helper',
+  });
   assert.notEqual(manifest.catalog.find(entry => entry.id === 'runna').android_package,
     manifest.catalog.find(entry => entry.id === 'strava').android_package);
   assert.equal(manifest.exporter_sha256, sha(await readFile(exporter)));
@@ -711,10 +742,10 @@ test('PNG command exports 900 monochrome icons with independent neutral-pixel de
   assert.equal(manifestBytes.toString().includes(root), false, 'No checkout path enters the export manifest');
   assert.equal(manifestBytes.toString().includes(temporary), false, 'No temporary or user path enters the export manifest');
   const records = new Map(manifest.files.map(record => [record.path, record]));
-  assert.equal(records.size, 900);
+  assert.equal(records.size, 932);
   for (const appearance of ['Clair', 'Obscur']) for (const size of [512, 1024]) {
     const hashes = functions.map(name => records.get(`${appearance}/${size}/${name}.png`)?.sha256);
-    assert.equal(new Set(hashes).size, 225, `${appearance}/${size} retains 225 distinct drawings`);
+    assert.equal(new Set(hashes).size, 233, `${appearance}/${size} retains 233 distinct drawings`);
     assert.equal(hashes.includes(undefined), false);
   }
   for (const appearance of ['Clair', 'Obscur']) for (const size of [512, 1024]) for (const name of functions) {
@@ -732,7 +763,7 @@ test('PNG command exports 900 monochrome icons with independent neutral-pixel de
   assert.deepEqual(await snapshot(source), sourceBefore);
 });
 
-for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
+for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
   const historical = {
     '0.1.0': { input: legacySource, before: legacyBefore, functions: baseFunctions, images: 96 },
     '0.2.0': { input: previousSource, before: previousBefore, functions: baseFunctions, images: 96 },
@@ -758,6 +789,8 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
       apps: financeCatalogApps, date: '2026-10-20', monochrome: true },
     '0.13.0': { input: weatherSource, before: weatherBefore, functions: weatherFunctions, images: 868,
       apps: weatherCatalogApps, date: '2026-10-20', monochrome: true },
+    '0.14.0': { input: runningSource, before: runningBefore, functions: runningFunctions, images: 900,
+      apps: runningCatalogApps, date: '2026-10-20', monochrome: true },
   }[version];
   const historicalSource = historical.input, historicalBefore = historical.before;
   const historicalFunctions = historical.functions, imageCount = historical.images;
@@ -823,12 +856,12 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
 
 test('unknown and mismatched artwork versions are refused before output reservation or browser launch', async () => {
   const admitted = [['0.1.0', legacySource], ['0.2.0', previousSource], ['0.3.0', firstSource],
-    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', foodSource], ['0.11.0', travelSource], ['0.12.0', financeSource], ['0.13.0', weatherSource], ['0.14.0', source]];
-  const cases = [['unknown', source, '0.15.0']];
+    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', foodSource], ['0.11.0', travelSource], ['0.12.0', financeSource], ['0.13.0', weatherSource], ['0.14.0', runningSource], ['0.15.0', source]];
+  const cases = [['unknown', source, '0.16.0']];
   for (const [actual, original] of admitted) for (const [claimed] of admitted) {
     if (actual !== claimed) cases.push([`${actual}-as-${claimed}`, original, claimed]);
   }
-  assert.equal(cases.length, 183, 'All 182 cross-version claims and one unsupported future version are exercised');
+  assert.equal(cases.length, 211, 'All 210 cross-version claims and one unsupported future version are exercised');
   for (const [name, original, version] of cases) {
     const input = path.join(temporary, name);
     await cp(original, input, { recursive: true });
@@ -1031,7 +1064,7 @@ test('linked or junction output ancestors are refused before browser launch with
 test('a linked child manifest is refused before parsing its owned target or launching a browser', async t => {
   for (const [name, contents] of [
     ['malformed', '{owned malformed JSON fixture'],
-    ['unsupported', JSON.stringify({ version: '0.15.0' })],
+    ['unsupported', JSON.stringify({ version: '0.16.0' })],
   ]) {
     const input = path.join(temporary, `linked-manifest-${name}`);
     await cp(source, input, { recursive: true });
