@@ -487,12 +487,12 @@ class PreviewTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
         exported = json.loads((self.base / 'extracted-icons/manifest.json').read_bytes())
-        self.assertEqual(exported['version'], '0.15.0')
-        self.assertEqual(len(exported['functions']), 233)
-        self.assertEqual(len(exported['files']), 466)
+        self.assertEqual(exported['version'], '0.16.0')
+        self.assertEqual(len(exported['functions']), 241)
+        self.assertEqual(len(exported['files']), 482)
         self.assertEqual([entry['id'] for entry in exported['catalog']][-8:],
-                         ['google-classroom', 'khan-academy', 'coursera', 'udemy',
-                          'edx', 'quizlet', 'photomath', 'brainly'])
+                         ['google-play-books', 'libby', 'kobo-books', 'goodreads',
+                          'wattpad', 'webtoon', 'readera', 'moon-reader'])
 
     def test_vscode_candidate_builds_from_the_actual_source_snapshot(self):
         extracted = self.base / 'vscode-source'
