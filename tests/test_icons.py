@@ -80,6 +80,12 @@ TENTH_APP_NAMES = (
     "weatherbug one-weather clime windfinder rainviewer"
 ).split()
 APP_NAMES += TENTH_APP_NAMES
+TENTH_NAMES = BASE_NAMES + APP_NAMES
+ELEVENTH_APP_NAMES = (
+    "nike-run-club adidas-running asics-runkeeper map-my-run runna "
+    "trainingpeaks zwift-companion relive"
+).split()
+APP_NAMES += ELEVENTH_APP_NAMES
 NAMES = BASE_NAMES + APP_NAMES
 EXPECTED_APPS = {
     "google-chrome": ("Google Chrome", "com.android.chrome"),
@@ -729,6 +735,20 @@ TENTH_EXPECTED_APPS = (
 EXPECTED_APPS.update({identifier: (label, package)
                       for identifier, label, package in TENTH_EXPECTED_APPS})
 
+# Independent literal assignment identities from the inspected official listings.
+ELEVENTH_EXPECTED_APPS = (
+    ("nike-run-club", "Nike Run Club", "com.nike.plusgps"),
+    ("adidas-running", "adidas Running", "com.runtastic.android"),
+    ("asics-runkeeper", "ASICS Runkeeper", "com.fitnesskeeper.runkeeper.pro"),
+    ("map-my-run", "Map My Run", "com.mapmyrun.android2"),
+    ("runna", "Runna", "com.runbuddy.prod"),
+    ("trainingpeaks", "TrainingPeaks", "com.peaksware.trainingpeaks"),
+    ("zwift-companion", "Zwift Companion", "com.zwift.android.prod"),
+    ("relive", "Relive", "cc.relive.reliveapp"),
+)
+EXPECTED_APPS.update({identifier: (label, package)
+                      for identifier, label, package in ELEVENTH_EXPECTED_APPS})
+
 NS = "{http://www.w3.org/2000/svg}"
 
 
@@ -789,11 +809,11 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(set(files), expected | {"manifest.json"})
         manifest = json.loads(files["manifest.json"])
         self.assertEqual(manifest["functions"], NAMES)
-        self.assertEqual(manifest["version"], "0.13.0")
+        self.assertEqual(manifest["version"], "0.14.0")
         self.assertEqual(manifest["token_schema"], 1)
         self.assertEqual(manifest["token_version"], "1.0.0")
         self.assertEqual(manifest["palette_variant"], "monochrome")
-        self.assertEqual(len(manifest["files"]), 434)
+        self.assertEqual(len(manifest["files"]), 450)
         for record in manifest["files"]:
             self.assertEqual(record["path"], f'{record["appearance"]}/{record["function"]}.svg')
             payload = files[record["path"]]
@@ -803,7 +823,7 @@ class FunctionalIconTests(unittest.TestCase):
         relabeled = files["Clair/phone.svg"].replace(b'aria-label="phone"', b'aria-label="messages"')
         self.assertEqual(geometry(relabeled), geometry(files["Clair/phone.svg"]))
         # Named choices must have different drawings, rather than relabeled aliases.
-        self.assertEqual(len({geometry(files[f"Clair/{name}.svg"]) for name in NAMES}), 217)
+        self.assertEqual(len({geometry(files[f"Clair/{name}.svg"]) for name in NAMES}), 225)
 
     def test_palette_roles_and_geometry_are_shared_without_hardcoded_colors(self):
         files = icons.render_icons(self.document)
@@ -862,13 +882,13 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(icons.token_path(), ROOT / "tokens-monochrome.json")
         for version in ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0"):
             self.assertEqual(icons.token_path(version), ROOT / "tokens.json")
-        for version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0"):
+        for version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0"):
             self.assertEqual(icons.token_path(version), ROOT / "tokens-monochrome.json")
         for version, document in (("0.5.0", self.legacy_document), ("0.6.0", self.document),
                                   ("0.7.0", self.document), ("0.8.0", self.document),
                                   ("0.9.0", self.document), ("0.10.0", self.document),
                                   ("0.11.0", self.document), ("0.12.0", self.document),
-                                  ("0.13.0", self.document)):
+                                  ("0.13.0", self.document), ("0.14.0", self.document)):
             with self.subTest(version=version), tempfile.TemporaryDirectory() as temporary:
                 base = Path(temporary)
                 explicit = base / "explicit.json"
@@ -1053,7 +1073,7 @@ class FunctionalIconTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "differs"):
                 icons.build_icons(self.document, output, check=True)
             self.assertEqual(tree_snapshot(output), before)
-        for unsupported in ("0.0.0", "0.14.0", None, [], {}):
+        for unsupported in ("0.0.0", "0.15.0", None, [], {}):
             with self.subTest(version=unsupported), self.assertRaisesRegex(ValueError, "Unsupported"):
                 icons.render_icons(self.document, version=unsupported)
 
@@ -1062,9 +1082,9 @@ class FunctionalIconTests(unittest.TestCase):
         manifest = json.loads(files["manifest.json"])
         catalog = manifest["catalog"]
         self.assertEqual([row["id"] for row in catalog], NAMES)
-        self.assertEqual([row["kind"] for row in catalog], ["function"] * 24 + ["app"] * 193)
+        self.assertEqual([row["kind"] for row in catalog], ["function"] * 24 + ["app"] * 201)
         apps = catalog[24:]
-        self.assertEqual(len({row["android_package"] for row in apps}), 193)
+        self.assertEqual(len({row["android_package"] for row in apps}), 201)
         self.assertEqual({row["id"]: (row["label"], row["android_package"]) for row in apps}, EXPECTED_APPS)
         for row in apps:
             self.assertEqual(row["store_url"], "https://play.google.com/store/apps/details?id=" + row["android_package"])
@@ -1448,7 +1468,7 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(len(previous_manifest["files"]), 414)
         self.assertEqual(sum(name.endswith(".svg") for name in previous), 414)
 
-        current = icons.render_icons(self.document)
+        current = icons.render_icons(self.document, version="0.13.0")
         manifest = json.loads(current["manifest.json"])
         self.assertEqual(manifest["version"], "0.13.0")
         self.assertEqual(len(manifest["catalog"]), 217)
@@ -1497,6 +1517,74 @@ class FunctionalIconTests(unittest.TestCase):
             with self.subTest(drawings=fault), patch.object(icons, "TENTH_APP_GLYPHS", bad):
                 refuse_without_rewriting_history()
 
+    def test_running_training_preserves_exact_weather_archive_catalog_and_all_434_svg_bytes(self):
+        from themeforge.build import _zip_bytes
+        from themeforge.legal import license_text
+        previous = icons.render_icons(self.document, version="0.13.0")
+        previous_manifest = json.loads(previous["manifest.json"])
+        self.assertEqual(hashlib.sha256(_zip_bytes({**previous, "LICENSE.txt": license_text().encode("utf-8")})).hexdigest(),
+                         "e6f7c532d0c625666a0f3403ee27842ac8612e6368d49f64fb3e84b667a42ca1")
+        self.assertEqual(hashlib.sha256(previous["manifest.json"]).hexdigest(),
+                         "cc573fb8f3996d05eff6d8e724c179f17001ffcfaff26bbfade76e52591ce723")
+        self.assertEqual(previous_manifest["functions"], TENTH_NAMES)
+        self.assertEqual(len(previous_manifest["files"]), 434)
+        current = icons.render_icons(self.document)
+        manifest = json.loads(current["manifest.json"])
+        self.assertEqual(manifest["version"], "0.14.0")
+        self.assertEqual(len(manifest["catalog"]), 225)
+        self.assertEqual(len(manifest["files"]), 450)
+        self.assertEqual(manifest["catalog"][:217], previous_manifest["catalog"])
+        self.assertEqual(manifest["functions"][:217], TENTH_NAMES)
+        self.assertEqual([(row["id"], row["label"], row["android_package"])
+                          for row in manifest["catalog"][-8:]], list(ELEVENTH_EXPECTED_APPS))
+        for name, payload in previous.items():
+            if name.endswith(".svg"):
+                self.assertEqual(current[name], payload, name)
+        rows = {row["id"]: row for row in manifest["catalog"][-8:]}
+        self.assertEqual({identifier: row["store_title"] for identifier, row in rows.items()}, {
+            "nike-run-club": "Nike Run Club - Running Coach",
+            "adidas-running": "adidas Running: Run tracker",
+            "asics-runkeeper": "ASICS Runkeeper: Fitness App",
+            "map-my-run": "Map My Run GPS Running Tracker",
+            "runna": "Runna: Running Plans & Coach",
+            "trainingpeaks": "TrainingPeaks: Plan Train Lift",
+            "zwift-companion": "Zwift Companion",
+            "relive": "Relive: Run, Ride, Hike & more",
+        })
+        self.assertTrue(all(row["category"] == "fitness" for row in rows.values()))
+        self.assertEqual(rows["asics-runkeeper"]["android_package"], "com.fitnesskeeper.runkeeper.pro")
+        self.assertEqual(rows["zwift-companion"]["store_url"],
+                         "https://play.google.com/store/apps/details?id=com.zwift.android.prod")
+        self.assertNotEqual(rows["runna"]["android_package"],
+                            next(row for row in manifest["catalog"] if row["id"] == "strava")["android_package"])
+
+    def test_running_training_faults_refuse_output_and_preserve_accepted_weather_tree(self):
+        previous = icons.render_icons(self.document, version="0.13.0")
+        def refuse_without_rewriting_history():
+            self.assertEqual(icons.render_icons(self.document, version="0.13.0"), previous)
+            with tempfile.TemporaryDirectory() as temporary:
+                output = Path(temporary) / "never-created"
+                with self.assertRaises(ValueError):
+                    icons.build_icons(self.document, output, version="0.14.0")
+                self.assertFalse(output.exists())
+                self.assertEqual(list(Path(temporary).iterdir()), [])
+        for change in ({"id": "phone"}, {"id": "adidas-running"},
+                       {"android_package": "com.strava"}, {"android_package": "com.runbuddy.prod"},
+                       {"label": " "}, {"store_title": ""},
+                       {"store_url": "https://play.google.com/store/apps/details?id=com.wrong.app"}):
+            bad = copy.deepcopy(icons.ELEVENTH_APP_CATALOG)
+            bad[0].update(change)
+            with self.subTest(change=change), patch.object(icons, "ELEVENTH_APP_CATALOG", bad):
+                refuse_without_rewriting_history()
+        for fault in ("missing", "accepted-ID", "extra"):
+            bad = dict(icons.ELEVENTH_APP_GLYPHS)
+            if fault == "missing":
+                bad.pop("nike-run-club")
+            else:
+                bad["phone" if fault == "accepted-ID" else "unassigned-new-app"] = bad["nike-run-club"]
+            with self.subTest(drawings=fault), patch.object(icons, "ELEVENTH_APP_GLYPHS", bad):
+                refuse_without_rewriting_history()
+
     def test_current_bubble_has_one_continuous_outline_and_calculator_has_open_equals(self):
         files = icons.render_icons(self.document)
         bubble = ET.fromstring(files["Obscur/messages.svg"]).find(NS + "g")
@@ -1520,7 +1608,7 @@ class FunctionalIconTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "icons"
             result = icons.build_icons(self.document, output)
-            self.assertEqual(len(result["files"]), 434)
+            self.assertEqual(len(result["files"]), 450)
             before = tree_snapshot(output)
             self.assertEqual(before, icons.render_icons(self.document))
             icons.build_icons(self.document, output, check=True)

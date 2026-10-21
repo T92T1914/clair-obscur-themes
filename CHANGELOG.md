@@ -1,5 +1,13 @@
 # Changes
 
+## Icon artwork 0.14.0
+
+- Add eight inspected running and endurance-training app assignments in both black and white appearances. The collection has 201 named apps and 24 general functions, giving 225 choices and 450 SVG masters.
+- Retain visible names and exact package identities, including the literal Runkeeper `.pro` package, Runna's separate Strava-published app and Zwift Companion rather than the main Zwift client.
+- Preserve all 434 accepted 0.13.0 SVGs, all thirteen earlier archives, and the accepted desktop, Terminal and Garmin inputs.
+- Include the additions in the existing finder, static gallery, individual PNG controls, portable kit and two-size exporter. A full current export contains 900 PNGs.
+- Keep listing identity, artwork and browser checks separate from phone assignment, device fonts, synchronization and native restoration.
+
 ## PNG download availability
 
 - Expose the shared PNG preparation state on every affected download button. Keep keyboard focus and restore all controls after success or failure.
