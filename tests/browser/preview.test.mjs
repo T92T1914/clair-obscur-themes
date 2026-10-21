@@ -2138,7 +2138,7 @@ test('no-script keyboard navigation acquires current and all fourteen preserved 
       `functions=${JSON.stringify(iconManifestFunctions)}`,
       'expected={f"{appearance}/{function}.svg" for appearance in ("Clair","Obscur") for function in functions}',
       'with zipfile.ZipFile(archive_path) as archive:',
-      ' assert len(archive.namelist())==452 and set(archive.namelist())==expected|{"manifest.json","LICENSE.txt"}',
+      ' assert len(archive.namelist())==468 and set(archive.namelist())==expected|{"manifest.json","LICENSE.txt"}',
       ' assert archive.testzip() is None',
       ' for name in expected|{"manifest.json","LICENSE.txt"}:',
       '  assert archive.read(name)==(site/"icons"/name).read_bytes()',
