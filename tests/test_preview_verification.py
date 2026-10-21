@@ -313,7 +313,7 @@ class ManifestAdmissionTests(KitFixture):
         (self.kit / 'site-manifest.json').write_bytes(b' ' * 65_537)
         self.assert_refused(message='File byte limit')
         self.document = manifest_document(self.files)
-        for number in range(533 - len(self.document['files'])):
+        for number in range(550 - len(self.document['files'])):
             self.document['files'][f'file{number}.txt'] = '0' * 64
         self.write_manifest()
         self.assert_refused(message='declared file count')
