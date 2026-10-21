@@ -1,5 +1,16 @@
 # Changes
 
+## Icon artwork 0.16.0
+
+October 21, 2026.
+
+- Add eight book and reading app assignments with inspected official listing identities. The collection has 217 named apps and 24 general functions, giving 241 choices and 482 SVG masters.
+- Use original reading shelves, library cards, book forms and story tools in pure black and white. Visible labels and literal package hints remain available for manual assignment.
+- Preserve all 466 accepted 0.15.0 SVGs, all fifteen earlier archives, and the accepted desktop, Terminal and Garmin inputs.
+- Include the additions in the existing finder, static gallery, individual PNG controls, portable kit and two-size exporter. A full current export contains 964 PNGs.
+- Admit the portable kit's 549 declared hashes and 569 entries within a 573-entry cap, retaining four-entry extra-file reporting headroom and the existing byte, path, link, depth and read guards.
+- Keep Samsung assignment, launcher masks, phone fonts and watch runtime acceptance separate from artwork delivery.
+
 ## Icon artwork 0.15.0
 
 - Add eight learning and study app assignments with inspected official listing identities. The collection has 209 named apps and 24 general functions, giving 233 choices and 466 SVG masters.

@@ -1839,3 +1839,42 @@ TWELFTH_APP_CATALOG = (
      "store_url": "https://play.google.com/store/apps/details?id=co.brainly",
      "selection_basis": "Inspected official listing, 100M+ cumulative download band and the missing homework-explanation assignment. Store wording identifies the app only."},
 )
+
+
+THIRTEENTH_CATALOG_DATE = "2026-10-21"
+THIRTEENTH_CATALOG_SCOPE = ("Book and reading assignments from inspected official Google Play identities and an existing catalog gap. "
+                          "No popularity ranking, reading recommendation, publisher endorsement or installation claim.")
+THIRTEENTH_APP_CATALOG = (
+    {"id": "google-play-books", "label": "Google Play Books", "store_title": "Google Play Books & Audiobooks",
+     "kind": "app", "category": "reading", "android_package": "com.google.android.apps.books",
+     "store_url": "https://play.google.com/store/apps/details?id=com.google.android.apps.books",
+     "selection_basis": "Inspected official listing, 1B+ cumulative download band and the missing Google book-library assignment, separate from Kindle."},
+    {"id": "libby", "label": "Libby", "store_title": "Libby: Read Library Books",
+     "kind": "app", "category": "reading", "android_package": "com.overdrive.mobile.android.libby",
+     "store_url": "https://play.google.com/store/apps/details?id=com.overdrive.mobile.android.libby",
+     "selection_basis": "Inspected official listing, 10M+ cumulative download band and the missing digital-library borrowing assignment."},
+    {"id": "kobo-books", "label": "Kobo Books", "store_title": "Kobo | eBooks & Audiobooks",
+     "kind": "app", "category": "reading", "android_package": "com.kobobooks.android",
+     "store_url": "https://play.google.com/store/apps/details?id=com.kobobooks.android",
+     "selection_basis": "Inspected official listing, 10M+ cumulative download band and the missing Kobo ebook-reader assignment."},
+    {"id": "goodreads", "label": "Goodreads", "store_title": "Goodreads: Book Tracker & More",
+     "kind": "app", "category": "reading", "android_package": "com.goodreads",
+     "store_url": "https://play.google.com/store/apps/details?id=com.goodreads",
+     "selection_basis": "Inspected official listing, 10M+ cumulative download band and the missing reading-tracker and book-rating assignment."},
+    {"id": "wattpad", "label": "Wattpad", "store_title": "Wattpad - Read & Write Stories",
+     "kind": "app", "category": "reading", "android_package": "wp.wattpad",
+     "store_url": "https://play.google.com/store/apps/details?id=wp.wattpad",
+     "selection_basis": "Inspected official listing, 100M+ cumulative download band and the missing original-story reading and writing assignment, retaining its literal wp.wattpad package."},
+    {"id": "webtoon", "label": "WEBTOON", "store_title": "WEBTOON: Manga, Comics, Manhwa",
+     "kind": "app", "category": "reading", "android_package": "com.naver.linewebtoon",
+     "store_url": "https://play.google.com/store/apps/details?id=com.naver.linewebtoon",
+     "selection_basis": "Inspected official listing, 100M+ cumulative download band and the missing vertical-comic reading assignment."},
+    {"id": "readera", "label": "ReadEra", "store_title": "ReadEra – book reader pdf epub",
+     "kind": "app", "category": "reading", "android_package": "org.readera",
+     "store_url": "https://play.google.com/store/apps/details?id=org.readera",
+     "selection_basis": "Inspected official listing, 50M+ cumulative download band and the missing local multi-format reading assignment, selecting the ordinary app rather than its premium package."},
+    {"id": "moon-reader", "label": "Moon+ Reader", "store_title": "Moon+ Reader",
+     "kind": "app", "category": "reading", "android_package": "com.flyersoft.moonreader",
+     "store_url": "https://play.google.com/store/apps/details?id=com.flyersoft.moonreader",
+     "selection_basis": "Inspected official listing, 10M+ cumulative download band and the missing customizable local-reader assignment, selecting the ordinary app rather than its Pro package."},
+)
