@@ -70,19 +70,29 @@ See [development and verification](docs/development.md) for reproducible command
 
 The shared palette also supports a [Garmin watch face candidate](docs/garmin-watchface.md)
 and [original phone icon artwork](docs/samsung-icons.md). The watch face targets
-`fenix9pro47mm`. Version 0.6.0 keeps the analog dial visible in always on mode,
-using thin hour markers and hands on black. The whole low-power dial shifts
-gently each minute. Digital keeps its separate time-only always on view, and a
-fully off display stays black. Active layouts, data fields and the digital
-Inter clock resource from 0.5.0 remain unchanged. Current rendering, persistence,
-runtime memory and all 24 annotated test groups still need simulator acceptance.
+`fenix9pro47mm`. Version 0.7.0 enlarges the shared Analog hour markers and
+hands in both active and always on drawing. The opposite cardinal batons span
+436 pixels on the 454-pixel display. Active drawing adds 48 minute strokes
+on a nominal 442-pixel outer track, leaving the hour positions to the batons.
+Text bands, data fields, native font scaling and the Digital layout stay in
+their existing positions. Analog always on keeps its thin gray outlines and
+shared gentle shift. Digital keeps its time-only always on view, and a fully
+off display stays black. The Inter clock resource from 0.5.0 is unchanged.
+Both 0.7.0 programs compiled without warnings for the exact target with
+SDK 9.2.0. All 26 annotated target groups compiled and zero executed.
+Local pretransfer qualification ran 301 Python tests with 7 skips and no
+failures, followed by build, rebuild and palette checks.
 The preserved 0.3.0 program passed all 16 of its
 simulator test groups for the exact target, with bounded appearance, switching and
 always on observations. The broader 0.2.0 history remains separately labeled.
-The 0.5.0 normal program has an exact transfer and independent watch-file readback,
-with physical recognition reported afterward. Current on-device version display,
-switching, always on behavior, persistence, USB restoration and power use remain
-open. The separate 0.6.0 candidate has not been installed on the watch.
+Both 0.5.0 and 0.6.0 normal programs have exact transfer and independent
+watch-file readbacks. The active and always on dials were reported too inset
+after the 0.6.0 update. The 0.7.0 normal program has now been copied to the
+watch and matched both the transfer readback and a separate fresh readback,
+with the opaque settings and device identity file unchanged. Those file checks
+do not establish watch-side recognition or fit after unplugging. Current
+version display, font and menu behavior, switching, always on appearance,
+persistence, memory, USB restoration and power use remain open.
 
 The phone gallery's 0.17.0 black and white collection pairs 257 named Android apps with 24 general symbols, giving 281 choices in both appearances. A local finder searches names, icon IDs and Android package IDs, with separate filters for named apps and general functions. Both appearances stay together, and the full catalog remains available without JavaScript. The latest 40 additions cover phone services, device tools, shopping, reference and companion apps. Exact official store links and package hints distinguish similar products, including separate Proton tools and Steam Chat. All 482 accepted 0.16.0 SVGs and sixteen earlier archives remain unchanged, and all seventeen revisions support the local PNG exporter. Coverage is a growing selection, not a complete store catalog or an ordered popularity chart.
 

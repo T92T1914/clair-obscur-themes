@@ -1,4 +1,5 @@
 using Toybox.Application;
+using Toybox.Graphics;
 using Toybox.Lang;
 using Toybox.Math;
 using Toybox.Test;
@@ -87,9 +88,9 @@ function analogAnglesAndCardinals(logger as Test.Logger) as Lang.Boolean {
     }
     var hour = FaceModel.handPoints(3, 0, true);
     var minute = FaceModel.handPoints(3, 15, false);
-    Test.assertEqual(hour[2][0], 341);
+    Test.assertEqual(hour[2][0], 357);
     Test.assertEqual(hour[2][1], 227);
-    Test.assertEqual(minute[2][0], 395);
+    Test.assertEqual(minute[2][0], 418);
     Test.assertEqual(minute[2][1], 227);
     // The broad short hand and narrow long hand have separate real vertices.
     Test.assertEqual(hour[3][1] - hour[1][1], 18);
@@ -101,10 +102,10 @@ function analogAnglesAndCardinals(logger as Test.Logger) as Lang.Boolean {
 function analogMinuteTrackAndOrientation(logger as Test.Logger) as Lang.Boolean {
     var top = FaceModel.minuteTick(0);
     Test.assertEqual(top[0][0], 227);
-    Test.assertEqual(top[0][1], 19);
-    Test.assertEqual(top[1][1], 25);
+    Test.assertEqual(top[0][1], 6);
+    Test.assertEqual(top[1][1], 12);
     var right = FaceModel.minuteTick(15);
-    Test.assertEqual(right[0][0], 435);
+    Test.assertEqual(right[0][0], 448);
     Test.assertEqual(right[0][1], 227);
     Test.assertEqual(FaceModel.minuteTick(-1).size(), 0);
     Test.assertEqual(FaceModel.minuteTick(60).size(), 0);
@@ -116,13 +117,13 @@ function analogMinuteTrackAndOrientation(logger as Test.Logger) as Lang.Boolean 
     Test.assertEqual(first[2][0], 223);
     Test.assertEqual(second[0][0], 231);
     Test.assertEqual(second[2][0], 237);
-    Test.assertEqual(first[1][1], 31);
+    Test.assertEqual(first[1][1], 9);
     for (var tick = 0; tick < 60; tick += 1) {
         var ends = FaceModel.minuteTick(tick);
         Test.assertEqual(ends.size(), 2);
         for (var p = 0; p < ends.size(); p += 1) {
-            Test.assert(ends[p][0] >= 19 && ends[p][0] <= 435);
-            Test.assert(ends[p][1] >= 19 && ends[p][1] <= 435);
+            Test.assert(ends[p][0] >= 6 && ends[p][0] <= 448);
+            Test.assert(ends[p][1] >= 6 && ends[p][1] <= 448);
         }
     }
     return true;
@@ -138,13 +139,13 @@ function analogAllMinuteHandBounds(logger as Test.Logger) as Lang.Boolean {
             for (var which = 0; which < 2; which += 1) {
                 var points = FaceModel.handPoints(hour, minute, which == 0);
                 Test.assertEqual(points.size(), 5);
-                var limit = which == 0 ? 115 : 169;
+                var limit = which == 0 ? 131 : 192;
                 for (var p = 0; p < points.size(); p += 1) {
                     var x = points[p][0] - 227;
                     var y = points[p][1] - 227;
                     Test.assert(x * x + y * y <= limit * limit);
-                    Test.assert(points[p][0] >= 58 && points[p][0] <= 396);
-                    Test.assert(points[p][1] >= 58 && points[p][1] <= 396);
+                    Test.assert(points[p][0] >= 35 && points[p][0] <= 419);
+                    Test.assert(points[p][1] >= 35 && points[p][1] <= 419);
                 }
             }
         }
@@ -246,9 +247,9 @@ function aodAnalogMarkerIdentityAndBounds(logger as Test.Logger) as Lang.Boolean
     var first = FaceModel.aodAnalogMarker(0, 0, 0);
     var second = FaceModel.aodAnalogMarker(0, 1, 0);
     Test.assertEqual(first[0][0], 215);
-    Test.assertEqual(first[0][1], 53);
+    Test.assertEqual(first[0][1], 31);
     Test.assertEqual(first[1][0], 215);
-    Test.assertEqual(first[1][1], 29);
+    Test.assertEqual(first[1][1], 7);
     Test.assertEqual(first[2][0], 221);
     Test.assertEqual(second[0][0], 229);
     Test.assertEqual(second[2][0], 235);
@@ -265,11 +266,11 @@ function aodAnalogMarkerIdentityAndBounds(logger as Test.Logger) as Lang.Boolean
                 for (var p = 0; p < points.size(); p += 1) {
                     Test.assertEqual(points[p][0], active[p][0] + expected[0]);
                     Test.assertEqual(points[p][1], active[p][1] + expected[1]);
-                    Test.assert(points[p][0] >= 29 && points[p][0] <= 425);
-                    Test.assert(points[p][1] >= 29 && points[p][1] <= 425);
+                    Test.assert(points[p][0] >= 7 && points[p][0] <= 447);
+                    Test.assert(points[p][1] >= 7 && points[p][1] <= 447);
                     var x = points[p][0] - 227;
                     var y = points[p][1] - 227;
-                    Test.assert(x * x + y * y < 200 * 200);
+                    Test.assert(x * x + y * y < 222 * 222);
                 }
             }
         }
@@ -292,11 +293,11 @@ function aodAnalogAllMinuteHandIdentityAndBounds(logger as Test.Logger) as Lang.
                 for (var p = 0; p < points.size(); p += 1) {
                     Test.assertEqual(points[p][0], active[p][0] + expected[0]);
                     Test.assertEqual(points[p][1], active[p][1] + expected[1]);
-                    Test.assert(points[p][0] >= 56 && points[p][0] <= 398);
-                    Test.assert(points[p][1] >= 56 && points[p][1] <= 398);
+                    Test.assert(points[p][0] >= 34 && points[p][0] <= 420);
+                    Test.assert(points[p][1] >= 34 && points[p][1] <= 420);
                     var x = points[p][0] - 227;
                     var y = points[p][1] - 227;
-                    Test.assert(x * x + y * y <= 172 * 172);
+                    Test.assert(x * x + y * y <= 195 * 195);
                 }
             }
         }
@@ -309,9 +310,93 @@ function aodAnalogAllMinuteHandIdentityAndBounds(logger as Test.Logger) as Lang.
     }
     var hourTip = FaceModel.aodAnalogHandPoints(3, 0, true);
     var minuteTip = FaceModel.aodAnalogHandPoints(3, 15, false);
-    Test.assertEqual(hourTip[2][0], 339);
+    Test.assertEqual(hourTip[2][0], 355);
     Test.assertEqual(hourTip[2][1], 225);
-    Test.assertEqual(minuteTip[2][0], 393);
+    Test.assertEqual(minuteTip[2][0], 416);
     Test.assertEqual(minuteTip[2][1], 229);
+    return true;
+}
+
+(:test)
+function sharedDialLiteralExtentsAndMinuteHierarchy(logger as Test.Logger) as Lang.Boolean {
+    Test.assertEqual(FaceModel.TICK_OUTER, 221);
+    Test.assertEqual(FaceModel.TICK_INNER, 215);
+    Test.assertEqual(FaceModel.MARKER_OUTER, 218);
+    Test.assertEqual(FaceModel.HOUR_HAND_LENGTH, 130);
+    Test.assertEqual(FaceModel.MINUTE_HAND_LENGTH, 191);
+    var top = FaceModel.hourMarker(0, 0);
+    var right = FaceModel.hourMarker(3, 0);
+    var bottom = FaceModel.hourMarker(6, 0);
+    var left = FaceModel.hourMarker(9, 0);
+    Test.assertEqual(top[0][1], 33);
+    Test.assertEqual(top[1][1], 9);
+    Test.assertEqual(right[0][0], 421);
+    Test.assertEqual(right[1][0], 445);
+    Test.assertEqual(bottom[1][1], 445);
+    Test.assertEqual(left[1][0], 9);
+    Test.assertEqual(right[1][0] - left[1][0], 436);
+    Test.assertEqual(2 * FaceModel.TICK_OUTER, 442);
+    Test.assertEqual(FaceModel.hourMarker(1, 0).size(), 4);
+    var strokes = 0;
+    for (var tick = 0; tick < 60; tick += 1) {
+        if (tick % 5 == 0) { continue; }
+        strokes += 1;
+        Test.assertEqual(FaceModel.minuteTick(tick).size(), 2);
+    }
+    Test.assertEqual(strokes, 48);
+    // Active and always-on derive the same full-size baton, before translation.
+    var lowPower = FaceModel.aodAnalogMarker(0, 0, 0);
+    Test.assertEqual(lowPower[1][1], 7);
+    Test.assertEqual(lowPower[1][1] + 2, top[1][1]);
+    return true;
+}
+
+function assertSharedDialRoundGuard(points as Lang.Array<Graphics.Point2D>,
+        shiftX as Lang.Number, shiftY as Lang.Number, guard as Lang.Number) as Void {
+    Test.assert(points.size() >= 2 && points.size() <= 5);
+    var guards = [-guard, guard];
+    for (var point = 0; point < points.size(); point += 1) {
+        for (var gx = 0; gx < guards.size(); gx += 1) {
+            for (var gy = 0; gy < guards.size(); gy += 1) {
+                var x = 2 * (points[point][0] + shiftX + guards[gx]) + 1 - 454;
+                var y = 2 * (points[point][1] + shiftY + guards[gy]) + 1 - 454;
+                Test.assert(x * x + y * y < 454 * 454);
+            }
+        }
+    }
+}
+
+(:test)
+function sharedDialAllMinutesAndEveryShiftStayRound(logger as Test.Logger) as Lang.Boolean {
+    var phases = [[-2, -2], [2, -2], [2, 2], [-2, 2]];
+    for (var tick = 0; tick < 60; tick += 1) {
+        if (tick % 5 == 0) { continue; }
+        assertSharedDialRoundGuard(FaceModel.minuteTick(tick), 0, 0, 3);
+    }
+    for (var index = 0; index < 12; index += 1) {
+        for (var part = 0; part < (index == 0 ? 2 : 1); part += 1) {
+            assertSharedDialRoundGuard(FaceModel.hourMarker(index, part), 0, 0, 3);
+            for (var phase = 0; phase < phases.size(); phase += 1) {
+                assertSharedDialRoundGuard(FaceModel.aodAnalogMarker(index, part, phase), 0, 0, 3);
+            }
+        }
+    }
+    for (var hour = 0; hour < 12; hour += 1) {
+        for (var minute = 0; minute < 60; minute += 1) {
+            for (var which = 0; which < 2; which += 1) {
+                var active = FaceModel.handPoints(hour, minute, which == 0);
+                assertSharedDialRoundGuard(active, 0, 0, 3);
+                assertSharedDialRoundGuard(FaceModel.aodAnalogHandPoints(hour, minute, which == 0), 0, 0, 3);
+                // Independently apply every supported shift to all 720 shapes.
+                for (var phase = 0; phase < phases.size(); phase += 1) {
+                    assertSharedDialRoundGuard(active, phases[phase][0], phases[phase][1], 3);
+                }
+            }
+        }
+    }
+    var center = [[227, 227], [227, 227]] as Lang.Array<Graphics.Point2D>;
+    for (var phase = 0; phase < phases.size(); phase += 1) {
+        assertSharedDialRoundGuard(center, phases[phase][0], phases[phase][1], 6);
+    }
     return true;
 }

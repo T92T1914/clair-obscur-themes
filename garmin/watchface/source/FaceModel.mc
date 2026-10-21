@@ -24,11 +24,11 @@ module FaceModel {
     const LAYOUT_DIGITAL = 1;
     const INTER_CLOCK_CHARACTERS = "0123456789:-";
     const DIAL_CENTER = 227;
-    const TICK_OUTER = 208;
-    const TICK_INNER = 202;
-    const MARKER_OUTER = 196;
-    const HOUR_HAND_LENGTH = 114;
-    const MINUTE_HAND_LENGTH = 168;
+    const TICK_OUTER = 221;
+    const TICK_INNER = 215;
+    const MARKER_OUTER = 218;
+    const HOUR_HAND_LENGTH = 130;
+    const MINUTE_HAND_LENGTH = 191;
     const ANALOG_DATE_TOP = 94;
     const ANALOG_DATE_BOTTOM = 124;
     const ANALOG_DATE_WIDTH = 230;
@@ -102,7 +102,7 @@ module FaceModel {
         var turn = (index / 12.0).toFloat();
         var offset = index == 0 ? (part == 0 ? -7 : 7) : 0;
         var half = index != 0 && index % 3 == 0 ? 4 : 3;
-        var inner = index % 3 == 0 ? 172 : 178;
+        var inner = index % 3 == 0 ? 194 : 200;
         return [radialPoint(turn, inner, offset - half),
             radialPoint(turn, MARKER_OUTER, offset - half),
             radialPoint(turn, MARKER_OUTER, offset + half),

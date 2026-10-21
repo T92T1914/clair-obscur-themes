@@ -152,9 +152,9 @@ class GarminPaletteTests(unittest.TestCase):
     def test_current_palette_has_exact_black_white_and_neutral_roles(self):
         current = json.loads((ROOT / "tokens-monochrome.json").read_text(encoding="utf-8"))
         source = render_palette(current)
-        self.assertEqual(VERSION, "0.6.0")
+        self.assertEqual(VERSION, "0.7.0")
         self.assertEqual(colors(source), EXPECTED_MONOCHROME_COLORS)
-        self.assertIn('const WATCHFACE_VERSION = "0.6.0";', source)
+        self.assertIn('const WATCHFACE_VERSION = "0.7.0";', source)
         self.assertIn('const TOKEN_VERSION = "1.0.0";', source)
         for color in colors(source).values():
             self.assertEqual((color >> 16) & 255, (color >> 8) & 255)
@@ -189,7 +189,7 @@ class GarminPaletteTests(unittest.TestCase):
                          ["fenix9pro47mm"])
         properties = ET.parse(face / "resources/settings/properties.xml").getroot()
         self.assertEqual([(node.get("id"), node.get("type"), node.text) for node in properties],
-                         [("appVersion", "string", "0.6.0"), ("appearance", "number", "1"),
+                         [("appVersion", "string", "0.7.0"), ("appearance", "number", "1"),
                           ("layout", "number", "0"),
                           ("leftData", "number", "0"), ("rightData", "number", "1")])
         view = (face / "source/ClairObscurView.mc").read_text(encoding="utf-8")
@@ -416,12 +416,13 @@ class GarminAnalogGeometryTests(unittest.TestCase):
         self.assertEqual(c["DIAL_CENTER"], 227)
         self.assertLess(c["HOUR_HAND_LENGTH"] * 1.3, c["MINUTE_HAND_LENGTH"])
         self.assertLess(c["MINUTE_HAND_LENGTH"], c["MARKER_OUTER"])
-        self.assertLess(c["MARKER_OUTER"], c["TICK_INNER"])
+        self.assertLess(c["TICK_INNER"], c["MARKER_OUTER"])
+        self.assertLess(c["MARKER_OUTER"], c["TICK_OUTER"])
         self.assertLess(c["TICK_INNER"], c["TICK_OUTER"])
         # Include half the one-pixel track stroke and worst coordinate rounding.
         self.assertLess(c["TICK_OUTER"] + 0.5 + math.sqrt(0.5), 454 / 2)
         # Double-twelve offset and baton half-width total ten pixels.
-        self.assertLess(math.hypot(c["MARKER_OUTER"], 10), c["TICK_INNER"])
+        self.assertLess(math.hypot(c["MARKER_OUTER"], 10), c["TICK_OUTER"])
 
     def test_all_three_analog_text_regions_stay_inside_the_circle(self):
         c = self.constants
@@ -555,7 +556,7 @@ class GarminAnalogAodGeometryTests(unittest.TestCase):
             for part in range(2 if index == 0 else 1):
                 offset = (-7 if part == 0 else 7) if index == 0 else 0
                 half = 4 if index != 0 and index % 3 == 0 else 3
-                inner = 172 if index % 3 == 0 else 178
+                inner = 194 if index % 3 == 0 else 200
                 paths.append([cls.radial(index / 12, radius, side) for radius, side in
                               ((inner, offset - half), (cls.constants["MARKER_OUTER"], offset - half),
                                (cls.constants["MARKER_OUTER"], offset + half), (inner, offset + half))])
@@ -610,15 +611,17 @@ class GarminAnalogAodGeometryTests(unittest.TestCase):
         self.assertNotRegex(outline + analog, r"fillPolygon|fillCircle|drawText|drawHand\(|drawSlot\(|"
                             r"FaceData|System\.|Time\.|Timer|requestUpdate|refreshFonts|interClock")
 
-    def test_geometry_is_bound_to_accepted_active_shapes_and_shifted_outline_renderer(self):
+    def test_geometry_is_bound_to_current_shared_shapes_and_shifted_outline_renderer(self):
         import hashlib
-        # Independently captured from accepted main 87148's unchanged active
-        # functions. The Python polar model cannot silently validate other code.
+        # The shared marker inner radii changed in 0.7. All other function
+        # bodies retain their independently captured accepted identities. The
+        # current constants and literal marker vertices are checked separately.
         expected = {
             "radialPoint": "2c7a11d9fa53ab1d968ae51190a830961e9c91c1de28e3df0eee5c4317f9cb37",
             "hourTurns": "cb83ffef970693a7f8919e0174b76654b86f6b21a00ad0421518e00d391cc4e8",
             "minuteTurns": "09807ffd398176aed87deb7fc70c5f56ec875e6173aaa833631df546dee48f86",
-            "hourMarker": "a3442689c1c0c9d3d20d7507f59a21230df5befbb16d704ba92761746d97ce38",
+            "minuteTick": "0a6dfe2431754d85e3fb6eb2b41539a503b4d339dc9a3064c4e36ad99716d063",
+            "hourMarker": "5f5820e2ba877665020248a65ae119abd8b0fb7aff9b9032c64d2a23335924d4",
             "handPoints": "14ffd7a770ea13e1832b2bfc6c67954674311b9e50a9acfb9857edae64a7e72a",
         }
         for name, digest in expected.items():
@@ -659,10 +662,10 @@ class GarminAnalogAodGeometryTests(unittest.TestCase):
                     for path in paths:
                         for x, y in path:
                             for dx, dy in ((-3, -3), (-3, 3), (3, -3), (3, 3)):
-                                self.assertLess((x + dx - center) ** 2 + (y + dy - center) ** 2, radius ** 2)
+                                self.assertLess((x + dx + 0.5 - center) ** 2 + (y + dy + 0.5 - center) ** 2, radius ** 2)
                     # Radius-three center outline plus a larger AA guard.
                     for dx, dy in ((-6, -6), (-6, 6), (6, -6), (6, 6)):
-                        self.assertLess((shift[0] + dx) ** 2 + (shift[1] + dy) ** 2, radius ** 2)
+                        self.assertLess((shift[0] + dx + 0.5) ** 2 + (shift[1] + dy + 0.5) ** 2, radius ** 2)
                     scenarios += 1
         self.assertEqual(scenarios, 720 * 4)
 
@@ -675,6 +678,7 @@ class GarminAnalogAodGeometryTests(unittest.TestCase):
                     self.assertEqual(sum(len(path) for path in paths), 62)
                     for width in maxima:
                         maxima[width] = max(maxima[width], self.guarded_l1_bound(paths, width))
+        self.assertEqual(maxima, {3: 6255, 5: 11079})
         self.assertGreater(maxima[5], maxima[3])
         for bound in maxima.values():
             self.assertGreater(bound, 0)
@@ -693,6 +697,131 @@ class GarminAnalogAodGeometryTests(unittest.TestCase):
         self.assertNotEqual(unshifted, self.model)
         with self.assertRaises(AssertionError):
             self.assert_shifted_helper(unshifted, "aodAnalogMarker", "hourMarker")
+
+
+class GarminSharedDialExpansionTests(unittest.TestCase):
+    """Shared active/AOD source geometry, without Garmin rasterizer execution."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.base = GarminAnalogAodGeometryTests
+        cls.base.setUpClass()
+        cls.model, cls.view = cls.base.model, cls.base.view
+        cls.constants = cls.base.constants
+
+    function = staticmethod(GarminAnalogAodGeometryTests.function)
+
+    @staticmethod
+    def guarded_radius_squared(points):
+        return max((x + dx + 0.5 - 227) ** 2 + (y + dy + 0.5 - 227) ** 2
+                   for x, y in points for dx in (-3, 3) for dy in (-3, 3))
+
+    def assert_shared_geometry(self, model, view):
+        constants = {name: int(value) for name, value in re.findall(
+            r"^    const ([A-Z_]+) = (\d+);$", model, re.MULTILINE)}
+        expected = {"DISPLAY_SIZE": 454, "DIAL_CENTER": 227, "TICK_OUTER": 221,
+                    "TICK_INNER": 215, "MARKER_OUTER": 218,
+                    "HOUR_HAND_LENGTH": 130, "MINUTE_HAND_LENGTH": 191}
+        self.assertEqual({key: constants[key] for key in expected}, expected)
+        marker = self.base.function(model, "hourMarker")
+        self.assertIn("var inner = index % 3 == 0 ? 194 : 200;", marker)
+        self.assertNotIn("ACTIVE_DIAL_SCALE", model)
+        self.assertNotIn("activeDial", model + view)
+        analog = self.base.function(view, "drawAnalog")
+        self.assertRegex(analog, r"for \(var tick = 0; tick < 60; tick \+= 1\) \{\s*"
+                         r"if \(tick % 5 == 0\) \{ continue; \}\s*"
+                         r"var ends = FaceModel\.minuteTick\(tick\);")
+        for part in (0, 1):
+            self.assertIn(f"dc.fillPolygon(FaceModel.hourMarker(index, {part}));", analog)
+        for which in ("true", "false"):
+            self.assertIn(f"drawHand(dc, FaceModel.handPoints(hour, minute, {which}), text, canvas);", analog)
+        self.base.assert_shifted_helper(self, model, "aodAnalogMarker", "hourMarker")
+        self.base.assert_shifted_helper(self, model, "aodAnalogHandPoints", "handPoints")
+
+    def test_shared_geometry_is_literal_and_active_omits_hour_index_ticks(self):
+        self.assert_shared_geometry(self.model, self.view)
+        self.assertEqual(len([tick for tick in range(60) if tick % 5 != 0]), 48)
+
+    def test_aod_dispatch_font_cache_data_and_hand_stroke_are_preserved(self):
+        import hashlib
+        # Captured from accepted 0.6 main 81a18. Shared vertices change through
+        # constants and the separately bound marker body, not AOD control flow.
+        model = {
+            "aodAnalogOffset": "85d563a9117f7f7750e966866ab67bc01746f43b67efc1acb50da6b8cea0bd5f",
+            "aodAnalogMarker": "bfd604a66fbf9ca58b611ba0166db025056d0752b2d3968de1e3ebf9a16b8d3f",
+            "aodAnalogHandPoints": "bc4012354b3b22ae6b5c1039e2eef73494a671185a53071b18b6afdc08c940c8",
+        }
+        view = {
+            "drawAnalogAlwaysOn": "31e485593c9d677908c60410ef04df23b4b4c8c68da3f55b5468fcb39db2dbec",
+            "drawAlwaysOnOutline": "ec29869f5c764e72dac8fc1249c5bb2e9daf4eeb9e57a9c6f3b809bbaf7dc0cd",
+            "drawAlwaysOn": "c6a3beb2f450153cf7ef1fb116c66d5dfd6f55ab8b66809eaf1ffc82ce0adbbd",
+            "onUpdate": "b8c08f802824ed6300d2a8641f6d8e3ce61c152d93a7fb380750abcddecfd1b1",
+            "refreshFonts": "eeab42608172383346c898c8fa4444bb11331517947381f2418573b0f71d278b",
+            "drawHand": "c50dfbf87874550b97fa7712d0466407a0582ce06085d58c19b4356ba3fe563f",
+        }
+        for source, functions in ((self.model, model), (self.view, view)):
+            for name, digest in functions.items():
+                self.assertEqual(hashlib.sha256(self.base.function(source, name).encode()).hexdigest(), digest, name)
+
+    def test_visible_baton_extents_are_distinct_from_outer_minute_track(self):
+        paths = self.base.outlines(3, 0, (0, 0))
+        self.assertEqual(paths[0], [(217, 33), (217, 9), (223, 9), (223, 33)])
+        self.assertEqual(paths[1], [(231, 33), (231, 9), (237, 9), (237, 33)])
+        self.assertEqual(paths[4], [(421, 223), (445, 223), (445, 231), (421, 231)])
+        self.assertEqual(paths[7], [(231, 421), (231, 445), (223, 445), (223, 421)])
+        self.assertEqual(paths[10], [(33, 231), (9, 231), (9, 223), (33, 223)])
+        self.assertEqual((445 - 9, 2 * self.constants["TICK_OUTER"]), (436, 442))
+        self.assertEqual((paths[13][2], self.base.outlines(3, 15, (0, 0))[14][2]),
+                         ((357, 227), (418, 227)))
+        for shift in self.base.offsets:
+            shifted = self.base.outlines(3, 0, shift)
+            self.assertEqual(shifted[0][1], (217 + shift[0], 9 + shift[1]))
+            self.assertEqual(shifted[4][1][0] - shifted[10][1][0], 436)
+        # The twelve o'clock track line is omitted by the actual renderer.
+        # 442 is the nominal track-circle diameter, not a baton width or a
+        # claim that a continuous 442-pixel circle is drawn on the device.
+
+    def test_all_active_vertices_and_three_pixel_guards_fit_the_round_display(self):
+        maxima = {"ticks": 0, "markers": 0, "hands": 0}
+        ticks = [tick for tick in range(60) if tick % 5 != 0]
+        for tick in ticks:
+            ends = [self.base.radial(tick / 60, self.constants[key], 0)
+                    for key in ("TICK_OUTER", "TICK_INNER")]
+            maxima["ticks"] = max(maxima["ticks"], self.guarded_radius_squared(ends))
+        clock_positions = 0
+        for hour in range(12):
+            for minute in range(60):
+                paths = self.base.outlines(hour, minute, (0, 0))
+                self.assertEqual([len(path) for path in paths], [4] * 13 + [5, 5])
+                for index, path in enumerate(paths):
+                    name = "markers" if index < 13 else "hands"
+                    maxima[name] = max(maxima[name], self.guarded_radius_squared(path))
+                clock_positions += 1
+        self.assertEqual(clock_positions, 720)
+        for radius_squared in maxima.values():
+            self.assertLess(radius_squared, 227 ** 2)
+        # A plausible but too-large 223-radius track exceeds the unchanged
+        # three-pixel guard, even with the twelve hour-index strokes omitted.
+        oversized = max(self.guarded_radius_squared(
+            [self.base.radial(tick / 60, radius, 0) for radius in (223, 217)]) for tick in ticks)
+        self.assertGreaterEqual(oversized, 227 ** 2)
+        # The disk and square guard are convex. Guarded vertices bound each
+        # straight edge, not Garmin AA, native clipping or physical readability.
+
+    def test_controls_reject_old_inset_geometry_and_active_only_callers(self):
+        old_inset = self.model.replace("const MARKER_OUTER = 218;", "const MARKER_OUTER = 196;", 1)
+        self.assertNotEqual(old_inset, self.model)
+        with self.assertRaises(AssertionError):
+            self.assert_shared_geometry(old_inset, self.view)
+        active_only = self.view.replace("var ends = FaceModel.minuteTick(tick);",
+                                        "var ends = FaceModel.activeDialPoints(FaceModel.minuteTick(tick));", 1)
+        self.assertNotEqual(active_only, self.view)
+        with self.assertRaises(AssertionError):
+            self.assert_shared_geometry(self.model, active_only)
+        hour_ticks = self.view.replace("if (tick % 5 == 0) { continue; }", "", 1)
+        self.assertNotEqual(hour_ticks, self.view)
+        with self.assertRaises(AssertionError):
+            self.assert_shared_geometry(self.model, hour_ticks)
 
 
 class GarminSettingsResourcesTests(unittest.TestCase):

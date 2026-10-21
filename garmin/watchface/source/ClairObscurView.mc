@@ -238,6 +238,7 @@ class ClairObscurView extends WatchUi.WatchFace {
         dc.setColor(border, canvas);
         dc.setPenWidth(1);
         for (var tick = 0; tick < 60; tick += 1) {
+            if (tick % 5 == 0) { continue; }
             var ends = FaceModel.minuteTick(tick);
             dc.drawLine(ends[0][0], ends[0][1], ends[1][0], ends[1][1]);
         }

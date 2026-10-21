@@ -12,6 +12,17 @@ October 21, 2026.
 - Admit the portable kit's 630 declared hashes and 650 entries within a 654-entry cap, retaining four-entry extra-file reporting headroom and the existing byte, path, link, depth and read guards.
 - Keep Samsung assignment, launcher masks, phone fonts, keyboard state and watch runtime acceptance separate from artwork delivery.
 
+## Garmin watch face 0.7.0
+
+October 21, 2026.
+
+- Enlarge the shared Analog hour markers and hands in active and always-on drawing. Opposite cardinal outer baton vertices now span 436 pixels on the 454-pixel display.
+- Draw 48 active minute strokes on a nominal 442-pixel outer track, omitting the twelve hour-index strokes so the batons remain the major graduations. Keep the text bands, native font scaling, data fields, settings and Digital layout unchanged.
+- Preserve the one-pixel gray Analog always-on outlines, four shared shifts, minute update cadence and the original Digital always-on and Off paths. Bind the round-edge and conservative pixel-budget checks to the larger shared source geometry, all 720 hand positions and four shift phases. Include controls that reject the old inset geometry and an active-only caller.
+- Add two annotated target groups for literal marker extents, minute hierarchy and guarded edges. Both programs compiled without warnings for the exact target with SDK 9.2.0. All 26 groups compiled and zero executed. Local pretransfer qualification ran 301 Python tests with 7 skips and no failures, plus build, rebuild, palette and diff checks.
+- Copy the qualified normal 0.7.0 program to the watch and verify exact bytes in both the transfer readback and a separate fresh readback. Preserve the 137-byte opaque settings file, device identity XML and last-transferred 0.6.0 fallback. Watch-side recognition, active and always-on fit after unplugging, current fonts and menus, persistence, memory, power and USB restoration remain open.
+- Preserve all earlier watch programs, desktop packages, font resources and phone icon artwork.
+
 ## Garmin watch face 0.6.0
 
 October 21, 2026.
