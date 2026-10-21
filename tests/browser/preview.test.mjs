@@ -364,11 +364,25 @@ const weatherIconApps = [
   ['rainviewer', 'RainViewer', 'com.lucky_apps.RainViewer'],
 ];
 namedIconApps.push(...weatherIconApps);
+const weatherNamedIconApps = [...namedIconApps];
+const runningTrainingIconApps = [
+  ['nike-run-club', 'Nike Run Club', 'com.nike.plusgps'],
+  ['adidas-running', 'adidas Running', 'com.runtastic.android'],
+  ['asics-runkeeper', 'ASICS Runkeeper', 'com.fitnesskeeper.runkeeper.pro'],
+  ['map-my-run', 'Map My Run', 'com.mapmyrun.android2'],
+  ['runna', 'Runna', 'com.runbuddy.prod'],
+  ['trainingpeaks', 'TrainingPeaks', 'com.peaksware.trainingpeaks'],
+  ['zwift-companion', 'Zwift Companion', 'com.zwift.android.prod'],
+  ['relive', 'Relive', 'cc.relive.reliveapp'],
+];
+namedIconApps.push(...runningTrainingIconApps);
 const iconFunctions = [...namedIconApps.map(row => row[0]), ...generalIconFunctions];
 const iconManifestFunctions = [...generalIconFunctions, ...namedIconApps.map(row => row[0])];
 const iconLabels = new Map([...generalIconFunctions.map(name => [name, name.replaceAll('-', ' ').replace(/\b[a-z]/g, letter => letter.toUpperCase())]),
   ...namedIconApps.map(([id, label]) => [id, label])]);
-const iconArchive = 'icons/Clair-Obscur-SVG-Icons-0.13.0.zip';
+const iconArchive = 'icons/Clair-Obscur-SVG-Icons-0.14.0.zip';
+const weatherIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.13.0.zip';
+const weatherIconDigest = 'e6f7c532d0c625666a0f3403ee27842ac8612e6368d49f64fb3e84b667a42ca1';
 const financeIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.12.0.zip';
 const financeIconDigest = 'db8ed7e2c62d36786b2c2d510fdf68f83649fda512f6bb018f5043491cb8f0cf';
 const travelIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.11.0.zip';
@@ -393,7 +407,7 @@ const previousIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.2.0.zip';
 const previousIconDigest = '6ae67a5aab7f4e0a50537bb6dcf3b383c5fc6e9e001d68db12a7413aaa376312';
 const legacyIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.1.0.zip';
 const legacyIconDigest = '040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34';
-const iconChecksums = digest => `${digest}  ${path.basename(iconArchive)}\n${financeIconDigest}  ${path.basename(financeIconArchive)}\n${travelIconDigest}  ${path.basename(travelIconArchive)}\n${foodOrderIconDigest}  ${path.basename(foodOrderIconArchive)}\n${everydayIconDigest}  ${path.basename(everydayIconArchive)}\n${broadIconDigest}  ${path.basename(broadIconArchive)}\n${companionIconDigest}  ${path.basename(companionIconArchive)}\n${monochromeIconDigest}  ${path.basename(monochromeIconArchive)}\n${thirdAppIconDigest}  ${path.basename(thirdAppIconArchive)}\n${secondAppIconDigest}  ${path.basename(secondAppIconArchive)}\n${firstAppIconDigest}  ${path.basename(firstAppIconArchive)}\n${previousIconDigest}  ${path.basename(previousIconArchive)}\n${legacyIconDigest}  ${path.basename(legacyIconArchive)}\n`;
+const iconChecksums = digest => `${digest}  ${path.basename(iconArchive)}\n${weatherIconDigest}  ${path.basename(weatherIconArchive)}\n${financeIconDigest}  ${path.basename(financeIconArchive)}\n${travelIconDigest}  ${path.basename(travelIconArchive)}\n${foodOrderIconDigest}  ${path.basename(foodOrderIconArchive)}\n${everydayIconDigest}  ${path.basename(everydayIconArchive)}\n${broadIconDigest}  ${path.basename(broadIconArchive)}\n${companionIconDigest}  ${path.basename(companionIconArchive)}\n${monochromeIconDigest}  ${path.basename(monochromeIconArchive)}\n${thirdAppIconDigest}  ${path.basename(thirdAppIconArchive)}\n${secondAppIconDigest}  ${path.basename(secondAppIconArchive)}\n${firstAppIconDigest}  ${path.basename(firstAppIconArchive)}\n${previousIconDigest}  ${path.basename(previousIconArchive)}\n${legacyIconDigest}  ${path.basename(legacyIconArchive)}\n`;
 const iconPaths = iconFunctions.flatMap(functionName => ['Clair', 'Obscur'].map(appearance => `icons/${appearance}/${functionName}.svg`));
 const terminalFragment = 'Clair-Obscur-Windows-Terminal-0.1.0.json';
 const terminalArchive = 'Clair-Obscur-Windows-Terminal-0.1.0.zip';
@@ -512,7 +526,7 @@ test('both appearances work at desktop and phone widths without horizontal overf
         if (evidence && width !== 2560) await page.screenshot({ path: path.join(evidence, `${name.toLowerCase()}-${width}-specimen.png`), fullPage: true });
       }
       assert.deepEqual([...new Set(network)].sort(), [origin + '/', ...['tokens.css', 'preview.css', 'preview.js', ...iconPaths].map(file => origin + '/' + file)].sort(),
-        'The page requests only its four original local assets and the 434 declared local SVGs');
+        'The page requests only its four original local assets and the 450 declared local SVGs');
       assert.deepEqual(consoleErrors, []);
     } finally { await context.close(); }
   }
@@ -788,9 +802,10 @@ async function checkIconGallery(page) {
   assert.equal(await page.locator('#icons-heading').textContent(), 'Matching app icons');
   assert.equal(await page.locator('#icons-app-heading').textContent(), 'Named apps');
   assert.equal(await page.locator('#icons-function-heading').textContent(), 'General functions');
-  assert.equal(await page.locator('#icons [data-icon-kind="app"]').count(), 193);
+  assert.equal(await page.locator('#icons [data-icon-kind="app"]').count(), 201);
   assert.equal(await page.locator('#icons [data-icon-kind="function"]').count(), 24);
   assert.equal(await page.locator('#icon-artwork-download').getAttribute('href'), iconArchive);
+  assert.equal(await page.locator('#icon-artwork-weather-download').getAttribute('href'), weatherIconArchive);
   assert.equal(await page.locator('#icon-artwork-finance-download').getAttribute('href'), financeIconArchive);
   assert.equal(await page.locator('#icon-artwork-travel-download').getAttribute('href'), travelIconArchive);
   assert.equal(await page.locator('#icon-artwork-food-order-download').getAttribute('href'), foodOrderIconArchive);
@@ -804,7 +819,8 @@ async function checkIconGallery(page) {
   assert.equal(await page.locator('#icon-artwork-second-app-download').getAttribute('href'), secondAppIconArchive);
   assert.equal(await page.locator('#icon-artwork-first-app-download').getAttribute('href'), firstAppIconArchive);
   assert.match(await page.locator('#icon-artwork-first-app-download').textContent(), /preserved 0\.3\.0/);
-  assert.match(await page.locator('#icon-artwork-download').textContent(), /0\.13\.0/);
+  assert.match(await page.locator('#icon-artwork-download').textContent(), /0\.14\.0/);
+  assert.match(await page.locator('#icon-artwork-weather-download').textContent(), /preserved 0\.13\.0/);
   assert.match(await page.locator('#icon-artwork-finance-download').textContent(), /preserved 0\.12\.0/);
   assert.match(await page.locator('#icon-artwork-travel-download').textContent(), /preserved 0\.11\.0/);
   assert.match(await page.locator('#icon-artwork-food-order-download').textContent(), /preserved 0\.10\.0/);
@@ -898,6 +914,7 @@ async function checkIconGallery(page) {
 }
 
 const iconHistoryArchives = [
+  ['icon-artwork-weather-download', weatherIconArchive, weatherIconDigest],
   ['icon-artwork-finance-download', financeIconArchive, financeIconDigest],
   ['icon-artwork-travel-download', travelIconArchive, travelIconDigest],
   ['icon-artwork-food-order-download', foodOrderIconArchive, foodOrderIconDigest],
@@ -976,7 +993,7 @@ async function assertIconHistoryLayout(page, { spacing = false } = {}) {
       marginBlockEnd: style.marginBlockEnd, rects: [...range.getClientRects()].map(rect => ({ left: rect.left, right: rect.right,
         top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height })) };
   }));
-  assert.equal(metrics.length, 25, 'Admit the summary, all twelve archive paragraphs and their actual links');
+  assert.equal(metrics.length, 27, 'Admit the summary, all thirteen archive paragraphs and their actual links');
   for (const node of metrics) {
     assert.ok(node.text && node.width > 0 && node.height > 0 && node.visibility === 'visible' && Number(node.opacity) > 0,
       'History text unavailable: ' + JSON.stringify(node));
@@ -1053,7 +1070,7 @@ test('current icon acquisition keeps opened history spacing-only and additional 
         const bytes = await acquireIconPng(page, 'weather-channel', appearance);
         const png = await assertDownloadedIconPng(page, bytes, 'weather-channel', appearance);
         assert.equal(await page.locator('#icon-png-status').innerText(),
-          `Prepared Clair-Obscur-0.13.0-${appearance}-weather-channel-512.png. Your browser handles the download.`);
+          `Prepared Clair-Obscur-0.14.0-${appearance}-weather-channel-512.png. Your browser handles the download.`);
         assert.deepEqual(await iconPngSurroundings(page), before); assert.equal(await page.locator('#icon-history').evaluate(node => node.open), true);
         await page.locator('#icon-clear').focus(); await page.keyboard.press('Enter'); await assertFinderResults(page, iconFunctions);
         await assertTextSpacing(page, baseline); await assertIconHistoryLayout(page, { spacing: true });
@@ -1085,8 +1102,8 @@ test('current icon acquisition qualification rejects earlier history, an inert d
         assert.equal(await page.evaluate(() => window.preventedHistoryToggles), 2);
         assert.equal(await page.locator('#icon-history').evaluate(node => node.open), false);
       } else {
-        await page.locator('#icon-artwork-finance-download').evaluate(node => node.setAttribute('href', 'icons/Clair-Obscur-SVG-Icons-0.1.0.zip'));
-        assert.equal(await page.locator('#icon-artwork-finance-download').getAttribute('href'), legacyIconArchive);
+        await page.locator('#icon-artwork-weather-download').evaluate(node => node.setAttribute('href', 'icons/Clair-Obscur-SVG-Icons-0.1.0.zip'));
+        assert.equal(await page.locator('#icon-artwork-weather-download').getAttribute('href'), legacyIconArchive);
         await assert.rejects(assertIconHistoryStructure(page), /Preserved archive identities/);
         await setIconHistoryOpen(page, true); await page.keyboard.press('Tab');
         await assert.rejects(acquirePreservedIconArchive(page, iconHistoryArchives[0]), /Preserved archive filename identity/);
@@ -1127,7 +1144,7 @@ async function tabToIconAction(page, id, action, packageId) {
   } else {
     assert.equal(active.tag, 'BUTTON'); assert.equal(active.png, true);
     assert.equal(active.appearance, action);
-    assert.equal(active.filename, `Clair-Obscur-0.13.0-${action}-${id}-512.png`);
+    assert.equal(active.filename, `Clair-Obscur-0.14.0-${action}-${id}-512.png`);
   }
   assert.ok(active.left >= -1 && active.right <= active.width + 1 && active.bottom > 0 && active.top < active.height,
     JSON.stringify(active));
@@ -1166,7 +1183,7 @@ async function assertFinderResults(page, expected, { enhanced = true } = {}) {
   assert.equal(state.retained, true, 'Filtering must retain nodes, artwork, labels and assignment contents');
   if (enhanced) {
     assert.deepEqual(state.hidden, iconFunctions.filter(id => !expected.includes(id)), 'Nonmatches must be hidden rather than transparent or focusable');
-    assert.equal(await page.locator('#icon-filter-status').innerText(), 'Showing ' + expected.length + ' of 217 choices.');
+    assert.equal(await page.locator('#icon-filter-status').innerText(), 'Showing ' + expected.length + ' of 225 choices.');
     assert.equal(await page.locator('#icon-filter-empty').isVisible(), expected.length === 0);
     for (const group of state.groups) {
       const hasResults = expected.some(id => generalIconFunctions.includes(id) === (group.kind === 'function'));
@@ -1273,6 +1290,15 @@ test('icon finder matches labels, stable IDs and packages literally in both appe
     ['Clime', ['clime']], ['com.apalon.weatherradar.free', ['clime']],
     ['Windfinder', ['windfinder']], ['com.studioeleven.windfinder', ['windfinder']],
     ['RainViewer', ['rainviewer']], ['com.lucky_apps.RainViewer', ['rainviewer']],
+    ['Nike Run Club', ['nike-run-club']], ['com.nike.plusgps', ['nike-run-club']],
+    ['adidas Running', ['adidas-running']], ['com.runtastic.android', ['adidas-running']],
+    ['ASICS Runkeeper', ['asics-runkeeper']], ['com.fitnesskeeper.runkeeper.pro', ['asics-runkeeper']],
+    ['Map My Run', ['map-my-run']], ['com.mapmyrun.android2', ['map-my-run']],
+    ['Runna', ['runna']], ['com.runbuddy.prod', ['runna']],
+    ['TrainingPeaks', ['trainingpeaks']], ['com.peaksware.trainingpeaks', ['trainingpeaks']],
+    ['Zwift Companion', ['zwift-companion']], ['com.zwift.android.prod', ['zwift-companion']],
+    ['Relive', ['relive']], ['cc.relive.reliveapp', ['relive']],
+    ['com.runbuddy.prod com.strava', []],
     ['Fly Delta', ['fly-delta']], ['United Airlines', ['united-airlines']],
     ['American Airlines', ['american-airlines']], ['Southwest Airlines', ['southwest-airlines']],
     ['airlines', ['united-airlines', 'american-airlines', 'southwest-airlines']],
@@ -1337,7 +1363,7 @@ test('icon finder leaves exact artwork downloads and the independent platform ch
     const chooserBefore = await page.locator('#package-choice-result').innerHTML();
     await page.locator('#icon-query').fill('this app does not exist 8675309'); await assertFinderResults(page, []);
     await setIconHistoryOpen(page, true);
-    for (const id of ['icon-artwork-download', 'icon-artwork-finance-download', 'icon-artwork-travel-download', 'icon-artwork-food-order-download', 'icon-artwork-everyday-download', 'icon-artwork-broad-download', 'icon-artwork-companion-download',
+    for (const id of ['icon-artwork-download', 'icon-artwork-weather-download', 'icon-artwork-finance-download', 'icon-artwork-travel-download', 'icon-artwork-food-order-download', 'icon-artwork-everyday-download', 'icon-artwork-broad-download', 'icon-artwork-companion-download',
       'icon-artwork-monochrome-download', 'icon-artwork-third-app-download', 'icon-artwork-second-app-download',
       'icon-artwork-first-app-download', 'icon-artwork-previous-download', 'icon-artwork-legacy-download', 'icon-artwork-checksums'])
       assert.ok(await page.locator('#' + id).isVisible(), 'Filtering hid a download: ' + id);
@@ -1441,14 +1467,14 @@ test('icon finder enhancement failure preserves every static choice and download
       assert.deepEqual(await page.locator('#icons article.icon-card p a').evaluateAll(nodes => nodes.map(node => ({
         id: node.closest('[data-icon-function]').dataset.iconFunction, href: node.getAttribute('href') }))),
       namedIconApps.map(([id, , packageId]) => ({ id, href: 'https://play.google.com/store/apps/details?id=' + packageId })));
-      for (const id of ['icon-artwork-download', 'icon-artwork-finance-download', 'icon-artwork-travel-download', 'icon-artwork-food-order-download', 'icon-artwork-everyday-download', 'icon-artwork-broad-download', 'icon-artwork-companion-download',
+      for (const id of ['icon-artwork-download', 'icon-artwork-weather-download', 'icon-artwork-finance-download', 'icon-artwork-travel-download', 'icon-artwork-food-order-download', 'icon-artwork-everyday-download', 'icon-artwork-broad-download', 'icon-artwork-companion-download',
         'icon-artwork-monochrome-download', 'icon-artwork-third-app-download', 'icon-artwork-second-app-download',
         'icon-artwork-first-app-download', 'icon-artwork-previous-download', 'icon-artwork-legacy-download']) assert.ok(await page.locator('#' + id).isVisible());
       if (failure === 'missing-control' || failure === 'invalid-record') {
         await page.locator('#sample-button').click(); assert.match(await page.locator('#control-status').innerText(), /Control activated/);
         assert.deepEqual(consoleErrors, [], 'Failed finder admission must not break unrelated enhancement');
       }
-      results.scenarios.push({ name: 'icon finder static fallback', failure, status: 'passed', retainedChoices: 217, retainedMappings: 193,
+      results.scenarios.push({ name: 'icon finder static fallback', failure, status: 'passed', retainedChoices: 225, retainedMappings: 201,
         scope: 'Isolated fixture initialization fault or script absence, not a product defect' });
     } finally { await context.close(); }
   }
@@ -1557,7 +1583,7 @@ async function acquireIconPng(page, id, appearance, { timeout = 5000 } = {}) {
   assert.ok(await button.isVisible()); assert.notEqual(await button.getAttribute('aria-disabled'), 'true');
   await button.focus();
   const [download] = await Promise.all([page.waitForEvent('download', { timeout }), page.keyboard.press('Enter')]);
-  assert.equal(download.suggestedFilename(), `Clair-Obscur-0.13.0-${appearance}-${id}-512.png`);
+  assert.equal(download.suggestedFilename(), `Clair-Obscur-0.14.0-${appearance}-${id}-512.png`);
   assert.equal(await download.failure(), null);
   const chunks = []; for await (const chunk of await download.createReadStream()) chunks.push(chunk);
   await page.waitForFunction(({ id, appearance }) => document.querySelector(
@@ -1605,7 +1631,7 @@ async function assertIconPngLayout(page, { spacing = false } = {}) {
 }
 
 async function assertIconPngFallback(page) {
-  assert.equal(await page.locator('[data-icon-png]').count(), 434);
+  assert.equal(await page.locator('[data-icon-png]').count(), 450);
   assert.equal(await page.locator('[data-icon-png]:visible').count(), 0);
   assert.ok(await page.locator('#icon-artwork-download').isVisible());
   assert.equal(await page.locator('#icon-artwork-download').getAttribute('href'), iconArchive);
@@ -1613,7 +1639,7 @@ async function assertIconPngFallback(page) {
   assert.match(await page.locator('#icon-png-help').textContent(), /SVG/i);
 }
 
-test('individual PNG controls bind all 434 local drawings and keyboard acquisition preserves surrounding choices', async () => {
+test('individual PNG controls bind all 450 local drawings and keyboard acquisition preserves surrounding choices', async () => {
   for (const width of [390, 1280]) {
     const { context, page, consoleErrors, network } = await pageFor({ viewport: { width, height: 900 } });
     try {
@@ -1621,9 +1647,9 @@ test('individual PNG controls bind all 434 local drawings and keyboard acquisiti
         id: node.closest('[data-icon-function]')?.dataset.iconFunction, appearance: node.dataset.iconAppearance,
         filename: node.dataset.iconFilename, source: node.closest('figure')?.querySelector('img')?.getAttribute('src'),
         type: node.type, hidden: node.hidden, name: node.getAttribute('aria-label'), pageAppearance: node.hasAttribute('data-appearance') })));
-      assert.equal(controls.length, 434);
+      assert.equal(controls.length, 450);
       const expected = iconFunctions.flatMap(id => ['Clair', 'Obscur'].map(appearance => ({ id, appearance,
-        filename: `Clair-Obscur-0.13.0-${appearance}-${id}-512.png`, source: `icons/${appearance}/${id}.svg` })));
+        filename: `Clair-Obscur-0.14.0-${appearance}-${id}-512.png`, source: `icons/${appearance}/${id}.svg` })));
       assert.deepEqual(controls.map(({ id, appearance, filename, source }) => ({ id, appearance, filename, source })), expected);
       for (const control of controls) {
         assert.equal(control.type, 'button'); assert.equal(control.hidden, false); assert.equal(control.pageAppearance, false);
@@ -1633,7 +1659,8 @@ test('individual PNG controls bind all 434 local drawings and keyboard acquisiti
       await assertIconPngLayout(page);
       const downloads = [];
       for (const appearance of ['Clair', 'Obscur']) for (const id of ['phone', 'fly-delta', 'bank-of-america', 'discover', 'fidelity-investments',
-        'accuweather', 'weather-channel', 'windy-com', 'rainviewer']) {
+        'accuweather', 'weather-channel', 'windy-com', 'rainviewer',
+        ...runningTrainingIconApps.map(([id]) => id)]) {
         if (downloads.length && downloads.length % 8 === 0) await new Promise(resolve => setTimeout(resolve, 1100));
         await page.getByRole('button', { name: appearance === 'Clair' ? 'Obscur' : 'Clair', exact: true }).click();
         await page.locator('#package-target').selectOption('equicord'); await page.locator('#package-appearance').selectOption('Clair');
@@ -1656,7 +1683,7 @@ test('individual PNG capability and metadata admission preserve the static SVG f
     const { context, page, consoleErrors } = await pageFor({ setup: async (context, page) => {
       if (fault === 'wrong-filename') await page.route(origin + '/', async route => {
         const html = await readFile(path.join(site, 'index.html'), 'utf8');
-        const filename = 'Clair-Obscur-0.13.0-Clair-google-chrome-512.png';
+        const filename = 'Clair-Obscur-0.14.0-Clair-google-chrome-512.png';
         assert.equal(html.split(filename).length - 1, 1);
         await route.fulfill({ contentType: 'text/html', body: html.replace(filename, '../untrusted.png') });
       });
@@ -1719,7 +1746,7 @@ test('individual PNG shared busy state is exposed on other controls and restored
       assert.deepEqual(await page.locator('.icon-card:visible').evaluateAll(nodes => nodes.map(node => node.dataset.iconFunction)), ['phone']);
       const originalStates = await page.locator('[data-icon-png]').evaluateAll(nodes =>
         nodes.map(node => [node.getAttribute('aria-disabled'), node.disabled]));
-      assert.equal(originalStates.length, 434);
+      assert.equal(originalStates.length, 450);
       await page.evaluate(outcome => {
         const image = document.querySelector('[data-icon-function="phone"] figure img');
         const original = image.decode, decode = original.bind(image);
@@ -1737,14 +1764,14 @@ test('individual PNG shared busy state is exposed on other controls and restored
       const initial = await iconPngSurroundings(page);
       await first.focus(); await page.keyboard.press('Enter');
       await page.waitForFunction(() => window.pngBusyFixture.held);
-      assert.equal(await page.locator('#icon-png-status').innerText(), 'Preparing Clair-Obscur-0.13.0-Clair-phone-512.png...');
+      assert.equal(await page.locator('#icon-png-status').innerText(), 'Preparing Clair-Obscur-0.14.0-Clair-phone-512.png...');
       await tabToIconAction(page, 'phone', 'Obscur');
       await page.keyboard.press('Enter');
       assert.equal(await opposite.getAttribute('aria-disabled'), 'true',
         'An opposite-appearance action blocked by pending PNG work must expose its unavailability');
       const busy = await page.locator('[data-icon-png]').evaluateAll(nodes =>
         nodes.map(node => ({ unavailable: node.getAttribute('aria-disabled'), nativeDisabled: node.disabled })));
-      assert.equal(busy.length, 434);
+      assert.equal(busy.length, 450);
       assert.ok(busy.every(node => node.unavailable === 'true'), 'Every serially blocked PNG action must expose its busy state');
       assert.ok(busy.every(node => !node.nativeDisabled), 'Temporary unavailability retains the controls in keyboard order');
       assert.equal(await opposite.evaluate(node => node === document.activeElement), true);
@@ -1762,7 +1789,7 @@ test('individual PNG shared busy state is exposed on other controls and restored
       await page.keyboard.press('Enter');
       assert.equal(await other.getAttribute('aria-disabled'), 'true');
       assert.equal(await other.evaluate(node => node === document.activeElement), true);
-      assert.equal(await page.locator('#icon-png-status').innerText(), 'Preparing Clair-Obscur-0.13.0-Clair-phone-512.png...');
+      assert.equal(await page.locator('#icon-png-status').innerText(), 'Preparing Clair-Obscur-0.14.0-Clair-phone-512.png...');
       assert.equal(downloads.length, 0); assert.deepEqual(await iconPngSurroundings(page), filtered);
 
       let firstAcquisition;
@@ -1771,7 +1798,7 @@ test('individual PNG shared busy state is exposed on other controls and restored
         await page.evaluate(() => window.pngBusyFixture.release());
         const download = await completed;
         assert.equal(await download.failure(), null);
-        assert.equal(download.suggestedFilename(), 'Clair-Obscur-0.13.0-Clair-phone-512.png');
+        assert.equal(download.suggestedFilename(), 'Clair-Obscur-0.14.0-Clair-phone-512.png');
         const chunks = []; for await (const chunk of await download.createReadStream()) chunks.push(chunk);
         firstAcquisition = await assertDownloadedIconPng(page, Buffer.concat(chunks), 'phone', 'Clair');
         assert.equal(downloads.length, 1);
@@ -1828,7 +1855,7 @@ test('individual PNG duplicate activation is bounded and its object URL is retir
     assert.equal(await button.getAttribute('aria-disabled'), 'true'); assert.equal(downloads.length, 0);
     const completed = page.waitForEvent('download', { timeout: 5000 }); await page.evaluate(() => window.releasePngDecode());
     const download = await completed; assert.equal(await download.failure(), null);
-    assert.equal(download.suggestedFilename(), 'Clair-Obscur-0.13.0-Clair-phone-512.png');
+    assert.equal(download.suggestedFilename(), 'Clair-Obscur-0.14.0-Clair-phone-512.png');
     await page.waitForFunction(() => window.pngUrls.created.length === 1 && window.pngUrls.revoked.length === 1);
     assert.equal(downloads.length, 1);
     const urls = await page.evaluate(() => window.pngUrls); assert.deepEqual(urls.revoked, urls.created);
@@ -1905,7 +1932,7 @@ test('icon gallery decodes every current appearance at phone widths and enlarged
   }
 });
 
-test('no-script keyboard navigation acquires current and all twelve preserved icon ZIPs with exact checksums', async () => {
+test('no-script keyboard navigation acquires current and all thirteen preserved icon ZIPs with exact checksums', async () => {
   const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false, viewport: { width: 320, height: 844 },
     setup: async (context, page) => page.route('**/preview.css', async route => route.fulfill({ contentType: 'text/css',
       body: await readFile(path.join(site, 'preview.css'), 'utf8') + '\nhtml { font-size: 200%; }\n' + textSpacingOverride })) });
@@ -1945,6 +1972,16 @@ test('no-script keyboard navigation acquires current and all twelve preserved ic
     await page.keyboard.press('Enter');
     assert.equal(await page.locator('#icon-history').evaluate(node => node.open), true);
     await assertIconHistoryLayout(page, { spacing: true });
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-weather-download');
+    const [weatherDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
+    assert.equal(await weatherDownload.failure(), null);
+    assert.equal(weatherDownload.suggestedFilename(), path.basename(weatherIconArchive));
+    const weatherArchivePath = path.join(temp, 'keyboard-icons-weather.zip');
+    await weatherDownload.saveAs(weatherArchivePath);
+    const weatherBytes = await readFile(weatherArchivePath);
+    assert.deepEqual(weatherBytes, await readFile(path.join(site, ...weatherIconArchive.split('/'))));
+    assert.equal(crypto.createHash('sha256').update(weatherBytes).digest('hex'), weatherIconDigest);
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-finance-download');
     const [financeDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
@@ -1996,6 +2033,8 @@ test('no-script keyboard navigation acquires current and all twelve preserved ic
     assert.deepEqual(broadBytes, await readFile(path.join(site, ...broadIconArchive.split('/'))));
     assert.equal(crypto.createHash('sha256').update(broadBytes).digest('hex'), broadIconDigest);
     await page.keyboard.press('Tab');
+    // Pace this archive-and-checksum journey after eight acquisitions.
+    await new Promise(resolve => setTimeout(resolve, 1100));
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-companion-download');
     const [companionDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
     assert.equal(await companionDownload.failure(), null);
@@ -2026,8 +2065,6 @@ test('no-script keyboard navigation acquires current and all twelve preserved ic
     assert.deepEqual(thirdAppBytes, await readFile(path.join(site, ...thirdAppIconArchive.split('/'))));
     assert.equal(crypto.createHash('sha256').update(thirdAppBytes).digest('hex'), thirdAppIconDigest);
     await page.keyboard.press('Tab');
-    // Pace the thirteen archive acquisitions before Blink's burst boundary.
-    await new Promise(resolve => setTimeout(resolve, 1100));
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-second-app-download');
     const [secondAppDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
     assert.equal(await secondAppDownload.failure(), null);
@@ -2080,17 +2117,28 @@ test('no-script keyboard navigation acquires current and all twelve preserved ic
       `functions=${JSON.stringify(iconManifestFunctions)}`,
       'expected={f"{appearance}/{function}.svg" for appearance in ("Clair","Obscur") for function in functions}',
       'with zipfile.ZipFile(archive_path) as archive:',
-      ' assert len(archive.namelist())==436 and set(archive.namelist())==expected|{"manifest.json","LICENSE.txt"}',
+      ' assert len(archive.namelist())==452 and set(archive.namelist())==expected|{"manifest.json","LICENSE.txt"}',
       ' assert archive.testzip() is None',
       ' for name in expected|{"manifest.json","LICENSE.txt"}:',
       '  assert archive.read(name)==(site/"icons"/name).read_bytes()',
       ' manifest=json.loads(archive.read("manifest.json"))',
-      ' assert manifest["version"]=="0.13.0" and manifest["stroke_width"]==16',
-      ' assert manifest["functions"]==functions and len(manifest["files"])==434',
+      ' assert manifest["version"]=="0.14.0" and manifest["stroke_width"]==16',
+      ' assert manifest["functions"]==functions and len(manifest["files"])==450',
       ' assert [entry["id"] for entry in manifest["catalog"]]==functions',
       ' for record in manifest["files"]:',
       '  assert hashlib.sha256(archive.read(record["path"])).hexdigest()==record["sha256"]',
     ].join('\n'), archivePath, site]);
+    run(['-c', [
+      'import hashlib,json,sys,zipfile',
+      `functions=${JSON.stringify([...generalIconFunctions, ...weatherNamedIconApps.map(row => row[0])])}`,
+      'with zipfile.ZipFile(sys.argv[1]) as archive:',
+      ' assert archive.testzip() is None and len(archive.namelist())==436',
+      ' manifest_bytes=archive.read("manifest.json")',
+      ' assert hashlib.sha256(manifest_bytes).hexdigest()=="cc573fb8f3996d05eff6d8e724c179f17001ffcfaff26bbfade76e52591ce723"',
+      ' manifest=json.loads(manifest_bytes)',
+      ' assert manifest["version"]=="0.13.0" and manifest["stroke_width"]==16',
+      ' assert manifest["functions"]==functions and len(manifest["files"])==434',
+    ].join('\n'), weatherArchivePath]);
     run(['-c', [
       'import json,sys,zipfile',
       `functions=${JSON.stringify([...generalIconFunctions, ...financeNamedIconApps.map(row => row[0])])}`,
@@ -2195,8 +2243,8 @@ test('no-script keyboard navigation acquires current and all twelve preserved ic
     assert.equal(new URL(page.url()).hash, '#icons');
     assert.deepEqual(consoleErrors, []);
     results.scenarios.push({ name: 'no-script icon artwork keyboard acquisition', status: 'passed', tabs,
-      sha256: digest, financeSha256: financeIconDigest, travelSha256: travelIconDigest, foodOrderSha256: foodOrderIconDigest, everydaySha256: everydayIconDigest, broadSha256: broadIconDigest, companionSha256: companionIconDigest, monochromeSha256: monochromeIconDigest, secondAppSha256: secondAppIconDigest, firstAppSha256: firstAppIconDigest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
-      currentArchiveFiles: 436, financeArchiveFiles: 416, travelArchiveFiles: 396, foodOrderArchiveFiles: 376, everydayArchiveFiles: 352, broadArchiveFiles: 256, companionArchiveFiles: 192, monochromeArchiveFiles: 180, secondAppArchiveFiles: 164, firstAppArchiveFiles: 116, preservedArchiveFiles: 50, nativePhoneVerified: false,
+      sha256: digest, weatherSha256: weatherIconDigest, financeSha256: financeIconDigest, travelSha256: travelIconDigest, foodOrderSha256: foodOrderIconDigest, everydaySha256: everydayIconDigest, broadSha256: broadIconDigest, companionSha256: companionIconDigest, monochromeSha256: monochromeIconDigest, secondAppSha256: secondAppIconDigest, firstAppSha256: firstAppIconDigest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
+      currentArchiveFiles: 452, weatherArchiveFiles: 436, financeArchiveFiles: 416, travelArchiveFiles: 396, foodOrderArchiveFiles: 376, everydayArchiveFiles: 352, broadArchiveFiles: 256, companionArchiveFiles: 192, monochromeArchiveFiles: 180, secondAppArchiveFiles: 164, firstAppArchiveFiles: 116, preservedArchiveFiles: 50, nativePhoneVerified: false,
       width: 320, rootFontSize: '32px', spacingAdmission, mappingKeyboard,
       scope: 'Combined no-script, narrow, enlarged and spacing stress; separate from spacing-only acceptance' });
   } finally { await context.close(); }
@@ -3552,6 +3600,15 @@ for (const javaScriptEnabled of [true, false]) test(`portable kit downloads, ext
       assert.equal(iconDigest, inner.files[iconArchive]);
       assert.equal(await readFile(path.join(relocated, 'icons', 'SVG-SHA256SUMS'), 'utf8'), iconChecksums(iconDigest));
       await setIconHistoryOpen(localPage, true);
+      await localPage.locator('#icon-artwork-weather-download').focus();
+      const [weatherIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
+      assert.equal(await weatherIconDownload.failure(), null);
+      assert.equal(weatherIconDownload.suggestedFilename(), path.basename(weatherIconArchive));
+      const weatherChunks = []; for await (const chunk of await weatherIconDownload.createReadStream()) weatherChunks.push(chunk);
+      const weatherIconBytes = Buffer.concat(weatherChunks);
+      assert.deepEqual(weatherIconBytes, await readFile(path.join(relocated, ...weatherIconArchive.split('/'))));
+      assert.equal(crypto.createHash('sha256').update(weatherIconBytes).digest('hex'), weatherIconDigest);
+      assert.equal(inner.files[weatherIconArchive], weatherIconDigest);
       await localPage.locator('#icon-artwork-finance-download').focus();
       const [financeIconDownload] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);
       assert.equal(await financeIconDownload.failure(), null);
@@ -3665,8 +3722,8 @@ for (const javaScriptEnabled of [true, false]) test(`portable kit downloads, ext
       assert.equal(crypto.createHash('sha256').update(legacyIconBytes).digest('hex'), legacyIconDigest);
       assert.equal(inner.files[legacyIconArchive], legacyIconDigest);
       iconJourneys.push({ javaScriptEnabled, width, decoded: decodedIcons.length, sha256: iconDigest,
-        financeSha256: financeIconDigest, travelSha256: travelIconDigest, foodOrderSha256: foodOrderIconDigest, everydaySha256: everydayIconDigest, broadSha256: broadIconDigest, companionSha256: companionIconDigest, monochromeSha256: monochromeIconDigest, secondAppSha256: secondAppIconDigest, firstAppSha256: firstAppIconDigest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
-        method: 'saved included current and all twelve preserved SVG archives' });
+        weatherSha256: weatherIconDigest, financeSha256: financeIconDigest, travelSha256: travelIconDigest, foodOrderSha256: foodOrderIconDigest, everydaySha256: everydayIconDigest, broadSha256: broadIconDigest, companionSha256: companionIconDigest, monochromeSha256: monochromeIconDigest, secondAppSha256: secondAppIconDigest, firstAppSha256: firstAppIconDigest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
+        method: 'saved included current and all thirteen preserved SVG archives' });
       const terminalSpecimens = await checkTerminalSpecimens(localPage, terminalDocument);
       await localPage.locator('#terminal-download').focus();
       const [terminalZip] = await Promise.all([localPage.waitForEvent('download', { timeout: 5000 }), localPage.keyboard.press('Enter')]);

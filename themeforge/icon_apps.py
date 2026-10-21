@@ -1713,3 +1713,90 @@ TENTH_APP_CATALOG = (
         'selection_basis': 'Missing named weather assignment; official Google Play identity inspected on October 20, 2026. Keep exact Android package letter case. RainViewer is not Rainbow Weather or generic Weather Radar. Listing identity does not establish personal installation or device availability.',
     },
 )
+
+
+ELEVENTH_CATALOG_DATE = "2026-10-20"
+ELEVENTH_CATALOG_SCOPE = ("Running and endurance-training assignments from inspected official Google Play identities and existing catalog gaps. "
+                          "Original functional interpretations. No popularity ranking, training recommendation, publisher endorsement or installation claim.")
+ELEVENTH_APP_CATALOG = (
+    {
+        "id": "nike-run-club",
+        "label": "Nike Run Club",
+        "store_title": "Nike Run Club - Running Coach",
+        "kind": "app",
+        "category": "fitness",
+        "android_package": "com.nike.plusgps",
+        "store_url": "https://play.google.com/store/apps/details?id=com.nike.plusgps",
+        "selection_basis": "Missing named running-coach and activity-tracking assignment alongside retained Garmin Connect and Strava. Official Google Play identity inspected on October 20, 2026. Distinct from Nike Training Club, Nike shopping and SNKRS packages. Listing identity does not establish personal installation, training effectiveness or device interoperability."
+    },
+    {
+        "id": "adidas-running",
+        "label": "adidas Running",
+        "store_title": "adidas Running: Run tracker",
+        "kind": "app",
+        "category": "fitness",
+        "android_package": "com.runtastic.android",
+        "store_url": "https://play.google.com/store/apps/details?id=com.runtastic.android",
+        "selection_basis": "Missing named running and training log using the literal retained Runtastic package. Official Google Play identity inspected on October 20, 2026. The Runtastic package identifies the currently titled adidas Running app. Distinct from adidas shopping and CONFIRMED. Listing identity does not establish personal installation, training effectiveness or device interoperability."
+    },
+    {
+        "id": "asics-runkeeper",
+        "label": "ASICS Runkeeper",
+        "store_title": "ASICS Runkeeper: Fitness App",
+        "kind": "app",
+        "category": "fitness",
+        "android_package": "com.fitnesskeeper.runkeeper.pro",
+        "store_url": "https://play.google.com/store/apps/details?id=com.fitnesskeeper.runkeeper.pro",
+        "selection_basis": "Missing named running/walking activity tracker with the inspected literal package. Official Google Play identity inspected on October 20, 2026. The current selected listing's package literally ends in .pro. Do not infer that a different ordinary package exists or remove that suffix. Listing identity does not establish personal installation, training effectiveness or device interoperability."
+    },
+    {
+        "id": "map-my-run",
+        "label": "Map My Run",
+        "store_title": "Map My Run GPS Running Tracker",
+        "kind": "app",
+        "category": "fitness",
+        "android_package": "com.mapmyrun.android2",
+        "store_url": "https://play.google.com/store/apps/details?id=com.mapmyrun.android2",
+        "selection_basis": "Missing named GPS running-route tracker, separate from retained general maps and outdoor-route apps. Official Google Play identity inspected on October 20, 2026. Observed publisher label MapMyFitness differs from legal developer Outside Interactive. Map My Walk, Map My Ride and Map My Fitness are separate packages. Listing identity does not establish personal installation, training effectiveness or device interoperability."
+    },
+    {
+        "id": "runna",
+        "label": "Runna",
+        "store_title": "Runna: Running Plans & Coach",
+        "kind": "app",
+        "category": "fitness",
+        "android_package": "com.runbuddy.prod",
+        "store_url": "https://play.google.com/store/apps/details?id=com.runbuddy.prod",
+        "selection_basis": "Missing named structured running-plan assignment with an exact distinct package. Official Google Play identity inspected on October 20, 2026. Strava is the observed publisher/legal developer. Runna remains a distinct app from retained com.strava and is not a duplicate alias. Listing identity does not establish personal installation, training effectiveness or device interoperability."
+    },
+    {
+        "id": "trainingpeaks",
+        "label": "TrainingPeaks",
+        "store_title": "TrainingPeaks: Plan Train Lift",
+        "kind": "app",
+        "category": "fitness",
+        "android_package": "com.peaksware.trainingpeaks",
+        "store_url": "https://play.google.com/store/apps/details?id=com.peaksware.trainingpeaks",
+        "selection_basis": "Missing named endurance-training and workout-plan assignment. Official Google Play identity inspected on October 20, 2026. Select the main training app, not TrainingPeaks Hub or TrainingPeaks Virtual Cycling. Listing identity does not establish personal installation, training effectiveness or device interoperability."
+    },
+    {
+        "id": "zwift-companion",
+        "label": "Zwift Companion",
+        "store_title": "Zwift Companion",
+        "kind": "app",
+        "category": "fitness",
+        "android_package": "com.zwift.android.prod",
+        "store_url": "https://play.google.com/store/apps/details?id=com.zwift.android.prod",
+        "selection_basis": "Missing named phone companion for indoor cycling/activity planning, kept separate from the main Zwift application. Official Google Play identity inspected on October 20, 2026. The canonical listing identifies Zwift Companion. Do not label this package as the main Zwift client or promise hardware/watch interoperability. Listing identity does not establish personal installation, training effectiveness or device interoperability."
+    },
+    {
+        "id": "relive",
+        "label": "Relive",
+        "store_title": "Relive: Run, Ride, Hike & more",
+        "kind": "app",
+        "category": "fitness",
+        "android_package": "cc.relive.reliveapp",
+        "store_url": "https://play.google.com/store/apps/details?id=cc.relive.reliveapp",
+        "selection_basis": "Missing named activity-to-video-story assignment in the running/cycling group. Official Google Play identity inspected on October 20, 2026. Listing describes outdoor activity stories and mentions other trackers. That is a publisher statement, not tested Garmin synchronization or an installation result. Listing identity does not establish personal installation, training effectiveness or device interoperability."
+    },
+)
