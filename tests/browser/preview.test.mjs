@@ -2265,7 +2265,7 @@ test('no-script keyboard navigation acquires current and all fourteen preserved 
     assert.deepEqual(consoleErrors, []);
     results.scenarios.push({ name: 'no-script icon artwork keyboard acquisition', status: 'passed', tabs,
       sha256: digest, weatherSha256: weatherIconDigest, financeSha256: financeIconDigest, travelSha256: travelIconDigest, foodOrderSha256: foodOrderIconDigest, everydaySha256: everydayIconDigest, broadSha256: broadIconDigest, companionSha256: companionIconDigest, monochromeSha256: monochromeIconDigest, secondAppSha256: secondAppIconDigest, firstAppSha256: firstAppIconDigest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
-      currentArchiveFiles: 452, weatherArchiveFiles: 436, financeArchiveFiles: 416, travelArchiveFiles: 396, foodOrderArchiveFiles: 376, everydayArchiveFiles: 352, broadArchiveFiles: 256, companionArchiveFiles: 192, monochromeArchiveFiles: 180, secondAppArchiveFiles: 164, firstAppArchiveFiles: 116, preservedArchiveFiles: 50, nativePhoneVerified: false,
+      currentArchiveFiles: 468, weatherArchiveFiles: 436, financeArchiveFiles: 416, travelArchiveFiles: 396, foodOrderArchiveFiles: 376, everydayArchiveFiles: 352, broadArchiveFiles: 256, companionArchiveFiles: 192, monochromeArchiveFiles: 180, secondAppArchiveFiles: 164, firstAppArchiveFiles: 116, preservedArchiveFiles: 50, nativePhoneVerified: false,
       width: 320, rootFontSize: '32px', spacingAdmission, mappingKeyboard,
       scope: 'Combined no-script, narrow, enlarged and spacing stress; separate from spacing-only acceptance' });
   } finally { await context.close(); }
