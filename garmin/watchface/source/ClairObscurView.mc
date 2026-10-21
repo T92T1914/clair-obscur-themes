@@ -119,10 +119,14 @@ class ClairObscurView extends WatchUi.WatchFace {
         if (mode == :off) { return; }
         var moment = Time.now();
         var local = Gregorian.info(moment, Time.FORMAT_SHORT);
+        var layout = FaceSettings.readLayout();
+        if (mode == :aod && layout == FaceModel.LAYOUT_ANALOG) {
+            drawAnalogAlwaysOn(dc, local.hour, local.min);
+            return;
+        }
         var is24Hour = System.getDeviceSettings().is24Hour;
         var time = FaceModel.formatTime(local.hour, local.min, is24Hour);
         if (mode == :aod) { drawAlwaysOn(dc, time, local.min); return; }
-        var layout = FaceSettings.readLayout();
         refreshFonts(layout);
         var date = FaceModel.shortDate(local.day, local.month, local.day_of_week);
         var period = FaceModel.period(local.hour, is24Hour);
@@ -260,6 +264,31 @@ class ClairObscurView extends WatchUi.WatchFace {
         dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, 8);
         dc.setColor(canvas, canvas);
         dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, 3);
+    }
+
+    function drawAlwaysOnOutline(dc as Graphics.Dc, points as Lang.Array<Graphics.Point2D>) as Void {
+        if (points.size() < 3) { return; }
+        for (var point = 0; point < points.size(); point += 1) {
+            var next = (point + 1) % points.size();
+            dc.drawLine(points[point][0], points[point][1], points[next][0], points[next][1]);
+        }
+    }
+
+    function drawAnalogAlwaysOn(dc as Graphics.Dc, hour as Lang.Number, minute as Lang.Number) as Void {
+        var shift = FaceModel.aodAnalogOffset(minute);
+        if (!FaceModel.validClock(hour, minute) || shift.size() != 2) { return; }
+        // Preserve the active dial's positions, with only thin shifted outlines.
+        dc.setColor(ThemePalette.OBSCUR_BORDER, 0x000000);
+        dc.setPenWidth(1);
+        for (var index = 0; index < 12; index += 1) {
+            drawAlwaysOnOutline(dc, FaceModel.aodAnalogMarker(index, 0, minute));
+            if (index == 0) {
+                drawAlwaysOnOutline(dc, FaceModel.aodAnalogMarker(index, 1, minute));
+            }
+        }
+        drawAlwaysOnOutline(dc, FaceModel.aodAnalogHandPoints(hour, minute, true));
+        drawAlwaysOnOutline(dc, FaceModel.aodAnalogHandPoints(hour, minute, false));
+        dc.drawCircle(FaceModel.DIAL_CENTER + shift[0], FaceModel.DIAL_CENTER + shift[1], 3);
     }
 
     function drawAlwaysOn(dc as Graphics.Dc, time as Lang.String, minute as Lang.Number) as Void {

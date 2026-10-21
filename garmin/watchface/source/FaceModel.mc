@@ -122,6 +122,42 @@ module FaceModel {
             radialPoint(turn, length - 18, half), radialPoint(turn, -18, tailHalf)];
     }
 
+    function aodAnalogOffset(minute as Lang.Object or Null) as Lang.Array<Lang.Number> {
+        var m = integerValue(minute);
+        if (m == null || m < 0 || m >= 60) { return []; }
+        var phase = m % 4;
+        if (phase == 0) { return [-2, -2]; }
+        if (phase == 1) { return [2, -2]; }
+        if (phase == 2) { return [2, 2]; }
+        return [-2, 2];
+    }
+
+    function aodAnalogMarker(index as Lang.Object or Null, part as Lang.Object or Null,
+            minute as Lang.Object or Null) as Lang.Array<Graphics.Point2D> {
+        var i = integerValue(index);
+        var p = integerValue(part);
+        var shift = aodAnalogOffset(minute);
+        if (i == null || p == null || shift.size() != 2) { return []; }
+        var points = hourMarker(i, p);
+        var result = [] as Lang.Array<Graphics.Point2D>;
+        for (var point = 0; point < points.size(); point += 1) {
+            result.add([points[point][0] + shift[0], points[point][1] + shift[1]]);
+        }
+        return result;
+    }
+
+    function aodAnalogHandPoints(hour as Lang.Object or Null, minute as Lang.Object or Null,
+            hourHand as Lang.Boolean) as Lang.Array<Graphics.Point2D> {
+        var shift = aodAnalogOffset(minute);
+        if (shift.size() != 2) { return []; }
+        var points = handPoints(hour, minute, hourHand);
+        var result = [] as Lang.Array<Graphics.Point2D>;
+        for (var point = 0; point < points.size(); point += 1) {
+            result.add([points[point][0] + shift[0], points[point][1] + shift[1]]);
+        }
+        return result;
+    }
+
     function fontScale(value as Lang.Object or Null) as Lang.Float {
         if (!(value instanceof Lang.Float) && !(value instanceof Lang.Double) &&
                 !(value instanceof Lang.Number)) { return 1.0; }
