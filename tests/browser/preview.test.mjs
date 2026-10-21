@@ -1135,8 +1135,9 @@ test('current icon acquisition qualification rejects earlier history, an inert d
         assert.equal(await page.evaluate(() => window.preventedHistoryToggles), 2);
         assert.equal(await page.locator('#icon-history').evaluate(node => node.open), false);
       } else {
-        await page.locator('#icon-artwork-running-training-download').evaluate(node => node.setAttribute('href', 'icons/Clair-Obscur-SVG-Icons-0.1.0.zip'));
-        assert.equal(await page.locator('#icon-artwork-running-training-download').getAttribute('href'), legacyIconArchive);
+        const firstHistoryLink = page.locator('#' + iconHistoryArchives[0][0]);
+        await firstHistoryLink.evaluate(node => node.setAttribute('href', 'icons/Clair-Obscur-SVG-Icons-0.1.0.zip'));
+        assert.equal(await firstHistoryLink.getAttribute('href'), legacyIconArchive);
         await assert.rejects(assertIconHistoryStructure(page), /Preserved archive identities/);
         await setIconHistoryOpen(page, true); await page.keyboard.press('Tab');
         await assert.rejects(acquirePreservedIconArchive(page, iconHistoryArchives[0]), /Preserved archive filename identity/);
