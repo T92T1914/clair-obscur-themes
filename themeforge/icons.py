@@ -28,12 +28,13 @@ from .icon_apps import (
     ELEVENTH_APP_CATALOG, ELEVENTH_CATALOG_DATE, ELEVENTH_CATALOG_SCOPE,
     TWELFTH_APP_CATALOG, TWELFTH_CATALOG_DATE, TWELFTH_CATALOG_SCOPE,
     THIRTEENTH_APP_CATALOG, THIRTEENTH_CATALOG_DATE, THIRTEENTH_CATALOG_SCOPE,
+    FOURTEENTH_APP_CATALOG, FOURTEENTH_CATALOG_DATE, FOURTEENTH_CATALOG_SCOPE,
 )
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.16.0"
-VERSIONS = ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", VERSION)
+VERSION = "0.17.0"
+VERSIONS = ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", VERSION)
 SIZE = 512
 STROKE = 16
 FUNCTIONS = (
@@ -1527,6 +1528,223 @@ THIRTEENTH_APP_GLYPHS = {
 }
 
 
+
+
+# Phone-service drawings keep simple silhouettes distinct at small gallery sizes.
+FOURTEENTH_APP_GLYPHS = {
+    "ace-hardware": [
+        _path("M128 144 L176 128 L208 160 L192 208 L160 224 L128 192 Z"),
+        _path("M192 208 L360 376 L392 344 L224 176"),
+        _shape("circle", cx=352, cy=344, r=12),
+    ],
+    "ai-dungeon": [
+        _path("M128 168 Q192 144 256 184 Q320 144 384 168 V360 Q320 336 256 376 Q192 336 128 360 Z"),
+        _path("M224 344 V264 Q256 216 288 264 V344 M256 184 V216"),
+        _path("M352 120 V152 M336 136 H368", accent=True),
+    ],
+    "gaming-hub": [
+        _path("M160 160 Q256 112 352 160 M160 352 Q256 400 352 352", accent=True),
+        _path("M184 208 H328 Q352 208 368 256 L384 304 Q384 336 352 328 L304 296 H208 L160 328 Q128 336 128 304 L144 256 Q160 208 184 208 Z"),
+        _path("M184 240 V280 M164 260 H204"),
+        _shape("circle", cx=304, cy=252, r=8, fill="text"),
+        _shape("circle", cx=336, cy=276, r=8, fill="text"),
+    ],
+    "kroger": [
+        _path("M128 224 H384 L352 376 H160 Z M192 224 L224 136 M320 224 L288 136"),
+        _shape("circle", cx=224, cy=288, r=20),
+        _shape("circle", cx=288, cy=312, r=20, stroke="accent"),
+    ],
+    "affirm": [
+        _shape("rect", x=136, y=168, width=240, height=208, rx=24),
+        _path("M136 224 H376 M192 136 V192 M320 136 V192"),
+        _path("M184 312 L224 344 L328 256", accent=True),
+    ],
+    "usaa": [
+        _path("M256 128 L376 168 V256 Q376 336 256 392 Q136 336 136 256 V168 Z"),
+        _path("M184 224 L256 184 L328 224 M192 224 V304 M256 224 V320 M320 224 V304 M184 336 H328", accent=True),
+    ],
+    "proton-authenticator": [
+        _path("M256 120 L368 168 V256 Q368 336 256 392 Q144 336 144 256 V168 Z"),
+        _shape("circle", cx=256, cy=248, r=64),
+        _path("M256 208 V248 L288 264", accent=True),
+    ],
+    "wikipedia": [
+        _shape("circle", cx=256, cy=232, r=104),
+        _shape("ellipse", cx=256, cy=232, rx=40, ry=104),
+        _path("M152 232 H360 M168 184 H344 M168 280 H344", accent=True),
+        _path("M160 376 H352 M208 336 V376 M304 336 V376"),
+    ],
+    "xbox": [
+        _path("M192 152 H320 Q352 152 368 216 L392 328 Q392 368 352 352 L304 304 H208 L160 352 Q120 368 120 328 L144 216 Q160 152 192 152 Z"),
+        _path("M184 208 V272 M152 240 H216"),
+        _shape("circle", cx=312, cy=208, r=8, fill="text"),
+        _shape("circle", cx=344, cy=240, r=8, fill="text"),
+        _shape("circle", cx=312, cy=272, r=8, fill="text"),
+        _shape("circle", cx=280, cy=240, r=8, fill="text"),
+    ],
+    "shop": [
+        _path("M152 208 H360 L376 376 H136 Z M208 208 V176 Q208 128 256 128 Q304 128 304 176 V208"),
+        _shape("rect", x=224, y=256, width=64, height=64, rx=12, stroke="accent"),
+    ],
+    "fandom": [
+        _path("M128 184 Q184 160 240 200 Q296 160 352 184 V376 Q296 352 240 392 Q184 352 128 376 Z M240 200 V392"),
+        _path("M264 128 H384 V224 H344 L312 256 V224 H264 Z", accent=True),
+    ],
+    "shonen-jump": [
+        _shape("rect", x=144, y=120, width=224, height=272, rx=16),
+        _path("M144 224 H368 M144 304 H368 M272 120 V224 M224 304 V392"),
+        _path("M184 272 L328 248 M184 192 L232 152 M272 352 L328 328", accent=True),
+    ],
+    "smart-switch": [
+        _shape("rect", x=120, y=136, width=104, height=240, rx=20),
+        _shape("rect", x=288, y=136, width=104, height=240, rx=20),
+        _path("M192 216 H320 L296 192 M320 296 H192 L216 320", accent=True),
+    ],
+    "steam-chat": [
+        _path("M160 144 H352 Q392 144 392 184 V304 Q392 344 352 344 H248 L176 392 V344 H160 Q120 344 120 304 V184 Q120 144 160 144 Z"),
+        _shape("circle", cx=208, cy=248, r=24),
+        _shape("circle", cx=304, cy=248, r=24),
+        _path("M232 248 H280", accent=True),
+    ],
+    "sonic": [
+        _path("M128 192 L160 136 H352 L384 192 Z M152 192 V224 M360 192 V224"),
+        _path("M208 248 H312 L296 384 H224 Z M272 248 V208 L304 184", accent=True),
+    ],
+    "samsung-global-goals": [
+        _path("M240 128 Q144 144 128 240 H208 Q216 216 240 208 Z"),
+        _path("M272 128 Q368 144 384 240 H304 Q296 216 272 208 Z"),
+        _path("M128 272 Q144 368 240 384 V304 Q216 296 208 272 Z"),
+        _path("M272 384 Q368 368 384 272 H304 Q296 296 272 304 Z"),
+    ],
+    "theme-park": [
+        _shape("rect", x=128, y=128, width=256, height=256, rx=40),
+        _shape("circle", cx=208, cy=208, r=24),
+        _shape("circle", cx=304, cy=208, r=24),
+        _shape("circle", cx=208, cy=304, r=24, stroke="accent"),
+        _shape("circle", cx=304, cy=304, r=24, fill="text"),
+    ],
+    "zillow-rentals": [
+        _path("M128 232 L256 128 L384 232 M160 208 V360 H240"),
+        _shape("circle", cx=304, cy=264, r=32),
+        _path("M304 296 V392 M304 352 H344 M304 384 H328", accent=True),
+    ],
+    "samsung-find": [
+        _path("M136 216 V136 H216 M296 136 H376 V216 M376 296 V376 H296 M216 376 H136 V296"),
+        _shape("circle", cx=256, cy=256, r=56, stroke="accent"),
+        _shape("circle", cx=256, cy=256, r=8, fill="text"),
+    ],
+    "dollar-general": [
+        _path("M128 224 L152 144 H336 L360 224 M152 224 V376 H336 V296 M184 376 V272 H248 V376"),
+        _path("M288 232 H352 L392 272 L352 312 L288 248 Z", accent=True),
+        _shape("circle", cx=320, cy=248, r=8, fill="text"),
+    ],
+    "sound-connect": [
+        _path("M144 288 V240 Q144 128 256 128 Q368 128 368 240 V288"),
+        _shape("rect", x=128, y=248, width=48, height=104, rx=16),
+        _shape("rect", x=336, y=248, width=48, height=104, rx=16),
+        _shape("circle", cx=256, cy=304, r=24, stroke="accent"),
+        _path("M208 304 H232 M280 304 H304 M256 328 V376", accent=True),
+    ],
+    "samsung-pass": [
+        _shape("rect", x=136, y=144, width=240, height=224, rx=32),
+        _shape("circle", cx=232, cy=224, r=32),
+        _path("M216 256 L200 312 H264 L248 256 M296 304 L320 328 L360 280", accent=True),
+    ],
+    "va": [
+        _path("M128 184 V152 H232 L264 184 H384 V376 H128 Z"),
+        _path("M256 216 L280 264 L336 272 L296 312 L304 360 L256 336 L208 360 L216 312 L176 272 L232 264 Z", accent=True),
+    ],
+    "battle-net": [
+        _shape("circle", cx=256, cy=152, r=24),
+        _shape("circle", cx=160, cy=336, r=24),
+        _shape("circle", cx=352, cy=336, r=24),
+        _path("M280 152 Q384 176 376 288 M328 360 Q256 400 192 368 M136 288 Q128 208 208 168", accent=True),
+    ],
+    "coinbase": [
+        _shape("circle", cx=216, cy=224, r=88),
+        _shape("circle", cx=312, cy=312, r=72),
+        _path("M184 224 H248 M216 192 V256 M280 312 H344", accent=True),
+    ],
+    "credit-one": [
+        _shape("rect", x=128, y=160, width=256, height=192, rx=24),
+        _path("M128 216 H384 M176 296 H216 M288 264 L312 248 V312", accent=True),
+    ],
+    "samsung-members": [
+        _shape("circle", cx=216, cy=216, r=40),
+        _shape("circle", cx=328, cy=232, r=32),
+        _path("M136 360 V336 Q136 288 216 288 Q296 288 296 336 V360 M320 304 Q376 304 376 352 V360"),
+        _path("M128 144 Q256 112 384 144", accent=True),
+    ],
+    "proton-vpn": [
+        _path("M128 376 L232 144 L280 248 M232 376 L320 208 L392 376 Z"),
+        _shape("circle", cx=184, cy=328, r=16, stroke="accent"),
+        _path("M184 344 V376 M144 376 H224", accent=True),
+    ],
+    "t-life": [
+        _shape("rect", x=168, y=120, width=176, height=272, rx=32),
+        _path("M216 168 H296 M232 256 H280 M256 232 V280", accent=True),
+        _path("M224 344 H288"),
+    ],
+    "my-spectrum": [
+        _path("M144 224 Q256 128 368 224 M184 264 Q256 200 328 264 M224 304 Q256 280 288 304", accent=True),
+        _shape("rect", x=136, y=344, width=240, height=48, rx=16),
+        _path("M184 368 H208"),
+    ],
+    "g2a": [
+        _path("M128 184 H288 V328 H128 V280 Q160 256 128 232 Z"),
+        _path("M224 152 H384 V352 H288", accent=True),
+        _path("M192 216 V280 M160 248 H224"),
+    ],
+    "samsung-tv-plus": [
+        _shape("rect", x=128, y=144, width=256, height=192, rx=24),
+        _path("M224 336 V384 M288 336 V384 M192 384 H320"),
+        _path("M224 240 H288 M256 208 V272", accent=True),
+    ],
+    "ap-news": [
+        _path("M128 144 H336 V352 Q336 384 304 384 H160 Q128 384 128 352 Z M336 208 H384 V352 Q384 384 352 384 H304"),
+        _shape("rect", x=168, y=184, width=64, height=64, rx=8),
+        _path("M264 184 H296 M264 224 H296 M168 296 H296 M168 336 H264", accent=True),
+    ],
+    "link-to-windows": [
+        _shape("rect", x=120, y=152, width=192, height=144, rx=16),
+        _path("M184 296 V344 M152 344 H216"),
+        _shape("rect", x=280, y=224, width=112, height=168, rx=16),
+        _path("M208 224 H256 L240 208 M256 224 L240 240", accent=True),
+    ],
+    "tips": [
+        _path("M200 296 Q160 264 160 216 Q160 128 256 128 Q352 128 352 216 Q352 264 312 296 L296 336 H216 Z"),
+        _path("M224 368 H288 M240 392 H272 M256 192 V240 M256 272 V280", accent=True),
+    ],
+    "proton-pass": [
+        _path("M256 120 L392 256 L256 392 L120 256 Z"),
+        _shape("circle", cx=232, cy=232, r=40),
+        _path("M264 264 L328 328 M296 296 L320 272 M320 320 L344 296", accent=True),
+    ],
+    "shop-samsung": [
+        _path("M144 208 H368 L384 384 H128 Z M208 208 V176 Q208 128 256 128 Q304 128 304 176 V208"),
+        _shape("rect", x=224, y=248, width=64, height=96, rx=12, stroke="accent"),
+        _path("M248 320 H264", accent=True),
+    ],
+    "wallpaper-engine": [
+        _shape("rect", x=128, y=144, width=240, height=208, rx=24),
+        _shape("circle", cx=200, cy=208, r=24),
+        _path("M128 312 L200 256 L256 296 L304 248 L336 272"),
+        _shape("circle", cx=336, cy=336, r=40, stroke="accent"),
+        _path("M336 280 V296 M336 376 V392 M280 336 H296 M376 336 H392", accent=True),
+    ],
+    "asus-router": [
+        _shape("rect", x=136, y=272, width=240, height=96, rx=24),
+        _path("M168 272 V136 M344 272 V136 M184 368 V392 M328 368 V392"),
+        _shape("circle", cx=256, cy=320, r=16, stroke="accent"),
+        _path("M216 176 Q256 144 296 176", accent=True),
+    ],
+    "mochi-health": [
+        _path("M128 264 Q128 184 208 184 Q264 184 288 240 Q312 296 368 296 Q368 376 288 376 Q232 376 208 320 Q184 264 128 264 Z"),
+        _path("M256 176 Q288 120 360 136 Q344 192 288 192 M256 208 L312 160", accent=True),
+    ],
+}
+
+
 def icon_catalog(version: str = VERSION) -> list[dict]:
     """Return labels and explicit assignment identities for an admitted revision."""
     if version not in VERSIONS:
@@ -1560,8 +1778,10 @@ def icon_catalog(version: str = VERSION) -> list[dict]:
         apps = (*APP_CATALOG, *NEW_APP_CATALOG, *THIRD_APP_CATALOG, *FOURTH_APP_CATALOG, *FIFTH_APP_CATALOG, *SIXTH_APP_CATALOG, *SEVENTH_APP_CATALOG, *EIGHTH_APP_CATALOG, *NINTH_APP_CATALOG, *TENTH_APP_CATALOG, *ELEVENTH_APP_CATALOG)
     elif version == "0.15.0":
         apps = (*APP_CATALOG, *NEW_APP_CATALOG, *THIRD_APP_CATALOG, *FOURTH_APP_CATALOG, *FIFTH_APP_CATALOG, *SIXTH_APP_CATALOG, *SEVENTH_APP_CATALOG, *EIGHTH_APP_CATALOG, *NINTH_APP_CATALOG, *TENTH_APP_CATALOG, *ELEVENTH_APP_CATALOG, *TWELFTH_APP_CATALOG)
-    else:
+    elif version == "0.16.0":
         apps = (*APP_CATALOG, *NEW_APP_CATALOG, *THIRD_APP_CATALOG, *FOURTH_APP_CATALOG, *FIFTH_APP_CATALOG, *SIXTH_APP_CATALOG, *SEVENTH_APP_CATALOG, *EIGHTH_APP_CATALOG, *NINTH_APP_CATALOG, *TENTH_APP_CATALOG, *ELEVENTH_APP_CATALOG, *TWELFTH_APP_CATALOG, *THIRTEENTH_APP_CATALOG)
+    else:
+        apps = (*APP_CATALOG, *NEW_APP_CATALOG, *THIRD_APP_CATALOG, *FOURTH_APP_CATALOG, *FIFTH_APP_CATALOG, *SIXTH_APP_CATALOG, *SEVENTH_APP_CATALOG, *EIGHTH_APP_CATALOG, *NINTH_APP_CATALOG, *TENTH_APP_CATALOG, *ELEVENTH_APP_CATALOG, *TWELFTH_APP_CATALOG, *THIRTEENTH_APP_CATALOG, *FOURTEENTH_APP_CATALOG)
     for app in apps:
         if not isinstance(app, dict):
             raise ValueError("Malformed named-app catalog")
@@ -1576,61 +1796,72 @@ def icon_catalog(version: str = VERSION) -> list[dict]:
                for key in ("label", "store_title", "category", "store_url", "selection_basis")):
             raise ValueError("Missing named-app label or source identity")
         url = urlparse(app["store_url"])
-        if (url.scheme != "https" or url.netloc != "play.google.com" or url.path != "/store/apps/details"
-                or parse_qs(url.query) != {"id": [package]} or url.fragment or app.get("kind") != "app"):
+        play_identity = (url.scheme == "https" and url.netloc == "play.google.com"
+                         and url.path == "/store/apps/details"
+                         and parse_qs(url.query) == {"id": [package]} and not url.fragment)
+        # Only these inspected Samsung records extend the current catalog's store contract.
+        galaxy_identity = (version == "0.17.0" and package in {
+            "com.samsung.android.game.gamehome", "com.samsung.android.themedesigner",
+            "com.samsung.android.samsungpass", "com.samsung.android.app.tips",
+        } and app["store_url"] == f"https://galaxystore.samsung.com/detail/{package}")
+        if app.get("kind") != "app" or not (play_identity or galaxy_identity):
             raise ValueError("Named-app store URL must identify its exact official package")
         seen.add(identifier)
         packages.add(package)
         catalog.append(dict(app))
     drawings = set(APP_GLYPHS)
-    if version in ("0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0"):
+    if version in ("0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0"):
         if drawings & set(NEW_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(NEW_APP_GLYPHS)
-    if version in ("0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0"):
+    if version in ("0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0"):
         if drawings & set(THIRD_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(THIRD_APP_GLYPHS)
-    if version in ("0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0"):
+    if version in ("0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0"):
         if drawings & set(FOURTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(FOURTH_APP_GLYPHS)
-    if version in ("0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0"):
+    if version in ("0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0"):
         if drawings & set(FIFTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(FIFTH_APP_GLYPHS)
-    if version in ("0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0"):
+    if version in ("0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0"):
         if drawings & set(SIXTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(SIXTH_APP_GLYPHS)
-    if version in ("0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0"):
+    if version in ("0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0"):
         if drawings & set(SEVENTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(SEVENTH_APP_GLYPHS)
-    if version in ("0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0"):
+    if version in ("0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0"):
         if drawings & set(EIGHTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(EIGHTH_APP_GLYPHS)
-    if version in ("0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0"):
+    if version in ("0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0"):
         if drawings & set(NINTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(NINTH_APP_GLYPHS)
-    if version in ("0.13.0", "0.14.0", "0.15.0", "0.16.0"):
+    if version in ("0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0"):
         if drawings & set(TENTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(TENTH_APP_GLYPHS)
-    if version in ("0.14.0", "0.15.0", "0.16.0"):
+    if version in ("0.14.0", "0.15.0", "0.16.0", "0.17.0"):
         if drawings & set(ELEVENTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(ELEVENTH_APP_GLYPHS)
-    if version in ("0.15.0", "0.16.0"):
+    if version in ("0.15.0", "0.16.0", "0.17.0"):
         if drawings & set(TWELFTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(TWELFTH_APP_GLYPHS)
-    if version == "0.16.0":
+    if version in ("0.16.0", "0.17.0"):
         if drawings & set(THIRTEENTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(THIRTEENTH_APP_GLYPHS)
+    if version == "0.17.0":
+        if drawings & set(FOURTEENTH_APP_GLYPHS):
+            raise ValueError("New named-app drawings replace an accepted ID")
+        drawings |= set(FOURTEENTH_APP_GLYPHS)
     if drawings != seen - set(FUNCTIONS):
         raise ValueError("Named-app catalog and drawings differ")
     return catalog
@@ -1649,7 +1880,7 @@ def token_path(version: str = VERSION) -> Path:
     """Select the shared palette without changing a historical artwork revision."""
     if version not in VERSIONS:
         raise ValueError("Unsupported icon artwork version")
-    return ROOT / ("tokens-monochrome.json" if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0") else "tokens.json")
+    return ROOT / ("tokens-monochrome.json" if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0") else "tokens.json")
 
 
 def load_icon_tokens(version: str = VERSION, path: Path | None = None) -> dict:
@@ -1701,7 +1932,8 @@ def _render_icon(function: str, appearance: str, document: dict, grant: str, *, 
                 NINTH_APP_GLYPHS if function in NINTH_APP_GLYPHS else
                 TENTH_APP_GLYPHS if function in TENTH_APP_GLYPHS else
                 ELEVENTH_APP_GLYPHS if function in ELEVENTH_APP_GLYPHS else
-                TWELFTH_APP_GLYPHS if function in TWELFTH_APP_GLYPHS else THIRTEENTH_APP_GLYPHS)
+                TWELFTH_APP_GLYPHS if function in TWELFTH_APP_GLYPHS else
+                THIRTEENTH_APP_GLYPHS if function in THIRTEENTH_APP_GLYPHS else FOURTEENTH_APP_GLYPHS)
     for tag, attributes in drawings[function]:
         ET.SubElement(group, tag, {
             key: palette[value] if value in ("accent", "text") else value
@@ -1716,7 +1948,7 @@ def render_icons(document: dict, *, version: str = VERSION) -> dict[str, bytes]:
     _validated(document)
     if version not in VERSIONS:
         raise ValueError("Unsupported icon artwork version")
-    if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0"):
+    if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0"):
         _monochrome(document)
     catalog = icon_catalog(version)
     names = [entry["id"] for entry in catalog]
@@ -1744,7 +1976,7 @@ def render_icons(document: dict, *, version: str = VERSION) -> dict[str, bytes]:
         "functions": names, "files": records,
         "scope": "Original functional glyphs; no brand logos, font assets or phone installation",
     }
-    if version in ("0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0"):
+    if version in ("0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0"):
         if version == "0.3.0":
             date, scope = CATALOG_DATE, CATALOG_SCOPE
         elif version == "0.4.0":
@@ -1769,12 +2001,14 @@ def render_icons(document: dict, *, version: str = VERSION) -> dict[str, bytes]:
             date, scope = ELEVENTH_CATALOG_DATE, ELEVENTH_CATALOG_SCOPE
         elif version == "0.15.0":
             date, scope = TWELFTH_CATALOG_DATE, TWELFTH_CATALOG_SCOPE
-        else:
+        elif version == "0.16.0":
             date, scope = THIRTEENTH_CATALOG_DATE, THIRTEENTH_CATALOG_SCOPE
+        else:
+            date, scope = FOURTEENTH_CATALOG_DATE, FOURTEENTH_CATALOG_SCOPE
         manifest.update(catalog=catalog, catalog_date=date, catalog_scope=scope,
                         scope="Original themed interpretations for named apps and general functions; "
                               "app names identify intended assignments, not publisher endorsement or installation")
-    if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0"):
+    if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0"):
         manifest["palette_variant"] = "monochrome"
     files["manifest.json"] = (json.dumps(manifest, sort_keys=True, indent=2) + "\n").encode("utf-8")
     return files

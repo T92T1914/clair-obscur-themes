@@ -1,5 +1,17 @@
 # Changes
 
+## Icon artwork 0.17.0
+
+October 21, 2026.
+
+- Add 40 phone-service, device-tool, shopping, reference and companion assignments. The collection has 257 named apps and 24 general functions, giving 281 choices and 562 SVG masters.
+- Use original geometric drawings in pure black and white. Separate similar app families through their silhouettes, visible names and exact package hints.
+- Admit four exact Samsung Galaxy Store identities in the current revision, with strict path and package matching. Historical revisions keep their original identity contract. The gallery labels the actual store.
+- Preserve all 482 accepted 0.16.0 SVGs, all sixteen earlier archives and the accepted desktop, Terminal and Garmin inputs.
+- Include the additions in the existing finder, static gallery, individual PNG controls, portable kit and two-size exporter. A full current export contains 1,124 PNGs.
+- Admit the portable kit's 630 declared hashes and 650 entries within a 654-entry cap, retaining four-entry extra-file reporting headroom and the existing byte, path, link, depth and read guards.
+- Keep Samsung assignment, launcher masks, phone fonts, keyboard state and watch runtime acceptance separate from artwork delivery.
+
 ## Garmin watch face 0.7.0
 
 October 21, 2026.

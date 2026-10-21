@@ -92,6 +92,9 @@ APP_NAMES += TWELFTH_APP_NAMES
 TWELFTH_NAMES = BASE_NAMES + APP_NAMES
 THIRTEENTH_APP_NAMES = "google-play-books libby kobo-books goodreads wattpad webtoon readera moon-reader".split()
 APP_NAMES += THIRTEENTH_APP_NAMES
+THIRTEENTH_NAMES = BASE_NAMES + APP_NAMES
+FOURTEENTH_APP_NAMES = "ace-hardware ai-dungeon gaming-hub kroger affirm usaa proton-authenticator wikipedia xbox shop fandom shonen-jump smart-switch steam-chat sonic samsung-global-goals theme-park zillow-rentals samsung-find dollar-general sound-connect samsung-pass va battle-net coinbase credit-one samsung-members proton-vpn t-life my-spectrum g2a samsung-tv-plus ap-news link-to-windows tips proton-pass shop-samsung wallpaper-engine asus-router mochi-health".split()
+APP_NAMES += FOURTEENTH_APP_NAMES
 NAMES = BASE_NAMES + APP_NAMES
 EXPECTED_APPS = {
     "google-chrome": ("Google Chrome", "com.android.chrome"),
@@ -783,6 +786,51 @@ THIRTEENTH_EXPECTED_APPS = (
 EXPECTED_APPS.update({identifier: (label, package)
                       for identifier, label, package in THIRTEENTH_EXPECTED_APPS})
 
+FOURTEENTH_EXPECTED_APPS = (
+    ("ace-hardware","Ace Hardware","com.acehardware.rewards"),
+    ("ai-dungeon","AI Dungeon","com.aidungeon"),
+    ("gaming-hub","Gaming Hub","com.samsung.android.game.gamehome"),
+    ("kroger","Kroger","com.kroger.mobile"),
+    ("affirm","Affirm","com.affirm.central"),
+    ("usaa","USAA","com.usaa.mobile.android.usaa"),
+    ("proton-authenticator","Proton Authenticator","proton.android.authenticator"),
+    ("wikipedia","Wikipedia","org.wikipedia"),
+    ("xbox","Xbox","com.microsoft.xboxone.smartglass"),
+    ("shop","Shop","com.shopify.arrive"),
+    ("fandom","Fandom","com.fandom.app"),
+    ("shonen-jump","Shonen Jump","com.viz.wsj.android"),
+    ("smart-switch","Smart Switch","com.sec.android.easyMover"),
+    ("steam-chat","Steam Chat","com.valvesoftware.android.steam.friendsui"),
+    ("sonic","Sonic","com.sonic.sonicdrivein"),
+    ("samsung-global-goals","Samsung Global Goals","com.samsung.sree"),
+    ("theme-park","Theme Park","com.samsung.android.themedesigner"),
+    ("zillow-rentals","Zillow Rentals","com.zillow.android.rentals"),
+    ("samsung-find","Samsung Find","com.samsung.android.app.find"),
+    ("dollar-general","Dollar General","com.dollargeneral.android"),
+    ("sound-connect","Sound Connect","com.sony.songpal.mdr"),
+    ("samsung-pass","Samsung Pass","com.samsung.android.samsungpass"),
+    ("va","VA","gov.va.mobileapp"),
+    ("battle-net","Battle.net","com.blizzard.messenger"),
+    ("coinbase","Coinbase","com.coinbase.android"),
+    ("credit-one","Credit One","com.creditonebank.mobile"),
+    ("samsung-members","Samsung Members","com.samsung.android.voc"),
+    ("proton-vpn","Proton VPN","ch.protonvpn.android"),
+    ("t-life","T-Life","com.tmobile.tuesdays"),
+    ("my-spectrum","My Spectrum","com.brighthouse.mybhn"),
+    ("g2a","G2A","com.g2a.marketplace"),
+    ("samsung-tv-plus","Samsung TV Plus","com.samsung.android.tvplus"),
+    ("ap-news","AP News","mnn.Android"),
+    ("link-to-windows","Link to Windows","com.microsoft.appmanager"),
+    ("tips","Tips","com.samsung.android.app.tips"),
+    ("proton-pass","Proton Pass","proton.android.pass"),
+    ("shop-samsung","Shop Samsung","com.samsung.ecomm"),
+    ("wallpaper-engine","Wallpaper Engine","io.wallpaperengine.weclient"),
+    ("asus-router","ASUS Router","com.asus.aihome"),
+    ("mochi-health","Mochi Health","com.mochihealth.mochihealth"),
+)
+EXPECTED_APPS.update({identifier: (label, package)
+                      for identifier, label, package in FOURTEENTH_EXPECTED_APPS})
+
 NS = "{http://www.w3.org/2000/svg}"
 
 
@@ -843,11 +891,11 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(set(files), expected | {"manifest.json"})
         manifest = json.loads(files["manifest.json"])
         self.assertEqual(manifest["functions"], NAMES)
-        self.assertEqual(manifest["version"], "0.16.0")
+        self.assertEqual(manifest["version"], "0.17.0")
         self.assertEqual(manifest["token_schema"], 1)
         self.assertEqual(manifest["token_version"], "1.0.0")
         self.assertEqual(manifest["palette_variant"], "monochrome")
-        self.assertEqual(len(manifest["files"]), 482)
+        self.assertEqual(len(manifest["files"]), 562)
         for record in manifest["files"]:
             self.assertEqual(record["path"], f'{record["appearance"]}/{record["function"]}.svg')
             payload = files[record["path"]]
@@ -857,7 +905,7 @@ class FunctionalIconTests(unittest.TestCase):
         relabeled = files["Clair/phone.svg"].replace(b'aria-label="phone"', b'aria-label="messages"')
         self.assertEqual(geometry(relabeled), geometry(files["Clair/phone.svg"]))
         # Named choices must have different drawings, rather than relabeled aliases.
-        self.assertEqual(len({geometry(files[f"Clair/{name}.svg"]) for name in NAMES}), 241)
+        self.assertEqual(len({geometry(files[f"Clair/{name}.svg"]) for name in NAMES}), 281)
 
     def test_palette_roles_and_geometry_are_shared_without_hardcoded_colors(self):
         files = icons.render_icons(self.document)
@@ -916,14 +964,14 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(icons.token_path(), ROOT / "tokens-monochrome.json")
         for version in ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0"):
             self.assertEqual(icons.token_path(version), ROOT / "tokens.json")
-        for version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0"):
+        for version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0"):
             self.assertEqual(icons.token_path(version), ROOT / "tokens-monochrome.json")
         for version, document in (("0.5.0", self.legacy_document), ("0.6.0", self.document),
                                   ("0.7.0", self.document), ("0.8.0", self.document),
                                   ("0.9.0", self.document), ("0.10.0", self.document),
                                   ("0.11.0", self.document), ("0.12.0", self.document),
                                   ("0.13.0", self.document), ("0.14.0", self.document),
-                                  ("0.15.0", self.document), ("0.16.0", self.document)):
+                                  ("0.15.0", self.document), ("0.16.0", self.document), ("0.17.0", self.document)):
             with self.subTest(version=version), tempfile.TemporaryDirectory() as temporary:
                 base = Path(temporary)
                 explicit = base / "explicit.json"
@@ -1108,7 +1156,7 @@ class FunctionalIconTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "differs"):
                 icons.build_icons(self.document, output, check=True)
             self.assertEqual(tree_snapshot(output), before)
-        for unsupported in ("0.0.0", "0.17.0", None, [], {}):
+        for unsupported in ("0.0.0", "0.18.0", None, [], {}):
             with self.subTest(version=unsupported), self.assertRaisesRegex(ValueError, "Unsupported"):
                 icons.render_icons(self.document, version=unsupported)
 
@@ -1117,12 +1165,15 @@ class FunctionalIconTests(unittest.TestCase):
         manifest = json.loads(files["manifest.json"])
         catalog = manifest["catalog"]
         self.assertEqual([row["id"] for row in catalog], NAMES)
-        self.assertEqual([row["kind"] for row in catalog], ["function"] * 24 + ["app"] * 217)
+        self.assertEqual([row["kind"] for row in catalog], ["function"] * 24 + ["app"] * 257)
         apps = catalog[24:]
-        self.assertEqual(len({row["android_package"] for row in apps}), 217)
+        self.assertEqual(len({row["android_package"] for row in apps}), 257)
         self.assertEqual({row["id"]: (row["label"], row["android_package"]) for row in apps}, EXPECTED_APPS)
         for row in apps:
-            self.assertEqual(row["store_url"], "https://play.google.com/store/apps/details?id=" + row["android_package"])
+            prefix = ("https://galaxystore.samsung.com/detail/" if row["id"] in
+                      {"gaming-hub", "theme-park", "samsung-pass", "tips"} else
+                      "https://play.google.com/store/apps/details?id=")
+            self.assertEqual(row["store_url"], prefix + row["android_package"])
             for appearance in ("Clair", "Obscur"):
                 svg = ET.fromstring(files[f'{appearance}/{row["id"]}.svg'])
                 self.assertEqual(svg.get("aria-label"), row["label"])
@@ -1691,7 +1742,7 @@ class FunctionalIconTests(unittest.TestCase):
                          "3979cc7eaf90a5cf8aab82bd711fc8d2ff92388856cbb41b9321442693b88b2b")
         self.assertEqual(previous_manifest["functions"], TWELFTH_NAMES)
         self.assertEqual(len(previous_manifest["files"]), 466)
-        current = icons.render_icons(self.document)
+        current = icons.render_icons(self.document, version="0.16.0")
         manifest = json.loads(current["manifest.json"])
         self.assertEqual(manifest["version"], "0.16.0")
         self.assertEqual(len(manifest["catalog"]), 241)
@@ -1735,6 +1786,104 @@ class FunctionalIconTests(unittest.TestCase):
             with self.subTest(drawings=fault), patch.object(icons, "THIRTEENTH_APP_GLYPHS", bad):
                 refuse_without_rewriting_history()
 
+
+    def test_phone_services_preserve_reading_archive_catalog_and_all_482_svg_bytes(self):
+        from themeforge.build import _zip_bytes
+        previous = icons.render_icons(self.document, version="0.16.0")
+        previous_manifest = json.loads(previous["manifest.json"])
+        self.assertEqual(hashlib.sha256(_zip_bytes({
+            **previous, "LICENSE.txt": icons.license_text().encode("utf-8")
+        })).hexdigest(), "3fbf8b53e12ddae6ea354d6ed20a1464c4874192a24f5dee7f231baed0e7f3a0")
+        self.assertEqual(hashlib.sha256(previous["manifest.json"]).hexdigest(),
+                         "edf610a33c55adeecca9c43bde0b0786a4f7d0b81c018880a504068218670b19")
+        current = icons.render_icons(self.document)
+        manifest = json.loads(current["manifest.json"])
+        self.assertEqual(manifest["version"], "0.17.0")
+        self.assertEqual(len(manifest["catalog"]), 281)
+        self.assertEqual(len(manifest["files"]), 562)
+        self.assertEqual(manifest["catalog"][:241], previous_manifest["catalog"])
+        self.assertEqual(manifest["functions"][:241], THIRTEENTH_NAMES)
+        self.assertEqual([(row["id"], row["label"], row["android_package"])
+                          for row in manifest["catalog"][241:]], list(FOURTEENTH_EXPECTED_APPS))
+        for name, payload in previous.items():
+            if name.endswith(".svg"):
+                self.assertEqual(current[name], payload, name)
+        rows = {row["id"]: row for row in manifest["catalog"]}
+        self.assertNotEqual(rows["steam-chat"]["android_package"], rows["steam"]["android_package"])
+        self.assertNotEqual(rows["zillow-rentals"]["android_package"], rows["zillow"]["android_package"])
+        self.assertNotEqual(rows["credit-one"]["android_package"], rows["capital-one"]["android_package"])
+        self.assertNotEqual(rows["usaa"]["android_package"], rows["us-bank"]["android_package"])
+        self.assertEqual(rows["ap-news"]["android_package"], "mnn.Android")
+        self.assertEqual(rows["fandom"]["android_package"], "com.fandom.app")
+        self.assertEqual(rows["shop"]["android_package"], "com.shopify.arrive")
+        self.assertTrue({"interpreter", "learning", "visual-voicemail"}.isdisjoint(rows))
+
+    def test_phone_service_faults_refuse_output_and_preserve_reading_tree(self):
+        previous = icons.render_icons(self.document, version="0.16.0")
+        def refuse_without_rewriting_history():
+            self.assertEqual(icons.render_icons(self.document, version="0.16.0"), previous)
+            with tempfile.TemporaryDirectory() as temporary:
+                output = Path(temporary) / "never-created"
+                with self.assertRaises(ValueError):
+                    icons.build_icons(self.document, output)
+                self.assertFalse(output.exists())
+                self.assertEqual(list(Path(temporary).iterdir()), [])
+        for change in ({"id": "phone"}, {"id": "libby"}, {"id": "../unsafe"},
+                       {"android_package": "wp.wattpad"}, {"android_package": "not-a-package"},
+                       {"label": " "}, {"store_title": ""}, {"selection_basis": ""},
+                       {"store_url": "https://play.google.com/store/apps/details?id=com.wrong.app"}):
+            bad = copy.deepcopy(icons.FOURTEENTH_APP_CATALOG)
+            bad[0].update(change)
+            with self.subTest(change=change), patch.object(icons, "FOURTEENTH_APP_CATALOG", bad):
+                refuse_without_rewriting_history()
+        for fault in ("missing", "accepted-ID", "extra"):
+            bad = dict(icons.FOURTEENTH_APP_GLYPHS)
+            if fault == "missing":
+                bad.pop("ace-hardware")
+            else:
+                bad["phone" if fault == "accepted-ID" else "unassigned-new-app"] = bad["ace-hardware"]
+            with self.subTest(drawings=fault), patch.object(icons, "FOURTEENTH_APP_GLYPHS", bad):
+                refuse_without_rewriting_history()
+
+    def test_galaxy_store_admission_is_exact_and_current_only(self):
+        packages = {
+            "gaming-hub": "com.samsung.android.game.gamehome",
+            "theme-park": "com.samsung.android.themedesigner",
+            "samsung-pass": "com.samsung.android.samsungpass",
+            "tips": "com.samsung.android.app.tips",
+        }
+        catalog = {row["id"]: row for row in icons.icon_catalog()}
+        for identifier, package in packages.items():
+            url = "https://galaxystore.samsung.com/detail/" + package
+            self.assertEqual(catalog[identifier]["store_url"], url)
+            faults = (
+                url.replace("https:", "http:"), url.replace("galaxystore.samsung.com", "example.com"),
+                url.replace("galaxystore.samsung.com", "galaxystore.samsung.com.example.com"),
+                url.replace("galaxystore.samsung.com", "galaxystore.samsung.com:443"),
+                url.replace("galaxystore.samsung.com", "user@galaxystore.samsung.com"),
+                url.replace("/detail/", "/weardetail/"), url + "/", url + "?langCd=en",
+                url + "?id=" + package, url + "#details", url.replace(package, "com.wrong.app"),
+                url.replace(package, package.replace(".", "%2E")),
+            )
+            for bad_url in faults:
+                bad = copy.deepcopy(icons.FOURTEENTH_APP_CATALOG)
+                next(row for row in bad if row["id"] == identifier)["store_url"] = bad_url
+                with self.subTest(identifier=identifier, url=bad_url):
+                    with patch.object(icons, "FOURTEENTH_APP_CATALOG", bad):
+                        with self.assertRaises(ValueError):
+                            icons.icon_catalog()
+        bad = copy.deepcopy(icons.FOURTEENTH_APP_CATALOG)
+        bad[0]["store_url"] = "https://galaxystore.samsung.com/detail/" + bad[0]["android_package"]
+        with patch.object(icons, "FOURTEENTH_APP_CATALOG", bad), self.assertRaises(ValueError):
+            icons.icon_catalog()
+        # A new-store identity cannot be smuggled into any historical catalog.
+        old = copy.deepcopy(icons.THIRTEENTH_APP_CATALOG)
+        old[0].update(android_package=packages["theme-park"],
+                      store_url="https://galaxystore.samsung.com/detail/" + packages["theme-park"])
+        with patch.object(icons, "THIRTEENTH_APP_CATALOG", old), self.assertRaises(ValueError):
+            icons.icon_catalog("0.16.0")
+
+
     def test_current_bubble_has_one_continuous_outline_and_calculator_has_open_equals(self):
         files = icons.render_icons(self.document)
         bubble = ET.fromstring(files["Obscur/messages.svg"]).find(NS + "g")
@@ -1758,7 +1907,7 @@ class FunctionalIconTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "icons"
             result = icons.build_icons(self.document, output)
-            self.assertEqual(len(result["files"]), 482)
+            self.assertEqual(len(result["files"]), 562)
             before = tree_snapshot(output)
             self.assertEqual(before, icons.render_icons(self.document))
             icons.build_icons(self.document, output, check=True)

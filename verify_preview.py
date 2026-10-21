@@ -13,8 +13,8 @@ import sys
 from typing import BinaryIO
 
 MAX_MANIFEST_BYTES = 65_536
-MAX_DECLARED_FILES = 549
-MAX_ENTRIES = 573
+MAX_DECLARED_FILES = 630
+MAX_ENTRIES = 654
 MAX_FILE_BYTES = 8_388_608
 MAX_READ_BYTES = 16_777_216
 READ_CHUNK = 65_536
@@ -242,7 +242,7 @@ def _root(value: str | Path) -> tuple[Path, dict[Path, Observation]]:
 
 
 def inventory(root: Path) -> dict[str, Observation]:
-    """Collect at most 573 entries without following links or reading content."""
+    """Collect at most 654 entries without following links or reading content."""
     result: dict[str, Observation] = {}
     pending = [root]
     files: set[str] = set()
