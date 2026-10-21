@@ -1800,3 +1800,42 @@ ELEVENTH_APP_CATALOG = (
         "selection_basis": "Missing named activity-to-video-story assignment in the running/cycling group. Official Google Play identity inspected on October 20, 2026. Listing describes outdoor activity stories and mentions other trackers. That is a publisher statement, not tested Garmin synchronization or an installation result. Listing identity does not establish personal installation, training effectiveness or device interoperability."
     },
 )
+
+
+TWELFTH_CATALOG_DATE = "2026-10-21"
+TWELFTH_CATALOG_SCOPE = ("Learning and study assignments from inspected official Google Play identities and an existing catalog gap. "
+                        "No popularity ranking, educational recommendation, publisher endorsement or installation claim.")
+TWELFTH_APP_CATALOG = (
+    {"id": "google-classroom", "label": "Google Classroom", "store_title": "Google Classroom",
+     "kind": "app", "category": "education", "android_package": "com.google.android.apps.classroom",
+     "store_url": "https://play.google.com/store/apps/details?id=com.google.android.apps.classroom",
+     "selection_basis": "Inspected official listing, 100M+ cumulative download band and the missing classroom-workflow assignment."},
+    {"id": "khan-academy", "label": "Khan Academy", "store_title": "Khan Academy",
+     "kind": "app", "category": "education", "android_package": "org.khanacademy.android",
+     "store_url": "https://play.google.com/store/apps/details?id=org.khanacademy.android",
+     "selection_basis": "Inspected official listing, 10M+ cumulative download band and the missing main Khan Academy assignment, separate from Kids."},
+    {"id": "coursera", "label": "Coursera", "store_title": "Coursera: Grow your career",
+     "kind": "app", "category": "education", "android_package": "org.coursera.android",
+     "store_url": "https://play.google.com/store/apps/details?id=org.coursera.android",
+     "selection_basis": "Inspected official listing, 10M+ cumulative download band and the missing course-learning assignment."},
+    {"id": "udemy", "label": "Udemy", "store_title": "Udemy - Online Courses",
+     "kind": "app", "category": "education", "android_package": "com.udemy.android",
+     "store_url": "https://play.google.com/store/apps/details?id=com.udemy.android",
+     "selection_basis": "Inspected official listing, 10M+ cumulative download band and the missing main Udemy assignment, separate from its business client."},
+    {"id": "edx", "label": "edX", "store_title": "edX online learning",
+     "kind": "app", "category": "education", "android_package": "org.edx.mobile",
+     "store_url": "https://play.google.com/store/apps/details?id=org.edx.mobile",
+     "selection_basis": "Inspected official listing, 10M+ cumulative download band and the missing edX course-learning assignment."},
+    {"id": "quizlet", "label": "Quizlet", "store_title": "Quizlet: More than Flashcards",
+     "kind": "app", "category": "education", "android_package": "com.quizlet.quizletandroid",
+     "store_url": "https://play.google.com/store/apps/details?id=com.quizlet.quizletandroid",
+     "selection_basis": "Inspected official listing, 50M+ cumulative download band and the missing flashcard-study assignment, separate from Coconote."},
+    {"id": "photomath", "label": "Photomath", "store_title": "Photomath",
+     "kind": "app", "category": "education", "android_package": "com.microblink.photomath",
+     "store_url": "https://play.google.com/store/apps/details?id=com.microblink.photomath",
+     "selection_basis": "Inspected official listing, 100M+ cumulative download band and the missing mathematics-scan assignment, retaining its actual package spelling."},
+    {"id": "brainly", "label": "Brainly", "store_title": "Brainly: AI Homework Helper",
+     "kind": "app", "category": "education", "android_package": "co.brainly",
+     "store_url": "https://play.google.com/store/apps/details?id=co.brainly",
+     "selection_basis": "Inspected official listing, 100M+ cumulative download band and the missing homework-explanation assignment. Store wording identifies the app only."},
+)

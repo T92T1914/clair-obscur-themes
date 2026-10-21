@@ -1,5 +1,13 @@
 # Changes
 
+## Icon artwork 0.15.0
+
+- Add eight learning and study app assignments with inspected official listing identities. The collection has 209 named apps and 24 general functions, giving 233 choices and 466 SVG masters.
+- Use original teaching boards, study tools and explanation forms in pure black and white. Visible labels and exact package hints remain available for manual assignment.
+- Preserve all 450 accepted 0.14.0 SVGs, all fourteen earlier archives, and the accepted desktop, Terminal and Garmin inputs.
+- Include the additions in the existing finder, static gallery, individual PNG controls, portable kit and two-size exporter. A full current export contains 932 PNGs.
+- Keep Samsung assignment, launcher masks, phone fonts and watch runtime acceptance separate from artwork delivery.
+
 ## Icon artwork 0.14.0
 
 - Add eight inspected running and endurance-training app assignments in both black and white appearances. The collection has 201 named apps and 24 general functions, giving 225 choices and 450 SVG masters.
