@@ -1618,7 +1618,25 @@ async function acquireIconPng(page, id, appearance, { timeout = 5000 } = {}) {
   const button = iconPngButton(page, id, appearance);
   assert.ok(await button.isVisible()); assert.notEqual(await button.getAttribute('aria-disabled'), 'true');
   await button.focus();
-  const [download] = await Promise.all([page.waitForEvent('download', { timeout }), page.keyboard.press('Enter')]);
+  let download;
+  try {
+    [download] = await Promise.all([page.waitForEvent('download', { timeout }), page.keyboard.press('Enter')]);
+  } catch (error) {
+    let observation;
+    try {
+      observation = await page.evaluate(({ id, appearance }) => {
+        const button = document.querySelector(
+          `[data-icon-function="${id}"] [data-icon-png][data-icon-appearance="${appearance}"]`);
+        const image = button?.closest('figure')?.querySelector('img');
+        return { readyState: document.readyState, focused: button === document.activeElement,
+          button: button && { hidden: button.hidden, disabled: button.disabled, ariaDisabled: button.getAttribute('aria-disabled') },
+          image: image && { complete: image.complete, width: image.naturalWidth, height: image.naturalHeight, currentSrc: image.currentSrc },
+          status: document.querySelector('#icon-png-status')?.textContent };
+      }, { id, appearance });
+    } catch (diagnosticError) { observation = { unavailable: diagnosticError.name }; }
+    error.message += '\nPNG acquisition state: ' + JSON.stringify(observation);
+    throw error;
+  }
   assert.equal(download.suggestedFilename(), `Clair-Obscur-0.16.0-${appearance}-${id}-512.png`);
   assert.equal(await download.failure(), null);
   const chunks = []; for await (const chunk of await download.createReadStream()) chunks.push(chunk);
@@ -3548,8 +3566,9 @@ test('relocated local guides cover every appearance by keyboard without external
   }
 });
 
-for (const javaScriptEnabled of [true, false]) test(`portable kit downloads, extracts and relocates into a complete offline file page (${javaScriptEnabled ? 'scripted' : 'no-script'})`, { timeout: 90000 }, async () => {
-  const mode = javaScriptEnabled ? 'scripted' : 'no-script';
+// Bound each viewport journey separately while retaining both modes and widths.
+for (const [javaScriptEnabled, testedWidth] of [[true, 320], [true, 390], [false, 320], [false, 390]]) test(`portable kit downloads, extracts and relocates into a complete offline file page (${javaScriptEnabled ? 'scripted' : 'no-script'}, ${testedWidth}px)`, { timeout: 90000 }, async () => {
+  const mode = `${javaScriptEnabled ? 'scripted' : 'no-script'}-${testedWidth}`;
   const modeTemp = path.join(temp, `portable-${mode}`);
   await mkdir(modeTemp);
   const modeEvidence = evidence && path.join(evidence, `portable-${mode}`);
@@ -3638,7 +3657,7 @@ for (const javaScriptEnabled of [true, false]) test(`portable kit downloads, ext
       return { localContext, localPage };
     } catch (error) { await localContext.close(); closedContexts++; throw error; }
   }
-  for (const width of [320, 390]) {
+  for (const width of [testedWidth]) {
     const { localContext, localPage } = await filePage({ javaScriptEnabled, viewport: { width, height: 844 } });
     try {
       assert.match(await localPage.locator('#portable-delivery').textContent(), /extracted portable preview/);
@@ -3898,7 +3917,7 @@ for (const javaScriptEnabled of [true, false]) test(`portable kit downloads, ext
   // Preserve deliberate palette journeys below Chromium's download burst
   // threshold. Use every included choice in this mode. CSS opens as local
   // text in Chrome, while these archive types produce actual downloads.
-  for (const name of ['Clair', 'Obscur', 'Clair and Obscur']) {
+  for (const name of testedWidth === 390 ? ['Clair', 'Obscur', 'Clair and Obscur'] : []) {
     const { localContext, localPage } = await filePage({ javaScriptEnabled, viewport: { width: 390, height: 844 } });
     try {
       for (const item of packages.downloads.filter(item => item.name === name)) {
@@ -3945,11 +3964,11 @@ for (const javaScriptEnabled of [true, false]) test(`portable kit downloads, ext
       }
     } finally { await localContext.close(); closedContexts++; }
   }
-  assert.equal(packageJourneys.length, 17);
-  assert.equal(iconJourneys.length, 2);
-  assert.equal(packageJourneys.filter(item => item.method === 'saved included archive').length, 11);
-  assert.equal(packageJourneys.filter(item => item.method === 'opened included CSS as exact text, returned and reached matching guide').length, 6);
-  if (javaScriptEnabled) {
+  assert.equal(packageJourneys.length, testedWidth === 390 ? 17 : 0);
+  assert.equal(iconJourneys.length, 1);
+  assert.equal(packageJourneys.filter(item => item.method === 'saved included archive').length, testedWidth === 390 ? 11 : 0);
+  assert.equal(packageJourneys.filter(item => item.method === 'opened included CSS as exact text, returned and reached matching guide').length, testedWidth === 390 ? 6 : 0);
+  if (javaScriptEnabled && testedWidth === 390) {
     const chosen = await filePage({ javaScriptEnabled: true, viewport: { width: 390, height: 844 } });
     try {
       for (const [target, appearance] of [['chrome', 'Obscur'], ['equicord', 'Clair']]) {
@@ -3980,10 +3999,10 @@ for (const javaScriptEnabled of [true, false]) test(`portable kit downloads, ext
       }
     } finally { await chosen.localContext.close(); closedContexts++; }
   }
-  assert.equal(journeys.length, 2);
-  assert.equal(terminalJourneys.length, 2);
-  assert.equal(chooserJourneys.length, javaScriptEnabled ? 4 : 0);
-  assert.equal(identificationJourneys.length, javaScriptEnabled ? 4 : 0);
+  assert.equal(journeys.length, 1);
+  assert.equal(terminalJourneys.length, 1);
+  assert.equal(chooserJourneys.length, javaScriptEnabled ? (testedWidth === 390 ? 3 : 1) : 0);
+  assert.equal(identificationJourneys.length, javaScriptEnabled ? 2 : 0);
   assert.ok(requests.every(url => new URL(url).protocol === 'file:'), 'The extracted consumer must not request network resources');
   assert.deepEqual(errors, []);
   if (modeEvidence) {
