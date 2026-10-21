@@ -3233,7 +3233,7 @@ test('text spacing Terminal qualification rejects a hidden sample and altered do
   }
 });
 
-async function checkLocalPackageIdentification(page, manifest, payloads, { delivery, textScale = 100 }) {
+async function checkLocalPackageIdentification(page, manifest, payloads, { delivery, textScale = 100, fixtureRoot = temp }) {
   const requests = [], downloads = [], identified = [], guides = new Set();
   const onRequest = request => requests.push(request.url());
   const onDownload = download => downloads.push(download.suggestedFilename());
@@ -3298,7 +3298,7 @@ async function checkLocalPackageIdentification(page, manifest, payloads, { deliv
     assert.equal(identified.length, 13);
     assert.equal(guides.size, 18);
     const chrome = payloads.find(payload => payload.item.platform === 'chrome' && payload.item.name === 'Clair');
-    const renamed = path.join(temp, `identification-${delivery}-renamed.bin`);
+    const renamed = path.join(fixtureRoot, `identification-${delivery}-renamed.bin`);
     await writeFile(renamed, await readFile(chrome.file));
     await input.focus();
     const url = page.url();
@@ -3797,9 +3797,29 @@ test('relocated local guides cover every appearance by keyboard without external
   }
 });
 
-// Bound each viewport journey separately while retaining both modes and widths.
-for (const [javaScriptEnabled, testedWidth] of [[true, 320], [true, 390], [false, 320], [false, 390]]) test(`portable kit downloads, extracts and relocates into a complete offline file page (${javaScriptEnabled ? 'scripted' : 'no-script'}, ${testedWidth}px)`, { timeout: 90000 }, async () => {
-  const mode = `${javaScriptEnabled ? 'scripted' : 'no-script'}-${testedWidth}`;
+// Bound each actual capability separately; every case acquires its own kit.
+const portableCases = [
+  { capability: 'surface', javaScriptEnabled: true, testedWidth: 320,
+    expected: { main: 1, icons: 1, terminal: 1, chooser: 1, identification: 2, packages: 0, archives: 0, css: 0, closed: 1 } },
+  { capability: 'surface', javaScriptEnabled: true, testedWidth: 390,
+    expected: { main: 1, icons: 1, terminal: 1, chooser: 3, identification: 2, packages: 0, archives: 0, css: 0, closed: 2 } },
+  { capability: 'surface', javaScriptEnabled: false, testedWidth: 320,
+    expected: { main: 1, icons: 1, terminal: 1, chooser: 0, identification: 0, packages: 0, archives: 0, css: 0, closed: 1 } },
+  { capability: 'surface', javaScriptEnabled: false, testedWidth: 390,
+    expected: { main: 1, icons: 1, terminal: 1, chooser: 0, identification: 0, packages: 0, archives: 0, css: 0, closed: 1 } },
+  { capability: 'packages', javaScriptEnabled: true, testedWidth: 390,
+    expected: { main: 0, icons: 0, terminal: 0, chooser: 0, identification: 0, packages: 17, archives: 11, css: 6, closed: 3 } },
+  { capability: 'packages', javaScriptEnabled: false, testedWidth: 390,
+    expected: { main: 0, icons: 0, terminal: 0, chooser: 0, identification: 0, packages: 17, archives: 11, css: 6, closed: 3 } },
+];
+// Keep the required case roster independent of the execution branches below.
+assert.deepEqual(portableCases.map(({ capability, javaScriptEnabled, testedWidth }) =>
+  `${capability}:${javaScriptEnabled}:${testedWidth}`).sort(), [
+  'packages:false:390', 'packages:true:390', 'surface:false:320',
+  'surface:false:390', 'surface:true:320', 'surface:true:390',
+]);
+for (const { capability, javaScriptEnabled, testedWidth, expected } of portableCases) test(`portable kit downloads, extracts and relocates into a complete offline file page (${capability}, ${javaScriptEnabled ? 'scripted' : 'no-script'}, ${testedWidth}px)`, { timeout: 90000 }, async () => {
+  const mode = `${capability}-${javaScriptEnabled ? 'scripted' : 'no-script'}-${testedWidth}`;
   const modeTemp = path.join(temp, `portable-${mode}`);
   await mkdir(modeTemp);
   const modeEvidence = evidence && path.join(evidence, `portable-${mode}`);
@@ -3888,7 +3908,7 @@ for (const [javaScriptEnabled, testedWidth] of [[true, 320], [true, 390], [false
       return { localContext, localPage };
     } catch (error) { await localContext.close(); closedContexts++; throw error; }
   }
-  for (const width of [testedWidth]) {
+  for (const width of capability === 'surface' ? [testedWidth] : []) {
     const { localContext, localPage } = await filePage({ javaScriptEnabled, viewport: { width, height: 844 } });
     try {
       assert.match(await localPage.locator('#portable-delivery').textContent(), /extracted portable preview/);
@@ -4106,7 +4126,7 @@ for (const [javaScriptEnabled, testedWidth] of [[true, 320], [true, 390], [false
         for (const textScale of [100, 200]) {
           await localPage.evaluate(scale => document.documentElement.style.fontSize = scale + '%', textScale);
           identificationJourneys.push({ width, ...await checkLocalPackageIdentification(localPage, packages, includedPayloads,
-            { delivery: 'portable', textScale }) });
+            { delivery: 'portable', textScale, fixtureRoot: modeTemp }) });
         }
         await localPage.evaluate(() => document.documentElement.style.fontSize = '100%');
       } else {
@@ -4157,7 +4177,7 @@ for (const [javaScriptEnabled, testedWidth] of [[true, 320], [true, 390], [false
   // Preserve deliberate palette journeys below Chromium's download burst
   // threshold. Use every included choice in this mode. CSS opens as local
   // text in Chrome, while these archive types produce actual downloads.
-  for (const name of testedWidth === 390 ? ['Clair', 'Obscur', 'Clair and Obscur'] : []) {
+  for (const name of capability === 'packages' ? ['Clair', 'Obscur', 'Clair and Obscur'] : []) {
     const { localContext, localPage } = await filePage({ javaScriptEnabled, viewport: { width: 390, height: 844 } });
     try {
       for (const item of packages.downloads.filter(item => item.name === name)) {
@@ -4204,11 +4224,11 @@ for (const [javaScriptEnabled, testedWidth] of [[true, 320], [true, 390], [false
       }
     } finally { await localContext.close(); closedContexts++; }
   }
-  assert.equal(packageJourneys.length, testedWidth === 390 ? 17 : 0);
-  assert.equal(iconJourneys.length, 1);
-  assert.equal(packageJourneys.filter(item => item.method === 'saved included archive').length, testedWidth === 390 ? 11 : 0);
-  assert.equal(packageJourneys.filter(item => item.method === 'opened included CSS as exact text, returned and reached matching guide').length, testedWidth === 390 ? 6 : 0);
-  if (javaScriptEnabled && testedWidth === 390) {
+  assert.equal(packageJourneys.length, expected.packages);
+  assert.equal(iconJourneys.length, expected.icons);
+  assert.equal(packageJourneys.filter(item => item.method === 'saved included archive').length, expected.archives);
+  assert.equal(packageJourneys.filter(item => item.method === 'opened included CSS as exact text, returned and reached matching guide').length, expected.css);
+  if (capability === 'surface' && javaScriptEnabled && testedWidth === 390) {
     const chosen = await filePage({ javaScriptEnabled: true, viewport: { width: 390, height: 844 } });
     try {
       for (const [target, appearance] of [['chrome', 'Obscur'], ['equicord', 'Clair']]) {
@@ -4239,10 +4259,11 @@ for (const [javaScriptEnabled, testedWidth] of [[true, 320], [true, 390], [false
       }
     } finally { await chosen.localContext.close(); closedContexts++; }
   }
-  assert.equal(journeys.length, 1);
-  assert.equal(terminalJourneys.length, 1);
-  assert.equal(chooserJourneys.length, javaScriptEnabled ? (testedWidth === 390 ? 3 : 1) : 0);
-  assert.equal(identificationJourneys.length, javaScriptEnabled ? 2 : 0);
+  assert.equal(journeys.length, expected.main);
+  assert.equal(terminalJourneys.length, expected.terminal);
+  assert.equal(chooserJourneys.length, expected.chooser);
+  assert.equal(identificationJourneys.length, expected.identification);
+  assert.equal(closedContexts, expected.closed);
   assert.ok(requests.every(url => new URL(url).protocol === 'file:'), 'The extracted consumer must not request network resources');
   assert.deepEqual(errors, []);
   if (modeEvidence) {
