@@ -152,9 +152,9 @@ class GarminPaletteTests(unittest.TestCase):
     def test_current_palette_has_exact_black_white_and_neutral_roles(self):
         current = json.loads((ROOT / "tokens-monochrome.json").read_text(encoding="utf-8"))
         source = render_palette(current)
-        self.assertEqual(VERSION, "0.5.0")
+        self.assertEqual(VERSION, "0.6.0")
         self.assertEqual(colors(source), EXPECTED_MONOCHROME_COLORS)
-        self.assertIn('const WATCHFACE_VERSION = "0.5.0";', source)
+        self.assertIn('const WATCHFACE_VERSION = "0.6.0";', source)
         self.assertIn('const TOKEN_VERSION = "1.0.0";', source)
         for color in colors(source).values():
             self.assertEqual((color >> 16) & 255, (color >> 8) & 255)
@@ -189,7 +189,7 @@ class GarminPaletteTests(unittest.TestCase):
                          ["fenix9pro47mm"])
         properties = ET.parse(face / "resources/settings/properties.xml").getroot()
         self.assertEqual([(node.get("id"), node.get("type"), node.text) for node in properties],
-                         [("appVersion", "string", "0.5.0"), ("appearance", "number", "1"),
+                         [("appVersion", "string", "0.6.0"), ("appearance", "number", "1"),
                           ("layout", "number", "0"),
                           ("leftData", "number", "0"), ("rightData", "number", "1")])
         view = (face / "source/ClairObscurView.mc").read_text(encoding="utf-8")
@@ -475,7 +475,7 @@ class GarminAnalogGeometryTests(unittest.TestCase):
         permissions = manifest.findall("iq:application/iq:permissions/iq:uses-permission", namespace)
         self.assertEqual([node.get("id") for node in permissions], ["ComplicationSubscriber"])
 
-    def test_original_aod_body_and_early_exit_remain_independent_of_layout(self):
+    def test_original_digital_aod_body_and_early_exit_before_active_reads(self):
         import hashlib
         start = self.view.index("    function drawAlwaysOn(")
         opening = self.view.index("{", start)
@@ -496,10 +496,203 @@ class GarminAnalogGeometryTests(unittest.TestCase):
                          "c6a3beb2f450153cf7ef1fb116c66d5dfd6f55ab8b66809eaf1ffc82ce0adbbd")
         self.assertEqual((self.constants["AOD_MAX_WIDTH"], self.constants["AOD_MAX_HEIGHT"]), (192, 64))
         on_update = self.view.split("function onUpdate(", 1)[1].split("function analogSlotFonts(", 1)[0]
-        early = on_update.index("if (mode == :aod)")
-        self.assertLess(early, on_update.index("FaceSettings.readLayout()"))
-        self.assertLess(early, on_update.index("refreshFonts(layout)"))
-        self.assertLess(early, on_update.index("FaceData.readSlot("))
+        analog = re.search(r"if \(mode == :aod && layout == FaceModel\.LAYOUT_ANALOG\) \{\s*"
+                          r"drawAnalogAlwaysOn\(dc, local\.hour, local\.min\);\s*return;\s*\}", on_update)
+        digital = re.search(r"if \(mode == :aod\) \{ drawAlwaysOn\(dc, time, local\.min\); return; \}",
+                            on_update)
+        self.assertIsNotNone(analog)
+        self.assertIsNotNone(digital)
+        self.assertLess(on_update.index("FaceSettings.readLayout()"), analog.start())
+        self.assertLess(analog.end(), on_update.index("System.getDeviceSettings()"))
+        self.assertLess(analog.end(), digital.start())
+        for active_read in ("refreshFonts(layout)", "FaceData.readSlot(", "FaceSettings.readSlot(",
+                            "System.getSystemStats()", "FaceModel.formatBattery("):
+            self.assertLess(digital.end(), on_update.index(active_read), active_read)
+
+
+class GarminAnalogAodGeometryTests(unittest.TestCase):
+    """Source-bound host geometry and conservative budgets, not native pixels."""
+
+    @classmethod
+    def setUpClass(cls):
+        source = ROOT / "garmin/watchface/source"
+        cls.model = (source / "FaceModel.mc").read_text(encoding="utf-8")
+        cls.view = (source / "ClairObscurView.mc").read_text(encoding="utf-8")
+        cls.palette = (source / "GeneratedPalette.mc").read_text(encoding="utf-8")
+        cls.constants = {name: int(value) for name, value in re.findall(
+            r"^    const ([A-Z_]+) = (\d+);$", cls.model, re.MULTILINE)}
+        offset = cls.function(cls.model, "aodAnalogOffset")
+        cls.offsets = [tuple(map(int, pair)) for pair in re.findall(
+            r"return \[(-?\d+), (-?\d+)\];", offset)]
+        size = cls.constants["DISPLAY_SIZE"]
+        cls.round_pixels = sum((2 * x + 1 - size) ** 2 + (2 * y + 1 - size) ** 2 <= size ** 2
+                               for y in range(size) for x in range(size))
+
+    @staticmethod
+    def function(source, name):
+        start = source.index("    function " + name + "(")
+        opening = source.index("{", start)
+        depth = 0
+        for index in range(opening, len(source)):
+            depth += (source[index] == "{") - (source[index] == "}")
+            if depth == 0:
+                return source[start:index + 1]
+        raise AssertionError("Unclosed source function: " + name)
+
+    @classmethod
+    def radial(cls, turn, radius, lateral):
+        angle = turn * math.tau
+        center = cls.constants["DIAL_CENTER"]
+        # Positive display coordinates use nearest integer, with halves upward.
+        return (math.floor(center + math.sin(angle) * radius + math.cos(angle) * lateral + 0.5),
+                math.floor(center - math.cos(angle) * radius + math.sin(angle) * lateral + 0.5))
+
+    @classmethod
+    def outlines(cls, hour, minute, shift):
+        """Independent polar construction for the bound active marker/hand source."""
+        paths = []
+        for index in range(12):
+            for part in range(2 if index == 0 else 1):
+                offset = (-7 if part == 0 else 7) if index == 0 else 0
+                half = 4 if index != 0 and index % 3 == 0 else 3
+                inner = 172 if index % 3 == 0 else 178
+                paths.append([cls.radial(index / 12, radius, side) for radius, side in
+                              ((inner, offset - half), (cls.constants["MARKER_OUTER"], offset - half),
+                               (cls.constants["MARKER_OUTER"], offset + half), (inner, offset + half))])
+        for hour_hand in (True, False):
+            turn = (hour % 12) / 12 + minute / 720 if hour_hand else minute / 60
+            length = cls.constants["HOUR_HAND_LENGTH" if hour_hand else "MINUTE_HAND_LENGTH"]
+            half, tail = (9, 6) if hour_hand else (5, 3)
+            paths.append([cls.radial(turn, radius, side) for radius, side in
+                          ((-18, -tail), (length - 18, -half), (length, 0),
+                           (length - 18, half), (-18, tail))])
+        return [[(x + shift[0], y + shift[1]) for x, y in path] for path in paths]
+
+    @staticmethod
+    def guarded_l1_bound(paths, width):
+        # A width-wide L1 strip plus a square endpoint guard for every closed
+        # edge. Summing overlapping strips overcounts. The circle gets its own
+        # larger square, including its radius-three outline and AA allowance.
+        center_square = 9 if width == 3 else 13
+        return center_square ** 2 + sum(
+            width * (abs(b[0] - a[0]) + abs(b[1] - a[1]) + width)
+            for path in paths for a, b in zip(path, path[1:] + path[:1]))
+
+    def assert_shifted_helper(self, source, name, active):
+        body = self.function(source, name)
+        self.assertIn("var shift = aodAnalogOffset(minute);", body)
+        self.assertIn("if (shift.size() != 2) { return []; }" if active == "handPoints" else
+                      "if (i == null || p == null || shift.size() != 2) { return []; }", body)
+        self.assertIn("var points = " + active + "(", body)
+        self.assertRegex(body, r"for \(var point = 0; point < points\.size\(\); point \+= 1\)")
+        self.assertEqual(re.findall(r"result\.add\(([^;]+)\);", body),
+                         ["[points[point][0] + shift[0], points[point][1] + shift[1]]"])
+        self.assertTrue(body.rstrip().endswith("return result;\n    }"))
+
+    def assert_outline_renderer(self, source):
+        outline = self.function(source, "drawAlwaysOnOutline")
+        analog = self.function(source, "drawAnalogAlwaysOn")
+        self.assertIn("if (points.size() < 3) { return; }", outline)
+        self.assertIn("var next = (point + 1) % points.size();", outline)
+        self.assertRegex(outline, r"dc\.drawLine\(points\[point\]\[0\], points\[point\]\[1\], "
+                         r"points\[next\]\[0\], points\[next\]\[1\]\);")
+        self.assertEqual(re.findall(r"\bdc\.(\w+)\(", outline), ["drawLine"])
+        self.assertEqual(re.findall(r"\bdc\.(\w+)\(", analog), ["setColor", "setPenWidth", "drawCircle"])
+        self.assertIn("dc.setColor(ThemePalette.OBSCUR_BORDER, 0x000000);", analog)
+        self.assertIn("dc.setPenWidth(1);", analog)
+        self.assertIn("for (var index = 0; index < 12; index += 1)", analog)
+        self.assertRegex(analog, r"drawAlwaysOnOutline\(dc, FaceModel\.aodAnalogMarker\(index, 0, minute\)\);")
+        self.assertRegex(analog, r"if \(index == 0\) \{\s*drawAlwaysOnOutline\(dc, "
+                         r"FaceModel\.aodAnalogMarker\(index, 1, minute\)\);\s*\}")
+        for which in ("true", "false"):
+            self.assertIn(f"drawAlwaysOnOutline(dc, FaceModel.aodAnalogHandPoints(hour, minute, {which}));", analog)
+        self.assertIn("dc.drawCircle(FaceModel.DIAL_CENTER + shift[0], FaceModel.DIAL_CENTER + shift[1], 3);", analog)
+        self.assertNotRegex(outline + analog, r"fillPolygon|fillCircle|drawText|drawHand\(|drawSlot\(|"
+                            r"FaceData|System\.|Time\.|Timer|requestUpdate|refreshFonts|interClock")
+
+    def test_geometry_is_bound_to_accepted_active_shapes_and_shifted_outline_renderer(self):
+        import hashlib
+        # Independently captured from accepted main 87148's unchanged active
+        # functions. The Python polar model cannot silently validate other code.
+        expected = {
+            "radialPoint": "2c7a11d9fa53ab1d968ae51190a830961e9c91c1de28e3df0eee5c4317f9cb37",
+            "hourTurns": "cb83ffef970693a7f8919e0174b76654b86f6b21a00ad0421518e00d391cc4e8",
+            "minuteTurns": "09807ffd398176aed87deb7fc70c5f56ec875e6173aaa833631df546dee48f86",
+            "hourMarker": "a3442689c1c0c9d3d20d7507f59a21230df5befbb16d704ba92761746d97ce38",
+            "handPoints": "14ffd7a770ea13e1832b2bfc6c67954674311b9e50a9acfb9857edae64a7e72a",
+        }
+        for name, digest in expected.items():
+            self.assertEqual(hashlib.sha256(self.function(self.model, name).encode()).hexdigest(), digest, name)
+        self.assert_shifted_helper(self.model, "aodAnalogMarker", "hourMarker")
+        self.assert_shifted_helper(self.model, "aodAnalogHandPoints", "handPoints")
+        self.assert_outline_renderer(self.view)
+        color = colors(self.palette)["OBSCUR_BORDER"]
+        self.assertEqual(color, EXPECTED_MONOCHROME_COLORS["OBSCUR_BORDER"])
+        self.assertEqual(color, 0x999999)
+        self.assertTrue(0 < color < 0xFFFFFF)
+
+    def test_four_phases_move_all_outlines_together_and_wrap_the_minute(self):
+        self.assertEqual(self.offsets, [(-2, -2), (2, -2), (2, 2), (-2, 2)])
+        offset = self.function(self.model, "aodAnalogOffset")
+        self.assertIn("var phase = m % 4;", offset)
+        self.assertIn("if (m == null || m < 0 || m >= 60) { return []; }", offset)
+        self.assertEqual(re.findall(r"if \(phase == (\d)\)", offset), ["0", "1", "2"])
+        for minute in range(60):
+            before, after = self.offsets[minute % 4], self.offsets[((minute + 1) % 60) % 4]
+            self.assertEqual(sum((a - b) ** 2 for a, b in zip(after, before)), 16)
+            active = self.outlines(11, minute, (0, 0))
+            shifted = self.outlines(11, minute, before)
+            self.assertNotEqual(shifted, active)
+            self.assertEqual([[(x - before[0], y - before[1]) for x, y in path] for path in shifted], active)
+
+    def test_all_720_clock_positions_at_every_phase_keep_guarded_edges_in_round_display(self):
+        self.assertEqual((self.constants["DISPLAY_SIZE"], self.constants["DIAL_CENTER"]), (454, 227))
+        center, radius = self.constants["DIAL_CENTER"], self.constants["DISPLAY_SIZE"] / 2
+        scenarios = 0
+        for hour in range(12):
+            for minute in range(60):
+                for shift in self.offsets:
+                    paths = self.outlines(hour, minute, shift)
+                    self.assertEqual([len(path) for path in paths], [4] * 13 + [5, 5])
+                    # The round disk is convex. Guarding every vertex also
+                    # bounds each intervening closed edge and its square guard.
+                    for path in paths:
+                        for x, y in path:
+                            for dx, dy in ((-3, -3), (-3, 3), (3, -3), (3, 3)):
+                                self.assertLess((x + dx - center) ** 2 + (y + dy - center) ** 2, radius ** 2)
+                    # Radius-three center outline plus a larger AA guard.
+                    for dx, dy in ((-6, -6), (-6, 6), (6, -6), (6, 6)):
+                        self.assertLess((shift[0] + dx) ** 2 + (shift[1] + dy) ** 2, radius ** 2)
+                    scenarios += 1
+        self.assertEqual(scenarios, 720 * 4)
+
+    def test_closed_edge_l1_bounds_keep_even_guarded_white_luminance_below_round_ten_percent(self):
+        maxima = {3: 0, 5: 0}
+        for hour in range(12):
+            for minute in range(60):
+                for shift in self.offsets:
+                    paths = self.outlines(hour, minute, shift)
+                    self.assertEqual(sum(len(path) for path in paths), 62)
+                    for width in maxima:
+                        maxima[width] = max(maxima[width], self.guarded_l1_bound(paths, width))
+        self.assertGreater(maxima[5], maxima[3])
+        for bound in maxima.values():
+            self.assertGreater(bound, 0)
+            self.assertLess(bound * 10, self.round_pixels)
+        # This is a conservative source-geometry budget, including a five-pixel
+        # edge strip, overlaps counted repeatedly and a 13x13 center guard.
+        # Treating all that coverage as full white also bounds normalized
+        # luminance. Actual Garmin AA, pixel coverage and burn-in remain unknown.
+
+    def test_controls_reject_filled_edges_and_an_unshifted_aod_path(self):
+        filled = self.view.replace("dc.drawLine(points[point][0]", "dc.fillPolygon(points[point][0]", 1)
+        self.assertNotEqual(filled, self.view)
+        with self.assertRaises(AssertionError):
+            self.assert_outline_renderer(filled)
+        unshifted = self.model.replace("points[point][0] + shift[0]", "points[point][0]", 1)
+        self.assertNotEqual(unshifted, self.model)
+        with self.assertRaises(AssertionError):
+            self.assert_shifted_helper(unshifted, "aodAnalogMarker", "hourMarker")
 
 
 class GarminSettingsResourcesTests(unittest.TestCase):

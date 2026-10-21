@@ -199,3 +199,119 @@ function layoutValidationPersistenceAndMenu(logger as Test.Logger) as Lang.Boole
     }
     return true;
 }
+
+(:test)
+function aodAnalogPhaseAndInvalidInput(logger as Test.Logger) as Lang.Boolean {
+    var phases = [[-2, -2], [2, -2], [2, 2], [-2, 2]];
+    for (var minute = 0; minute < 60; minute += 1) {
+        var shift = FaceModel.aodAnalogOffset(minute);
+        var expected = phases[minute % 4];
+        Test.assertEqual(shift.size(), 2);
+        Test.assertEqual(shift[0], expected[0]);
+        Test.assertEqual(shift[1], expected[1]);
+        var next = FaceModel.aodAnalogOffset((minute + 1) % 60);
+        var dx = next[0] - shift[0];
+        var dy = next[1] - shift[1];
+        Test.assertEqual(dx * dx + dy * dy, 16);
+    }
+    Test.assertEqual(FaceModel.aodAnalogOffset(null).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogOffset(false).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogOffset("0").size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogOffset(0.0).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogOffset(-1).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogOffset(60).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogOffset(Math.sqrt(-1)).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogMarker(null, 0, 0).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogMarker(0, null, 0).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogMarker(0, 0, null).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogMarker(0.0, 0, 0).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogMarker(0, 0.0, 0).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogMarker(-1, 0, 0).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogMarker(12, 0, 0).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogMarker(1, 1, 0).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogMarker(0, 2, 0).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogMarker(0, 0, 60).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogHandPoints(null, 0, true).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogHandPoints(24, 0, false).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogHandPoints(12.0, 0, true).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogHandPoints(12, null, false).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogHandPoints(12, 0.0, true).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogHandPoints(12, -1, false).size(), 0);
+    Test.assertEqual(FaceModel.aodAnalogHandPoints(12, 60, true).size(), 0);
+    return true;
+}
+
+(:test)
+function aodAnalogMarkerIdentityAndBounds(logger as Test.Logger) as Lang.Boolean {
+    var first = FaceModel.aodAnalogMarker(0, 0, 0);
+    var second = FaceModel.aodAnalogMarker(0, 1, 0);
+    Test.assertEqual(first[0][0], 215);
+    Test.assertEqual(first[0][1], 53);
+    Test.assertEqual(first[1][0], 215);
+    Test.assertEqual(first[1][1], 29);
+    Test.assertEqual(first[2][0], 221);
+    Test.assertEqual(second[0][0], 229);
+    Test.assertEqual(second[2][0], 235);
+    var phases = [[-2, -2], [2, -2], [2, 2], [-2, 2]];
+    for (var minute = 0; minute < 60; minute += 1) {
+        var expected = phases[minute % 4];
+        var count = 0;
+        for (var index = 0; index < 12; index += 1) {
+            for (var part = 0; part < (index == 0 ? 2 : 1); part += 1) {
+                var active = FaceModel.hourMarker(index, part);
+                var points = FaceModel.aodAnalogMarker(index, part, minute);
+                Test.assertEqual(points.size(), 4);
+                count += 1;
+                for (var p = 0; p < points.size(); p += 1) {
+                    Test.assertEqual(points[p][0], active[p][0] + expected[0]);
+                    Test.assertEqual(points[p][1], active[p][1] + expected[1]);
+                    Test.assert(points[p][0] >= 29 && points[p][0] <= 425);
+                    Test.assert(points[p][1] >= 29 && points[p][1] <= 425);
+                    var x = points[p][0] - 227;
+                    var y = points[p][1] - 227;
+                    Test.assert(x * x + y * y < 200 * 200);
+                }
+            }
+        }
+        Test.assertEqual(count, 13);
+    }
+    return true;
+}
+
+(:test)
+function aodAnalogAllMinuteHandIdentityAndBounds(logger as Test.Logger) as Lang.Boolean {
+    var phases = [[-2, -2], [2, -2], [2, 2], [-2, 2]];
+    // Every distinct analog minute, preserving both hand shapes under one shift.
+    for (var hour = 0; hour < 12; hour += 1) {
+        for (var minute = 0; minute < 60; minute += 1) {
+            var expected = phases[minute % 4];
+            for (var which = 0; which < 2; which += 1) {
+                var active = FaceModel.handPoints(hour, minute, which == 0);
+                var points = FaceModel.aodAnalogHandPoints(hour, minute, which == 0);
+                Test.assertEqual(points.size(), 5);
+                for (var p = 0; p < points.size(); p += 1) {
+                    Test.assertEqual(points[p][0], active[p][0] + expected[0]);
+                    Test.assertEqual(points[p][1], active[p][1] + expected[1]);
+                    Test.assert(points[p][0] >= 56 && points[p][0] <= 398);
+                    Test.assert(points[p][1] >= 56 && points[p][1] <= 398);
+                    var x = points[p][0] - 227;
+                    var y = points[p][1] - 227;
+                    Test.assert(x * x + y * y <= 172 * 172);
+                }
+            }
+        }
+    }
+    var noon = FaceModel.aodAnalogHandPoints(12, 0, true);
+    var midnight = FaceModel.aodAnalogHandPoints(0, 0, true);
+    for (var p = 0; p < noon.size(); p += 1) {
+        Test.assertEqual(noon[p][0], midnight[p][0]);
+        Test.assertEqual(noon[p][1], midnight[p][1]);
+    }
+    var hourTip = FaceModel.aodAnalogHandPoints(3, 0, true);
+    var minuteTip = FaceModel.aodAnalogHandPoints(3, 15, false);
+    Test.assertEqual(hourTip[2][0], 339);
+    Test.assertEqual(hourTip[2][1], 225);
+    Test.assertEqual(minuteTip[2][0], 393);
+    Test.assertEqual(minuteTip[2][1], 229);
+    return true;
+}

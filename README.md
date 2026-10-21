@@ -70,17 +70,19 @@ See [development and verification](docs/development.md) for reproducible command
 
 The shared palette also supports a [Garmin watch face candidate](docs/garmin-watchface.md)
 and [original phone icon artwork](docs/samsung-icons.md). The watch face targets
-`fenix9pro47mm`. Version 0.5.0 adds a licensed Inter Bold resource for the digital
-time at default font scale. It preserves the analog layout, information fields,
-native scaled fallbacks and separate sparse always on view with native fonts. Both
-current programs compile for the exact target. Their 21 annotated test groups
-and current rendering, settings persistence and runtime memory remain unexecuted
-in the simulator. The preserved 0.3.0 program passed all 16 of its
+`fenix9pro47mm`. Version 0.6.0 keeps the analog dial visible in always on mode,
+using thin hour markers and hands on black. The whole low-power dial shifts
+gently each minute. Digital keeps its separate time-only always on view, and a
+fully off display stays black. Active layouts, data fields and the digital
+Inter clock resource from 0.5.0 remain unchanged. Current rendering, persistence,
+runtime memory and all 24 annotated test groups still need simulator acceptance.
+The preserved 0.3.0 program passed all 16 of its
 simulator test groups for the exact target, with bounded appearance, switching and
 always on observations. The broader 0.2.0 history remains separately labeled.
-The transferred earlier face was later reported present on the physical watch.
-Exact version on the device, switching, always on behavior, persistence, USB
-restoration and power use remain open. No 0.4.0 or 0.5.0 device installation is claimed.
+The 0.5.0 normal program has an exact transfer and independent watch-file readback,
+with physical recognition reported afterward. Current on-device version display,
+switching, always on behavior, persistence, USB restoration and power use remain
+open. The separate 0.6.0 candidate has not been installed on the watch.
 
 The phone gallery's 0.16.0 black and white collection pairs 217 named Android apps with 24 general symbols, giving 241 choices in both appearances. A local finder searches names, icon IDs and Android package IDs, with separate filters for named apps and general functions. Both appearances stay together, and the full catalog remains available without JavaScript. The latest eight additions cover book libraries, borrowing, reading trackers, prose, comics and local readers. Their original reading objects use different main forms, with visible names and exact package identities retained for manual assignment. All 466 accepted 0.15.0 SVGs and fifteen earlier archives remain unchanged, and all sixteen revisions support the local PNG exporter. Coverage is a growing selection, not a complete store catalog or an ordered popularity chart.
 

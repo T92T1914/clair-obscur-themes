@@ -1,5 +1,15 @@
 # Changes
 
+## Garmin watch face 0.6.0
+
+October 21, 2026.
+
+- Retain a recognizable analog dial in always-on mode, with outlined hour markers, distinct hour and minute hands and a small outlined center on true black.
+- Translate the complete low-power dial among four bounded positions, moving at most four pixels per minute. Keep one-pixel neutral-gray strokes and omit active information fields, seconds and timers.
+- Preserve both active layouts, appearance and data settings, the digital Inter resource, the original digital time-only always-on view and the fully off black path.
+- Add source-bound host geometry and conservative pixel-budget checks, plus three annotated target test groups. Host checks and compilation remain separate from native rendering, firmware protection, runtime memory and battery measurements.
+- Preserve earlier watch programs, all desktop package bytes and the complete 0.16.0 phone icon collection.
+
 ## Icon artwork 0.16.0
 
 October 21, 2026.
