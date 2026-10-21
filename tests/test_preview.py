@@ -487,12 +487,22 @@ class PreviewTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
         exported = json.loads((self.base / 'extracted-icons/manifest.json').read_bytes())
-        self.assertEqual(exported['version'], '0.16.0')
-        self.assertEqual(len(exported['functions']), 241)
-        self.assertEqual(len(exported['files']), 482)
-        self.assertEqual([entry['id'] for entry in exported['catalog']][-8:],
+        self.assertEqual(exported['version'], '0.17.0')
+        self.assertEqual(len(exported['functions']), 281)
+        self.assertEqual(len(exported['files']), 562)
+        self.assertEqual([entry['id'] for entry in exported['catalog']][233:241],
                          ['google-play-books', 'libby', 'kobo-books', 'goodreads',
                           'wattpad', 'webtoon', 'readera', 'moon-reader'])
+        self.assertEqual([entry['id'] for entry in exported['catalog']][241:], [
+            'ace-hardware', 'ai-dungeon', 'gaming-hub', 'kroger', 'affirm', 'usaa',
+            'proton-authenticator', 'wikipedia', 'xbox', 'shop', 'fandom', 'shonen-jump',
+            'smart-switch', 'steam-chat', 'sonic', 'samsung-global-goals', 'theme-park',
+            'zillow-rentals', 'samsung-find', 'dollar-general', 'sound-connect',
+            'samsung-pass', 'va', 'battle-net', 'coinbase', 'credit-one', 'samsung-members',
+            'proton-vpn', 't-life', 'my-spectrum', 'g2a', 'samsung-tv-plus', 'ap-news',
+            'link-to-windows', 'tips', 'proton-pass', 'shop-samsung', 'wallpaper-engine',
+            'asus-router', 'mochi-health',
+        ])
 
     def test_vscode_candidate_builds_from_the_actual_source_snapshot(self):
         extracted = self.base / 'vscode-source'

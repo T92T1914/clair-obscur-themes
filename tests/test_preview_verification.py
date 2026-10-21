@@ -313,7 +313,7 @@ class ManifestAdmissionTests(KitFixture):
         (self.kit / 'site-manifest.json').write_bytes(b' ' * 65_537)
         self.assert_refused(message='File byte limit')
         self.document = manifest_document(self.files)
-        for number in range(550 - len(self.document['files'])):
+        for number in range(631 - len(self.document['files'])):
             self.document['files'][f'file{number}.txt'] = '0' * 64
         self.write_manifest()
         self.assert_refused(message='declared file count')
@@ -323,21 +323,21 @@ class ManifestAdmissionTests(KitFixture):
         self.write_manifest()
         # The former nested-path boundary is admitted by the expanded cap.
         self.assertEqual(verifier.verify(self.kit)[0], 1)
-        for number in range(48, 80):
+        for number in range(48, 90):
             self.document['files'][f'a{number}/b/c/d/e/f/g/file'] = '0' * 64
         expected_entries = {'site-manifest.json'}
         for name in self.document['files']:
             parts = name.split('/')
             expected_entries.update('/'.join(parts[:end]) for end in range(1, len(parts) + 1))
-        self.assertLess(len(self.document['files']), 549)
-        self.assertGreater(len(expected_entries), 573)
+        self.assertLess(len(self.document['files']), 630)
+        self.assertGreater(len(expected_entries), 654)
         self.write_manifest()
         self.assert_refused(message='Combined inventory')
 
-    def test_expanded_declared_inventory_accepts_prior_and_549_hashes_and_refuses_550(self):
+    def test_expanded_declared_inventory_accepts_prior_and_630_hashes_and_refuses_631(self):
         # Exercise a complete comparison at the published limit. The current
         # named-app portable kit also runs through ProducerInclusionTests.
-        for count in (192, 224, 240, 248, 256, 313, 320, 410, 416, 435, 448, 456, 477, 498, 515, 532, 549):
+        for count in (192, 224, 240, 248, 256, 313, 320, 410, 416, 435, 448, 456, 477, 498, 515, 532, 549, 630):
             while len(self.files) < count:
                 number = len(self.files)
                 name = f'expanded{number}.txt'
@@ -356,12 +356,12 @@ class ManifestAdmissionTests(KitFixture):
         with patch.object(verifier, '_read', wraps=verifier._read) as reads:
             self.assert_refused(message='declared file count')
         self.assertEqual([call.args[1] for call in reads.call_args_list], ['site-manifest.json'],
-                         'The 550th declaration is refused before any declared member is read')
+                         'The 631st declaration is refused before any declared member is read')
         self.assertEqual(self.snapshot(), before)
 
     def test_actual_inventory_depth_and_unsafe_extra_are_refused_before_reads(self):
         extra_count = 0
-        for admitted_count in (352, 448, 480, 501, 522, 539, 556, 573):
+        for admitted_count in (352, 448, 480, 501, 522, 539, 556, 573, 654):
             additional = admitted_count - len(verifier.inventory(self.kit))
             for number in range(extra_count, extra_count + additional):
                 (self.kit / f'extra{number}.txt').touch()
@@ -790,10 +790,10 @@ class ProducerInclusionTests(KitFixture):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
         self.assertEqual(verifier.verify(extracted)[0], 0)
-        # The real 0.16 kit has 569 entries. Preserve room to diagnose ordinary
+        # The real 0.17 kit has 650 entries. Preserve room to diagnose ordinary
         # extras rather than refusing its first extra entry as unsupported.
-        self.assertEqual(len(portable['files']), 549)
-        self.assertEqual(len(verifier.inventory(extracted)), 569)
+        self.assertEqual(len(portable['files']), 630)
+        self.assertEqual(len(verifier.inventory(extracted)), 650)
         (extracted / 'unassigned-extra.txt').write_bytes(b'preserved extra file\n')
         before = {name.relative_to(extracted).as_posix(): name.read_bytes()
                   for name in extracted.rglob('*') if name.is_file()}
@@ -804,7 +804,7 @@ class ProducerInclusionTests(KitFixture):
                           for name in extracted.rglob('*') if name.is_file()}, before)
         for number in range(3):
             (extracted / f'extra-headroom-{number}.txt').write_bytes(b'preserved extra file\n')
-        self.assertEqual(len(verifier.inventory(extracted)), 573)
+        self.assertEqual(len(verifier.inventory(extracted)), 654)
         before = {name.relative_to(extracted).as_posix(): name.read_bytes()
                   for name in extracted.rglob('*') if name.is_file()}
         status, report = verifier.verify(extracted)

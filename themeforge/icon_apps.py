@@ -1878,3 +1878,409 @@ THIRTEENTH_APP_CATALOG = (
      "store_url": "https://play.google.com/store/apps/details?id=com.flyersoft.moonreader",
      "selection_basis": "Inspected official listing, 10M+ cumulative download band and the missing customizable local-reader assignment, selecting the ordinary app rather than its Pro package."},
 )
+
+
+FOURTEENTH_CATALOG_DATE = "2026-10-21"
+FOURTEENTH_CATALOG_SCOPE = "Phone services, device utilities, reference, shopping and companion assignments from inspected official Google Play and Samsung Galaxy Store identities. No popularity ranking, publisher endorsement, security recommendation or installation claim."
+FOURTEENTH_APP_CATALOG = (
+    {
+        "id": "ace-hardware",
+        "label": "Ace Hardware",
+        "store_title": "Ace Hardware: Home Improvement",
+        "kind": "app",
+        "category": "shopping",
+        "android_package": "com.acehardware.rewards",
+        "store_url": "https://play.google.com/store/apps/details?id=com.acehardware.rewards",
+        "selection_basis": "Home-improvement shopping assignment, separate from the retained Home Depot drawing."
+    },
+    {
+        "id": "ai-dungeon",
+        "label": "AI Dungeon",
+        "store_title": "AI Dungeon: RPG & Story Maker",
+        "kind": "app",
+        "category": "games",
+        "android_package": "com.aidungeon",
+        "store_url": "https://play.google.com/store/apps/details?id=com.aidungeon",
+        "selection_basis": "Interactive story-creation assignment represented by an original book-and-doorway drawing."
+    },
+    {
+        "id": "gaming-hub",
+        "label": "Gaming Hub",
+        "store_title": "Gaming Hub",
+        "kind": "app",
+        "category": "games",
+        "android_package": "com.samsung.android.game.gamehome",
+        "store_url": "https://galaxystore.samsung.com/detail/com.samsung.android.game.gamehome",
+        "selection_basis": "Samsung game-library assignment, separate from individual game clients and game services."
+    },
+    {
+        "id": "kroger",
+        "label": "Kroger",
+        "store_title": "Kroger",
+        "kind": "app",
+        "category": "shopping",
+        "android_package": "com.kroger.mobile",
+        "store_url": "https://play.google.com/store/apps/details?id=com.kroger.mobile",
+        "selection_basis": "Grocery-shopping assignment, separate from the retained general storefront."
+    },
+    {
+        "id": "affirm",
+        "label": "Affirm",
+        "store_title": "Affirm: Buy now, pay over time",
+        "kind": "app",
+        "category": "finance",
+        "android_package": "com.affirm.central",
+        "store_url": "https://play.google.com/store/apps/details?id=com.affirm.central",
+        "selection_basis": "Pay-over-time service assignment, separate from banking and payment-wallet drawings."
+    },
+    {
+        "id": "usaa",
+        "label": "USAA",
+        "store_title": "USAA Mobile",
+        "kind": "app",
+        "category": "finance",
+        "android_package": "com.usaa.mobile.android.usaa",
+        "store_url": "https://play.google.com/store/apps/details?id=com.usaa.mobile.android.usaa",
+        "selection_basis": "USAA Mobile assignment, separate from the retained U.S. Bank package."
+    },
+    {
+        "id": "proton-authenticator",
+        "label": "Proton Authenticator",
+        "store_title": "Proton Authenticator & 2FA",
+        "kind": "app",
+        "category": "tools",
+        "android_package": "proton.android.authenticator",
+        "store_url": "https://play.google.com/store/apps/details?id=proton.android.authenticator",
+        "selection_basis": "Time-based authentication assignment, distinct from Proton Pass, VPN and Mail."
+    },
+    {
+        "id": "wikipedia",
+        "label": "Wikipedia",
+        "store_title": "Wikipedia",
+        "kind": "app",
+        "category": "reference",
+        "android_package": "org.wikipedia",
+        "store_url": "https://play.google.com/store/apps/details?id=org.wikipedia",
+        "selection_basis": "Encyclopedia-reading assignment, separate from book readers and search tools."
+    },
+    {
+        "id": "xbox",
+        "label": "Xbox",
+        "store_title": "XBOX",
+        "kind": "app",
+        "category": "games",
+        "android_package": "com.microsoft.xboxone.smartglass",
+        "store_url": "https://play.google.com/store/apps/details?id=com.microsoft.xboxone.smartglass",
+        "selection_basis": "Xbox phone-companion assignment, retaining the official smartglass package spelling."
+    },
+    {
+        "id": "shop",
+        "label": "Shop",
+        "store_title": "Shop: Track, Pay, Discover",
+        "kind": "app",
+        "category": "shopping",
+        "android_package": "com.shopify.arrive",
+        "store_url": "https://play.google.com/store/apps/details?id=com.shopify.arrive",
+        "selection_basis": "Shop consumer-shopping assignment, separate from Shopify merchant administration."
+    },
+    {
+        "id": "fandom",
+        "label": "Fandom",
+        "store_title": "Fandom",
+        "kind": "app",
+        "category": "reference",
+        "android_package": "com.fandom.app",
+        "store_url": "https://play.google.com/store/apps/details?id=com.fandom.app",
+        "selection_basis": "Fandom reference and community assignment, not the unrelated Fun to Earn package."
+    },
+    {
+        "id": "shonen-jump",
+        "label": "Shonen Jump",
+        "store_title": "Shonen Jump Manga & Comics",
+        "kind": "app",
+        "category": "reading",
+        "android_package": "com.viz.wsj.android",
+        "store_url": "https://play.google.com/store/apps/details?id=com.viz.wsj.android",
+        "selection_basis": "Viz Shonen Jump assignment, separate from the Japanese Jump Plus application."
+    },
+    {
+        "id": "smart-switch",
+        "label": "Smart Switch",
+        "store_title": "Samsung Smart Switch Mobile",
+        "kind": "app",
+        "category": "tools",
+        "android_package": "com.sec.android.easyMover",
+        "store_url": "https://play.google.com/store/apps/details?id=com.sec.android.easyMover",
+        "selection_basis": "Samsung phone-transfer assignment, separate from Link to Windows."
+    },
+    {
+        "id": "steam-chat",
+        "label": "Steam Chat",
+        "store_title": "Steam Chat",
+        "kind": "app",
+        "category": "communication",
+        "android_package": "com.valvesoftware.android.steam.friendsui",
+        "store_url": "https://play.google.com/store/apps/details?id=com.valvesoftware.android.steam.friendsui",
+        "selection_basis": "Valve chat-client assignment, separate from the retained Steam main application."
+    },
+    {
+        "id": "sonic",
+        "label": "Sonic",
+        "store_title": "SONIC Drive-In - Order Online",
+        "kind": "app",
+        "category": "food",
+        "android_package": "com.sonic.sonicdrivein",
+        "store_url": "https://play.google.com/store/apps/details?id=com.sonic.sonicdrivein",
+        "selection_basis": "SONIC Drive-In ordering assignment, not a Sonic game."
+    },
+    {
+        "id": "samsung-global-goals",
+        "label": "Samsung Global Goals",
+        "store_title": "Samsung Global Goals",
+        "kind": "app",
+        "category": "tools",
+        "android_package": "com.samsung.sree",
+        "store_url": "https://play.google.com/store/apps/details?id=com.samsung.sree",
+        "selection_basis": "Main Samsung Global Goals assignment, separate from its Digital watch-face package."
+    },
+    {
+        "id": "theme-park",
+        "label": "Theme Park",
+        "store_title": "Theme Park",
+        "kind": "app",
+        "category": "tools",
+        "android_package": "com.samsung.android.themedesigner",
+        "store_url": "https://galaxystore.samsung.com/detail/com.samsung.android.themedesigner",
+        "selection_basis": "Samsung theme-editor assignment, separate from Good Lock and its other modules."
+    },
+    {
+        "id": "zillow-rentals",
+        "label": "Zillow Rentals",
+        "store_title": "Apartments & Rentals - Zillow",
+        "kind": "app",
+        "category": "home",
+        "android_package": "com.zillow.android.rentals",
+        "store_url": "https://play.google.com/store/apps/details?id=com.zillow.android.rentals",
+        "selection_basis": "Zillow rental-search assignment, separate from the retained Zillow main application."
+    },
+    {
+        "id": "samsung-find",
+        "label": "Samsung Find",
+        "store_title": "Samsung Find: Location Sharing",
+        "kind": "app",
+        "category": "tools",
+        "android_package": "com.samsung.android.app.find",
+        "store_url": "https://play.google.com/store/apps/details?id=com.samsung.android.app.find",
+        "selection_basis": "Samsung device-location assignment, separate from the general map symbol."
+    },
+    {
+        "id": "dollar-general",
+        "label": "Dollar General",
+        "store_title": "Dollar General-Digital Coupons",
+        "kind": "app",
+        "category": "shopping",
+        "android_package": "com.dollargeneral.android",
+        "store_url": "https://play.google.com/store/apps/details?id=com.dollargeneral.android",
+        "selection_basis": "Dollar General consumer-shopping assignment."
+    },
+    {
+        "id": "sound-connect",
+        "label": "Sound Connect",
+        "store_title": "Sony | Sound Connect",
+        "kind": "app",
+        "category": "tools",
+        "android_package": "com.sony.songpal.mdr",
+        "store_url": "https://play.google.com/store/apps/details?id=com.sony.songpal.mdr",
+        "selection_basis": "Sony headphone and speaker companion, retaining the official songpal package identity."
+    },
+    {
+        "id": "samsung-pass",
+        "label": "Samsung Pass",
+        "store_title": "Samsung Pass",
+        "kind": "app",
+        "category": "tools",
+        "android_package": "com.samsung.android.samsungpass",
+        "store_url": "https://galaxystore.samsung.com/detail/com.samsung.android.samsungpass",
+        "selection_basis": "Samsung Pass main credential-manager assignment, not its separate autofill or authentication framework package."
+    },
+    {
+        "id": "va",
+        "label": "VA",
+        "store_title": "VA: Health and Benefits",
+        "kind": "app",
+        "category": "tools",
+        "android_package": "gov.va.mobileapp",
+        "store_url": "https://play.google.com/store/apps/details?id=gov.va.mobileapp",
+        "selection_basis": "Official VA Health and Benefits assignment represented by an original service-folder drawing."
+    },
+    {
+        "id": "battle-net",
+        "label": "Battle.net",
+        "store_title": "Battle.net",
+        "kind": "app",
+        "category": "games",
+        "android_package": "com.blizzard.messenger",
+        "store_url": "https://play.google.com/store/apps/details?id=com.blizzard.messenger",
+        "selection_basis": "Blizzard phone-companion assignment, distinct from Valve and Xbox clients."
+    },
+    {
+        "id": "coinbase",
+        "label": "Coinbase",
+        "store_title": "Coinbase: Buy Crypto & Stocks",
+        "kind": "app",
+        "category": "finance",
+        "android_package": "com.coinbase.android",
+        "store_url": "https://play.google.com/store/apps/details?id=com.coinbase.android",
+        "selection_basis": "Coinbase main application assignment, separate from wallet-only products."
+    },
+    {
+        "id": "credit-one",
+        "label": "Credit One",
+        "store_title": "Credit One Bank Mobile",
+        "kind": "app",
+        "category": "finance",
+        "android_package": "com.creditonebank.mobile",
+        "store_url": "https://play.google.com/store/apps/details?id=com.creditonebank.mobile",
+        "selection_basis": "Credit One Bank card-management assignment, separate from Capital One and Credit One Bank Deposits."
+    },
+    {
+        "id": "samsung-members",
+        "label": "Samsung Members",
+        "store_title": "Samsung Members",
+        "kind": "app",
+        "category": "tools",
+        "android_package": "com.samsung.android.voc",
+        "store_url": "https://play.google.com/store/apps/details?id=com.samsung.android.voc",
+        "selection_basis": "Samsung device-support and community assignment."
+    },
+    {
+        "id": "proton-vpn",
+        "label": "Proton VPN",
+        "store_title": "Proton VPN: Secure & Fast VPN",
+        "kind": "app",
+        "category": "tools",
+        "android_package": "ch.protonvpn.android",
+        "store_url": "https://play.google.com/store/apps/details?id=ch.protonvpn.android",
+        "selection_basis": "Proton VPN assignment, distinct from its password manager and authenticator."
+    },
+    {
+        "id": "t-life",
+        "label": "T-Life",
+        "store_title": "T-Life",
+        "kind": "app",
+        "category": "tools",
+        "android_package": "com.tmobile.tuesdays",
+        "store_url": "https://play.google.com/store/apps/details?id=com.tmobile.tuesdays",
+        "selection_basis": "T-Mobile service-companion assignment, retaining the official Tuesdays package identity."
+    },
+    {
+        "id": "my-spectrum",
+        "label": "My Spectrum",
+        "store_title": "My Spectrum",
+        "kind": "app",
+        "category": "tools",
+        "android_package": "com.brighthouse.mybhn",
+        "store_url": "https://play.google.com/store/apps/details?id=com.brighthouse.mybhn",
+        "selection_basis": "Spectrum service-companion assignment, retaining the official brighthouse package identity."
+    },
+    {
+        "id": "g2a",
+        "label": "G2A",
+        "store_title": "G2A",
+        "kind": "app",
+        "category": "shopping",
+        "android_package": "com.g2a.marketplace",
+        "store_url": "https://play.google.com/store/apps/details?id=com.g2a.marketplace",
+        "selection_basis": "Digital-goods marketplace assignment, distinct from game-launcher companions."
+    },
+    {
+        "id": "samsung-tv-plus",
+        "label": "Samsung TV Plus",
+        "store_title": "Samsung TV Plus - TV & Movies",
+        "kind": "app",
+        "category": "media",
+        "android_package": "com.samsung.android.tvplus",
+        "store_url": "https://play.google.com/store/apps/details?id=com.samsung.android.tvplus",
+        "selection_basis": "Samsung TV Plus phone application assignment."
+    },
+    {
+        "id": "ap-news",
+        "label": "AP News",
+        "store_title": "AP News: World & Local",
+        "kind": "app",
+        "category": "news",
+        "android_package": "mnn.Android",
+        "store_url": "https://play.google.com/store/apps/details?id=mnn.Android",
+        "selection_basis": "Associated Press news assignment, retaining the exact case-sensitive mnn.Android identity."
+    },
+    {
+        "id": "link-to-windows",
+        "label": "Link to Windows",
+        "store_title": "Link to Windows",
+        "kind": "app",
+        "category": "tools",
+        "android_package": "com.microsoft.appmanager",
+        "store_url": "https://play.google.com/store/apps/details?id=com.microsoft.appmanager",
+        "selection_basis": "Microsoft phone-to-PC companion assignment, separate from phone-to-phone migration."
+    },
+    {
+        "id": "tips",
+        "label": "Tips",
+        "store_title": "Tips",
+        "kind": "app",
+        "category": "tools",
+        "android_package": "com.samsung.android.app.tips",
+        "store_url": "https://galaxystore.samsung.com/detail/com.samsung.android.app.tips",
+        "selection_basis": "Samsung device-help assignment identified by its official Galaxy Store record."
+    },
+    {
+        "id": "proton-pass",
+        "label": "Proton Pass",
+        "store_title": "Password Manager - Proton Pass",
+        "kind": "app",
+        "category": "tools",
+        "android_package": "proton.android.pass",
+        "store_url": "https://play.google.com/store/apps/details?id=proton.android.pass",
+        "selection_basis": "Proton password-manager assignment, separate from the authenticator and VPN."
+    },
+    {
+        "id": "shop-samsung",
+        "label": "Shop Samsung",
+        "store_title": "Shop Samsung",
+        "kind": "app",
+        "category": "shopping",
+        "android_package": "com.samsung.ecomm",
+        "store_url": "https://play.google.com/store/apps/details?id=com.samsung.ecomm",
+        "selection_basis": "Samsung consumer-shopping assignment, separate from the Shop application."
+    },
+    {
+        "id": "wallpaper-engine",
+        "label": "Wallpaper Engine",
+        "store_title": "Wallpaper Engine",
+        "kind": "app",
+        "category": "tools",
+        "android_package": "io.wallpaperengine.weclient",
+        "store_url": "https://play.google.com/store/apps/details?id=io.wallpaperengine.weclient",
+        "selection_basis": "Wallpaper Engine Android companion assignment, distinct from its desktop application."
+    },
+    {
+        "id": "asus-router",
+        "label": "ASUS Router",
+        "store_title": "ASUS Router",
+        "kind": "app",
+        "category": "tools",
+        "android_package": "com.asus.aihome",
+        "store_url": "https://play.google.com/store/apps/details?id=com.asus.aihome",
+        "selection_basis": "ASUS router-management assignment, not a claim of supported network hardware."
+    },
+    {
+        "id": "mochi-health",
+        "label": "Mochi Health",
+        "store_title": "Mochi Health: GLP-1 & Wellness",
+        "kind": "app",
+        "category": "health",
+        "android_package": "com.mochihealth.mochihealth",
+        "store_url": "https://play.google.com/store/apps/details?id=com.mochihealth.mochihealth",
+        "selection_basis": "Mochi Health application identity only, represented by an original neutral leaf drawing without a care recommendation."
+    },
+)
