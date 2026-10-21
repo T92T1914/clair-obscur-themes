@@ -1485,16 +1485,16 @@ async function assertFinderControlLayout(page, { spacing = false } = {}) {
 
 async function finderKeyboardRecovery(page) {
   const query = page.locator('#icon-query');
-  await query.fill('home'); await assertFinderResults(page, ['home-depot', 'google-home', 'asus-router', 'home']);
+  await query.fill('home'); await assertFinderResults(page, ['home-depot', 'google-home', 'gaming-hub', 'asus-router', 'home']);
   assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-query');
   await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-kind');
   await page.keyboard.press('Home'); await page.keyboard.press('ArrowDown'); await page.keyboard.press('Tab');
   assert.equal(await page.locator('#icon-kind').inputValue(), 'app');
   assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-clear');
-  await assertFinderResults(page, ['home-depot', 'google-home', 'asus-router']);
+  await assertFinderResults(page, ['home-depot', 'google-home', 'gaming-hub', 'asus-router']);
   await focusBeforeIconCards(page);
   const pngEnabled = await page.locator('[data-icon-function="home-depot"] [data-icon-png]').first().isVisible();
-  for (const [id, packageId] of [['home-depot', 'com.thehomedepot'], ['google-home', 'com.google.android.apps.chromecast.app'], ['asus-router', 'com.asus.aihome']]) {
+  for (const [id, packageId] of [['home-depot', 'com.thehomedepot'], ['google-home', 'com.google.android.apps.chromecast.app'], ['gaming-hub', 'com.samsung.android.game.gamehome'], ['asus-router', 'com.asus.aihome']]) {
     for (const action of pngEnabled ? ['Clair', 'Obscur', 'store'] : ['store'])
       await tabToIconAction(page, id, action, packageId);
   }
@@ -1506,7 +1506,7 @@ async function finderKeyboardRecovery(page) {
   await page.keyboard.press('Enter');
   assert.equal(await query.inputValue(), ''); assert.equal(await page.locator('#icon-kind').inputValue(), 'all');
   assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-query'); await assertFinderResults(page, iconFunctions);
-  return { visibleStoreLinksReachedByTab: 3, visiblePngActionsReachedByTab: pngEnabled ? 6 : 0,
+  return { visibleStoreLinksReachedByTab: 4, visiblePngActionsReachedByTab: pngEnabled ? 8 : 0,
     appAndFunctionKinds: true, clearRestoredAllAndFocusedQuery: true };
 }
 
@@ -2300,6 +2300,8 @@ test('no-script keyboard navigation acquires current and all sixteen preserved i
     assert.deepEqual(foodOrderBytes, await readFile(path.join(site, ...foodOrderIconArchive.split('/'))));
     assert.equal(crypto.createHash('sha256').update(foodOrderBytes).digest('hex'), foodOrderIconDigest);
     await page.keyboard.press('Tab');
+    // Keep each deliberate archive-and-checksum batch below ten acquisitions.
+    await new Promise(resolve => setTimeout(resolve, 1100));
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-everyday-download');
     const [everydayDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
     assert.equal(await everydayDownload.failure(), null);
@@ -2320,8 +2322,6 @@ test('no-script keyboard navigation acquires current and all sixteen preserved i
     assert.deepEqual(broadBytes, await readFile(path.join(site, ...broadIconArchive.split('/'))));
     assert.equal(crypto.createHash('sha256').update(broadBytes).digest('hex'), broadIconDigest);
     await page.keyboard.press('Tab');
-    // Pace this archive-and-checksum journey after eight acquisitions.
-    await new Promise(resolve => setTimeout(resolve, 1100));
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-companion-download');
     const [companionDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
     assert.equal(await companionDownload.failure(), null);
