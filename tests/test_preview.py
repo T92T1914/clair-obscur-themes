@@ -468,6 +468,30 @@ class PreviewTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_android_source_snapshot_excludes_toolchains_keys_and_binaries(self):
+        captured = source_files(ROOT)
+        required = {
+            'android/build.py', 'android/iconpack/components.json',
+            'android/app/AndroidManifest.xml',
+            'android/app/res/values/strings.xml', 'android/app/res/values/styles.xml',
+            'android/app/src/io/github/t92t1914/obscuricons/IconPackActivity.java',
+            'android/app/assets/NOTICE.txt',
+            'android/app/assets/licenses/Lawnicons-Apache-2.0.txt',
+            'android/app/assets/licenses/Clair-Obscur-MIT.txt',
+        }
+        self.assertEqual({name for name in captured if name.startswith('android/')}, required)
+        extracted = self.base / 'android-source'
+        with zipfile.ZipFile(io.BytesIO(preview_files(ROOT, self.artifacts)['source.zip'])) as archive:
+            archive.extractall(extracted)
+            for name in required:
+                self.assertEqual(archive.read(name), (ROOT / name).read_bytes())
+        for name in ('android/signing/private.jks', 'android/sdk/private.xml',
+                     'android/app/build/candidate.apk', 'android/app/local.properties'):
+            path = extracted / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b'private fixture, never publish')
+        self.assertEqual(source_files(extracted), captured)
+
     def test_icon_export_command_is_in_the_source_snapshot(self):
         captured = source_files(ROOT)
         name = 'tools/export-icons.mjs'
@@ -487,7 +511,7 @@ class PreviewTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
         exported = json.loads((self.base / 'extracted-icons/manifest.json').read_bytes())
-        self.assertEqual(exported['version'], '0.17.0')
+        self.assertEqual(exported['version'], '0.18.0')
         self.assertEqual(len(exported['functions']), 281)
         self.assertEqual(len(exported['files']), 562)
         self.assertEqual([entry['id'] for entry in exported['catalog']][233:241],

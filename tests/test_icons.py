@@ -891,7 +891,7 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(set(files), expected | {"manifest.json"})
         manifest = json.loads(files["manifest.json"])
         self.assertEqual(manifest["functions"], NAMES)
-        self.assertEqual(manifest["version"], "0.17.0")
+        self.assertEqual(manifest["version"], "0.18.0")
         self.assertEqual(manifest["token_schema"], 1)
         self.assertEqual(manifest["token_version"], "1.0.0")
         self.assertEqual(manifest["palette_variant"], "monochrome")
@@ -1052,7 +1052,7 @@ class FunctionalIconTests(unittest.TestCase):
         from themeforge.build import _zip_bytes
         from themeforge.legal import license_text
         legacy = icons.render_icons(self.legacy_document, version="0.1.0")
-        current = icons.render_icons(self.document)
+        current = icons.render_icons(self.document, version="0.17.0")
         refined = icons.render_icons(self.legacy_document, version="0.2.0")
         first_apps = icons.render_icons(self.legacy_document, version="0.3.0")
         second_apps = icons.render_icons(self.legacy_document, version="0.4.0")
@@ -1156,7 +1156,7 @@ class FunctionalIconTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "differs"):
                 icons.build_icons(self.document, output, check=True)
             self.assertEqual(tree_snapshot(output), before)
-        for unsupported in ("0.0.0", "0.18.0", None, [], {}):
+        for unsupported in ("0.0.0", "0.19.0", None, [], {}):
             with self.subTest(version=unsupported), self.assertRaisesRegex(ValueError, "Unsupported"):
                 icons.render_icons(self.document, version=unsupported)
 
@@ -1796,7 +1796,7 @@ class FunctionalIconTests(unittest.TestCase):
         })).hexdigest(), "3fbf8b53e12ddae6ea354d6ed20a1464c4874192a24f5dee7f231baed0e7f3a0")
         self.assertEqual(hashlib.sha256(previous["manifest.json"]).hexdigest(),
                          "edf610a33c55adeecca9c43bde0b0786a4f7d0b81c018880a504068218670b19")
-        current = icons.render_icons(self.document)
+        current = icons.render_icons(self.document, version="0.17.0")
         manifest = json.loads(current["manifest.json"])
         self.assertEqual(manifest["version"], "0.17.0")
         self.assertEqual(len(manifest["catalog"]), 281)

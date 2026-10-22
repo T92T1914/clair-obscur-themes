@@ -1,5 +1,15 @@
 # Changes
 
+## Icon artwork 0.18.0
+
+October 21, 2026.
+
+- Refine eight drawings after inspecting their lines and negative space at small icon sizes: Google Messages, Google Translate, Fandom, Ace Hardware, Dollar General, MyFitnessPal, Wallpaper Engine and WEBTOON.
+- Keep the same 257 named apps and 24 general functions. The other 273 drawings retain their exact 0.17.0 SVG bytes in both appearances. Preserve all seventeen historical archives and their original manifests.
+- Update the current gallery, individual PNG filenames, portable kit and existing exporter for 0.18.0. The collection still contains 562 SVG masters and exports 1,124 PNGs at two sizes.
+- Update the separate Obscur Android icon-pack candidate to 0.1.1 with the 0.18.0 artwork and eleven observed launcher aliases. Preserve the original 0.1.0 APK and its 0.17.0 drawings. The updated APK still needs a new on-phone coverage and Theme Park check. Earlier user-reported partial application does not establish complete component coverage, fonts, persistence or restoration.
+- Preserve the accepted desktop, Terminal and Garmin package bytes. No font files or device installation are included in the artwork archive.
+
 ## Icon artwork 0.17.0
 
 October 21, 2026.

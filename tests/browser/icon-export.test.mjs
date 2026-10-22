@@ -492,7 +492,7 @@ const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 let temporary, source, sourceBefore, legacySource, legacyBefore, previousSource, previousBefore,
   firstSource, firstBefore, secondSource, secondBefore, thirdSource, thirdBefore,
   monochromeSource, monochromeBefore, companionSource, companionBefore, broadSource, broadBefore, everydaySource, everydayBefore,
-  foodSource, foodBefore, travelSource, travelBefore, financeSource, financeBefore, weatherSource, weatherBefore, runningSource, runningBefore, learningSource, learningBefore, readingSource, readingBefore;
+  foodSource, foodBefore, travelSource, travelBefore, financeSource, financeBefore, weatherSource, weatherBefore, runningSource, runningBefore, learningSource, learningBefore, readingSource, readingBefore, phoneServiceSource, phoneServiceBefore;
 
 function execute(command, args, options = {}) {
   return spawnSync(command, args, { cwd: root, encoding: 'utf8', windowsHide: true,
@@ -612,6 +612,17 @@ before(async () => {
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stdout + result.stderr);
   sourceBefore = await snapshot(source);
+  phoneServiceSource = path.join(temporary, 'phone-service-svg');
+  const phoneService = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', phoneServiceSource, '--version', '0.17.0']);
+  assert.ifError(phoneService.error);
+  assert.equal(phoneService.status, 0, phoneService.stdout + phoneService.stderr);
+  phoneServiceBefore = await snapshot(phoneServiceSource);
+  assert.equal(phoneServiceBefore['manifest.json'], 'e1be7375d5697623c539b0b08989be070edf3df5a501a95753d0c78fc44ff503',
+    'The accepted phone-service manifest remains exact');
+  const changed = Object.keys(phoneServiceBefore).filter(name => name.endsWith('.svg') && sourceBefore[name] !== phoneServiceBefore[name]);
+  assert.deepEqual(changed.sort(), ['Clair', 'Obscur'].flatMap(appearance =>
+    ['google-messages', 'google-translate', 'fandom', 'ace-hardware', 'dollar-general', 'myfitnesspal', 'wallpaper-engine', 'webtoon']
+      .map(name => `${appearance}/${name}.svg`)).sort(), 'Only the eight admitted drawings change in the current revision');
   legacySource = path.join(temporary, 'legacy-svg');
   const legacy = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', legacySource, '--version', '0.1.0']);
   assert.ifError(legacy.error);
@@ -651,7 +662,7 @@ before(async () => {
   assert.equal(monochromeBefore['manifest.json'], '57537e0ad06dee704400160d30ae47f4cce8beba557c347ef5236ac8da32ee92',
     'The accepted first-monochrome manifest remains exact');
   for (const appearance of ['Clair', 'Obscur']) for (const name of retainedFunctions) {
-    assert.equal(sourceBefore[`${appearance}/${name}.svg`], monochromeBefore[`${appearance}/${name}.svg`],
+    assert.equal(phoneServiceBefore[`${appearance}/${name}.svg`], monochromeBefore[`${appearance}/${name}.svg`],
       'Every retained monochrome SVG stays byte-identical in the expanded collection');
   }
   companionSource = path.join(temporary, 'companion-svg');
@@ -662,7 +673,7 @@ before(async () => {
   assert.equal(companionBefore['manifest.json'], 'a58049892930f817b1376c03510ab408c84d5336d908d885e4ab52e078d238ca',
     'The accepted companion-collection manifest remains exact');
   for (const appearance of ['Clair', 'Obscur']) for (const name of companionFunctions) {
-    assert.equal(sourceBefore[`${appearance}/${name}.svg`], companionBefore[`${appearance}/${name}.svg`],
+    assert.equal(phoneServiceBefore[`${appearance}/${name}.svg`], companionBefore[`${appearance}/${name}.svg`],
       'All 190 accepted companion SVG bytes remain unchanged in the broader collection');
   }
   broadSource = path.join(temporary, 'broad-svg');
@@ -673,7 +684,7 @@ before(async () => {
   assert.equal(broadBefore['manifest.json'], '7a8a35d6ba1186a718e970e26c5c6b7b19bf4949010c7bc89af3cb6063b95252',
     'The accepted broad-collection manifest remains exact');
   for (const appearance of ['Clair', 'Obscur']) for (const name of broadFunctions) {
-    assert.equal(sourceBefore[`${appearance}/${name}.svg`], broadBefore[`${appearance}/${name}.svg`],
+    assert.equal(phoneServiceBefore[`${appearance}/${name}.svg`], broadBefore[`${appearance}/${name}.svg`],
       'All 254 accepted broad SVG bytes remain unchanged in the everyday collection');
   }
   everydaySource = path.join(temporary, 'everyday-svg');
@@ -684,7 +695,7 @@ before(async () => {
   assert.equal(everydayBefore['manifest.json'], '7f3e3137cc2b3e72a4861368b6864158de8f5a17e5b2a57a2b0489c5ca0f78b5',
     'The accepted everyday-collection manifest remains exact');
   for (const appearance of ['Clair', 'Obscur']) for (const name of everydayFunctions) {
-    assert.equal(sourceBefore[`${appearance}/${name}.svg`], everydayBefore[`${appearance}/${name}.svg`],
+    assert.equal(phoneServiceBefore[`${appearance}/${name}.svg`], everydayBefore[`${appearance}/${name}.svg`],
       'All 350 accepted everyday SVG bytes remain unchanged in the food-order collection');
   }
   foodSource = path.join(temporary, 'food-order-svg');
@@ -695,7 +706,7 @@ before(async () => {
   assert.equal(foodBefore['manifest.json'], 'b9b1995bee3f538137bd1f5edd4da4ba5358ce3908d19ff9b493c4f19c8ec88d',
     'The accepted food-order manifest remains exact');
   for (const appearance of ['Clair', 'Obscur']) for (const name of foodFunctions) {
-    assert.equal(sourceBefore[`${appearance}/${name}.svg`], foodBefore[`${appearance}/${name}.svg`],
+    assert.equal(phoneServiceBefore[`${appearance}/${name}.svg`], foodBefore[`${appearance}/${name}.svg`],
       'All 374 accepted food-order SVG bytes remain unchanged in the expanded collection');
   }
   travelSource = path.join(temporary, 'travel-svg');
@@ -706,7 +717,7 @@ before(async () => {
   assert.equal(travelBefore['manifest.json'], '1ebc36ff9e29aa9b71a504c393a0028c3338cdd4d341a91dff5f6d6361a2bb57',
     'The accepted travel manifest remains exact');
   for (const appearance of ['Clair', 'Obscur']) for (const name of travelFunctions) {
-    assert.equal(sourceBefore[`${appearance}/${name}.svg`], travelBefore[`${appearance}/${name}.svg`],
+    assert.equal(phoneServiceBefore[`${appearance}/${name}.svg`], travelBefore[`${appearance}/${name}.svg`],
       'All 394 accepted travel SVG bytes remain unchanged in the finance collection');
   }
   financeSource = path.join(temporary, 'finance-svg');
@@ -717,7 +728,7 @@ before(async () => {
   assert.equal(financeBefore['manifest.json'], '7d0f413f04784c2457de5b3667fa8b265d3f3b09efb6be108c135cf6b8d88b3d',
     'The accepted finance manifest remains exact');
   for (const appearance of ['Clair', 'Obscur']) for (const name of financeFunctions) {
-    assert.equal(sourceBefore[appearance + '/' + name + '.svg'], financeBefore[appearance + '/' + name + '.svg'],
+    assert.equal(phoneServiceBefore[appearance + '/' + name + '.svg'], financeBefore[appearance + '/' + name + '.svg'],
       'All 414 accepted finance SVG bytes remain unchanged in the running/training collection');
   }
   weatherSource = path.join(temporary, 'weather-svg');
@@ -728,7 +739,7 @@ before(async () => {
   assert.equal(weatherBefore['manifest.json'], 'cc573fb8f3996d05eff6d8e724c179f17001ffcfaff26bbfade76e52591ce723',
     'The accepted weather manifest remains exact');
   for (const appearance of ['Clair', 'Obscur']) for (const name of weatherFunctions) {
-    assert.equal(sourceBefore[appearance + '/' + name + '.svg'], weatherBefore[appearance + '/' + name + '.svg'],
+    assert.equal(phoneServiceBefore[appearance + '/' + name + '.svg'], weatherBefore[appearance + '/' + name + '.svg'],
       'All 434 accepted weather SVG bytes remain unchanged in the running/training collection');
   }
   runningSource = path.join(temporary, 'running-svg');
@@ -739,7 +750,7 @@ before(async () => {
   assert.equal(runningBefore['manifest.json'], '4ac31c55d2723a0e27ee4892eb29d59dbdcb179443f496fced7b69337c0699df',
     'The accepted running and training manifest remains exact');
   for (const appearance of ['Clair', 'Obscur']) for (const name of runningFunctions) {
-    assert.equal(sourceBefore[appearance + '/' + name + '.svg'], runningBefore[appearance + '/' + name + '.svg'],
+    assert.equal(phoneServiceBefore[appearance + '/' + name + '.svg'], runningBefore[appearance + '/' + name + '.svg'],
       'All 450 accepted running and training SVG bytes remain unchanged in the learning collection');
   }
 
@@ -751,7 +762,7 @@ before(async () => {
   assert.equal(learningBefore['manifest.json'], '3979cc7eaf90a5cf8aab82bd711fc8d2ff92388856cbb41b9321442693b88b2b',
     'The accepted learning and study manifest remains exact');
   for (const appearance of ['Clair', 'Obscur']) for (const name of learningFunctions) {
-    assert.equal(sourceBefore[appearance + '/' + name + '.svg'], learningBefore[appearance + '/' + name + '.svg'],
+    assert.equal(phoneServiceBefore[appearance + '/' + name + '.svg'], learningBefore[appearance + '/' + name + '.svg'],
       'All 466 accepted learning and study SVG bytes remain unchanged in the reading collection');
   }
 
@@ -763,7 +774,7 @@ before(async () => {
   assert.equal(readingBefore['manifest.json'], 'edf610a33c55adeecca9c43bde0b0786a4f7d0b81c018880a504068218670b19',
     'The accepted reading manifest remains exact');
   for (const appearance of ['Clair', 'Obscur']) for (const name of readingFunctions) {
-    assert.equal(sourceBefore[appearance + '/' + name + '.svg'], readingBefore[appearance + '/' + name + '.svg'],
+    assert.equal(phoneServiceBefore[appearance + '/' + name + '.svg'], readingBefore[appearance + '/' + name + '.svg'],
       'All 482 accepted reading SVG bytes remain unchanged in the phone-service collection');
   }
 
@@ -786,7 +797,7 @@ test('PNG command exports 1124 monochrome icons with independent neutral-pixel d
   const manifestBytes = await readFile(path.join(output, 'manifest.json'));
   const manifest = JSON.parse(manifestBytes);
   const expected = ['manifest.json', 'LICENSE'];
-  assert.equal(manifest.version, '0.17.0');
+  assert.equal(manifest.version, '0.18.0');
   assert.equal(manifest.exporter_version, '0.11.0');
   assert.equal(manifest.palette_variant, 'monochrome');
   assert.equal(manifest.token_version, '1.0.0');
@@ -1010,7 +1021,7 @@ test('PNG command exports 1124 monochrome icons with independent neutral-pixel d
   assert.deepEqual(await snapshot(source), sourceBefore);
 });
 
-for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0', '0.15.0', '0.16.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
+for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0', '0.15.0', '0.16.0', '0.17.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
   const historical = {
     '0.1.0': { input: legacySource, before: legacyBefore, functions: baseFunctions, images: 96 },
     '0.2.0': { input: previousSource, before: previousBefore, functions: baseFunctions, images: 96 },
@@ -1042,6 +1053,8 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
       apps: learningCatalogApps, date: '2026-10-21', monochrome: true },
     '0.16.0': { input: readingSource, before: readingBefore, functions: readingFunctions, images: 964,
       apps: readingCatalogApps, date: '2026-10-21', monochrome: true },
+    '0.17.0': { input: phoneServiceSource, before: phoneServiceBefore, functions, images: 1124,
+      apps, date: '2026-10-21', monochrome: true },
   }[version];
   const historicalSource = historical.input, historicalBefore = historical.before;
   const historicalFunctions = historical.functions, imageCount = historical.images;
@@ -1107,12 +1120,12 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
 
 test('unknown and mismatched artwork versions are refused before output reservation or browser launch', async () => {
   const admitted = [['0.1.0', legacySource], ['0.2.0', previousSource], ['0.3.0', firstSource],
-    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', foodSource], ['0.11.0', travelSource], ['0.12.0', financeSource], ['0.13.0', weatherSource], ['0.14.0', runningSource], ['0.15.0', learningSource], ['0.16.0', readingSource], ['0.17.0', source]];
-  const cases = [['unknown', source, '0.18.0']];
+    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', foodSource], ['0.11.0', travelSource], ['0.12.0', financeSource], ['0.13.0', weatherSource], ['0.14.0', runningSource], ['0.15.0', learningSource], ['0.16.0', readingSource], ['0.17.0', phoneServiceSource], ['0.18.0', source]];
+  const cases = [['unknown', source, '0.19.0']];
   for (const [actual, original] of admitted) for (const [claimed] of admitted) {
     if (actual !== claimed) cases.push([`${actual}-as-${claimed}`, original, claimed]);
   }
-  assert.equal(cases.length, 273, 'All 272 cross-version claims and one unsupported future version are exercised');
+  assert.equal(cases.length, 307, 'All 306 cross-version claims and one unsupported future version are exercised');
   for (const [name, original, version] of cases) {
     const input = path.join(temporary, name);
     await cp(original, input, { recursive: true });
@@ -1324,7 +1337,7 @@ test('linked or junction output ancestors are refused before browser launch with
 test('a linked child manifest is refused before parsing its owned target or launching a browser', async t => {
   for (const [name, contents] of [
     ['malformed', '{owned malformed JSON fixture'],
-    ['unsupported', JSON.stringify({ version: '0.18.0' })],
+    ['unsupported', JSON.stringify({ version: '0.19.0' })],
   ]) {
     const input = path.join(temporary, `linked-manifest-${name}`);
     await cp(source, input, { recursive: true });

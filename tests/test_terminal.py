@@ -356,7 +356,7 @@ class TerminalPreviewTests(unittest.TestCase):
                         self.assertEqual(context, f"on {partner}" if partner else "on default")
 
     def test_terminal_preview_preserves_desktop_downloads_and_all_icon_revisions(self):
-        from preview import (READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE, ICON_ARCHIVE, ICON_CHECKSUMS,
+        from preview import (PHONE_SERVICE_ICON_ARCHIVE, READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE, ICON_ARCHIVE, ICON_CHECKSUMS,
                              LEGACY_ICON_ARCHIVE, PREVIOUS_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE,
                              MONOCHROME_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE,
                              PORTABLE_ARCHIVE, preview_files)
@@ -375,6 +375,22 @@ class TerminalPreviewTests(unittest.TestCase):
                               if path.startswith("downloads/")}, desktop)
             self.assertEqual({path.removeprefix("icons/"): payload for path, payload in delivery.items()
                               if path.startswith("icons/") and path.endswith(".svg")}, current_svg)
+            self.assertEqual(hashlib.sha256(delivery[PHONE_SERVICE_ICON_ARCHIVE]).hexdigest(),
+                             "0e638e99a265b7b3d5c04e77c3611c732e6b36fa3d26a674e255d89e0c1fd346")
+            with zipfile.ZipFile(io.BytesIO(delivery[PHONE_SERVICE_ICON_ARCHIVE])) as previous_phone_service:
+                self.assertEqual(hashlib.sha256(previous_phone_service.read("manifest.json")).hexdigest(),
+                                 "e1be7375d5697623c539b0b08989be070edf3df5a501a95753d0c78fc44ff503")
+                self.assertEqual(json.loads(previous_phone_service.read("manifest.json"))["version"], "0.17.0")
+                preserved_svg = {name: previous_phone_service.read(name) for name in previous_phone_service.namelist()
+                                 if name.endswith(".svg")}
+            self.assertEqual(set(preserved_svg), set(current_svg))
+            changed_svg = {name for name in current_svg if current_svg[name] != preserved_svg[name]}
+            self.assertEqual(changed_svg, {f"{appearance}/{identifier}.svg"
+                for appearance in ("Clair", "Obscur")
+                for identifier in ("google-messages", "google-translate", "fandom", "ace-hardware",
+                                   "dollar-general", "myfitnesspal", "wallpaper-engine", "webtoon")})
+            self.assertEqual(hashlib.sha256(delivery[READING_ICON_ARCHIVE]).hexdigest(),
+                             "3fbf8b53e12ddae6ea354d6ed20a1464c4874192a24f5dee7f231baed0e7f3a0")
             # Immutable 0.1.0 identity checked against both the retained PR38
             # preview archive and its delivered user download, independently.
             original_archive_hash = "040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34"
@@ -406,7 +422,7 @@ class TerminalPreviewTests(unittest.TestCase):
                 previous_svg = {name: previous_everyday.read(name) for name in previous_everyday.namelist()
                                 if name.endswith(".svg")}
                 self.assertEqual(len(previous_svg), 350)
-                self.assertEqual({name: current_svg[name] for name in previous_svg}, previous_svg)
+                self.assertEqual({name: preserved_svg[name] for name in previous_svg}, previous_svg)
             with zipfile.ZipFile(io.BytesIO(delivery[FOOD_ORDER_ICON_ARCHIVE])) as previous_food:
                 self.assertEqual(hashlib.sha256(delivery[FOOD_ORDER_ICON_ARCHIVE]).hexdigest(),
                                  "a81ffb8c4fb3ef32f3c8391c53016e99246b755ce9079fdee84b5948790ab8e0")
@@ -421,7 +437,7 @@ class TerminalPreviewTests(unittest.TestCase):
                 previous_svg = {name: previous_food.read(name) for name in previous_food.namelist()
                                 if name.endswith(".svg")}
                 self.assertEqual(len(previous_svg), 374)
-                self.assertEqual({name: current_svg[name] for name in previous_svg}, previous_svg)
+                self.assertEqual({name: preserved_svg[name] for name in previous_svg}, previous_svg)
             with zipfile.ZipFile(io.BytesIO(delivery[TRAVEL_ICON_ARCHIVE])) as previous_travel:
                 self.assertEqual(hashlib.sha256(delivery[TRAVEL_ICON_ARCHIVE]).hexdigest(),
                                  "04cce2b812ad4f6ed7bcfda172a9bfe5a6d63d058b6899570a1dbe94f162884d")
@@ -430,7 +446,7 @@ class TerminalPreviewTests(unittest.TestCase):
                 self.assertEqual(len(travel_catalog["files"]), 394)
                 for name in previous_travel.namelist():
                     if name.endswith(".svg"):
-                        self.assertEqual(previous_travel.read(name), delivery['icons/' + name])
+                        self.assertEqual(previous_travel.read(name), preserved_svg[name])
             with zipfile.ZipFile(io.BytesIO(delivery[FINANCE_ICON_ARCHIVE])) as previous_finance:
                 self.assertEqual(hashlib.sha256(delivery[FINANCE_ICON_ARCHIVE]).hexdigest(),
                                  "db8ed7e2c62d36786b2c2d510fdf68f83649fda512f6bb018f5043491cb8f0cf")
@@ -442,7 +458,7 @@ class TerminalPreviewTests(unittest.TestCase):
                                  finance_catalog["catalog"])
                 for name in previous_finance.namelist():
                     if name.endswith(".svg"):
-                        self.assertEqual(previous_finance.read(name), delivery['icons/' + name])
+                        self.assertEqual(previous_finance.read(name), preserved_svg[name])
             with zipfile.ZipFile(io.BytesIO(delivery[WEATHER_ICON_ARCHIVE])) as previous_weather:
                 self.assertEqual(hashlib.sha256(delivery[WEATHER_ICON_ARCHIVE]).hexdigest(),
                                  "e6f7c532d0c625666a0f3403ee27842ac8612e6368d49f64fb3e84b667a42ca1")
@@ -454,7 +470,7 @@ class TerminalPreviewTests(unittest.TestCase):
                                  weather_catalog["catalog"])
                 for name in previous_weather.namelist():
                     if name.endswith(".svg"):
-                        self.assertEqual(previous_weather.read(name), delivery['icons/' + name])
+                        self.assertEqual(previous_weather.read(name), preserved_svg[name])
             with zipfile.ZipFile(io.BytesIO(delivery[RUNNING_TRAINING_ICON_ARCHIVE])) as previous_running:
                 self.assertEqual(hashlib.sha256(delivery[RUNNING_TRAINING_ICON_ARCHIVE]).hexdigest(),
                                  "4b3324d30b0b6e94a52e0d51a206e499e6e2b6be82052752963da9446c44e6c1")
@@ -470,7 +486,7 @@ class TerminalPreviewTests(unittest.TestCase):
                 previous_svg = {name: previous_running.read(name) for name in previous_running.namelist()
                                 if name.endswith(".svg")}
                 self.assertEqual(len(previous_svg), 450)
-                self.assertEqual({name: current_svg[name] for name in previous_svg}, previous_svg)
+                self.assertEqual({name: preserved_svg[name] for name in previous_svg}, previous_svg)
             with zipfile.ZipFile(io.BytesIO(delivery[LEARNING_ICON_ARCHIVE])) as previous_learning:
                 self.assertEqual(hashlib.sha256(delivery[LEARNING_ICON_ARCHIVE]).hexdigest(),
                                  "df05503c0f1825d09e5b5fb96fcb87401490fef601518ca4e526a6e6d564197c")
@@ -485,12 +501,12 @@ class TerminalPreviewTests(unittest.TestCase):
                 previous_svg = {name: previous_learning.read(name) for name in previous_learning.namelist()
                                 if name.endswith(".svg")}
                 self.assertEqual(len(previous_svg), 466)
-                self.assertEqual({name: current_svg[name] for name in previous_svg}, previous_svg)
+                self.assertEqual({name: preserved_svg[name] for name in previous_svg}, previous_svg)
             with zipfile.ZipFile(io.BytesIO(delivery[ICON_ARCHIVE])) as current:
-                self.assertEqual(json.loads(current.read("manifest.json"))["version"], "0.17.0")
+                self.assertEqual(json.loads(current.read("manifest.json"))["version"], "0.18.0")
             self.assertEqual(delivery[ICON_CHECKSUMS],
                              ''.join(f'{hashlib.sha256(delivery[path]).hexdigest()}  {Path(path).name}\n'
-                                      for path in (ICON_ARCHIVE, READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
+                                      for path in (ICON_ARCHIVE, PHONE_SERVICE_ICON_ARCHIVE, READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
                                                   PREVIOUS_ICON_ARCHIVE, LEGACY_ICON_ARCHIVE)).encode())
         self.assertEqual(snapshot(self.artifacts), desktop)
         self.assertEqual((ROOT / "tokens.json").read_bytes(), token_bytes)
