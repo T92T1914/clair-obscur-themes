@@ -97,6 +97,12 @@ FOURTEENTH_APP_NAMES = "ace-hardware ai-dungeon gaming-hub kroger affirm usaa pr
 APP_NAMES += FOURTEENTH_APP_NAMES
 FOURTEENTH_NAMES = BASE_NAMES + APP_NAMES
 APP_NAMES += ["gboard"]
+FIFTEENTH_NAMES = BASE_NAMES + APP_NAMES
+SIXTEENTH_APP_NAMES = (
+    "inshot youcut vn-video-editor kinemaster powerdirector filmora "
+    "vivavideo gopro-quik videoshow alight-motion"
+).split()
+APP_NAMES += SIXTEENTH_APP_NAMES
 NAMES = BASE_NAMES + APP_NAMES
 EXPECTED_APPS = {
     "google-chrome": ("Google Chrome", "com.android.chrome"),
@@ -833,6 +839,20 @@ FOURTEENTH_EXPECTED_APPS = (
 EXPECTED_APPS.update({identifier: (label, package)
                       for identifier, label, package in FOURTEENTH_EXPECTED_APPS})
 EXPECTED_APPS["gboard"] = ("Gboard", "com.google.android.inputmethod.latin")
+SIXTEENTH_EXPECTED_APPS = (
+    ("inshot", "InShot", "Video Editor & Maker - InShot", "com.camerasideas.instashot"),
+    ("youcut", "YouCut", "YouCut - Video Editor & Maker", "com.camerasideas.trimmer"),
+    ("vn-video-editor", "VN", "VN: Photo & Video Editor", "com.frontrow.vlog"),
+    ("kinemaster", "KineMaster", "KineMaster - AI Video Editor", "com.nexstreaming.app.kinemasterfree"),
+    ("powerdirector", "PowerDirector", "PowerDirector - Video Editor", "com.cyberlink.powerdirector.DRA140225_01"),
+    ("filmora", "Filmora", "Filmora: AI Video Editor&Maker", "com.wondershare.filmorago"),
+    ("vivavideo", "VivaVideo", "VivaVideo - Video Cut & Editor", "com.quvideo.xiaoying"),
+    ("gopro-quik", "GoPro Quik", "GoPro Quik: Video Editor", "com.gopro.smarty"),
+    ("videoshow", "VideoShow", "Video Editor & Maker VideoShow", "com.xvideostudio.videoeditor"),
+    ("alight-motion", "Alight Motion", "Alight Motion", "com.alightcreative.motion"),
+)
+EXPECTED_APPS.update({identifier: (label, package)
+                      for identifier, label, _, package in SIXTEENTH_EXPECTED_APPS})
 
 NS = "{http://www.w3.org/2000/svg}"
 
@@ -894,11 +914,11 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(set(files), expected | {"manifest.json"})
         manifest = json.loads(files["manifest.json"])
         self.assertEqual(manifest["functions"], NAMES)
-        self.assertEqual(manifest["version"], "0.19.0")
+        self.assertEqual(manifest["version"], "0.20.0")
         self.assertEqual(manifest["token_schema"], 1)
         self.assertEqual(manifest["token_version"], "1.0.0")
         self.assertEqual(manifest["palette_variant"], "monochrome")
-        self.assertEqual(len(manifest["files"]), 564)
+        self.assertEqual(len(manifest["files"]), 584)
         for record in manifest["files"]:
             self.assertEqual(record["path"], f'{record["appearance"]}/{record["function"]}.svg')
             payload = files[record["path"]]
@@ -908,7 +928,7 @@ class FunctionalIconTests(unittest.TestCase):
         relabeled = files["Clair/phone.svg"].replace(b'aria-label="phone"', b'aria-label="messages"')
         self.assertEqual(geometry(relabeled), geometry(files["Clair/phone.svg"]))
         # Named choices must have different drawings, rather than relabeled aliases.
-        self.assertEqual(len({geometry(files[f"Clair/{name}.svg"]) for name in NAMES}), 282)
+        self.assertEqual(len({geometry(files[f"Clair/{name}.svg"]) for name in NAMES}), 292)
 
     def test_palette_roles_and_geometry_are_shared_without_hardcoded_colors(self):
         files = icons.render_icons(self.document)
@@ -967,7 +987,7 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(icons.token_path(), ROOT / "tokens-monochrome.json")
         for version in ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0"):
             self.assertEqual(icons.token_path(version), ROOT / "tokens.json")
-        for version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0"):
+        for version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0"):
             self.assertEqual(icons.token_path(version), ROOT / "tokens-monochrome.json")
         for version, document in (("0.5.0", self.legacy_document), ("0.6.0", self.document),
                                   ("0.7.0", self.document), ("0.8.0", self.document),
@@ -975,7 +995,7 @@ class FunctionalIconTests(unittest.TestCase):
                                   ("0.11.0", self.document), ("0.12.0", self.document),
                                   ("0.13.0", self.document), ("0.14.0", self.document),
                                   ("0.15.0", self.document), ("0.16.0", self.document), ("0.17.0", self.document),
-                                  ("0.18.0", self.document), ("0.19.0", self.document)):
+                                  ("0.18.0", self.document), ("0.19.0", self.document), ("0.20.0", self.document)):
             with self.subTest(version=version), tempfile.TemporaryDirectory() as temporary:
                 base = Path(temporary)
                 explicit = base / "explicit.json"
@@ -1160,7 +1180,7 @@ class FunctionalIconTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "differs"):
                 icons.build_icons(self.document, output, check=True)
             self.assertEqual(tree_snapshot(output), before)
-        for unsupported in ("0.0.0", "0.20.0", None, [], {}):
+        for unsupported in ("0.0.0", "0.21.0", None, [], {}):
             with self.subTest(version=unsupported), self.assertRaisesRegex(ValueError, "Unsupported"):
                 icons.render_icons(self.document, version=unsupported)
 
@@ -1169,9 +1189,9 @@ class FunctionalIconTests(unittest.TestCase):
         manifest = json.loads(files["manifest.json"])
         catalog = manifest["catalog"]
         self.assertEqual([row["id"] for row in catalog], NAMES)
-        self.assertEqual([row["kind"] for row in catalog], ["function"] * 24 + ["app"] * 258)
+        self.assertEqual([row["kind"] for row in catalog], ["function"] * 24 + ["app"] * 268)
         apps = catalog[24:]
-        self.assertEqual(len({row["android_package"] for row in apps}), 258)
+        self.assertEqual(len({row["android_package"] for row in apps}), 268)
         self.assertEqual({row["id"]: (row["label"], row["android_package"]) for row in apps}, EXPECTED_APPS)
         for row in apps:
             prefix = ("https://galaxystore.samsung.com/detail/" if row["id"] in
@@ -1858,7 +1878,7 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256(previous["manifest.json"]).hexdigest(),
                          "67833c82bf5d9cec320dcadff42ecf977180d18e0967688ab4aef0976bae375a")
         old_manifest = json.loads(previous["manifest.json"])
-        current = icons.render_icons(self.document)
+        current = icons.render_icons(self.document, version="0.19.0")
         manifest = json.loads(current["manifest.json"])
         self.assertEqual(set(current) - set(previous), {"Clair/gboard.svg", "Obscur/gboard.svg"})
         self.assertEqual(manifest["catalog"][:-1], old_manifest["catalog"])
@@ -1940,6 +1960,130 @@ class FunctionalIconTests(unittest.TestCase):
             with self.subTest(drawings=fault), patch.object(icons, "FIFTEENTH_APP_GLYPHS", bad):
                 refuse_without_rewriting_history()
 
+    def test_video_editors_add_only_twenty_svgs_and_preserve_exact_gboard_archive(self):
+        from themeforge.build import _zip_bytes
+        previous = icons.render_icons(self.document, version="0.19.0")
+        self.assertEqual(hashlib.sha256(_zip_bytes({
+            **previous, "LICENSE.txt": icons.license_text().encode("utf-8")
+        })).hexdigest(), "22ffaf915634a27adc9608e77d8c0d5bd885bc3bfae323a509f2f566a330334e")
+        self.assertEqual(hashlib.sha256(previous["manifest.json"]).hexdigest(),
+                         "a956a0abf1c478bd0ed9772eeab1f141bf20e1ecf359118db4e149337d0d2cee")
+        old_manifest = json.loads(previous["manifest.json"])
+        current = icons.render_icons(self.document)
+        manifest = json.loads(current["manifest.json"])
+        added = {f"{appearance}/{identifier}.svg"
+                 for appearance in ("Clair", "Obscur") for identifier in SIXTEENTH_APP_NAMES}
+        self.assertEqual(set(current) - set(previous), added)
+        self.assertEqual(manifest["catalog"][:282], old_manifest["catalog"])
+        self.assertEqual(manifest["functions"][:282], FIFTEENTH_NAMES)
+        for name, payload in previous.items():
+            if name.endswith(".svg"):
+                self.assertEqual(current[name], payload, name)
+        self.assertEqual([(row["id"], row["label"], row["store_title"], row["android_package"])
+                          for row in manifest["catalog"][282:]], list(SIXTEENTH_EXPECTED_APPS))
+        for row in manifest["catalog"][282:]:
+            self.assertEqual(row["kind"], "app")
+            self.assertEqual(row["category"], "video-editing")
+            self.assertEqual(row["store_url"],
+                             "https://play.google.com/store/apps/details?id=" + row["android_package"])
+            self.assertIn("cumulative downloads", row["selection_basis"])
+        self.assertEqual(manifest["version"], "0.20.0")
+        self.assertEqual(manifest["catalog_date"], "2026-10-22")
+        self.assertIn("No popularity ranking", manifest["catalog_scope"])
+        self.assertIn("phone installation", manifest["catalog_scope"])
+        self.assertEqual(len(manifest["files"]), 584)
+        self.assertEqual(len(manifest["catalog"]), 292)
+        self.assertEqual(icons.VERSIONS,
+                         tuple(f"0.{number}.0" for number in range(1, 21)))
+
+    def test_video_editor_details_have_visible_negative_spaces(self):
+        files = icons.render_icons(self.document)
+        for appearance in ("Clair", "Obscur"):
+            with self.subTest(appearance=appearance):
+                def group(identifier):
+                    return ET.fromstring(files[f"{appearance}/{identifier}.svg"]).find(NS + "g")
+                stroke = float(group("vn-video-editor").get("stroke-width"))
+                tracks = group("vn-video-editor").findall(NS + "rect")
+                upper, lower = tracks
+                self.assertGreaterEqual(float(lower.get("y")) - float(upper.get("y")) -
+                                        float(upper.get("height")) - stroke, 2 * stroke)
+                play_hull = path_hull(group("vn-video-editor").findall(NS + "path")[-1].get("d"))
+                self.assertGreaterEqual(min(x for x, _ in play_hull) -
+                                        float(lower.get("x")) - float(lower.get("width")) - stroke,
+                                        2 * stroke)
+                # Lens, status mark and top button stay distinct at the shared stroke.
+                camera = group("gopro-quik")
+                body, button = camera.findall(NS + "rect")
+                lens = camera.find(NS + "circle")
+                mark = path_hull(camera.find(NS + "path").get("d"))
+                self.assertGreaterEqual(float(lens.get("cx")) - float(lens.get("r")) -
+                                        max(x for x, _ in mark) - stroke, 2 * stroke)
+                self.assertGreaterEqual(float(body.get("x")) + float(body.get("width")) -
+                                        float(lens.get("cx")) - float(lens.get("r")) - stroke, stroke)
+                self.assertGreaterEqual(float(body.get("y")) - float(button.get("y")) -
+                                        float(button.get("height")) - stroke, stroke)
+                # Two transition arrows do not merge into a single dense zigzag.
+                transition = group("vivavideo")
+                arrows = [path_hull(path.get("d")) for path in transition.findall(NS + "path")]
+                self.assertGreaterEqual(min(x for x, _ in arrows[1]) -
+                                        max(x for x, _ in arrows[0]) - stroke, 2 * stroke)
+                frame = transition.find(NS + "rect")
+                self.assertGreaterEqual(min(y for path in arrows for _, y in path) -
+                                        float(frame.get("y")) - stroke, 2 * stroke)
+                self.assertGreaterEqual(float(frame.get("y")) + float(frame.get("height")) -
+                                        max(y for path in arrows for _, y in path) - stroke, 2 * stroke)
+                # The separated clapper bar is not drawn over the preview frame.
+                clapper = group("videoshow")
+                bar, body = clapper.findall(NS + "rect")
+                self.assertGreaterEqual(float(body.get("y")) - float(bar.get("y")) -
+                                        float(bar.get("height")) - stroke, 2 * stroke)
+                play = path_hull(clapper.findall(NS + "path")[-1].get("d"))
+                self.assertGreaterEqual(min(y for _, y in play) - float(body.get("y")) - stroke,
+                                        1.5 * stroke)
+                self.assertGreaterEqual(float(body.get("y")) + float(body.get("height")) -
+                                        max(y for _, y in play) - stroke, 1.5 * stroke)
+                # Crop corners stay open and separate from the central play symbol.
+                crop = group("inshot").findall(NS + "path")
+                self.assertEqual(crop[0].get("d").count("M"), 4)
+                self.assertNotIn("Z", crop[0].get("d"))
+                corners = path_hull(crop[0].get("d"))
+                play = path_hull(crop[1].get("d"))
+                for axis in (0, 1):
+                    self.assertGreaterEqual(min(point[axis] for point in play) -
+                                            min(point[axis] for point in corners) - stroke, 2 * stroke)
+                    self.assertGreaterEqual(max(point[axis] for point in corners) -
+                                            max(point[axis] for point in play) - stroke, 2 * stroke)
+
+    def test_video_editor_catalog_faults_refuse_output_and_preserve_0_19(self):
+        previous = icons.render_icons(self.document, version="0.19.0")
+        def refuse_without_rewriting_history():
+            self.assertEqual(icons.render_icons(self.document, version="0.19.0"), previous)
+            with tempfile.TemporaryDirectory() as temporary:
+                output = Path(temporary) / "never-created"
+                with self.assertRaises(ValueError):
+                    icons.build_icons(self.document, output)
+                self.assertFalse(output.exists())
+                self.assertEqual(list(Path(temporary).iterdir()), [])
+        for change in ({"id": "phone"}, {"id": "capcut"}, {"id": "../unsafe"},
+                       {"android_package": "com.lemon.lvoverseas"},
+                       {"android_package": "not-a-package"}, {"label": " "},
+                       {"store_title": ""}, {"selection_basis": ""},
+                       {"store_url": "https://play.google.com/store/apps/details?id=com.wrong.app"},
+                       {"store_url": "https://play.google.com/store/apps/details?id=com.camerasideas.instashot&hl=en"},
+                       {"store_url": "https://galaxystore.samsung.com/detail/com.camerasideas.instashot"}):
+            bad = copy.deepcopy(icons.SIXTEENTH_APP_CATALOG)
+            bad[0].update(change)
+            with self.subTest(change=change), patch.object(icons, "SIXTEENTH_APP_CATALOG", bad):
+                refuse_without_rewriting_history()
+        for fault in ("missing", "accepted-ID", "extra"):
+            bad = dict(icons.SIXTEENTH_APP_GLYPHS)
+            if fault == "missing":
+                bad.pop("inshot")
+            else:
+                bad["gboard" if fault == "accepted-ID" else "unassigned-new-app"] = bad["inshot"]
+            with self.subTest(drawings=fault), patch.object(icons, "SIXTEENTH_APP_GLYPHS", bad):
+                refuse_without_rewriting_history()
+
     def test_galaxy_store_admission_is_exact_and_current_only(self):
         packages = {
             "gaming-hub": "com.samsung.android.game.gamehome",
@@ -2002,7 +2146,7 @@ class FunctionalIconTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "icons"
             result = icons.build_icons(self.document, output)
-            self.assertEqual(len(result["files"]), 564)
+            self.assertEqual(len(result["files"]), 584)
             before = tree_snapshot(output)
             self.assertEqual(before, icons.render_icons(self.document))
             icons.build_icons(self.document, output, check=True)

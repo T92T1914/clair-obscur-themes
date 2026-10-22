@@ -19664,6 +19664,336 @@
       "source_types": [
         "item"
       ]
+    },
+    {
+      "activity": "com.camerasideas.instashot.DummyActivity",
+      "android_package": "com.camerasideas.instashot",
+      "component": "ComponentInfo{com.camerasideas.instashot/com.camerasideas.instashot.DummyActivity}",
+      "icon_id": "inshot",
+      "source_components": [
+        "ComponentInfo{com.camerasideas.instashot/com.camerasideas.instashot.DummyActivity}"
+      ],
+      "source_lines": [
+        8904
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.camerasideas.instashot.MainActivity",
+      "android_package": "com.camerasideas.instashot",
+      "component": "ComponentInfo{com.camerasideas.instashot/com.camerasideas.instashot.MainActivity}",
+      "icon_id": "inshot",
+      "source_components": [
+        "ComponentInfo{com.camerasideas.instashot/com.camerasideas.instashot.MainActivity}"
+      ],
+      "source_lines": [
+        8905
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.min.n.MainActivity",
+      "android_package": "com.camerasideas.instashot",
+      "component": "ComponentInfo{com.camerasideas.instashot/com.min.n.MainActivity}",
+      "icon_id": "inshot",
+      "source_components": [
+        "ComponentInfo{com.camerasideas.instashot/com.min.n.MainActivity}"
+      ],
+      "source_lines": [
+        8906
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.camerasideas.instashot.DummyActivity",
+      "android_package": "com.camerasideas.trimmer",
+      "component": "ComponentInfo{com.camerasideas.trimmer/com.camerasideas.instashot.DummyActivity}",
+      "icon_id": "youcut",
+      "source_components": [
+        "ComponentInfo{com.camerasideas.trimmer/com.camerasideas.instashot.DummyActivity}"
+      ],
+      "source_lines": [
+        21664
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.camerasideas.instashot.MainActivity",
+      "android_package": "com.camerasideas.trimmer",
+      "component": "ComponentInfo{com.camerasideas.trimmer/com.camerasideas.instashot.MainActivity}",
+      "icon_id": "youcut",
+      "source_components": [
+        "ComponentInfo{com.camerasideas.trimmer/com.camerasideas.instashot.MainActivity}"
+      ],
+      "source_lines": [
+        21665
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.frontrow.vlog.ui.splash.SplashActivity",
+      "android_package": "com.frontrow.vlog",
+      "component": "ComponentInfo{com.frontrow.vlog/com.frontrow.vlog.ui.splash.SplashActivity}",
+      "icon_id": "vn-video-editor",
+      "source_components": [
+        "ComponentInfo{com.frontrow.vlog/com.frontrow.vlog.ui.splash.SplashActivity}"
+      ],
+      "source_lines": [
+        20623
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.kinemaster.app.screen.splash.SplashActivity",
+      "android_package": "com.nexstreaming.app.kinemasterfree",
+      "component": "ComponentInfo{com.nexstreaming.app.kinemasterfree/com.kinemaster.app.screen.splash.SplashActivity}",
+      "icon_id": "kinemaster",
+      "source_components": [
+        "ComponentInfo{com.nexstreaming.app.kinemasterfree/com.kinemaster.app.screen.splash.SplashActivity}"
+      ],
+      "source_lines": [
+        9618
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.duapps.ad.DuAd",
+      "android_package": "com.nexstreaming.app.kinemasterfree",
+      "component": "ComponentInfo{com.nexstreaming.app.kinemasterfree/com.duapps.ad.DuAd}",
+      "icon_id": "kinemaster",
+      "source_components": [
+        "ComponentInfo{com.nexstreaming.app.kinemasterfree/com.duapps.ad.DuAd}"
+      ],
+      "source_lines": [
+        9619
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.nexstreaming.kinemaster.ui.splash.SplashActivity",
+      "android_package": "com.nexstreaming.app.kinemasterfree",
+      "component": "ComponentInfo{com.nexstreaming.app.kinemasterfree/com.nexstreaming.kinemaster.ui.splash.SplashActivity}",
+      "icon_id": "kinemaster",
+      "source_components": [
+        "ComponentInfo{com.nexstreaming.app.kinemasterfree/com.nexstreaming.kinemaster.ui.splash.SplashActivity}"
+      ],
+      "source_lines": [
+        9620
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.nextreaming.nexeditorui.MainActivity",
+      "android_package": "com.nexstreaming.app.kinemasterfree",
+      "component": "ComponentInfo{com.nexstreaming.app.kinemasterfree/com.nextreaming.nexeditorui.MainActivity}",
+      "icon_id": "kinemaster",
+      "source_components": [
+        "ComponentInfo{com.nexstreaming.app.kinemasterfree/com.nextreaming.nexeditorui.MainActivity}"
+      ],
+      "source_lines": [
+        9621
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.cyberlink.powerdirector.splash.SplashActivity",
+      "android_package": "com.cyberlink.powerdirector.DRA140225_01",
+      "component": "ComponentInfo{com.cyberlink.powerdirector.DRA140225_01/com.cyberlink.powerdirector.splash.SplashActivity}",
+      "icon_id": "powerdirector",
+      "source_components": [
+        "ComponentInfo{com.cyberlink.powerdirector.DRA140225_01/com.cyberlink.powerdirector.splash.SplashActivity}"
+      ],
+      "source_lines": [
+        14930
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.filmorago.phone.ui.homepage.HomePageActivityNewSinceV570",
+      "android_package": "com.wondershare.filmorago",
+      "component": "ComponentInfo{com.wondershare.filmorago/com.filmorago.phone.ui.homepage.HomePageActivityNewSinceV570}",
+      "icon_id": "filmora",
+      "source_components": [
+        "ComponentInfo{com.wondershare.filmorago/com.filmorago.phone.ui.homepage.HomePageActivityNewSinceV570}"
+      ],
+      "source_lines": [
+        6058
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.wondershare.filmorago.activity.WelcomeActivity",
+      "android_package": "com.wondershare.filmorago",
+      "component": "ComponentInfo{com.wondershare.filmorago/com.wondershare.filmorago.activity.WelcomeActivity}",
+      "icon_id": "filmora",
+      "source_components": [
+        "ComponentInfo{com.wondershare.filmorago/com.wondershare.filmorago.activity.WelcomeActivity}"
+      ],
+      "source_lines": [
+        6059
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.filmorago.phone.ui.SplashActivity",
+      "android_package": "com.wondershare.filmorago",
+      "component": "ComponentInfo{com.wondershare.filmorago/com.filmorago.phone.ui.SplashActivity}",
+      "icon_id": "filmora",
+      "source_components": [
+        "ComponentInfo{com.wondershare.filmorago/com.filmorago.phone.ui.SplashActivity}"
+      ],
+      "source_lines": [
+        6060
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.quvideo.xiaoying.app.splash.SplashActivity",
+      "android_package": "com.quvideo.xiaoying",
+      "component": "ComponentInfo{com.quvideo.xiaoying/com.quvideo.xiaoying.app.splash.SplashActivity}",
+      "icon_id": "vivavideo",
+      "source_components": [
+        "ComponentInfo{com.quvideo.xiaoying/com.quvideo.xiaoying.app.splash.SplashActivity}"
+      ],
+      "source_lines": [
+        20530
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.gopro.smarty.activity.HomeActivity",
+      "android_package": "com.gopro.smarty",
+      "component": "ComponentInfo{com.gopro.smarty/com.gopro.smarty.activity.HomeActivity}",
+      "icon_id": "gopro-quik",
+      "source_components": [
+        "ComponentInfo{com.gopro.smarty/com.gopro.smarty.activity.HomeActivity}"
+      ],
+      "source_lines": [
+        15329
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.xvideostudio.videoeditor.activity.SplashRCActivity",
+      "android_package": "com.xvideostudio.videoeditor",
+      "component": "ComponentInfo{com.xvideostudio.videoeditor/com.xvideostudio.videoeditor.activity.SplashRCActivity}",
+      "icon_id": "videoshow",
+      "source_components": [
+        "ComponentInfo{com.xvideostudio.videoeditor/com.xvideostudio.videoeditor.activity.SplashRCActivity}"
+      ],
+      "source_lines": [
+        20360
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.xvideostudio.videoeditor.activity.SplashSubActivity",
+      "android_package": "com.xvideostudio.videoeditor",
+      "component": "ComponentInfo{com.xvideostudio.videoeditor/com.xvideostudio.videoeditor.activity.SplashSubActivity}",
+      "icon_id": "videoshow",
+      "source_components": [
+        "ComponentInfo{com.xvideostudio.videoeditor/com.xvideostudio.videoeditor.activity.SplashSubActivity}"
+      ],
+      "source_lines": [
+        20361
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.alightcreative.app.motion.activities.main.SetupActivity",
+      "android_package": "com.alightcreative.motion",
+      "component": "ComponentInfo{com.alightcreative.motion/com.alightcreative.app.motion.activities.main.SetupActivity}",
+      "icon_id": "alight-motion",
+      "source_components": [
+        "ComponentInfo{com.alightcreative.motion/com.alightcreative.app.motion.activities.main.SetupActivity}"
+      ],
+      "source_lines": [
+        604
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.jojoy.delegate.JojoyInstallerActivity",
+      "android_package": "com.alightcreative.motion",
+      "component": "ComponentInfo{com.alightcreative.motion/com.jojoy.delegate.JojoyInstallerActivity}",
+      "icon_id": "alight-motion",
+      "source_components": [
+        "ComponentInfo{com.alightcreative.motion/com.jojoy.delegate.JojoyInstallerActivity}"
+      ],
+      "source_lines": [
+        605
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.alightcreative.app.motion.activities.ProjectListActivity",
+      "android_package": "com.alightcreative.motion",
+      "component": "ComponentInfo{com.alightcreative.motion/com.alightcreative.app.motion.activities.ProjectListActivity}",
+      "icon_id": "alight-motion",
+      "source_components": [
+        "ComponentInfo{com.alightcreative.motion/com.alightcreative.app.motion.activities.ProjectListActivity}"
+      ],
+      "source_lines": [
+        606
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.alightcreative.app.motion.activities.main.MainActivity",
+      "android_package": "com.alightcreative.motion",
+      "component": "ComponentInfo{com.alightcreative.motion/com.alightcreative.app.motion.activities.main.MainActivity}",
+      "icon_id": "alight-motion",
+      "source_components": [
+        "ComponentInfo{com.alightcreative.motion/com.alightcreative.app.motion.activities.main.MainActivity}"
+      ],
+      "source_lines": [
+        607
+      ],
+      "source_types": [
+        "item"
+      ]
     }
   ],
   "schema_version": 1,

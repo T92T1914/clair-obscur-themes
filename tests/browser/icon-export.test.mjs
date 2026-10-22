@@ -473,7 +473,61 @@ const phoneServiceApps = [
 ];
 
 const phoneServiceCatalogApps = [...readingCatalogApps, ...phoneServiceApps];
-const apps = [...phoneServiceCatalogApps, ['gboard', 'Gboard', 'com.google.android.inputmethod.latin']];
+const gboardCatalogApps = [...phoneServiceCatalogApps, ['gboard', 'Gboard', 'com.google.android.inputmethod.latin']];
+const videoEditingApps = [
+  [
+    "inshot",
+    "InShot",
+    "com.camerasideas.instashot"
+  ],
+  [
+    "youcut",
+    "YouCut",
+    "com.camerasideas.trimmer"
+  ],
+  [
+    "vn-video-editor",
+    "VN",
+    "com.frontrow.vlog"
+  ],
+  [
+    "kinemaster",
+    "KineMaster",
+    "com.nexstreaming.app.kinemasterfree"
+  ],
+  [
+    "powerdirector",
+    "PowerDirector",
+    "com.cyberlink.powerdirector.DRA140225_01"
+  ],
+  [
+    "filmora",
+    "Filmora",
+    "com.wondershare.filmorago"
+  ],
+  [
+    "vivavideo",
+    "VivaVideo",
+    "com.quvideo.xiaoying"
+  ],
+  [
+    "gopro-quik",
+    "GoPro Quik",
+    "com.gopro.smarty"
+  ],
+  [
+    "videoshow",
+    "VideoShow",
+    "com.xvideostudio.videoeditor"
+  ],
+  [
+    "alight-motion",
+    "Alight Motion",
+    "com.alightcreative.motion"
+  ]
+];
+const apps = [...gboardCatalogApps, ...videoEditingApps];
+const gboardFunctions = [...baseFunctions, ...gboardCatalogApps.map(([id]) => id)];
 const phoneServiceFunctions = [...baseFunctions, ...phoneServiceCatalogApps.map(([id]) => id)];
 const firstFunctions = [...baseFunctions, ...firstApps.map(([id]) => id)];
 const secondFunctions = [...baseFunctions, ...secondApps.map(([id]) => id)];
@@ -494,7 +548,7 @@ const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 let temporary, source, sourceBefore, legacySource, legacyBefore, previousSource, previousBefore,
   firstSource, firstBefore, secondSource, secondBefore, thirdSource, thirdBefore,
   monochromeSource, monochromeBefore, companionSource, companionBefore, broadSource, broadBefore, everydaySource, everydayBefore,
-  foodSource, foodBefore, travelSource, travelBefore, financeSource, financeBefore, weatherSource, weatherBefore, runningSource, runningBefore, learningSource, learningBefore, readingSource, readingBefore, phoneServiceSource, phoneServiceBefore, refinedSource, refinedBefore;
+  foodSource, foodBefore, travelSource, travelBefore, financeSource, financeBefore, weatherSource, weatherBefore, runningSource, runningBefore, learningSource, learningBefore, readingSource, readingBefore, phoneServiceSource, phoneServiceBefore, refinedSource, refinedBefore, gboardSource, gboardBefore;
 
 function execute(command, args, options = {}) {
   return spawnSync(command, args, { cwd: root, encoding: 'utf8', windowsHide: true,
@@ -614,6 +668,17 @@ before(async () => {
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stdout + result.stderr);
   sourceBefore = await snapshot(source);
+  gboardSource = path.join(temporary, 'gboard-svg');
+  const gboard = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', gboardSource, '--version', '0.19.0']);
+  assert.ifError(gboard.error);
+  assert.equal(gboard.status, 0, gboard.stdout + gboard.stderr);
+  gboardBefore = await snapshot(gboardSource);
+  assert.equal(gboardBefore['manifest.json'], 'a956a0abf1c478bd0ed9772eeab1f141bf20e1ecf359118db4e149337d0d2cee');
+  for (const name of Object.keys(gboardBefore).filter(name => name.endsWith('.svg')))
+    assert.equal(sourceBefore[name], gboardBefore[name], 'Every accepted 0.19 drawing remains exact');
+  assert.deepEqual(Object.keys(sourceBefore).filter(name => !Object.hasOwn(gboardBefore, name)).sort(),
+    ['Clair', 'Obscur'].flatMap(appearance => videoEditingApps.map(([id]) => `${appearance}/${id}.svg`)).sort(),
+    'Only the ten admitted video-editing drawings are added in each appearance');
   refinedSource = path.join(temporary, 'refined-svg');
   const refined = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', refinedSource, '--version', '0.18.0']);
   assert.ifError(refined.error);
@@ -622,7 +687,7 @@ before(async () => {
   assert.equal(refinedBefore['manifest.json'], '67833c82bf5d9cec320dcadff42ecf977180d18e0967688ab4aef0976bae375a');
   for (const name of Object.keys(refinedBefore).filter(name => name.endsWith('.svg')))
     assert.equal(sourceBefore[name], refinedBefore[name], 'Every accepted 0.18 drawing remains exact');
-  assert.deepEqual(Object.keys(sourceBefore).filter(name => !Object.hasOwn(refinedBefore, name)).sort(),
+  assert.deepEqual(Object.keys(gboardBefore).filter(name => !Object.hasOwn(refinedBefore, name)).sort(),
     ['Clair/gboard.svg', 'Obscur/gboard.svg'], 'Gboard is the only added drawing in each appearance');
   phoneServiceSource = path.join(temporary, 'phone-service-svg');
   const phoneService = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', phoneServiceSource, '--version', '0.17.0']);
@@ -800,20 +865,20 @@ after(async () => {
   }
 });
 
-test('PNG command exports 1128 monochrome icons with independent neutral-pixel decoding and assignment identities', async () => {
+test('PNG command exports 1168 monochrome icons with independent neutral-pixel decoding and assignment identities', async () => {
   const output = path.join(temporary, 'png');
   const result = exportTo(source, output);
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.match(result.stdout, /Exported 1128 PNG icons/);
+  assert.match(result.stdout, /Exported 1168 PNG icons/);
   const manifestBytes = await readFile(path.join(output, 'manifest.json'));
   const manifest = JSON.parse(manifestBytes);
   const expected = ['manifest.json', 'LICENSE'];
-  assert.equal(manifest.version, '0.19.0');
+  assert.equal(manifest.version, '0.20.0');
   assert.equal(manifest.exporter_version, '0.11.0');
   assert.equal(manifest.palette_variant, 'monochrome');
   assert.equal(manifest.token_version, '1.0.0');
-  assert.equal(manifest.files.length, 1128);
+  assert.equal(manifest.files.length, 1168);
   assert.deepEqual(manifest.functions, functions);
   assert.equal(manifest.source_manifest_sha256, sourceBefore['manifest.json']);
   assert.equal(manifest.tokens_file, 'tokens-monochrome.json');
@@ -822,14 +887,27 @@ test('PNG command exports 1128 monochrome icons with independent neutral-pixel d
   assert.equal(manifest.svg_catalog_sha256, sha(await readFile(path.join(root, 'themeforge/icon_apps.py'))));
   const svgManifest = JSON.parse(await readFile(path.join(source, 'manifest.json')));
   assert.deepEqual(manifest.catalog, svgManifest.catalog, 'Complete admitted assignment metadata survives PNG export');
-  assert.equal(manifest.catalog.length, 282);
+  assert.equal(manifest.catalog.length, 292);
   assert.deepEqual(manifest.catalog.filter(entry => entry.id === 'gboard').map(entry =>
     [entry.label, entry.android_package, entry.store_title, entry.store_url]),
     [['Gboard', 'com.google.android.inputmethod.latin', 'Gboard - the Google Keyboard',
       'https://play.google.com/store/apps/details?id=com.google.android.inputmethod.latin']]);
+  assert.deepEqual(Object.fromEntries(manifest.catalog.filter(entry => videoEditingApps.some(([id]) => id === entry.id))
+    .map(entry => [entry.id, entry.store_title])), {
+  "inshot": "Video Editor & Maker - InShot",
+  "youcut": "YouCut - Video Editor & Maker",
+  "vn-video-editor": "VN: Photo & Video Editor",
+  "kinemaster": "KineMaster - AI Video Editor",
+  "powerdirector": "PowerDirector - Video Editor",
+  "filmora": "Filmora: AI Video Editor&Maker",
+  "vivavideo": "VivaVideo - Video Cut & Editor",
+  "gopro-quik": "GoPro Quik: Video Editor",
+  "videoshow": "Video Editor & Maker VideoShow",
+  "alight-motion": "Alight Motion"
+});
   assert.equal(manifest.catalog_date, '2026-10-22');
   assert.equal(manifest.catalog_scope, svgManifest.catalog_scope);
-  assert.match(manifest.catalog_scope, /No popularity ranking, phone installation or keyboard behavior is established by the artwork\./);
+  assert.match(manifest.catalog_scope, /No popularity ranking, device availability or phone installation is established\./);
   assert.deepEqual(manifest.catalog.filter(entry => entry.kind === 'function').map(entry => entry.id), baseFunctions);
   assert.deepEqual(manifest.catalog.filter(entry => entry.kind === 'app').map(entry =>
     [entry.id, entry.label, entry.android_package]), apps);
@@ -1016,10 +1094,10 @@ test('PNG command exports 1128 monochrome icons with independent neutral-pixel d
   assert.equal(manifestBytes.toString().includes(root), false, 'No checkout path enters the export manifest');
   assert.equal(manifestBytes.toString().includes(temporary), false, 'No temporary or user path enters the export manifest');
   const records = new Map(manifest.files.map(record => [record.path, record]));
-  assert.equal(records.size, 1128);
+  assert.equal(records.size, 1168);
   for (const appearance of ['Clair', 'Obscur']) for (const size of [512, 1024]) {
     const hashes = functions.map(name => records.get(`${appearance}/${size}/${name}.png`)?.sha256);
-    assert.equal(new Set(hashes).size, 282, `${appearance}/${size} retains 282 distinct drawings`);
+    assert.equal(new Set(hashes).size, 292, `${appearance}/${size} retains 292 distinct drawings`);
     assert.equal(hashes.includes(undefined), false);
   }
   for (const appearance of ['Clair', 'Obscur']) for (const size of [512, 1024]) for (const name of functions) {
@@ -1037,7 +1115,7 @@ test('PNG command exports 1128 monochrome icons with independent neutral-pixel d
   assert.deepEqual(await snapshot(source), sourceBefore);
 });
 
-for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0', '0.15.0', '0.16.0', '0.17.0', '0.18.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
+for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0', '0.15.0', '0.16.0', '0.17.0', '0.18.0', '0.19.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
   const historical = {
     '0.1.0': { input: legacySource, before: legacyBefore, functions: baseFunctions, images: 96 },
     '0.2.0': { input: previousSource, before: previousBefore, functions: baseFunctions, images: 96 },
@@ -1073,6 +1151,8 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
       apps: phoneServiceCatalogApps, date: '2026-10-21', monochrome: true },
     '0.18.0': { input: refinedSource, before: refinedBefore, functions: phoneServiceFunctions, images: 1124,
       apps: phoneServiceCatalogApps, date: '2026-10-21', monochrome: true },
+    '0.19.0': { input: gboardSource, before: gboardBefore, functions: gboardFunctions, images: 1128,
+      apps: gboardCatalogApps, date: '2026-10-22', monochrome: true },
   }[version];
   const historicalSource = historical.input, historicalBefore = historical.before;
   const historicalFunctions = historical.functions, imageCount = historical.images;
@@ -1138,12 +1218,12 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
 
 test('unknown and mismatched artwork versions are refused before output reservation or browser launch', async () => {
   const admitted = [['0.1.0', legacySource], ['0.2.0', previousSource], ['0.3.0', firstSource],
-    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', foodSource], ['0.11.0', travelSource], ['0.12.0', financeSource], ['0.13.0', weatherSource], ['0.14.0', runningSource], ['0.15.0', learningSource], ['0.16.0', readingSource], ['0.17.0', phoneServiceSource], ['0.18.0', refinedSource], ['0.19.0', source]];
-  const cases = [['unknown', source, '0.20.0']];
+    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', foodSource], ['0.11.0', travelSource], ['0.12.0', financeSource], ['0.13.0', weatherSource], ['0.14.0', runningSource], ['0.15.0', learningSource], ['0.16.0', readingSource], ['0.17.0', phoneServiceSource], ['0.18.0', refinedSource], ['0.19.0', gboardSource], ['0.20.0', source]];
+  const cases = [['unknown', source, '0.21.0']];
   for (const [actual, original] of admitted) for (const [claimed] of admitted) {
     if (actual !== claimed) cases.push([`${actual}-as-${claimed}`, original, claimed]);
   }
-  assert.equal(cases.length, 343, 'All 342 cross-version claims and one unsupported future version are exercised');
+  assert.equal(cases.length, 381, 'All 380 cross-version claims and one unsupported future version are exercised');
   for (const [name, original, version] of cases) {
     const input = path.join(temporary, name);
     await cp(original, input, { recursive: true });
