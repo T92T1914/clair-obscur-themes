@@ -548,7 +548,7 @@ const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 let temporary, source, sourceBefore, legacySource, legacyBefore, previousSource, previousBefore,
   firstSource, firstBefore, secondSource, secondBefore, thirdSource, thirdBefore,
   monochromeSource, monochromeBefore, companionSource, companionBefore, broadSource, broadBefore, everydaySource, everydayBefore,
-  foodSource, foodBefore, travelSource, travelBefore, financeSource, financeBefore, weatherSource, weatherBefore, runningSource, runningBefore, learningSource, learningBefore, readingSource, readingBefore, phoneServiceSource, phoneServiceBefore, refinedSource, refinedBefore, gboardSource, gboardBefore, videoEditingSource, videoEditingBefore;
+  foodSource, foodBefore, travelSource, travelBefore, financeSource, financeBefore, weatherSource, weatherBefore, runningSource, runningBefore, learningSource, learningBefore, readingSource, readingBefore, phoneServiceSource, phoneServiceBefore, refinedSource, refinedBefore, gboardSource, gboardBefore, videoEditingSource, videoEditingBefore, polishedSource, polishedBefore;
 
 function execute(command, args, options = {}) {
   return spawnSync(command, args, { cwd: root, encoding: 'utf8', windowsHide: true,
@@ -668,6 +668,17 @@ before(async () => {
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stdout + result.stderr);
   sourceBefore = await snapshot(source);
+  polishedSource = path.join(temporary, 'polished-svg');
+  const polishedRevision = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', polishedSource, '--version', '0.21.0']);
+  assert.ifError(polishedRevision.error);
+  assert.equal(polishedRevision.status, 0, polishedRevision.stdout + polishedRevision.stderr);
+  polishedBefore = await snapshot(polishedSource);
+  assert.equal(polishedBefore['manifest.json'], '3c2a4316d0a118dfa585c637c3e8caebc0b961f9ab097d2950639475b5155b03');
+  assert.deepEqual(Object.keys(sourceBefore).sort(), Object.keys(polishedBefore).sort(), 'Spacing refinements add no files');
+  const spaced = Object.keys(polishedBefore).filter(name => name.endsWith('.svg') && sourceBefore[name] !== polishedBefore[name]);
+  assert.deepEqual(spaced.sort(), ['Clair', 'Obscur'].flatMap(appearance =>
+    ['threads', 'evernote', 'myradar', 'goodreads'].map(id => `${appearance}/${id}.svg`)).sort(),
+    'Only the four admitted current drawings change');
   videoEditingSource = path.join(temporary, 'video-editing-svg');
   const videoEditing = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', videoEditingSource, '--version', '0.20.0']);
   assert.ifError(videoEditing.error);
@@ -675,10 +686,10 @@ before(async () => {
   videoEditingBefore = await snapshot(videoEditingSource);
   assert.equal(videoEditingBefore['manifest.json'], 'f451ea0520367d0f3b4057c87d6f1204e381122a8da4cd57f8f00d8dbf00efbe');
   assert.deepEqual(Object.keys(sourceBefore).sort(), Object.keys(videoEditingBefore).sort(), 'Polish adds no files');
-  const polished = Object.keys(videoEditingBefore).filter(name => name.endsWith('.svg') && sourceBefore[name] !== videoEditingBefore[name]);
+  const polished = Object.keys(videoEditingBefore).filter(name => name.endsWith('.svg') && polishedBefore[name] !== videoEditingBefore[name]);
   assert.deepEqual(polished.sort(), ['Clair', 'Obscur'].flatMap(appearance =>
     ['ai-dungeon', 'usaa', 'discord', 'link-to-windows', 'chatgpt', 'prime-video', 'g2a']
-      .map(id => `${appearance}/${id}.svg`)).sort(), 'Only the seven admitted current drawings change');
+      .map(id => `${appearance}/${id}.svg`)).sort(), 'The preserved 0.21 revision changes only its seven admitted drawings');
   gboardSource = path.join(temporary, 'gboard-svg');
   const gboard = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', gboardSource, '--version', '0.19.0']);
   assert.ifError(gboard.error);
@@ -885,7 +896,7 @@ test('PNG command exports 1168 monochrome icons with independent neutral-pixel d
   const manifestBytes = await readFile(path.join(output, 'manifest.json'));
   const manifest = JSON.parse(manifestBytes);
   const expected = ['manifest.json', 'LICENSE'];
-  assert.equal(manifest.version, '0.21.0');
+  assert.equal(manifest.version, '0.22.0');
   assert.equal(manifest.exporter_version, '0.11.0');
   assert.equal(manifest.palette_variant, 'monochrome');
   assert.equal(manifest.token_version, '1.0.0');
@@ -1126,7 +1137,7 @@ test('PNG command exports 1168 monochrome icons with independent neutral-pixel d
   assert.deepEqual(await snapshot(source), sourceBefore);
 });
 
-for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0', '0.15.0', '0.16.0', '0.17.0', '0.18.0', '0.19.0', '0.20.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
+for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0', '0.15.0', '0.16.0', '0.17.0', '0.18.0', '0.19.0', '0.20.0', '0.21.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
   const historical = {
     '0.1.0': { input: legacySource, before: legacyBefore, functions: baseFunctions, images: 96 },
     '0.2.0': { input: previousSource, before: previousBefore, functions: baseFunctions, images: 96 },
@@ -1165,6 +1176,8 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
     '0.19.0': { input: gboardSource, before: gboardBefore, functions: gboardFunctions, images: 1128,
       apps: gboardCatalogApps, date: '2026-10-22', monochrome: true },
     '0.20.0': { input: videoEditingSource, before: videoEditingBefore, functions, images: 1168,
+      apps, date: '2026-10-22', monochrome: true },
+    '0.21.0': { input: polishedSource, before: polishedBefore, functions, images: 1168,
       apps, date: '2026-10-22', monochrome: true },
   }[version];
   const historicalSource = historical.input, historicalBefore = historical.before;
@@ -1231,12 +1244,12 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
 
 test('unknown and mismatched artwork versions are refused before output reservation or browser launch', async () => {
   const admitted = [['0.1.0', legacySource], ['0.2.0', previousSource], ['0.3.0', firstSource],
-    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', foodSource], ['0.11.0', travelSource], ['0.12.0', financeSource], ['0.13.0', weatherSource], ['0.14.0', runningSource], ['0.15.0', learningSource], ['0.16.0', readingSource], ['0.17.0', phoneServiceSource], ['0.18.0', refinedSource], ['0.19.0', gboardSource], ['0.20.0', videoEditingSource], ['0.21.0', source]];
-  const cases = [['unknown', source, '0.22.0']];
+    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', foodSource], ['0.11.0', travelSource], ['0.12.0', financeSource], ['0.13.0', weatherSource], ['0.14.0', runningSource], ['0.15.0', learningSource], ['0.16.0', readingSource], ['0.17.0', phoneServiceSource], ['0.18.0', refinedSource], ['0.19.0', gboardSource], ['0.20.0', videoEditingSource], ['0.21.0', polishedSource], ['0.22.0', source]];
+  const cases = [['unknown', source, '0.23.0']];
   for (const [actual, original] of admitted) for (const [claimed] of admitted) {
     if (actual !== claimed) cases.push([`${actual}-as-${claimed}`, original, claimed]);
   }
-  assert.equal(cases.length, 421, 'All 420 cross-version claims and one unsupported future version are exercised');
+  assert.equal(cases.length, 463, 'All 462 cross-version claims and one unsupported future version are exercised');
   for (const [name, original, version] of cases) {
     const input = path.join(temporary, name);
     await cp(original, input, { recursive: true });
