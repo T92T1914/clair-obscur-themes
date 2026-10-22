@@ -511,9 +511,9 @@ class PreviewTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
         exported = json.loads((self.base / 'extracted-icons/manifest.json').read_bytes())
-        self.assertEqual(exported['version'], '0.18.0')
-        self.assertEqual(len(exported['functions']), 281)
-        self.assertEqual(len(exported['files']), 562)
+        self.assertEqual(exported['version'], '0.19.0')
+        self.assertEqual(len(exported['functions']), 282)
+        self.assertEqual(len(exported['files']), 564)
         self.assertEqual([entry['id'] for entry in exported['catalog']][233:241],
                          ['google-play-books', 'libby', 'kobo-books', 'goodreads',
                           'wattpad', 'webtoon', 'readera', 'moon-reader'])
@@ -525,7 +525,7 @@ class PreviewTests(unittest.TestCase):
             'samsung-pass', 'va', 'battle-net', 'coinbase', 'credit-one', 'samsung-members',
             'proton-vpn', 't-life', 'my-spectrum', 'g2a', 'samsung-tv-plus', 'ap-news',
             'link-to-windows', 'tips', 'proton-pass', 'shop-samsung', 'wallpaper-engine',
-            'asus-router', 'mochi-health',
+            'asus-router', 'mochi-health', 'gboard',
         ])
 
     def test_vscode_candidate_builds_from_the_actual_source_snapshot(self):

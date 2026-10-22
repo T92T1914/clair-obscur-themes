@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Obscur Icons</string>
     <string name="introduction">Black and white icons from Clair and Obscur.</string>
-    <string name="versions">Icon pack 0.1.1 | Artwork 0.18.0</string>
+    <string name="versions">Icon pack 0.1.2 | Artwork 0.19.0</string>
     <string name="instructions">In Theme Park, edit an icon theme, open Icon, then Iconpack, and select Obscur Icons. Preview the result and save it as a new theme before applying.</string>
     <string name="coverage_explanation">Check which visible launcher components have exact mappings. This checks only the supported package list on this device. It does not send or save an app inventory. Theme Park\'s applied result still needs inspection.</string>
     <string name="check_coverage">Check icon coverage</string>

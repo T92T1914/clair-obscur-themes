@@ -68,7 +68,7 @@ class AndroidIconPackTests(unittest.TestCase):
                                     "source_svg_sha256": svg_hashes[f"{appearance}/{identifier}.svg"]})
         license_payload = (pack.ROOT / "LICENSE").read_bytes()
         (cls.export / "LICENSE").write_bytes(license_payload)
-        cls.document = {"schema_version": 1, "version": "0.18.0", "generator": "clair-obscur-png-export",
+        cls.document = {"schema_version": 1, "version": "0.19.0", "generator": "clair-obscur-png-export",
                         "exporter_version": "0.11.0", "token_version": "1.0.0", "palette_variant": "monochrome",
                         "tokens_file": "tokens-monochrome.json",
                         "source_manifest_sha256": digest(canonical_svg), "appearances": ["Clair", "Obscur"],
@@ -123,12 +123,12 @@ class AndroidIconPackTests(unittest.TestCase):
 
     def test_exact_resource_bytes_full_components_and_public_catalog(self):
         manifest = pack.prepare_iconpack(self.export, self.components, self.output)
-        self.assertEqual(manifest["version"], "0.1.1")
-        self.assertEqual(manifest["counts"]["drawables"], 281)
+        self.assertEqual(manifest["version"], "0.1.2")
+        self.assertEqual(manifest["counts"]["drawables"], 282)
         self.assertEqual(manifest["counts"]["component_mappings"], 3)
         self.assertEqual(manifest["counts"]["upstream_component_mappings"], 3)
         self.assertEqual(manifest["counts"]["observed_launcher_mappings"], 0)
-        self.assertEqual(manifest["counts"]["named_package_hints"], 257)
+        self.assertEqual(manifest["counts"]["named_package_hints"], 258)
         appfilter = (self.output / "res/xml/appfilter.xml").read_bytes()
         self.assertEqual(appfilter, (self.output / "assets/appfilter.xml").read_bytes())
         entries = {row.attrib["component"]: row.attrib["drawable"] for row in ET.fromstring(appfilter)}
@@ -139,17 +139,20 @@ class AndroidIconPackTests(unittest.TestCase):
         })
         self.assertNotIn('component="com.android.chrome"', appfilter.decode())
         manual = ET.parse(self.output / "res/xml/drawable.xml").getroot()
-        self.assertEqual(len(manual.findall("item")), 281)
+        self.assertEqual(len(manual.findall("item")), 282)
         self.assertEqual(manual.findall("item")[0].attrib, {"drawable": "co_phone"})
         for identifier in self.svg["functions"]:
             self.assertEqual((self.output / f"res/drawable-nodpi/co_{identifier.replace('-', '_')}.png").read_bytes(),
                              (self.export / f"Obscur/512/{identifier}.png").read_bytes())
         catalog = json.loads((self.output / "assets/catalog.json").read_bytes())
         self.assertEqual(set(catalog), {"schema_version", "artwork_version", "pack_version", "packages"})
-        self.assertEqual(catalog["pack_version"], "0.1.1")
-        self.assertEqual(catalog["artwork_version"], "0.18.0")
-        self.assertEqual(len(catalog["packages"]), 258)
-        self.assertEqual(len({row["package"] for row in catalog["packages"]}), 258)
+        self.assertEqual(catalog["pack_version"], "0.1.2")
+        self.assertEqual(catalog["artwork_version"], "0.19.0")
+        self.assertEqual(next(row for row in catalog["packages"]
+                              if row["package"] == "com.google.android.inputmethod.latin"),
+                         {"package": "com.google.android.inputmethod.latin", "label": "Gboard", "id": "gboard"})
+        self.assertEqual(len(catalog["packages"]), 259)
+        self.assertEqual(len({row["package"] for row in catalog["packages"]}), 259)
         self.assertEqual(next(row["id"] for row in catalog["packages"] if row["package"] == "com.sec.android.app.sbrowser"), "samsung-browser")
         self.assertEqual(catalog["packages"][-1], {"package": "com.samsung.android.dialer", "label": "Phone", "id": "phone"})
         for row in manifest["files"]:
@@ -160,7 +163,15 @@ class AndroidIconPackTests(unittest.TestCase):
 
     def test_default_pin_rejects_an_unqualified_export_before_output(self):
         with patch.object(pack, "PNG_MANIFEST_SHA256", "0731e00b9922ada5537f5258fa9d24ea9f50b7eec6a43098fdc911a4c4bc23aa"):
-            self.refused(message="qualified 0.18 manifest")
+            self.refused(message="qualified 0.19 manifest")
+
+    def test_previous_artwork_is_not_admitted_by_a_matching_manifest_checksum(self):
+        source = self.copy_export()
+        for previous_version in ("0.17.0", "0.18.0"):
+            document = copy.deepcopy(self.document)
+            document["version"] = previous_version
+            with self.subTest(version=previous_version), self.changed_manifest(source, document):
+                self.refused(source=source, message="wrong artwork identity")
 
     def test_existing_output_is_preserved_byte_exact(self):
         self.output.mkdir()
@@ -278,11 +289,15 @@ class AndroidIconPackTests(unittest.TestCase):
         table = json.loads((pack.ROOT / "android/iconpack/components.json").read_bytes())
         observed = [row for row in table["mappings"] if "source_kind" in row]
         upstream = [row for row in table["mappings"] if "source_kind" not in row]
-        self.assertEqual(len(upstream), 1295)
+        self.assertEqual(len(upstream), 1299)
         self.assertEqual(len(observed), 11)
         self.assertEqual(table["source"], pack.COMPONENT_SOURCE)
-        # Fixed pre-update data identities preserve every upstream row and generic package.
-        self.assertEqual(digest(json.dumps(upstream, sort_keys=True, separators=(",", ":")).encode()),
+        # New aliases are appended after the exact 0.1.1 mapping sequence.
+        self.assertEqual(digest(json.dumps(table["mappings"][:1306], sort_keys=True,
+                                          separators=(",", ":")).encode()),
+                         "e5d74a6eebc2f464fa358e4eb03f9da4ca270e4a1abcc34a829a795a383a0cdf")
+        # Fixed pre-update data identities preserve every original upstream row and generic package.
+        self.assertEqual(digest(json.dumps(upstream[:1295], sort_keys=True, separators=(",", ":")).encode()),
                          "2e7fa952aaa72670293903b543368f43784011ff79b1e0cd038a47c1b11455ec")
         self.assertEqual(digest(json.dumps(table["generic_packages"], sort_keys=True, separators=(",", ":")).encode()),
                          "b05c80373bcfad970ba6442160bcbb1dfc2bd75d857f2d4790660f16a7e0d3cd")
@@ -307,7 +322,25 @@ class AndroidIconPackTests(unittest.TestCase):
             self.assertEqual(row["observed_on"], "2026-10-21")
             self.assertEqual(row["android_package"], catalog[row["icon_id"]]["android_package"])
             self.assertEqual(row["component"], f'ComponentInfo{{{row["android_package"]}/{row["activity"]}}}')
-        self.assertEqual(len({row["android_package"] for row in table["mappings"] if row["icon_id"] in catalog}), 245)
+        self.assertEqual(len({row["android_package"] for row in table["mappings"] if row["icon_id"] in catalog}), 246)
+
+    def test_canonical_gboard_mappings_keep_exact_upstream_aliases_and_line_evidence(self):
+        table = json.loads((pack.ROOT / "android/iconpack/components.json").read_bytes())
+        gboard = [row for row in table["mappings"] if row["icon_id"] == "gboard"]
+        expected = (
+            (7121, "com.android.inputmethod.latin.setup.SetupActivity"),
+            (7122, "com.google.android.apps.inputmethod.libs.framework.core.LauncherActivity"),
+            (7123, "com.google.android.libraries.inputmethod.launcher.LauncherActivity"),
+            (7126, "com.google.android.archive.ReactivateActivity"),
+        )
+        self.assertEqual(len(table["mappings"]), 1310)
+        self.assertEqual(len(gboard), 4)
+        for row, (line, activity) in zip(gboard, expected):
+            component = f"ComponentInfo{{com.google.android.inputmethod.latin/{activity}}}"
+            self.assertEqual(row, {"icon_id": "gboard", "android_package": "com.google.android.inputmethod.latin",
+                                   "activity": activity, "component": component,
+                                   "source_lines": [line], "source_components": [component], "source_types": ["item"]})
+        self.assertEqual(table["mappings"][1306:], gboard)
 
     def test_unknown_drawable_wrong_package_and_package_only_components_are_refused(self):
         original = copy.deepcopy(self.table)

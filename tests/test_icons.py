@@ -95,6 +95,8 @@ APP_NAMES += THIRTEENTH_APP_NAMES
 THIRTEENTH_NAMES = BASE_NAMES + APP_NAMES
 FOURTEENTH_APP_NAMES = "ace-hardware ai-dungeon gaming-hub kroger affirm usaa proton-authenticator wikipedia xbox shop fandom shonen-jump smart-switch steam-chat sonic samsung-global-goals theme-park zillow-rentals samsung-find dollar-general sound-connect samsung-pass va battle-net coinbase credit-one samsung-members proton-vpn t-life my-spectrum g2a samsung-tv-plus ap-news link-to-windows tips proton-pass shop-samsung wallpaper-engine asus-router mochi-health".split()
 APP_NAMES += FOURTEENTH_APP_NAMES
+FOURTEENTH_NAMES = BASE_NAMES + APP_NAMES
+APP_NAMES += ["gboard"]
 NAMES = BASE_NAMES + APP_NAMES
 EXPECTED_APPS = {
     "google-chrome": ("Google Chrome", "com.android.chrome"),
@@ -830,6 +832,7 @@ FOURTEENTH_EXPECTED_APPS = (
 )
 EXPECTED_APPS.update({identifier: (label, package)
                       for identifier, label, package in FOURTEENTH_EXPECTED_APPS})
+EXPECTED_APPS["gboard"] = ("Gboard", "com.google.android.inputmethod.latin")
 
 NS = "{http://www.w3.org/2000/svg}"
 
@@ -891,11 +894,11 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(set(files), expected | {"manifest.json"})
         manifest = json.loads(files["manifest.json"])
         self.assertEqual(manifest["functions"], NAMES)
-        self.assertEqual(manifest["version"], "0.18.0")
+        self.assertEqual(manifest["version"], "0.19.0")
         self.assertEqual(manifest["token_schema"], 1)
         self.assertEqual(manifest["token_version"], "1.0.0")
         self.assertEqual(manifest["palette_variant"], "monochrome")
-        self.assertEqual(len(manifest["files"]), 562)
+        self.assertEqual(len(manifest["files"]), 564)
         for record in manifest["files"]:
             self.assertEqual(record["path"], f'{record["appearance"]}/{record["function"]}.svg')
             payload = files[record["path"]]
@@ -905,7 +908,7 @@ class FunctionalIconTests(unittest.TestCase):
         relabeled = files["Clair/phone.svg"].replace(b'aria-label="phone"', b'aria-label="messages"')
         self.assertEqual(geometry(relabeled), geometry(files["Clair/phone.svg"]))
         # Named choices must have different drawings, rather than relabeled aliases.
-        self.assertEqual(len({geometry(files[f"Clair/{name}.svg"]) for name in NAMES}), 281)
+        self.assertEqual(len({geometry(files[f"Clair/{name}.svg"]) for name in NAMES}), 282)
 
     def test_palette_roles_and_geometry_are_shared_without_hardcoded_colors(self):
         files = icons.render_icons(self.document)
@@ -964,14 +967,15 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(icons.token_path(), ROOT / "tokens-monochrome.json")
         for version in ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0"):
             self.assertEqual(icons.token_path(version), ROOT / "tokens.json")
-        for version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0"):
+        for version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0"):
             self.assertEqual(icons.token_path(version), ROOT / "tokens-monochrome.json")
         for version, document in (("0.5.0", self.legacy_document), ("0.6.0", self.document),
                                   ("0.7.0", self.document), ("0.8.0", self.document),
                                   ("0.9.0", self.document), ("0.10.0", self.document),
                                   ("0.11.0", self.document), ("0.12.0", self.document),
                                   ("0.13.0", self.document), ("0.14.0", self.document),
-                                  ("0.15.0", self.document), ("0.16.0", self.document), ("0.17.0", self.document)):
+                                  ("0.15.0", self.document), ("0.16.0", self.document), ("0.17.0", self.document),
+                                  ("0.18.0", self.document), ("0.19.0", self.document)):
             with self.subTest(version=version), tempfile.TemporaryDirectory() as temporary:
                 base = Path(temporary)
                 explicit = base / "explicit.json"
@@ -1156,7 +1160,7 @@ class FunctionalIconTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "differs"):
                 icons.build_icons(self.document, output, check=True)
             self.assertEqual(tree_snapshot(output), before)
-        for unsupported in ("0.0.0", "0.19.0", None, [], {}):
+        for unsupported in ("0.0.0", "0.20.0", None, [], {}):
             with self.subTest(version=unsupported), self.assertRaisesRegex(ValueError, "Unsupported"):
                 icons.render_icons(self.document, version=unsupported)
 
@@ -1165,9 +1169,9 @@ class FunctionalIconTests(unittest.TestCase):
         manifest = json.loads(files["manifest.json"])
         catalog = manifest["catalog"]
         self.assertEqual([row["id"] for row in catalog], NAMES)
-        self.assertEqual([row["kind"] for row in catalog], ["function"] * 24 + ["app"] * 257)
+        self.assertEqual([row["kind"] for row in catalog], ["function"] * 24 + ["app"] * 258)
         apps = catalog[24:]
-        self.assertEqual(len({row["android_package"] for row in apps}), 257)
+        self.assertEqual(len({row["android_package"] for row in apps}), 258)
         self.assertEqual({row["id"]: (row["label"], row["android_package"]) for row in apps}, EXPECTED_APPS)
         for row in apps:
             prefix = ("https://galaxystore.samsung.com/detail/" if row["id"] in
@@ -1178,7 +1182,7 @@ class FunctionalIconTests(unittest.TestCase):
                 svg = ET.fromstring(files[f'{appearance}/{row["id"]}.svg'])
                 self.assertEqual(svg.get("aria-label"), row["label"])
         self.assertIn("no popularity", manifest["catalog_scope"].lower())
-        self.assertEqual(manifest["catalog_date"], "2026-10-21")
+        self.assertEqual(manifest["catalog_date"], "2026-10-22")
 
     def test_bad_named_catalog_fails_before_output_without_changing_existing_state(self):
         changes = (
@@ -1845,6 +1849,97 @@ class FunctionalIconTests(unittest.TestCase):
             with self.subTest(drawings=fault), patch.object(icons, "FOURTEENTH_APP_GLYPHS", bad):
                 refuse_without_rewriting_history()
 
+    def test_gboard_adds_only_two_svg_files_and_preserves_the_exact_0_18_archive(self):
+        from themeforge.build import _zip_bytes
+        previous = icons.render_icons(self.document, version="0.18.0")
+        self.assertEqual(hashlib.sha256(_zip_bytes({
+            **previous, "LICENSE.txt": icons.license_text().encode("utf-8")
+        })).hexdigest(), "5bbf577f50b3dae894405e598d9ca7d8e6246cac9e7f2859c7b5f5ba0771e985")
+        self.assertEqual(hashlib.sha256(previous["manifest.json"]).hexdigest(),
+                         "67833c82bf5d9cec320dcadff42ecf977180d18e0967688ab4aef0976bae375a")
+        old_manifest = json.loads(previous["manifest.json"])
+        current = icons.render_icons(self.document)
+        manifest = json.loads(current["manifest.json"])
+        self.assertEqual(set(current) - set(previous), {"Clair/gboard.svg", "Obscur/gboard.svg"})
+        self.assertEqual(manifest["catalog"][:-1], old_manifest["catalog"])
+        self.assertEqual(manifest["functions"][:-1], FOURTEENTH_NAMES)
+        for name, payload in previous.items():
+            if name.endswith(".svg"):
+                self.assertEqual(current[name], payload, name)
+        self.assertEqual(manifest["catalog"][-1], {
+            "id": "gboard", "label": "Gboard", "store_title": "Gboard - the Google Keyboard",
+            "kind": "app", "category": "tools", "android_package": "com.google.android.inputmethod.latin",
+            "store_url": "https://play.google.com/store/apps/details?id=com.google.android.inputmethod.latin",
+            "selection_basis": "Reported current keyboard use and an inspected official Google LLC listing. The drawing does not change the keyboard font, theme or predictions."
+        })
+        self.assertEqual(manifest["catalog_date"], "2026-10-22")
+        self.assertEqual(len(manifest["files"]), 564)
+        self.assertEqual(len(manifest["catalog"]), 282)
+
+    def test_gboard_key_rows_and_space_bar_have_real_clearance_from_each_other_and_frame(self):
+        files = icons.render_icons(self.document)
+        for appearance in ("Clair", "Obscur"):
+            group = ET.fromstring(files[f"{appearance}/gboard.svg"]).find(NS + "g")
+            self.assertEqual(len(group.findall(NS + "rect")), 1)
+            frame = group.find(NS + "rect")
+            left, top, width, height = (float(frame.get(key)) for key in ("x", "y", "width", "height"))
+            stroke = float(group.get("stroke-width"))
+            paths = group.findall(NS + "path")
+            # Two compact rows and one longer space bar should remain separate.
+            rows = [[tuple(map(float, segment)) for segment in
+                     re.findall(r"M(\d+) (\d+) H(\d+)", path.get("d"))] for path in paths]
+            self.assertEqual([len(row) for row in rows], [4, 4, 1])
+            self.assertEqual(len(group), len(paths) + 1)
+            previous_y = None
+            for row in rows:
+                self.assertEqual(len({y for _, y, _ in row}), 1)
+                y = row[0][1]
+                if previous_y is not None:
+                    self.assertGreaterEqual(y - previous_y - stroke, 2 * stroke)
+                previous_y = y
+                self.assertEqual(row[0][0] + row[-1][2], 2 * (left + width / 2))
+                for index, (x1, y, x2) in enumerate(row):
+                    self.assertLess(x1, x2)
+                    self.assertGreaterEqual(x1 - left - stroke, 1.5 * stroke)
+                    self.assertGreaterEqual(left + width - x2 - stroke, 1.5 * stroke)
+                    self.assertGreaterEqual(y - top - stroke, 2 * stroke)
+                    self.assertGreaterEqual(top + height - y - stroke, 2 * stroke)
+                    if index:
+                        self.assertGreaterEqual(x1 - row[index - 1][2] - stroke, 1.5 * stroke)
+            self.assertEqual(rows[0], [(x1, rows[0][0][1], x2) for x1, _, x2 in rows[1]])
+            self.assertEqual(rows[2][0][0] + rows[2][0][2], 2 * (left + width / 2))
+            self.assertGreaterEqual(rows[2][0][2] - rows[2][0][0],
+                                    4 * (rows[0][0][2] - rows[0][0][0]))
+            self.assertNotEqual(geometry(files[f"{appearance}/gboard.svg"]),
+                                geometry(files[f"{appearance}/google-translate.svg"]))
+
+    def test_gboard_catalog_and_geometry_faults_refuse_output_without_touching_0_18(self):
+        previous = icons.render_icons(self.document, version="0.18.0")
+        def refuse_without_rewriting_history():
+            self.assertEqual(icons.render_icons(self.document, version="0.18.0"), previous)
+            with tempfile.TemporaryDirectory() as temporary:
+                output = Path(temporary) / "never-created"
+                with self.assertRaises(ValueError):
+                    icons.build_icons(self.document, output)
+                self.assertFalse(output.exists())
+                self.assertEqual(list(Path(temporary).iterdir()), [])
+        for change in ({"id": "phone"}, {"id": "google-translate"},
+                       {"android_package": "com.google.android.apps.translate"},
+                       {"store_title": ""}, {"selection_basis": ""},
+                       {"store_url": "https://play.google.com/store/apps/details?id=com.wrong.app"}):
+            bad = copy.deepcopy(icons.FIFTEENTH_APP_CATALOG)
+            bad[0].update(change)
+            with self.subTest(change=change), patch.object(icons, "FIFTEENTH_APP_CATALOG", bad):
+                refuse_without_rewriting_history()
+        for fault in ("missing", "accepted-ID", "extra"):
+            bad = dict(icons.FIFTEENTH_APP_GLYPHS)
+            if fault == "missing":
+                bad.pop("gboard")
+            else:
+                bad["phone" if fault == "accepted-ID" else "unassigned-new-app"] = bad["gboard"]
+            with self.subTest(drawings=fault), patch.object(icons, "FIFTEENTH_APP_GLYPHS", bad):
+                refuse_without_rewriting_history()
+
     def test_galaxy_store_admission_is_exact_and_current_only(self):
         packages = {
             "gaming-hub": "com.samsung.android.game.gamehome",
@@ -1907,7 +2002,7 @@ class FunctionalIconTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "icons"
             result = icons.build_icons(self.document, output)
-            self.assertEqual(len(result["files"]), 562)
+            self.assertEqual(len(result["files"]), 564)
             before = tree_snapshot(output)
             self.assertEqual(before, icons.render_icons(self.document))
             icons.build_icons(self.document, output, check=True)

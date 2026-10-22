@@ -1,5 +1,13 @@
 # Changes
 
+## Icon artwork 0.19.0
+
+October 22, 2026.
+
+- Add one original Gboard interpretation in Clair and Obscur, with its exact official Google Play identity. Keep all 281 earlier drawings and all eighteen historical SVG archives unchanged.
+- Update the gallery and existing PNG exporter to 258 named apps and 24 general functions, giving 564 SVG masters and 1,128 PNGs at two sizes. Preserve the finder, individual downloads and no-script catalog.
+- Update the separate Obscur Android icon-pack candidate to 0.1.2 with four Gboard aliases from the existing pinned upstream XML. Retain every earlier mapping, including the eleven separately observed aliases. Phone coverage, Theme Park application and restoration remain separate checks. The icon changes no Gboard theme, font or autocorrect behavior.
+
 ## Icon artwork 0.18.0
 
 October 21, 2026.
