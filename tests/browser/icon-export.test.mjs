@@ -1236,7 +1236,7 @@ test('unknown and mismatched artwork versions are refused before output reservat
   for (const [actual, original] of admitted) for (const [claimed] of admitted) {
     if (actual !== claimed) cases.push([`${actual}-as-${claimed}`, original, claimed]);
   }
-  assert.equal(cases.length, 381, 'All 380 cross-version claims and one unsupported future version are exercised');
+  assert.equal(cases.length, 421, 'All 420 cross-version claims and one unsupported future version are exercised');
   for (const [name, original, version] of cases) {
     const input = path.join(temporary, name);
     await cp(original, input, { recursive: true });
