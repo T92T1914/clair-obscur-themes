@@ -11,7 +11,7 @@ from unittest.mock import patch
 import zipfile
 
 from preview import (
-    READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE, ICON_ARCHIVE, ICON_CHECKSUMS, LEGACY_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE,
+    PHONE_SERVICE_ICON_ARCHIVE, READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE, ICON_ARCHIVE, ICON_CHECKSUMS, LEGACY_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE,
     PREVIOUS_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, PORTABLE_ARCHIVE, ROOT, preview_files,
 )
 from themeforge.build import build_release
@@ -312,6 +312,8 @@ PHONE_SERVICE_APPS = (
 
 APPS = FIRST_APPS + ADDITIONAL_APPS + THIRD_APPS + COMPANION_APPS + BROAD_APPS + EVERYDAY_APPS + FOOD_ORDER_APPS + TRAVEL_APPS + FINANCE_APPS + WEATHER_APPS + RUNNING_TRAINING_APPS + LEARNING_APPS + READING_APPS + PHONE_SERVICE_APPS
 CURRENT_IDS = FUNCTIONS + [row[0] for row in APPS]
+REFINED_IDS = {'google-messages', 'google-translate', 'fandom', 'ace-hardware',
+               'dollar-general', 'myfitnesspal', 'wallpaper-engine', 'webtoon'}
 GALLERY_IDS = [row[0] for row in APPS] + FUNCTIONS
 LABELS = {**{name: name.replace('-', ' ').title() for name in FUNCTIONS},
           **{name: label for name, label, _ in APPS}}
@@ -377,9 +379,10 @@ class PreviewIconTests(unittest.TestCase):
         document = json.loads((ROOT / 'tokens.json').read_bytes())
         monochrome = json.loads((ROOT / 'tokens-monochrome.json').read_bytes())
         expected = render_icons(monochrome)
+        previous_phone_service = render_icons(monochrome, version='0.17.0')
         retained = render_icons(document, version='0.5.0')
         manifest = json.loads(expected['manifest.json'])
-        self.assertEqual(manifest['version'], '0.17.0')
+        self.assertEqual(manifest['version'], '0.18.0')
         self.assertEqual(manifest['functions'], CURRENT_IDS)
         self.assertEqual(len(expected), len(CURRENT_IDS) * 2 + 1)
         expected['LICENSE.txt'] = (ROOT / 'LICENSE').read_bytes()
@@ -444,7 +447,7 @@ class PreviewIconTests(unittest.TestCase):
                          '241efb1fe6584df4f66c84571bfe671059404e83be8d67876f415af6564a56bb')
         for path, payload in previous_monochrome.items():
             if path.endswith('.svg'):
-                self.assertEqual(expected[path], payload)
+                self.assertEqual(previous_phone_service[path], payload)
         previous_companion = render_icons(monochrome, version='0.7.0')
         previous_companion['LICENSE.txt'] = (ROOT / 'LICENSE').read_bytes()
         with zipfile.ZipFile(io.BytesIO(files[COMPANION_ICON_ARCHIVE])) as archive:
@@ -454,7 +457,7 @@ class PreviewIconTests(unittest.TestCase):
                          'aa18db922e824cd2bfa1ada2fbc08125af2605d9c5acb2ad8bfdb439985f4f05')
         for path, payload in previous_companion.items():
             if path.endswith('.svg'):
-                self.assertEqual(expected[path], payload)
+                self.assertEqual(previous_phone_service[path], payload)
         previous_broad = render_icons(monochrome, version='0.8.0')
         previous_broad['LICENSE.txt'] = (ROOT / 'LICENSE').read_bytes()
         with zipfile.ZipFile(io.BytesIO(files[BROAD_ICON_ARCHIVE])) as archive:
@@ -467,7 +470,7 @@ class PreviewIconTests(unittest.TestCase):
         self.assertEqual(json.loads(previous_broad['manifest.json'])['catalog'], manifest['catalog'][:127])
         for path, payload in previous_broad.items():
             if path.endswith('.svg'):
-                self.assertEqual(expected[path], payload)
+                self.assertEqual(previous_phone_service[path], payload)
         previous_everyday = render_icons(monochrome, version='0.9.0')
         previous_everyday['LICENSE.txt'] = (ROOT / 'LICENSE').read_bytes()
         with zipfile.ZipFile(io.BytesIO(files[EVERYDAY_ICON_ARCHIVE])) as archive:
@@ -478,7 +481,7 @@ class PreviewIconTests(unittest.TestCase):
         self.assertEqual(json.loads(previous_everyday['manifest.json'])['catalog'], manifest['catalog'][:175])
         for path, payload in previous_everyday.items():
             if path.endswith('.svg'):
-                self.assertEqual(expected[path], payload)
+                self.assertEqual(previous_phone_service[path], payload)
         previous_food_order = render_icons(monochrome, version='0.10.0')
         previous_food_order['LICENSE.txt'] = (ROOT / 'LICENSE').read_bytes()
         with zipfile.ZipFile(io.BytesIO(files[FOOD_ORDER_ICON_ARCHIVE])) as archive:
@@ -493,7 +496,7 @@ class PreviewIconTests(unittest.TestCase):
                           for row in manifest['catalog'][187:197]], list(TRAVEL_APPS))
         for path, payload in previous_food_order.items():
             if path.endswith('.svg'):
-                self.assertEqual(expected[path], payload)
+                self.assertEqual(previous_phone_service[path], payload)
         previous_travel = render_icons(monochrome, version='0.11.0')
         previous_travel['LICENSE.txt'] = (ROOT / 'LICENSE').read_bytes()
         with zipfile.ZipFile(io.BytesIO(files[TRAVEL_ICON_ARCHIVE])) as archive:
@@ -506,7 +509,7 @@ class PreviewIconTests(unittest.TestCase):
                           for row in manifest['catalog'][197:207]], list(FINANCE_APPS))
         for path, payload in previous_travel.items():
             if path.endswith('.svg'):
-                self.assertEqual(expected[path], payload)
+                self.assertEqual(previous_phone_service[path], payload)
         previous_finance = render_icons(monochrome, version='0.12.0')
         previous_finance['LICENSE.txt'] = (ROOT / 'LICENSE').read_bytes()
         with zipfile.ZipFile(io.BytesIO(files[FINANCE_ICON_ARCHIVE])) as archive:
@@ -521,7 +524,7 @@ class PreviewIconTests(unittest.TestCase):
                           for row in manifest['catalog'][207:217]], list(WEATHER_APPS))
         for path, payload in previous_finance.items():
             if path.endswith('.svg'):
-                self.assertEqual(expected[path], payload)
+                self.assertEqual(previous_phone_service[path], payload)
         previous_weather = render_icons(monochrome, version='0.13.0')
         previous_weather['LICENSE.txt'] = (ROOT / 'LICENSE').read_bytes()
         with zipfile.ZipFile(io.BytesIO(files[WEATHER_ICON_ARCHIVE])) as archive:
@@ -536,7 +539,7 @@ class PreviewIconTests(unittest.TestCase):
                           for row in manifest['catalog'][217:225]], list(RUNNING_TRAINING_APPS))
         for path, payload in previous_weather.items():
             if path.endswith('.svg'):
-                self.assertEqual(expected[path], payload)
+                self.assertEqual(previous_phone_service[path], payload)
         previous_running = render_icons(monochrome, version='0.14.0')
         previous_running['LICENSE.txt'] = (ROOT / 'LICENSE').read_bytes()
         with zipfile.ZipFile(io.BytesIO(files[RUNNING_TRAINING_ICON_ARCHIVE])) as archive:
@@ -551,7 +554,7 @@ class PreviewIconTests(unittest.TestCase):
                           for row in manifest['catalog'][225:233]], list(LEARNING_APPS))
         for path, payload in previous_running.items():
             if path.endswith('.svg'):
-                self.assertEqual(expected[path], payload)
+                self.assertEqual(previous_phone_service[path], payload)
         previous_learning = render_icons(monochrome, version='0.15.0')
         previous_learning['LICENSE.txt'] = (ROOT / 'LICENSE').read_bytes()
         with zipfile.ZipFile(io.BytesIO(files[LEARNING_ICON_ARCHIVE])) as archive:
@@ -566,7 +569,7 @@ class PreviewIconTests(unittest.TestCase):
                           for row in manifest['catalog'][233:241]], list(READING_APPS))
         for path, payload in previous_learning.items():
             if path.endswith('.svg'):
-                self.assertEqual(expected[path], payload)
+                self.assertEqual(previous_phone_service[path], payload)
         previous_reading = render_icons(monochrome, version='0.16.0')
         previous_reading['LICENSE.txt'] = (ROOT / 'LICENSE').read_bytes()
         with zipfile.ZipFile(io.BytesIO(files[READING_ICON_ARCHIVE])) as archive:
@@ -579,14 +582,27 @@ class PreviewIconTests(unittest.TestCase):
                           for row in manifest['catalog'][241:]], list(PHONE_SERVICE_APPS))
         for path, payload in previous_reading.items():
             if path.endswith('.svg'):
-                self.assertEqual(expected[path], payload)
+                self.assertEqual(previous_phone_service[path], payload)
+        previous_phone_service['LICENSE.txt'] = (ROOT / 'LICENSE').read_bytes()
+        with zipfile.ZipFile(io.BytesIO(files[PHONE_SERVICE_ICON_ARCHIVE])) as archive:
+            self.assertEqual({name: archive.read(name) for name in archive.namelist()}, previous_phone_service)
+        self.assertEqual(hashlib.sha256(files[PHONE_SERVICE_ICON_ARCHIVE]).hexdigest(),
+                         '0e638e99a265b7b3d5c04e77c3611c732e6b36fa3d26a674e255d89e0c1fd346')
+        self.assertEqual(hashlib.sha256(previous_phone_service['manifest.json']).hexdigest(),
+                         'e1be7375d5697623c539b0b08989be070edf3df5a501a95753d0c78fc44ff503')
+        self.assertEqual(json.loads(previous_phone_service['manifest.json'])['catalog'], manifest['catalog'])
+        changed = {path for path in previous_phone_service if path.endswith('.svg')
+                   and expected[path] != previous_phone_service[path]}
+        self.assertEqual(changed, {f'{appearance}/{name}.svg' for appearance in ('Clair', 'Obscur')
+                                   for name in REFINED_IDS})
+        self.assertNotEqual(files[ICON_ARCHIVE], files[PHONE_SERVICE_ICON_ARCHIVE])
         self.assertNotEqual(files[ICON_ARCHIVE], files[LEGACY_ICON_ARCHIVE])
         self.assertEqual(files[ICON_CHECKSUMS],
                          ''.join(f'{hashlib.sha256(files[path]).hexdigest()}  {Path(path).name}\n'
-                                 for path in (ICON_ARCHIVE, READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
+                                 for path in (ICON_ARCHIVE, PHONE_SERVICE_ICON_ARCHIVE, READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
                                               PREVIOUS_ICON_ARCHIVE, LEGACY_ICON_ARCHIVE)).encode())
         repeated = preview_files(ROOT, self.artifacts)
-        for path in (ICON_ARCHIVE, READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
+        for path in (ICON_ARCHIVE, PHONE_SERVICE_ICON_ARCHIVE, READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
                      PREVIOUS_ICON_ARCHIVE, LEGACY_ICON_ARCHIVE):
             self.assertEqual(repeated[path], files[path])
 
@@ -605,7 +621,7 @@ class PreviewIconTests(unittest.TestCase):
                     label = LABELS[function]
                     self.assertEqual(card['heading'], label)
                     self.assertEqual(card['attrs']['data-icon-kind'], 'function' if function in FUNCTIONS else 'app')
-                    self.assertEqual(card['attrs']['data-icon-version'], '0.17.0')
+                    self.assertEqual(card['attrs']['data-icon-version'], '0.18.0')
                     package = app_packages.get(function, '')
                     self.assertEqual(card['package'], package)
                     self.assertEqual(card['links'], [] if not package else [{
@@ -622,7 +638,7 @@ class PreviewIconTests(unittest.TestCase):
                         self.assertIn('data-icon-png', button)
                         self.assertEqual(button['data-icon-appearance'], appearance)
                         self.assertEqual(button['data-icon-filename'],
-                                         f'Clair-Obscur-0.17.0-{appearance}-{function}-512.png')
+                                         f'Clair-Obscur-0.18.0-{appearance}-{function}-512.png')
                         self.assertIn('hidden', button, 'Unenhanced PNG controls must not be inert visible buttons')
                         self.assertNotIn('data-appearance', button,
                                          'Icon acquisition must not join the page-appearance switcher')
@@ -642,7 +658,7 @@ class PreviewIconTests(unittest.TestCase):
                                    {'gaming-hub', 'theme-park', 'samsung-pass', 'tips'} else
                                    f'https://play.google.com/store/apps/details?id={package}'), page)
                     self.assertIn(f'<code>{package}</code>', page)
-                for path in (ICON_ARCHIVE, READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
+                for path in (ICON_ARCHIVE, PHONE_SERVICE_ICON_ARCHIVE, READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
                              PREVIOUS_ICON_ARCHIVE, LEGACY_ICON_ARCHIVE, ICON_CHECKSUMS):
                     links = [link for link in markup.links if link.get('href') == path]
                     self.assertEqual(len(links), 1)
@@ -650,6 +666,7 @@ class PreviewIconTests(unittest.TestCase):
                     self.assertEqual(delivery[path], files[path])
                 history = {link['id']: link['href'] for link in markup.links if 'id' in link}
                 self.assertEqual(history['icon-artwork-download'], ICON_ARCHIVE)
+                self.assertEqual(history['icon-artwork-phone-service-download'], PHONE_SERVICE_ICON_ARCHIVE)
                 self.assertEqual(history['icon-artwork-reading-download'], READING_ICON_ARCHIVE)
                 self.assertEqual(history['icon-artwork-study-learning-download'], LEARNING_ICON_ARCHIVE)
                 self.assertEqual(history['icon-artwork-travel-download'], TRAVEL_ICON_ARCHIVE)
@@ -667,7 +684,7 @@ class PreviewIconTests(unittest.TestCase):
                 self.assertEqual(history['icon-artwork-legacy-download'], LEGACY_ICON_ARCHIVE)
                 self.assertEqual([link['id'] for link in markup.links
                                   if link.get('id', '').startswith('icon-artwork-')], [
-                    'icon-artwork-download', 'icon-artwork-checksums', 'icon-artwork-reading-download', 'icon-artwork-study-learning-download', 'icon-artwork-running-training-download', 'icon-artwork-weather-download', 'icon-artwork-finance-download', 'icon-artwork-travel-download', 'icon-artwork-food-order-download', 'icon-artwork-everyday-download', 'icon-artwork-broad-download',
+                    'icon-artwork-download', 'icon-artwork-checksums', 'icon-artwork-phone-service-download', 'icon-artwork-reading-download', 'icon-artwork-study-learning-download', 'icon-artwork-running-training-download', 'icon-artwork-weather-download', 'icon-artwork-finance-download', 'icon-artwork-travel-download', 'icon-artwork-food-order-download', 'icon-artwork-everyday-download', 'icon-artwork-broad-download',
                     'icon-artwork-companion-download', 'icon-artwork-monochrome-download',
                     'icon-artwork-third-app-download', 'icon-artwork-second-app-download', 'icon-artwork-first-app-download',
                     'icon-artwork-previous-download',
@@ -693,9 +710,9 @@ class PreviewIconTests(unittest.TestCase):
         self.assertEqual(files['index.html'].count(b'class="download-card"'), 17)
 
     def test_an_icon_license_read_after_source_capture_cannot_replace_the_captured_grant(self):
-        for changed_version in ('0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0', '0.15.0', '0.16.0', '0.17.0'):
+        for changed_version in ('0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0', '0.15.0', '0.16.0', '0.17.0', '0.18.0'):
             with self.subTest(version=changed_version):
-                def changed_grant(document, *, version='0.17.0'):
+                def changed_grant(document, *, version='0.18.0'):
                     icons = render_icons(document, version=version)
                     if version == changed_version:
                         last = 'Obscur/search.svg'
@@ -722,9 +739,9 @@ class PreviewIconTests(unittest.TestCase):
                 ('nike-run-club', 'missing-app'), ('relive', 'missing-label'),
                 ('google-classroom', 'missing-app'), ('brainly', 'missing-label'),
                 ('google-play-books', 'missing-app'), ('moon-reader', 'missing-label')):
-            def changed_catalog(document, *, version='0.17.0'):
+            def changed_catalog(document, *, version='0.18.0'):
                 files = render_icons(document, version=version)
-                if version == '0.17.0':
+                if version == '0.18.0':
                     manifest = json.loads(files['manifest.json'])
                     if mutation == 'missing-app':
                         manifest['catalog'] = [entry for entry in manifest['catalog'] if entry['id'] != identifier]
@@ -738,9 +755,9 @@ class PreviewIconTests(unittest.TestCase):
             self.assertEqual(snapshot(self.artifacts), self.original)
 
     def test_current_app_labels_are_escaped_in_headings_and_image_alternatives(self):
-        def changed_label(document, *, version='0.17.0'):
+        def changed_label(document, *, version='0.18.0'):
             files = render_icons(document, version=version)
-            if version == '0.17.0':
+            if version == '0.18.0':
                 manifest = json.loads(files['manifest.json'])
                 next(entry for entry in manifest['catalog'] if entry['id'] == 'youtube')['label'] = '<App & "Name">'
                 files['manifest.json'] = json.dumps(manifest).encode()

@@ -1,0 +1,11 @@
+Upstream component identity data is derived from Lawnicons, LawnchairLauncher/lawnicons,
+revision c85fc8fb825228b021317f83c0a1a9f00b1c889d, app/assets/appfilter.xml.
+The data was selected by exact supported package names and relative activities
+were expanded against their declared package. The Apache License, Version 2.0
+is included in licenses/Lawnicons-Apache-2.0.txt. No Lawnicons artwork or
+application code is included. Clair and Obscur artwork and application code
+are covered by licenses/Clair-Obscur-MIT.txt.
+
+Eleven additional component aliases are separate launcher observations dated
+2026-10-21. They are identified as observed-launcher in the source mapping table
+and are not attributed to the Lawnicons component selection above.

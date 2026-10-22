@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="io.github.t92t1914.obscuricons"
+    android:versionCode="2" android:versionName="0.1.1">
+    <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="36" />
+    <queries />
+    <application android:label="@string/app_name" android:icon="@drawable/co_settings"
+        android:allowBackup="false" android:fullBackupContent="false"
+        android:supportsRtl="true" android:theme="@style/IconPackTheme">
+        <activity android:name=".IconPackActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="org.adw.launcher.THEMES" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="org.adw.ActivityStarter.THEMES" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.novalauncher.THEME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
