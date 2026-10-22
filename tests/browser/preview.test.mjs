@@ -1318,7 +1318,7 @@ async function assertIconHistoryLayout(page, { spacing = false } = {}) {
       marginBlockEnd: style.marginBlockEnd, rects: [...range.getClientRects()].map(rect => ({ left: rect.left, right: rect.right,
         top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height })) };
   }));
-  assert.equal(metrics.length, 41, 'Admit the summary, all twenty archive paragraphs and their actual links');
+  assert.equal(metrics.length, 43, 'Admit the summary, all 21 archive paragraphs and their actual links');
   for (const node of metrics) {
     assert.ok(node.text && node.width > 0 && node.height > 0 && node.visibility === 'visible' && Number(node.opacity) > 0,
       'History text unavailable: ' + JSON.stringify(node));
@@ -2358,7 +2358,7 @@ test('icon gallery decodes every current appearance at phone widths and enlarged
   }
 });
 
-test('no-script keyboard navigation acquires current and all twenty preserved icon ZIPs with exact checksums', async () => {
+test('no-script keyboard navigation acquires current and all 21 preserved icon ZIPs with exact checksums', async () => {
   const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false, viewport: { width: 320, height: 844 },
     setup: async (context, page) => page.route('**/preview.css', async route => route.fulfill({ contentType: 'text/css',
       body: await readFile(path.join(site, 'preview.css'), 'utf8') + '\nhtml { font-size: 200%; }\n' + textSpacingOverride })) });
