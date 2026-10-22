@@ -1,6 +1,6 @@
 # Android component sources
 
-The icon-pack artwork is the project's 0.21.0 Obscur drawing set. No upstream artwork or implementation code is imported. The original 1,295 component rows in `android/iconpack/components.json`, the four Gboard rows and 22 video-editor rows are selected from Lawnicons' `app/assets/appfilter.xml` at commit `c85fc8fb825228b021317f83c0a1a9f00b1c889d`. Eleven additional exact aliases have a separate launcher-observation source.
+The icon-pack artwork is the project's 0.22.0 Obscur drawing set. No upstream artwork or implementation code is imported. The original 1,295 component rows in `android/iconpack/components.json`, the four Gboard rows and 22 video-editor rows are selected from Lawnicons' `app/assets/appfilter.xml` at commit `c85fc8fb825228b021317f83c0a1a9f00b1c889d`. Eleven additional exact aliases have a separate launcher-observation source.
 
 The [pinned upstream XML](https://github.com/LawnchairLauncher/lawnicons/blob/c85fc8fb825228b021317f83c0a1a9f00b1c889d/app/assets/appfilter.xml) is 3,344,113 bytes with SHA-256 `9b03e294aff3890e4e9b1e3d591c46c58b2be7d4ca140c5d56363494e127ffd6`. Its [Apache 2.0 license](https://github.com/LawnchairLauncher/lawnicons/blob/c85fc8fb825228b021317f83c0a1a9f00b1c889d/LICENSE) is included verbatim in the app, alongside an attribution notice identifying the selection and normalization. The original license SHA-256 is `c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4`.
 
@@ -14,7 +14,9 @@ The 0.1.2 update retains those 1,306 mappings and appends four exact-package Gbo
 
 The 0.1.3 update preserves all 1,310 earlier mappings and appends 22 declarations for ten officially listed video-editing and motion apps. This gives 1,332 mappings, with 1,190 named-app aliases for 256 named packages and the unchanged 142 generic-function aliases. Twelve of the 268 named packages still lack a qualified mapping. Each new row retains the exact pinned source line and component spelling. No new launcher observation is claimed.
 
-The 0.1.4 candidate uses the 0.21.0 drawing revision and makes no component-table change. All 1,332 mappings, their order, provenance and generic-package identities remain exactly those of 0.1.3. No new upstream selection or launcher observation is claimed. Artwork qualification, APK packaging and native assignment remain separate checks.
+The retained 0.1.4 candidate uses the 0.21.0 drawing revision and makes no component-table change. All 1,332 mappings, their order, provenance and generic-package identities remain exactly those of 0.1.3. No new upstream selection or launcher observation is claimed. Artwork qualification, APK packaging and native assignment remain separate checks.
+
+The 0.1.5 candidate uses the 0.22.0 drawing revision and refines four existing drawings without changing the component table. All 1,332 mappings, their order, provenance and generic-package identities remain exactly those of 0.1.4. No new upstream selection or launcher observation is claimed. The qualified artwork pin is separate from APK resource readback and native assignment.
 
 Two retained declarations use the opaque activity names `com.jojoy.delegate.JojoyInstallerActivity` and `com.duapps.ad.DuAd` under their exact selected packages. They are historical upstream declarations. They do not establish that the current official application exports those activities, recommend an alternate build or installer, or cause this pack to execute an activity. The pack maps component names to drawings. Its public package queries include only the catalog's exact package identities and the existing verified generic identities.
 

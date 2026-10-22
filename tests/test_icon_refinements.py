@@ -44,8 +44,10 @@ HISTORICAL_TREE_DIGESTS = {
 }
 
 
-# Accepted deterministic SVG archives captured before the 0.21.0 proposal.
+# Accepted deterministic SVG archives captured before each refinement.
 # The ZIP oracle is independent of the proposed drawing overlay.
+HISTORICAL_TREE_DIGESTS["0.21.0"] = "87762a66e397951f3683a1d6c84838d794ae9581674c3181ac70f75f98ae0b4b"
+
 HISTORICAL_ARCHIVE_DIGESTS = {'0.1.0': '040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34',
  '0.2.0': '6ae67a5aab7f4e0a50537bb6dcf3b383c5fc6e9e001d68db12a7413aaa376312',
  '0.3.0': 'd217cab68c1c118511078c189ec672b80cbcb29be285bf5cc58123516791e756',
@@ -66,6 +68,8 @@ HISTORICAL_ARCHIVE_DIGESTS = {'0.1.0': '040d7f472ca12d6cf115daaf2631b83477183dee
  '0.18.0': '5bbf577f50b3dae894405e598d9ca7d8e6246cac9e7f2859c7b5f5ba0771e985',
  '0.19.0': '22ffaf915634a27adc9608e77d8c0d5bd885bc3bfae323a509f2f566a330334e',
  '0.20.0': 'db1e52859497c2d4852362c1bd5d365a2aab2b6473069bc6aa49c4895d3e0ffa'}
+
+HISTORICAL_ARCHIVE_DIGESTS["0.21.0"] = "504402b2f2b93ea6315a92738487fd4545c949b7f28a10fcaa79f383e7db7caf"
 
 # SVG hashes come from accepted 0.20.0 exports and the exact earlier private
 # before/after drawings reviewed at small sizes, not from the new generator.
@@ -504,6 +508,82 @@ class IndividualIconPolishTests(unittest.TestCase):
         width = float(current.get("stroke-width"))
         self.assertLess(_outline_gap(old[0], old[2], width), 8)
         self.assertGreaterEqual(_outline_gap(current[0], current[2], width), 16)
+
+
+# Frozen private proposals were rendered and inspected before generator integration.
+REVIEWED_SPACING_SVG_DIGESTS = {'Clair/threads.svg': '2b602ac58aedd05316e655f042d670df448f174606db38bc404ca29d1abc2510', 'Obscur/threads.svg': '3c0229df0f580119af1169f2043da8683cee5c26a7670d20fbf07611c5a8461b', 'Clair/evernote.svg': '3cb9e0835dd5c083b9c0b8d9cb1deef541408ed4554ff9af4c8ee38418a2b4d1', 'Obscur/evernote.svg': '624cad9b3ab18aa579acd34b86c473aad82dc182552a2a0dadae73bc1df7289d', 'Clair/myradar.svg': '428d04f7390404fb21e6a439d764eeb129fb970c9961ec4fe3c5a807a4de2e1b', 'Obscur/myradar.svg': '7c291554ce7ebd9d1a7a671f4ec5d1cecc85c7630541f94715fdcbfc3f0ac80d', 'Clair/goodreads.svg': '70a8be6a53fdbfbacfb262990923734a9cad6527c20976b71d39824c25c8b70e', 'Obscur/goodreads.svg': 'a0e6d28693f685e95eb9fc04f0cfe0d911f400cebd2ad1099ba9aa15f3210a03'}
+
+class IconSpacingTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        document = icons.load_icon_tokens("0.22.0")
+        cls.old = icons.render_icons(document, version="0.21.0")
+        cls.current = icons.render_icons(document, version="0.22.0")
+
+    def test_only_four_reviewed_drawings_change_and_288_remain_exact(self):
+        expected = REVIEWED_SPACING_SVG_DIGESTS
+        self.assertEqual(set(self.old), set(self.current))
+        actual_changes = {name for name in self.current if name.endswith(".svg")
+                          and self.current[name] != self.old[name]}
+        self.assertEqual(actual_changes, set(expected))
+        self.assertEqual(len(actual_changes), 8)
+        self.assertEqual(sum(name.endswith(".svg") and name not in actual_changes
+                             for name in self.current), 576)
+        for name, digest in expected.items():
+            self.assertEqual(hashlib.sha256(self.current[name]).hexdigest(), digest, name)
+        old, current = (json.loads(files["manifest.json"]) for files in (self.old, self.current))
+        self.assertEqual(current["version"], "0.22.0")
+        self.assertEqual({key: value for key, value in current.items() if key not in {"version", "files"}},
+                         {key: value for key, value in old.items() if key not in {"version", "files"}})
+        for name in expected:
+            identifier = name.split('/')[1][:-4]
+            self.assertEqual(_geometry(self.current[f"Clair/{identifier}.svg"]),
+                             _geometry(self.current[f"Obscur/{identifier}.svg"]))
+            group = _group(self.current, identifier)
+            self.assertEqual(group.get("stroke-width"), "16")
+            self.assertEqual(group.get("stroke-linecap"), "round")
+            self.assertEqual(group.get("stroke-linejoin"), "round")
+
+    def test_evernote_ear_clears_the_top_without_moving_its_bottom(self):
+        old, current = _group(self.old, "evernote"), _group(self.current, "evernote")
+        self.assertEqual(old[0].attrib, current[0].attrib)
+        self.assertEqual(old[2].attrib, current[2].attrib)
+        for label, group, expected_gap in (("old", old, 0), ("current", current, 16)):
+            ear = group.find(NS + "ellipse")
+            center_x = float(ear.get("cx"))
+            horizontal = [segment for segment in _segments(group[0])
+                          if segment[0][1] == segment[1][1]
+                          and min(segment[0][0], segment[1][0]) <= center_x
+                          <= max(segment[0][0], segment[1][0])]
+            top = min(segment[0][1] for segment in horizontal)
+            gap = float(ear.get("cy")) - float(ear.get("ry")) - top - float(group.get("stroke-width"))
+            with self.subTest(version=label):
+                self.assertEqual(gap, expected_gap)
+                self.assertEqual(float(ear.get("cy")) + float(ear.get("ry")), 272)
+
+    def test_goodreads_star_clears_the_unchanged_book_outline(self):
+        old, current = _group(self.old, "goodreads"), _group(self.current, "goodreads")
+        self.assertEqual([element.attrib for element in old[:2]],
+                         [element.attrib for element in current[:2]])
+        width = float(current.get("stroke-width"))
+        self.assertEqual(_outline_gap(old[0], old[2], width), 0)
+        self.assertGreaterEqual(_outline_gap(current[0], current[2], width), 16)
+
+    def test_myradar_filled_blip_clears_both_unchanged_arcs(self):
+        old, current = _group(self.old, "myradar"), _group(self.current, "myradar")
+        self.assertEqual([element.attrib for element in old[:2]],
+                         [element.attrib for element in current[:2]])
+        for label, group, should_clear in (("old", old, False), ("current", current, True)):
+            dot = group.find(NS + "circle")
+            center = float(dot.get("cx")), float(dot.get("cy"))
+            gaps = [min(_point_segment_distance(center, segment) for segment in _segments(arc))
+                    - float(dot.get("r")) - float(group.get("stroke-width")) for arc in group[:2]]
+            with self.subTest(version=label):
+                self.assertEqual(dot.get("fill"), "#ffffff")
+                if should_clear:
+                    self.assertTrue(all(gap >= 12 for gap in gaps), gaps)
+                else:
+                    self.assertLess(gaps[0], 0)
 
 
 if __name__ == "__main__":
