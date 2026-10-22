@@ -73,17 +73,17 @@ unsupported. These rules also apply to extra entries before any content is read.
 | Limit | Value |
 | --- | --- |
 | Manifest | 68,608 bytes |
-| Declared hashes | 655 |
-| Expected or observed files and directories | 679, excluding the root |
+| Declared hashes | 656 |
+| Expected or observed files and directories | 680, excluding the root |
 | Each declared member | 8,388,608 bytes |
-| Total returned read bytes, including both manifest reads and sentinels | 19,922,944 |
+| Total returned read bytes, including both manifest reads and sentinels | 20,971,520 |
 | Read chunk | At most 65,536 bytes |
 | Complete stdout report, including LF newlines | 262,144 bytes |
 
-The 0.20.0 kit has 656 regular files and 19 directories, including the current
-collection and all 19 preserved SVG archives. The limits retain room to report
+The 0.21.0 kit has 657 regular files and 19 directories, including the current
+collection and all 20 preserved SVG archives. The limits retain room to report
 four extra entries. Its complete declared bytes and two manifest reads exceed
-18 MiB, so the read limit is 19 MiB. The 67 KiB manifest limit accommodates its
+19 MiB, so the read limit is 20 MiB. The 67 KiB manifest limit accommodates its
 recorded source identity and file hashes. Other path, member and chunk limits
 remain in force.
 

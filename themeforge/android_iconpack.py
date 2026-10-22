@@ -17,13 +17,13 @@ import zlib
 from .icons import ROOT, _read_tree, _safe_output, load_icon_tokens, render_icons
 
 
-VERSION = "0.1.3"
-ARTWORK_VERSION = "0.20.0"
+VERSION = "0.1.4"
+ARTWORK_VERSION = "0.21.0"
 APPEARANCE = "Obscur"
 COMPONENTS = ROOT / "android/iconpack/components.json"
 
 # Exact export identity; decoded pixel and visual qualification are separate checks.
-PNG_MANIFEST_SHA256 = "8c7a1f9b76413ecc8886b8cc66244096b42ccba0ad116d40ef626a50a23cf47a"
+PNG_MANIFEST_SHA256 = "9851eb483c8588db4712bdabbe73248f43ba8749fd59193da96680c99ce7c636"
 COMPONENT_SOURCE = {
     "repository": "LawnchairLauncher/lawnicons",
     "revision": "c85fc8fb825228b021317f83c0a1a9f00b1c889d",
@@ -140,7 +140,7 @@ def _export(root: Path) -> tuple[dict, dict[str, bytes], dict[Path, str]]:
     root = _plain(root)
     raw = _read(root / "manifest.json")
     if _digest(raw) != PNG_MANIFEST_SHA256:
-        raise ValueError("PNG export differs from the qualified 0.20 manifest")
+        raise ValueError("PNG export differs from the qualified 0.21 manifest")
     document = _document(raw)
     canonical = render_icons(load_icon_tokens(ARTWORK_VERSION), version=ARTWORK_VERSION)
     svg = _document(canonical["manifest.json"])
