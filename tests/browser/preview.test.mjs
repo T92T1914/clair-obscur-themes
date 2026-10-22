@@ -1905,7 +1905,7 @@ async function assertDownloadedIconPng(page, bytes, id, appearance) {
   return { id, appearance, size: 512, pngSha256: crypto.createHash('sha256').update(bytes).digest('hex'), rgbaSha256: actual, counts };
 }
 
-async function acquireIconPng(page, id, appearance, { timeout = 5000 } = {}) {
+async function acquireIconPng(page, id, appearance, { timeout = 15000 } = {}) {
   const button = iconPngButton(page, id, appearance);
   assert.ok(await button.isVisible()); assert.notEqual(await button.getAttribute('aria-disabled'), 'true');
   await button.focus();
@@ -1925,8 +1925,8 @@ async function acquireIconPng(page, id, appearance, { timeout = 5000 } = {}) {
           status: document.querySelector('#icon-png-status')?.textContent };
       }, { id, appearance });
     } catch (diagnosticError) { observation = { unavailable: diagnosticError.name }; }
-    error.message += '\nPNG acquisition state: ' + JSON.stringify(observation);
-    throw error;
+    throw new Error(`PNG acquisition failed for ${id}/${appearance} within ${timeout}ms: ${error.message}` +
+      '\nPNG acquisition state: ' + JSON.stringify(observation), { cause: error });
   }
   assert.equal(download.suggestedFilename(), `Clair-Obscur-0.20.0-${appearance}-${id}-512.png`);
   assert.equal(await download.failure(), null);
@@ -2019,6 +2019,64 @@ test('individual PNG controls bind all 584 local drawings and keyboard acquisiti
       assert.deepEqual(consoleErrors, []);
       results.scenarios.push({ name: 'individual PNG keyboard acquisition', status: 'passed', width, controls: controls.length, downloads,
         scope: 'Browser-downloaded bytes independently decoded and compared with an explicitly selected source SVG; no phone installation or native acceptance' });
+    } finally { await context.close(); }
+  }
+});
+
+test('individual PNG acquisition waits for delayed canvas callbacks in both appearances', async () => {
+  const { context, page, consoleErrors, network } = await pageFor();
+  const downloads = []; page.on('download', download => downloads.push(download));
+  try {
+    await page.evaluate(() => {
+      const original = HTMLCanvasElement.prototype.toBlob;
+      const fixture = { original, samples: [], timers: [], delay: 6000 };
+      HTMLCanvasElement.prototype.toBlob = function(callback, ...options) {
+        const sample = { calledAt: performance.now() }; fixture.samples.push(sample);
+        return original.call(this, blob => {
+          sample.encodedAt = performance.now(); sample.bytes = blob?.size; sample.type = blob?.type;
+          fixture.timers.push(setTimeout(() => {
+            sample.callbackAt = performance.now(); callback(blob);
+          }, fixture.delay));
+        }, ...options);
+      };
+      window.pngDelayedCallbackFixture = fixture;
+    });
+    const acquired = [];
+    for (const appearance of ['Clair', 'Obscur']) {
+      await page.getByRole('button', { name: appearance === 'Clair' ? 'Obscur' : 'Clair', exact: true }).click();
+      await page.locator('#package-target').selectOption('equicord');
+      await page.locator('#package-appearance').selectOption('Clair');
+      await page.locator('#icon-query').fill('com.weather.Weather');
+      assert.deepEqual(await page.locator('.icon-card:visible').evaluateAll(nodes => nodes.map(node => node.dataset.iconFunction)), ['weather-channel']);
+      const before = await iconPngSurroundings(page), requestsBefore = network.length;
+      const bytes = await acquireIconPng(page, 'weather-channel', appearance);
+      acquired.push(await assertDownloadedIconPng(page, bytes, 'weather-channel', appearance));
+      assert.deepEqual(await iconPngSurroundings(page), before);
+      assert.equal(network.length, requestsBefore, 'Delayed encoding uses the loaded local image without a fetch or upload');
+      assert.equal(await iconPngButton(page, 'weather-channel', appearance).evaluate(node => node === document.activeElement), true);
+      assert.equal(downloads.length, acquired.length);
+    }
+    const fixture = await page.evaluate(() => ({ delay: window.pngDelayedCallbackFixture.delay,
+      samples: window.pngDelayedCallbackFixture.samples }));
+    assert.equal(fixture.delay, 6000); assert.equal(fixture.samples.length, 2);
+    for (const sample of fixture.samples) {
+      assert.ok(sample.encodedAt >= sample.calledAt && sample.callbackAt - sample.encodedAt > 5000,
+        'A real native PNG callback must remain delayed beyond the former five-second acquisition limit');
+      assert.equal(sample.type, 'image/png'); assert.ok(sample.bytes > 0);
+    }
+    assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: 'delayed canvas PNG callbacks in both appearances', status: 'passed', acquired,
+      callbackDelayMs: fixture.delay, callbackSamples: fixture.samples, downloads: downloads.length,
+      scope: 'Controlled callback delay after real canvas encoding; actual keyboard downloads and independent pixels, not a CI root-cause or native-device claim' });
+  } finally {
+    try {
+      await page.evaluate(() => {
+        const fixture = window.pngDelayedCallbackFixture;
+        if (fixture) {
+          for (const timer of fixture.timers) clearTimeout(timer);
+          HTMLCanvasElement.prototype.toBlob = fixture.original;
+        }
+      });
     } finally { await context.close(); }
   }
 });
@@ -2244,7 +2302,19 @@ test('individual PNG qualification rejects an inert listener and a wrong-appeara
       if (fault === 'inert-listener') {
         const control = iconPngButton(page, 'phone', 'Clair'); assert.ok(await control.isVisible());
         await control.evaluate(node => node.replaceWith(node.cloneNode(true)));
-        await assert.rejects(acquireIconPng(page, 'phone', 'Clair', { timeout: 500 }), error => error.name === 'TimeoutError');
+        const before = await iconPngSurroundings(page), status = await page.locator('#icon-png-status').textContent();
+        await assert.rejects(acquireIconPng(page, 'phone', 'Clair', { timeout: 500 }), error => {
+          assert.equal(error.cause?.name, 'TimeoutError'); assert.match(error.cause.message, /Timeout 500ms/);
+          assert.match(error.message, /PNG acquisition failed for phone\/Clair within 500ms/);
+          assert.match(error.stack, /PNG acquisition state:/, 'Node must print the fresh contextual error and observed state');
+          const marker = '\nPNG acquisition state: ';
+          const observation = JSON.parse(error.message.slice(error.message.indexOf(marker) + marker.length));
+          assert.deepEqual(observation, { readyState: 'complete', focused: true,
+            button: { hidden: false, disabled: false, ariaDisabled: null },
+            image: { complete: true, width: 512, height: 512, currentSrc: origin + '/icons/Clair/phone.svg' }, status });
+          return true;
+        });
+        assert.deepEqual(await iconPngSurroundings(page), before);
       } else {
         const bytes = await acquireIconPng(page, 'phone', 'Clair');
         await assert.rejects(assertDownloadedIconPng(page, bytes, 'phone', 'Clair'),
