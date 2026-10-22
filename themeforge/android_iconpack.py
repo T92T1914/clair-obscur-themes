@@ -17,11 +17,13 @@ import zlib
 from .icons import ROOT, _read_tree, _safe_output, load_icon_tokens, render_icons
 
 
-VERSION = "0.1.2"
-ARTWORK_VERSION = "0.19.0"
+VERSION = "0.1.3"
+ARTWORK_VERSION = "0.20.0"
 APPEARANCE = "Obscur"
 COMPONENTS = ROOT / "android/iconpack/components.json"
-PNG_MANIFEST_SHA256 = "728c13ef9aaf57afaa3291e740900dbba59bb916cefbc4a02bc9688be9620662"
+
+# Exact export identity; decoded pixel and visual qualification are separate checks.
+PNG_MANIFEST_SHA256 = "8c7a1f9b76413ecc8886b8cc66244096b42ccba0ad116d40ef626a50a23cf47a"
 COMPONENT_SOURCE = {
     "repository": "LawnchairLauncher/lawnicons",
     "revision": "c85fc8fb825228b021317f83c0a1a9f00b1c889d",
@@ -138,7 +140,7 @@ def _export(root: Path) -> tuple[dict, dict[str, bytes], dict[Path, str]]:
     root = _plain(root)
     raw = _read(root / "manifest.json")
     if _digest(raw) != PNG_MANIFEST_SHA256:
-        raise ValueError("PNG export differs from the qualified 0.19 manifest")
+        raise ValueError("PNG export differs from the qualified 0.20 manifest")
     document = _document(raw)
     canonical = render_icons(load_icon_tokens(ARTWORK_VERSION), version=ARTWORK_VERSION)
     svg = _document(canonical["manifest.json"])
@@ -153,8 +155,8 @@ def _export(root: Path) -> tuple[dict, dict[str, bytes], dict[Path, str]]:
     for key in ("catalog", "functions", "catalog_date", "catalog_scope"):
         if document.get(key) != svg[key]:
             raise ValueError("PNG catalog differs from current SVG identity")
-    if len(svg["functions"]) != 282 or len(set(svg["functions"])) != 282:
-        raise ValueError("Expected all 282 current icon identifiers")
+    if len(svg["functions"]) != 292 or len(set(svg["functions"])) != 292:
+        raise ValueError("Expected all 292 current icon identifiers")
     if document.get("appearances") != ["Clair", "Obscur"] or document.get("sizes") != [512, 1024]:
         raise ValueError("PNG export is missing an appearance or size")
     guards = {root / "manifest.json": _digest(raw)}
@@ -178,8 +180,8 @@ def _export(root: Path) -> tuple[dict, dict[str, bytes], dict[Path, str]]:
                 for appearance in ("Clair", "Obscur") for size in (512, 1024)
                 for identifier in svg["functions"]}
     records = document.get("files")
-    if not isinstance(records, list) or len(records) != 1128:
-        raise ValueError("Expected the complete 1128-file PNG export")
+    if not isinstance(records, list) or len(records) != 1168:
+        raise ValueError("Expected the complete 1168-file PNG export")
     svgs = {row["path"]: row["sha256"] for row in svg["files"]}
     selected, observed = {}, set()
     for row in records:
@@ -322,7 +324,7 @@ def prepare_iconpack(png_export: Path, components: Path, output: Path) -> dict:
     table, component_bytes, table_guards = _components(component_path, document["catalog"])
     guards.update(table_guards)
     names = {identifier: drawable_name(identifier) for identifier in document["functions"]}
-    if len(set(names.values())) != 282:
+    if len(set(names.values())) != 292:
         raise ValueError("Android drawable names collide")
     files = {f"res/drawable-nodpi/{names[identifier]}.png": images[identifier]
              for identifier in document["functions"]}
@@ -341,8 +343,8 @@ def prepare_iconpack(png_export: Path, components: Path, output: Path) -> dict:
             package = row["android_package"]
             packages.append({"package": package, "label": row["label"], "id": row["id"]})
             seen.add(package)
-    if len(packages) != len(seen) or len(packages) != 258:
-        raise ValueError("Expected 258 distinct named package hints")
+    if len(packages) != len(seen) or len(packages) != 268:
+        raise ValueError("Expected 268 distinct named package hints")
     for row in document["catalog"]:
         for package in table["generic_packages"].get(row["id"], []):
             if package not in seen:
@@ -356,12 +358,12 @@ def prepare_iconpack(png_export: Path, components: Path, output: Path) -> dict:
         "source": {"png_manifest_sha256": _digest(_read(source / "manifest.json")),
                    "svg_manifest_sha256": document["source_manifest_sha256"],
                    "components_sha256": _digest(component_bytes), "component_source": table["source"]},
-        "counts": {"drawables": 282, "component_mappings": len(table["mappings"]),
+        "counts": {"drawables": 292, "component_mappings": len(table["mappings"]),
                    "mapped_icons": len({row["icon_id"] for row in table["mappings"]}),
                    "upstream_component_mappings": sum("source_kind" not in row for row in table["mappings"]),
                    "observed_launcher_mappings": sum(row.get("source_kind") == "observed-launcher"
                                                       for row in table["mappings"]),
-                   "named_package_hints": 258, "package_hints": len(packages)},
+                   "named_package_hints": 268, "package_hints": len(packages)},
         "files": [{"path": name, "bytes": len(payload), "sha256": _digest(payload)}
                   for name, payload in sorted(files.items())],
         "scope": "Obscur APK source resources and exact reviewed activity mappings only. "

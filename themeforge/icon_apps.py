@@ -2304,3 +2304,113 @@ FIFTEENTH_APP_CATALOG = (
         "selection_basis": "Reported current keyboard use and an inspected official Google LLC listing. The drawing does not change the keyboard font, theme or predictions."
     },
 )
+
+
+SIXTEENTH_CATALOG_DATE = "2026-10-22"
+SIXTEENTH_CATALOG_SCOPE = (
+    "Adds ten mobile video-editing and motion-tool assignments from inspected official Google Play listings "
+    "and their cumulative download bands. No popularity ranking, device availability or phone installation is established."
+)
+
+SIXTEENTH_APP_CATALOG = (
+    {
+        "id": "inshot",
+        "label": "InShot",
+        "store_title": "Video Editor & Maker - InShot",
+        "kind": "app",
+        "category": "video-editing",
+        "android_package": "com.camerasideas.instashot",
+        "store_url": "https://play.google.com/store/apps/details?id=com.camerasideas.instashot",
+        "selection_basis": "Inspected official Google Play listing with 500M+ cumulative downloads; missing mobile video-editing and motion-tool assignment"
+    },
+    {
+        "id": "youcut",
+        "label": "YouCut",
+        "store_title": "YouCut - Video Editor & Maker",
+        "kind": "app",
+        "category": "video-editing",
+        "android_package": "com.camerasideas.trimmer",
+        "store_url": "https://play.google.com/store/apps/details?id=com.camerasideas.trimmer",
+        "selection_basis": "Inspected official Google Play listing with 100M+ cumulative downloads; missing mobile video-editing and motion-tool assignment"
+    },
+    {
+        "id": "vn-video-editor",
+        "label": "VN",
+        "store_title": "VN: Photo & Video Editor",
+        "kind": "app",
+        "category": "video-editing",
+        "android_package": "com.frontrow.vlog",
+        "store_url": "https://play.google.com/store/apps/details?id=com.frontrow.vlog",
+        "selection_basis": "Inspected official Google Play listing with 100M+ cumulative downloads; missing mobile video-editing and motion-tool assignment"
+    },
+    {
+        "id": "kinemaster",
+        "label": "KineMaster",
+        "store_title": "KineMaster - AI Video Editor",
+        "kind": "app",
+        "category": "video-editing",
+        "android_package": "com.nexstreaming.app.kinemasterfree",
+        "store_url": "https://play.google.com/store/apps/details?id=com.nexstreaming.app.kinemasterfree",
+        "selection_basis": "Inspected official Google Play listing with 500M+ cumulative downloads; missing mobile video-editing and motion-tool assignment"
+    },
+    {
+        "id": "powerdirector",
+        "label": "PowerDirector",
+        "store_title": "PowerDirector - Video Editor",
+        "kind": "app",
+        "category": "video-editing",
+        "android_package": "com.cyberlink.powerdirector.DRA140225_01",
+        "store_url": "https://play.google.com/store/apps/details?id=com.cyberlink.powerdirector.DRA140225_01",
+        "selection_basis": "Inspected official Google Play listing with 100M+ cumulative downloads; missing mobile video-editing and motion-tool assignment"
+    },
+    {
+        "id": "filmora",
+        "label": "Filmora",
+        "store_title": "Filmora: AI Video Editor&Maker",
+        "kind": "app",
+        "category": "video-editing",
+        "android_package": "com.wondershare.filmorago",
+        "store_url": "https://play.google.com/store/apps/details?id=com.wondershare.filmorago",
+        "selection_basis": "Inspected official Google Play listing with 100M+ cumulative downloads; missing mobile video-editing and motion-tool assignment"
+    },
+    {
+        "id": "vivavideo",
+        "label": "VivaVideo",
+        "store_title": "VivaVideo - Video Cut & Editor",
+        "kind": "app",
+        "category": "video-editing",
+        "android_package": "com.quvideo.xiaoying",
+        "store_url": "https://play.google.com/store/apps/details?id=com.quvideo.xiaoying",
+        "selection_basis": "Inspected official Google Play listing with 500M+ cumulative downloads; missing mobile video-editing and motion-tool assignment"
+    },
+    {
+        "id": "gopro-quik",
+        "label": "GoPro Quik",
+        "store_title": "GoPro Quik: Video Editor",
+        "kind": "app",
+        "category": "video-editing",
+        "android_package": "com.gopro.smarty",
+        "store_url": "https://play.google.com/store/apps/details?id=com.gopro.smarty",
+        "selection_basis": "Inspected official Google Play listing with 50M+ cumulative downloads; missing mobile video-editing and motion-tool assignment"
+    },
+    {
+        "id": "videoshow",
+        "label": "VideoShow",
+        "store_title": "Video Editor & Maker VideoShow",
+        "kind": "app",
+        "category": "video-editing",
+        "android_package": "com.xvideostudio.videoeditor",
+        "store_url": "https://play.google.com/store/apps/details?id=com.xvideostudio.videoeditor",
+        "selection_basis": "Inspected official Google Play listing with 100M+ cumulative downloads; missing mobile video-editing and motion-tool assignment"
+    },
+    {
+        "id": "alight-motion",
+        "label": "Alight Motion",
+        "store_title": "Alight Motion",
+        "kind": "app",
+        "category": "video-editing",
+        "android_package": "com.alightcreative.motion",
+        "store_url": "https://play.google.com/store/apps/details?id=com.alightcreative.motion",
+        "selection_basis": "Inspected official Google Play listing with 100M+ cumulative downloads; missing mobile video-editing and motion-tool assignment"
+    },
+)
