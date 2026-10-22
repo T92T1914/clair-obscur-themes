@@ -2284,3 +2284,23 @@ FOURTEENTH_APP_CATALOG = (
         "selection_basis": "Mochi Health application identity only, represented by an original neutral leaf drawing without a care recommendation."
     },
 )
+
+
+FIFTEENTH_CATALOG_DATE = "2026-10-22"
+FIFTEENTH_CATALOG_SCOPE = (
+    "Adds Gboard to the retained collection after its reported use and inspection of its official Google Play identity. "
+    "No popularity ranking, phone installation or keyboard behavior is established by the artwork."
+)
+
+FIFTEENTH_APP_CATALOG = (
+    {
+        "id": "gboard",
+        "label": "Gboard",
+        "store_title": "Gboard - the Google Keyboard",
+        "kind": "app",
+        "category": "tools",
+        "android_package": "com.google.android.inputmethod.latin",
+        "store_url": "https://play.google.com/store/apps/details?id=com.google.android.inputmethod.latin",
+        "selection_basis": "Reported current keyboard use and an inspected official Google LLC listing. The drawing does not change the keyboard font, theme or predictions."
+    },
+)

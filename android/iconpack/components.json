@@ -19604,6 +19604,66 @@
       "icon_id": "wendys",
       "observed_on": "2026-10-21",
       "source_kind": "observed-launcher"
+    },
+    {
+      "activity": "com.android.inputmethod.latin.setup.SetupActivity",
+      "android_package": "com.google.android.inputmethod.latin",
+      "component": "ComponentInfo{com.google.android.inputmethod.latin/com.android.inputmethod.latin.setup.SetupActivity}",
+      "icon_id": "gboard",
+      "source_components": [
+        "ComponentInfo{com.google.android.inputmethod.latin/com.android.inputmethod.latin.setup.SetupActivity}"
+      ],
+      "source_lines": [
+        7121
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.google.android.apps.inputmethod.libs.framework.core.LauncherActivity",
+      "android_package": "com.google.android.inputmethod.latin",
+      "component": "ComponentInfo{com.google.android.inputmethod.latin/com.google.android.apps.inputmethod.libs.framework.core.LauncherActivity}",
+      "icon_id": "gboard",
+      "source_components": [
+        "ComponentInfo{com.google.android.inputmethod.latin/com.google.android.apps.inputmethod.libs.framework.core.LauncherActivity}"
+      ],
+      "source_lines": [
+        7122
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.google.android.libraries.inputmethod.launcher.LauncherActivity",
+      "android_package": "com.google.android.inputmethod.latin",
+      "component": "ComponentInfo{com.google.android.inputmethod.latin/com.google.android.libraries.inputmethod.launcher.LauncherActivity}",
+      "icon_id": "gboard",
+      "source_components": [
+        "ComponentInfo{com.google.android.inputmethod.latin/com.google.android.libraries.inputmethod.launcher.LauncherActivity}"
+      ],
+      "source_lines": [
+        7123
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.google.android.archive.ReactivateActivity",
+      "android_package": "com.google.android.inputmethod.latin",
+      "component": "ComponentInfo{com.google.android.inputmethod.latin/com.google.android.archive.ReactivateActivity}",
+      "icon_id": "gboard",
+      "source_components": [
+        "ComponentInfo{com.google.android.inputmethod.latin/com.google.android.archive.ReactivateActivity}"
+      ],
+      "source_lines": [
+        7126
+      ],
+      "source_types": [
+        "item"
+      ]
     }
   ],
   "schema_version": 1,

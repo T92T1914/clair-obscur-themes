@@ -84,7 +84,7 @@ class AndroidBuildAdmissionTests(unittest.TestCase):
             {"package": "example.second", "label": "Second", "id": "second"},
         ]
         (project / "assets/catalog.json").write_text(json.dumps({"schema_version": 1,
-            "artwork_version": "0.18.0", "pack_version": "0.1.1", "packages": rows}), encoding="utf-8")
+            "artwork_version": "0.19.0", "pack_version": "0.1.2", "packages": rows}), encoding="utf-8")
         (project / "AndroidManifest.xml").write_text(
             '<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="' + build.PACKAGE + '">' +
             permission + '<queries/><application/></manifest>', encoding="utf-8")
@@ -167,7 +167,7 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
         (self.project / "assets/appfilter.xml").write_text(mapping)
         (self.project / "assets/catalog.json").write_text('{"scope":"synthetic byte fixture"}')
         self.prepared = {"files": []}
-        for index in range(281):
+        for index in range(282):
             (self.project / "res/drawable-nodpi" / ("co_icon_" + str(index) + ".png")).write_bytes(
                 b"Synthetic original icon bytes " + str(index).encode("ascii"))
         for path in sorted(self.project.rglob("*")):
@@ -177,7 +177,7 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
         self.dump = ('E: resources (line=1)\n  E: item (line=1)\n'
                      '    A: component="ComponentInfo{example.app/example.app.Main}"\n'
                      '    A: drawable="co_icon_0"\n')
-        self.badging = ("package: name='" + build.PACKAGE + "' versionCode='2' versionName='0.1.1'\n"
+        self.badging = ("package: name='" + build.PACKAGE + "' versionCode='3' versionName='0.1.2'\n"
                         "minSdkVersion:'26'\ntargetSdkVersion:'36'\n")
 
     def apk(self, changed=None):
@@ -192,7 +192,7 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
 
     def test_byte_boundary_accepts_unchanged_pngs_after_resource_path_versioning(self):
         result = build._verify_apk(self.apk(), self.project, self.prepared, self.dump, self.badging)
-        self.assertEqual(result["drawables_byte_exact"], 281)
+        self.assertEqual(result["drawables_byte_exact"], 282)
         self.assertEqual(result["compiled_component_mappings"], 1)
 
     def test_changed_png_bytes_are_refused(self):
@@ -215,7 +215,7 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
 
     def test_prior_or_mixed_apk_versions_are_refused(self):
         apk = self.apk()
-        for code, name in (("1", "0.1.0"), ("1", "0.1.1"), ("2", "0.1.0")):
+        for code, name in (("1", "0.1.0"), ("2", "0.1.1"), ("2", "0.1.2"), ("3", "0.1.1")):
             badging = (f"package: name='{build.PACKAGE}' versionCode='{code}' versionName='{name}'\n"
                        "minSdkVersion:'26'\ntargetSdkVersion:'36'\n")
             with self.subTest(code=code, name=name), self.assertRaisesRegex(ValueError, "package/version differs"):
