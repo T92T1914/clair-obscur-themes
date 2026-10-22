@@ -511,7 +511,7 @@ class PreviewTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
         exported = json.loads((self.base / 'extracted-icons/manifest.json').read_bytes())
-        self.assertEqual(exported['version'], '0.20.0')
+        self.assertEqual(exported['version'], '0.21.0')
         self.assertEqual(len(exported['functions']), 292)
         self.assertEqual(len(exported['files']), 584)
         self.assertEqual([entry['id'] for entry in exported['catalog']][233:241],
