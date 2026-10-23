@@ -311,7 +311,7 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
             "https://galaxystore.samsung.com/") else "Google Play listing")
         assignment = (
             f'<p class="muted"><a href="{html.escape(entry["store_url"], quote=True)}" rel="noreferrer">'
-            f'{store_label}</a><br><code>{html.escape(entry["android_package"])}</code></p>'
+            f'{store_label}</a><br><code translate="no">{html.escape(entry["android_package"])}</code></p>'
             if kind == 'app' else ''
         )
         icon_cards[kind].append(
@@ -341,13 +341,13 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
             context = f'on {partner}' if partner else 'on default'
             samples.append(
                 f'<div class="terminal-slot" data-ansi="{field}"><p>{index}: {label}</p>'
-                f'<code style="color:{scheme[field]};background:{background}">Aa 0123</code>'
+                f'<code translate="no" style="color:{scheme[field]};background:{background}">Aa 0123</code>'
                 f'<small>{context}</small></div>'
             )
         terminal_cards.append(
             f'<article class="terminal-palette" data-palette="{name}" '
             f'style="background:{scheme["background"]};color:{scheme["foreground"]}">'
-            f'<h3>{name}</h3><p>Scheme: <code>{html.escape(scheme["name"])}</code></p>'
+            f'<h3>{name}</h3><p>Scheme: <code translate="no">{html.escape(scheme["name"])}</code></p>'
             f'<div class="terminal-swatches">{"".join(samples)}</div></article>'
         )
     version = document['version']
@@ -440,14 +440,14 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
     portable = dict(files)
     portable_text = text.replace('{{PORTABLE_DELIVERY}}',
         '<p id="portable-delivery" class="muted">This is the extracted portable preview. '
-        'Open <code>index.html</code> and keep the complete directory together when moving it. '
+        'Open <code translate="no">index.html</code> and keep the complete directory together when moving it. '
         'Theme files are already included at the local paths shown beside each package. '
         'Use those files for the target procedure. A browser may save a local archive but '
         'display a CSS file instead of downloading another copy. Return to this page after viewing it. '
         'Palette specimens and target procedures remain local. '
         'Online references need a network connection. '
         'Optional directory verification needs Python 3.11 or later: '
-        '<code>python -I -S -B &quot;verify_<wbr>preview.<wbr>py&quot; &quot;.&quot;</code>. '
+        '<code translate="no">python -I -S -B &quot;verify_<wbr>preview.<wbr>py&quot; &quot;.&quot;</code>. '
         'Read <a href="portable-verification.md">portable verification instructions</a> '
         'for named discrepancies and the limits of included-manifest consistency. '
         '<a href="site-manifest.json">Portable directory manifest</a>.</p>')
@@ -456,7 +456,7 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
         pattern = rf'(<a\b[^>]*\bdownload\b[^>]*href="{re.escape(local_path)}"[^>]*>)([^<]*)(</a>)'
         portable_text = re.sub(pattern, lambda match: (
             match[1] + match[2].replace('Download ', 'Open included ', 1) + match[3]
-            + f'<small class="local-package-path">Included file: <code>{local_path}</code>.</small>'
+            + f'<small class="local-package-path">Included file: <code translate="no">{local_path}</code>.</small>'
         ), portable_text)
     portable['index.html'] = portable_text.encode()
     portable['site-manifest.json'] = site_manifest(portable, source, release, {'kind': 'portable-kit'})
@@ -467,10 +467,10 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
         f'<p id="portable-delivery" class="muted"><a id="portable-preview" href="{PORTABLE_ARCHIVE}" download>'
         'Download the portable preview kit</a> <span aria-hidden="true">/</span> '
         f'<a id="portable-checksums" href="{PORTABLE_CHECKSUMS}" download>Kit checksum</a>. '
-        'Extract the complete ZIP, then open <code>index.html</code>. Keep the extracted directory '
+        'Extract the complete ZIP, then open <code translate="no">index.html</code>. Keep the extracted directory '
         'together when moving it. The specimens, theme files and target procedures work offline. '
         'Python is optional and needed only for directory verification. '
-        'The included <code>verify_<wbr>preview.<wbr>py</code> command needs Python 3.11 or later. '
+        'The included <code translate="no">verify_<wbr>preview.<wbr>py</code> command needs Python 3.11 or later. '
         '<a href="portable-verification.md">Portable verification instructions</a> explain '
         'how to check an extracted copy against its included manifest. '
         'The kit follows the current preview source and does not change theme package versions '
