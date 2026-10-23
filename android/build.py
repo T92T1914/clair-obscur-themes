@@ -15,9 +15,9 @@ import xml.etree.ElementTree as ET
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.1.7"
-VERSION_CODE = 8
-ARTWORK_VERSION = "0.24.0"
+VERSION = "0.1.8"
+VERSION_CODE = 9
+ARTWORK_VERSION = "0.25.0"
 PACKAGE = "io.github.t92t1914.obscuricons"
 BUILD_TOOLS = "36.1.0"
 API = 36
@@ -166,8 +166,8 @@ def _compiled_pairs(text: str) -> list[tuple[str, str]]:
 def _verify_apk(apk: Path, project: Path, prepared: dict, compiled_filter: str, badging: str) -> dict:
     expected_png = {Path(row["path"]).name: row for row in prepared["files"]
                     if row["path"].startswith("res/drawable-nodpi/") and row["path"].endswith(".png")}
-    if len(expected_png) != 292:
-        raise ValueError("The prepared icon pack must contain 292 original Obscur PNGs.")
+    if len(expected_png) != 296:
+        raise ValueError("The prepared icon pack must contain 296 original Obscur PNGs.")
     expected_pairs = [(item.attrib["component"], item.attrib["drawable"])
                       for item in ET.parse(project / "assets/appfilter.xml").getroot().findall("item")]
     if sorted(_compiled_pairs(compiled_filter)) != sorted(expected_pairs):
@@ -213,7 +213,7 @@ def _verify_apk(apk: Path, project: Path, prepared: dict, compiled_filter: str, 
                 raise ValueError("APK assets differ from the prepared project: " + path.name)
         if "classes.dex" not in names or not archive.read("classes.dex").startswith(b"dex\n"):
             raise ValueError("The APK has no DEX program.")
-    return {"drawables_byte_exact": 292, "assets_byte_exact": len(assets),
+    return {"drawables_byte_exact": 296, "assets_byte_exact": len(assets),
             "compiled_component_mappings": len(expected_pairs), "permissions": []}
 
 
@@ -249,7 +249,7 @@ def _run(argv: list[str], output: Path, name: str, report: dict, environment: di
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--png-dir", type=Path, required=True, help="Qualified 0.23 PNG export directory")
+    parser.add_argument("--png-dir", type=Path, required=True, help="Qualified 0.25 PNG export directory")
     parser.add_argument("--components", type=Path, default=ROOT / "android/iconpack/components.json")
     parser.add_argument("--sdk", type=Path, required=True, help="Explicit Android SDK root with API36 and Build Tools36.1.0")
     parser.add_argument("--java-bin", type=Path, required=True, help="Full JDK17 bin directory")
@@ -296,7 +296,7 @@ def main(argv: list[str] | None = None) -> int:
         from themeforge.android_iconpack import prepare_iconpack
         project = output / "project"
         prepared = prepare_iconpack(png, components, project)
-        if (prepared.get("version"), prepared.get("artwork_version"), prepared.get("appearance")) != (VERSION, ARTWORK_VERSION, "Obscur") or prepared.get("counts", {}).get("drawables") != 292:
+        if (prepared.get("version"), prepared.get("artwork_version"), prepared.get("appearance")) != (VERSION, ARTWORK_VERSION, "Obscur") or prepared.get("counts", {}).get("drawables") != 296:
             raise ValueError("Unexpected prepared icon-pack identity or inventory.")
         _copy_static(static, project)
         queries = _write_queries(project)
