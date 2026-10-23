@@ -33,7 +33,7 @@ def _inline(text: str) -> str:
         parts.append(html.escape(text[cursor:match.start()]))
         code, strong, label, href = match.groups()
         if code is not None:
-            parts.append(f'<code>{html.escape(code)}</code>')
+            parts.append(f'<code translate="no">{html.escape(code)}</code>')
         elif strong is not None:
             parts.append(f'<strong>{html.escape(strong)}</strong>')
         else:
@@ -107,7 +107,7 @@ def render_guides(document: bytes, manifest: dict) -> str:
                           f'<p>Package {html.escape(item["version"])}. '
                           f'<a download href="downloads/{html.escape(item["path"], quote=True)}">'
                           f'{html.escape(filename)}</a>, {record["bytes"]:,} bytes.</p>'
-                          f'<p class="package-hash">SHA-256: <code>{record["sha256"]}</code></p>'
+                          f'<p class="package-hash">SHA-256: <code translate="no">{record["sha256"]}</code></p>'
                           f'<a href="#guide-{platform}-procedure">Read the {html.escape(heading)} procedure</a></div>')
         result.extend((f'<div id="guide-{platform}-procedure" tabindex="-1">', _markdown(body), '</div>',
                        f'<p><a href="#{platform}-downloads">Return to {html.escape(heading)} downloads</a></p>', '</article>'))
