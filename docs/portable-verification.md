@@ -70,22 +70,22 @@ Relative member paths have at most 240 ASCII characters and eight components.
 Windows device names, parent traversal and file/directory prefix conflicts are
 unsupported. These rules also apply to extra entries before any content is read.
 
-The measured 0.23.0 kit uses the following finite allowances.
+The measured 0.24.0 kit uses the following finite allowances.
 
 | Limit | Value |
 | --- | --- |
 | Manifest | 68,608 bytes |
-| Declared hashes | 658 |
-| Expected or observed files and directories | 682, excluding the root |
+| Declared hashes | 659 |
+| Expected or observed files and directories | 683, excluding the root |
 | Each declared member | 8,388,608 bytes |
-| Total returned read bytes, including both manifest reads and sentinels | 23,068,672 |
+| Total returned read bytes, including both manifest reads and sentinels | 25,165,824 |
 | Read chunk | At most 65,536 bytes |
 | Complete stdout report, including LF newlines | 262,144 bytes |
 
-The 0.23.0 kit has 659 regular files and 19 directories, including the current
-collection and all 22 preserved SVG archives. The limits retain room to report
+The 0.24.0 kit has 660 regular files and 19 directories, including the current
+collection and all 23 preserved SVG archives. The limits retain room to report
 four extra entries. Its complete declared bytes and two manifest reads exceed
-21 MiB, so the read limit is 22 MiB. The 67 KiB manifest limit accommodates its
+23 MiB, so the read limit is 24 MiB. The 67 KiB manifest limit accommodates its
 recorded source identity and file hashes. Other path, member and chunk limits
 remain in force.
 

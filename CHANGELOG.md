@@ -1,5 +1,14 @@
 # Changes
 
+## Icon artwork 0.24.0
+
+October 23, 2026.
+
+- Review all 292 current drawings individually in both appearances at five small sizes. Refine VA, Dunkin, Samsung Pass and Sonic after separate before-and-after comparisons. Retain deliberate joins and record small-size tradeoffs.
+- Keep the other 288 drawings, all twenty-three earlier archives, original desktop packages, Terminal schemes and Garmin source unchanged. Dunkin retains all five sprinkle lengths and directions.
+- Prepare Android 0.1.7/code 8 from the qualified 0.24.0 export, retaining all 1,332 mappings, 282 package queries and the existing signing identity. Phone application remains a separate check.
+- Preserve current and historical acquisition, no-script keyboard operation and finite portable verification. Derive inventory and aggregate-read allowances from the composed kit, retaining four-extra-entry reporting and the other resource and path guards.
+
 ## Icon artwork 0.23.0
 
 October 22, 2026.

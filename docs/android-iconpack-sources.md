@@ -1,6 +1,6 @@
 # Android component sources
 
-The icon-pack artwork is the project's 0.23.0 Obscur drawing set. No upstream artwork or implementation code is imported. The original 1,295 component rows in `android/iconpack/components.json`, the four Gboard rows and 22 video-editor rows are selected from Lawnicons' `app/assets/appfilter.xml` at commit `c85fc8fb825228b021317f83c0a1a9f00b1c889d`. Eleven additional exact aliases have a separate launcher-observation source.
+The icon-pack artwork is the project's 0.24.0 Obscur drawing set. No upstream artwork or implementation code is imported. The original 1,295 component rows in `android/iconpack/components.json`, the four Gboard rows and 22 video-editor rows are selected from Lawnicons' `app/assets/appfilter.xml` at commit `c85fc8fb825228b021317f83c0a1a9f00b1c889d`. Eleven additional exact aliases have a separate launcher-observation source.
 
 The [pinned upstream XML](https://github.com/LawnchairLauncher/lawnicons/blob/c85fc8fb825228b021317f83c0a1a9f00b1c889d/app/assets/appfilter.xml) is 3,344,113 bytes with SHA-256 `9b03e294aff3890e4e9b1e3d591c46c58b2be7d4ca140c5d56363494e127ffd6`. Its [Apache 2.0 license](https://github.com/LawnchairLauncher/lawnicons/blob/c85fc8fb825228b021317f83c0a1a9f00b1c889d/LICENSE) is included verbatim in the app, alongside an attribution notice identifying the selection and normalization. The original license SHA-256 is `c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4`.
 
@@ -25,3 +25,5 @@ Generic package identities were checked against official Samsung Galaxy Store de
 An upstream declaration can describe a historical app version, debug variant or component that is not currently a launcher entry. These facts establish a bounded starting mapping, not installation on a particular phone. The app's explicit local coverage check can identify visible aliases missing on a device after installation. Theme Park recognition and the applied launcher result remain separate native checks.
 
 The 0.1.6 candidate uses the 0.23.0 Proton Pass design refinement without changing the component table. All 1,332 mappings, their order, provenance and generic-package identities remain those of 0.1.5. No new upstream selection or launcher observation is claimed. Actual export qualification, APK resource readback and native assignment remain separate.
+
+The 0.1.7 candidate uses the 0.24.0 spacing refinements for Dunkin, Samsung Pass, Sonic and VA. Its 1,332 ordered mappings, 282 package queries and component provenance remain unchanged. No new upstream selection or launcher observation is claimed. The 0.1.6 candidate and its 0.23.0 artwork remain preserved.
