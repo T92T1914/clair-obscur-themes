@@ -440,6 +440,99 @@ class ManifestAdmissionTests(KitFixture):
 
 
 class ReadObservationTests(KitFixture):
+    def timestamp_metadata(self, **changes):
+        # Preserve the exact nanosecond distinction from the Windows 3.13
+        # path/handle observation, while reading an ordinary owned fixture.
+        values = dict(
+            st_dev=11121904345190297279, st_ino=1125899911897114,
+            st_mode=stat.S_IFREG | 0o600, st_size=len(self.files['LICENSE']),
+            st_mtime_ns=1792776365579443000,
+            st_ctime_ns=1792776365578938900,
+            st_birthtime_ns=1792776365578938900, st_file_attributes=32,
+        )
+        values.update(changes)
+        return SimpleNamespace(**values)
+
+    def read_with_metadata(self, path_info, handle_infos, *, platform='win32',
+                           final_path_info=None):
+        budget = verifier.ReadBudget()
+        with patch.object(verifier.sys, 'platform', platform), \
+                patch.object(Path, 'lstat', side_effect=[
+                    path_info, path_info if final_path_info is None else final_path_info,
+                ]) as paths, \
+                patch.object(verifier.os, 'fstat', side_effect=handle_infos) as handles:
+            result = verifier._read(
+                self.kit, 'LICENSE', verifier._observation(path_info), budget,
+                len(self.files['LICENSE']), capture=True,
+            )
+        self.assertEqual(paths.call_count, 2)
+        self.assertEqual(handles.call_count, 2)
+        self.assertEqual(budget.used, len(self.files['LICENSE']))
+        self.assertEqual(result, (digest(self.files['LICENSE']), self.files['LICENSE']))
+
+    def test_windows_path_and_handle_creation_time_agree_despite_ctime_difference(self):
+        path_info = self.timestamp_metadata()
+        handle_info = self.timestamp_metadata(st_ctime_ns=1792776365579443000)
+        self.read_with_metadata(path_info, [handle_info, handle_info])
+
+    def test_windows_zero_birthtime_is_not_treated_as_missing(self):
+        path_info = self.timestamp_metadata(st_birthtime_ns=0)
+        handle_info = self.timestamp_metadata(
+            st_birthtime_ns=0, st_ctime_ns=1792776365579443000,
+        )
+        self.read_with_metadata(path_info, [handle_info, handle_info])
+
+    def test_windows_directory_observations_keep_exact_creation_time(self):
+        path_info = self.timestamp_metadata(st_mode=stat.S_IFDIR | 0o700, st_size=0)
+        observed = self.timestamp_metadata(
+            st_mode=stat.S_IFDIR | 0o700, st_size=0,
+            st_ctime_ns=1792776365579443000,
+        )
+        with patch.object(verifier.sys, 'platform', 'win32'), \
+                patch.object(Path, 'lstat', return_value=observed):
+            expected = verifier._observation(path_info)
+            verifier._same(self.kit, expected)
+            observed.st_birthtime_ns += 1
+            with self.assertRaises(verifier.VerificationObservationError):
+                verifier._same(self.kit, expected)
+
+    def test_windows_changed_identity_is_refused_at_open_and_final_handle(self):
+        path_info = self.timestamp_metadata()
+        for field in ('st_birthtime_ns', 'st_dev', 'st_ino', 'st_mode',
+                      'st_mtime_ns', 'st_size', 'st_file_attributes'):
+            changed = self.timestamp_metadata(**{field: getattr(path_info, field) + 1})
+            for stage, infos in (
+                ('open', [changed]), ('final', [path_info, changed]),
+            ):
+                with self.subTest(field=field, stage=stage):
+                    with self.assertRaises(verifier.VerificationObservationError):
+                        self.read_with_metadata(path_info, infos)
+
+    def test_windows_changed_path_birthtime_is_refused_after_the_read(self):
+        path_info = self.timestamp_metadata()
+        changed = self.timestamp_metadata(st_birthtime_ns=path_info.st_birthtime_ns + 1)
+        with self.assertRaisesRegex(verifier.VerificationObservationError, 'Entry changed'):
+            self.read_with_metadata(
+                path_info, [path_info, path_info], final_path_info=changed,
+            )
+
+    def test_posix_retains_ctime_even_when_birthtime_is_available(self):
+        path_info = self.timestamp_metadata()
+        birth_changed = self.timestamp_metadata(st_birthtime_ns=path_info.st_birthtime_ns + 1)
+        self.read_with_metadata(path_info, [birth_changed, birth_changed], platform='linux')
+        ctime_changed = self.timestamp_metadata(st_ctime_ns=path_info.st_ctime_ns + 1)
+        with self.assertRaises(verifier.VerificationObservationError):
+            self.read_with_metadata(path_info, [ctime_changed], platform='linux')
+
+    def test_legacy_windows_without_birthtime_keeps_ctime_comparison(self):
+        path_info = self.timestamp_metadata()
+        del path_info.st_birthtime_ns
+        self.read_with_metadata(path_info, [path_info, path_info])
+        changed = SimpleNamespace(**vars(path_info))
+        changed.st_ctime_ns += 1
+        with self.assertRaises(verifier.VerificationObservationError):
+            self.read_with_metadata(path_info, [changed])
+
     def test_inventory_uses_fresh_path_identity_not_direntry_stat(self):
         original = os.scandir
 
