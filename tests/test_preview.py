@@ -276,7 +276,7 @@ class PreviewTests(unittest.TestCase):
         self.assertEqual(len(release['downloads']), 17)
         self.assertEqual(len({item['path'] for item in release['downloads']}), 13)
         for item in release['downloads']:
-            self.assertIn(f'<code>downloads/{item["path"]}</code>', page)
+            self.assertIn(f'<code translate="no">downloads/{item["path"]}</code>', page)
         self.assertEqual(len([anchor for anchor in parsed.ids
                               if any(anchor == guide_anchor(item['platform'], name)
                                      for item in release['downloads']
