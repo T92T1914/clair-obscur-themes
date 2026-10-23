@@ -35,6 +35,10 @@ jobs:
         with:
           python-version: '3.11'
       - name: Unit and packaging checks
+        env:
+          TMPDIR: ${{ runner.temp }}
+          TEMP: ${{ runner.temp }}
+          TMP: ${{ runner.temp }}
         run: python -m unittest discover -s tests -v
       - name: Build reviewed theme artifacts
         run: python build.py
