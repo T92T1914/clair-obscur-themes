@@ -2431,6 +2431,8 @@ test('no-script keyboard navigation acquires current and all 23 preserved icon Z
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-reading-download');
     await acquirePreservedIconArchive(page, ['icon-artwork-reading-download', readingIconArchive, readingIconDigest]);
     await page.keyboard.press('Tab');
+    // Keep each deliberate archive-and-checksum batch at most ten acquisitions.
+    await new Promise(resolve => setTimeout(resolve, 1100));
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-study-learning-download');
     const [learningDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
     assert.equal(await learningDownload.failure(), null);
@@ -2441,8 +2443,6 @@ test('no-script keyboard navigation acquires current and all 23 preserved icon Z
     assert.deepEqual(learningBytes, await readFile(path.join(site, ...learningIconArchive.split('/'))));
     assert.equal(crypto.createHash('sha256').update(learningBytes).digest('hex'), learningIconDigest);
     await page.keyboard.press('Tab');
-    // Keep each deliberate archive-and-checksum batch at most ten acquisitions.
-    await new Promise(resolve => setTimeout(resolve, 1100));
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-running-training-download');
     await acquirePreservedIconArchive(page, ['icon-artwork-running-training-download', runningTrainingIconArchive, runningTrainingIconDigest]);
     await page.keyboard.press('Tab');
@@ -2526,6 +2526,8 @@ test('no-script keyboard navigation acquires current and all 23 preserved icon Z
     assert.deepEqual(monochromeBytes, await readFile(path.join(site, ...monochromeIconArchive.split('/'))));
     assert.equal(crypto.createHash('sha256').update(monochromeBytes).digest('hex'), monochromeIconDigest);
     await page.keyboard.press('Tab');
+    // Keep each deliberate archive-and-checksum batch at most ten acquisitions.
+    await new Promise(resolve => setTimeout(resolve, 1100));
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-third-app-download');
     const [thirdAppDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
     assert.equal(await thirdAppDownload.failure(), null);
@@ -2536,8 +2538,6 @@ test('no-script keyboard navigation acquires current and all 23 preserved icon Z
     assert.deepEqual(thirdAppBytes, await readFile(path.join(site, ...thirdAppIconArchive.split('/'))));
     assert.equal(crypto.createHash('sha256').update(thirdAppBytes).digest('hex'), thirdAppIconDigest);
     await page.keyboard.press('Tab');
-    // Keep each deliberate archive-and-checksum batch at most ten acquisitions.
-    await new Promise(resolve => setTimeout(resolve, 1100));
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-second-app-download');
     const [secondAppDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
     assert.equal(await secondAppDownload.failure(), null);
