@@ -318,7 +318,7 @@ class ManifestAdmissionTests(KitFixture):
         (self.kit / 'site-manifest.json').write_bytes(b' ' * 68_609)
         self.assert_refused(message='File byte limit')
         self.document = manifest_document(self.files)
-        for number in range(658 - len(self.document['files'])):
+        for number in range(659 - len(self.document['files'])):
             self.document['files'][f'file{number}.txt'] = '0' * 64
         self.write_manifest()
         self.assert_refused(message='declared file count')
@@ -334,15 +334,15 @@ class ManifestAdmissionTests(KitFixture):
         for name in self.document['files']:
             parts = name.split('/')
             expected_entries.update('/'.join(parts[:end]) for end in range(1, len(parts) + 1))
-        self.assertLess(len(self.document['files']), 657)
-        self.assertGreater(len(expected_entries), 681)
+        self.assertLess(len(self.document['files']), 658)
+        self.assertGreater(len(expected_entries), 682)
         self.write_manifest()
         self.assert_refused(message='Combined inventory')
 
-    def test_expanded_declared_inventory_accepts_prior_and_657_hashes_and_refuses_658(self):
+    def test_expanded_declared_inventory_accepts_prior_and_658_hashes_and_refuses_659(self):
         # Exercise a complete comparison at the published limit. The current
         # named-app portable kit also runs through ProducerInclusionTests.
-        for count in (192, 224, 240, 248, 256, 313, 320, 410, 416, 435, 448, 456, 477, 498, 515, 532, 549, 630, 631, 633, 634, 654, 655, 656, 657):
+        for count in (192, 224, 240, 248, 256, 313, 320, 410, 416, 435, 448, 456, 477, 498, 515, 532, 549, 630, 631, 633, 634, 654, 655, 656, 657, 658):
             while len(self.files) < count:
                 number = len(self.files)
                 name = f'expanded{number}.txt'
@@ -361,12 +361,12 @@ class ManifestAdmissionTests(KitFixture):
         with patch.object(verifier, '_read', wraps=verifier._read) as reads:
             self.assert_refused(message='declared file count')
         self.assertEqual([call.args[1] for call in reads.call_args_list], ['site-manifest.json'],
-                          'The 658th declaration is refused before any declared member is read')
+                          'The 659th declaration is refused before any declared member is read')
         self.assertEqual(self.snapshot(), before)
 
     def test_actual_inventory_depth_and_unsafe_extra_are_refused_before_reads(self):
         extra_count = 0
-        for admitted_count in (352, 448, 480, 501, 522, 539, 556, 573, 654, 655, 657, 658, 678, 679, 680, 681):
+        for admitted_count in (352, 448, 480, 501, 522, 539, 556, 573, 654, 655, 657, 658, 678, 679, 680, 681, 682):
             additional = admitted_count - len(verifier.inventory(self.kit))
             for number in range(extra_count, extra_count + additional):
                 (self.kit / f'extra{number}.txt').touch()
@@ -490,7 +490,7 @@ class ReadObservationTests(KitFixture):
         self.assertEqual(observed[-1][2],
                          2 * len(encoded(self.document)) + sum(map(len, self.files.values())))
         self.assertTrue(any(reserve == len(encoded(self.document)) + 1 for _, reserve, _ in observed))
-        # Reads can cross former 16, 17, 19 and 20 MiB boundaries, but not 21 MiB.
+        # Reads can cross former 16, 17, 19, 20 and 21 MiB boundaries, but not 22 MiB.
         former = verifier.ReadBudget(used=16_777_215)
         self.assertEqual(former.read(io.BytesIO(b'xx'), 2, 0), b'xx')
         previous = verifier.ReadBudget(used=17_825_791)
@@ -499,12 +499,14 @@ class ReadObservationTests(KitFixture):
         self.assertEqual(prior.read(io.BytesIO(b'xx'), 2, 0), b'xx')
         recent = verifier.ReadBudget(used=20_971_519)
         self.assertEqual(recent.read(io.BytesIO(b'xx'), 2, 0), b'xx')
-        final = verifier.ReadBudget(used=22_020_095)
+        accepted = verifier.ReadBudget(used=22_020_095)
+        self.assertEqual(accepted.read(io.BytesIO(b'xx'), 2, 0), b'xx')
+        final = verifier.ReadBudget(used=23_068_671)
         self.assertEqual(final.read(io.BytesIO(b'x'), 1, 0), b'x')
-        self.assertEqual(final.used, 22_020_096)
+        self.assertEqual(final.used, 23_068_672)
         with self.assertRaisesRegex(verifier.VerificationInputError, 'Aggregate read limit'):
             final.read(io.BytesIO(b'x'), 1, 0)
-        reserved = verifier.ReadBudget(used=22_020_094)
+        reserved = verifier.ReadBudget(used=23_068_670)
         self.assertEqual(reserved.read(io.BytesIO(b'x'), 1, 1), b'x')
         with self.assertRaisesRegex(verifier.VerificationInputError, 'Aggregate read limit'):
             reserved.read(io.BytesIO(b'x'), 1, 1)
@@ -821,10 +823,10 @@ class ProducerInclusionTests(KitFixture):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
         self.assertEqual(verifier.verify(extracted)[0], 0)
-        # The real 0.22 kit has 677 entries. Preserve room to diagnose ordinary
+        # The real 0.23 kit has 678 entries. Preserve room to diagnose ordinary
         # extras rather than refusing its first extra entry as unsupported.
-        self.assertEqual(len(portable['files']), 657)
-        self.assertEqual(len(verifier.inventory(extracted)), 677)
+        self.assertEqual(len(portable['files']), 658)
+        self.assertEqual(len(verifier.inventory(extracted)), 678)
         (extracted / 'unassigned-extra.txt').write_bytes(b'preserved extra file\n')
         before = {name.relative_to(extracted).as_posix(): name.read_bytes()
                   for name in extracted.rglob('*') if name.is_file()}
@@ -835,7 +837,7 @@ class ProducerInclusionTests(KitFixture):
                           for name in extracted.rglob('*') if name.is_file()}, before)
         for number in range(3):
             (extracted / f'extra-headroom-{number}.txt').write_bytes(b'preserved extra file\n')
-        self.assertEqual(len(verifier.inventory(extracted)), 681)
+        self.assertEqual(len(verifier.inventory(extracted)), 682)
         before = {name.relative_to(extracted).as_posix(): name.read_bytes()
                   for name in extracted.rglob('*') if name.is_file()}
         status, report = verifier.verify(extracted)

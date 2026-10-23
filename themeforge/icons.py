@@ -35,8 +35,8 @@ from .icon_apps import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.22.0"
-VERSIONS = ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", VERSION)
+VERSION = "0.23.0"
+VERSIONS = ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", VERSION)
 SIZE = 512
 STROKE = 16
 FUNCTIONS = (
@@ -1914,7 +1914,7 @@ POLISHED_GLYPHS = {
 }
 
 
-# Four small-size spacing refinements apply only to 0.22.0. Earlier drawing
+# Four small-size spacing refinements start at 0.22.0. Earlier drawing
 # tables remain intact so their SVG files and archives rebuild byte-identically.
 SPACED_GLYPHS = {
     "threads": [
@@ -1941,6 +1941,17 @@ SPACED_GLYPHS = {
         _path("M176 328 Q144 328 144 360 Q144 384 176 384 H368 V328 M192 360 H336", accent=True),
         _path("M256 168 L277 211 L320 218 L288 250 L299 296 L256 275 "
               "L213 296 L224 250 L192 218 L235 211 Z"),
+    ],
+}
+
+
+# One reviewed key inset applies only to 0.23.0. Its earlier drawing remains
+# intact so accepted SVG files and archives retain their original bytes.
+CONTAINED_GLYPHS = {
+    "proton-pass": [
+        _path("M256 120 L392 256 L256 392 L120 256 Z"),
+        _shape("circle", cx=232, cy=232, r=32),
+        _path("M256 256 L304 304 M280 280 L304 256 M304 304 L328 280", accent=True),
     ],
 }
 
@@ -1982,9 +1993,9 @@ def icon_catalog(version: str = VERSION) -> list[dict]:
         apps = (*APP_CATALOG, *NEW_APP_CATALOG, *THIRD_APP_CATALOG, *FOURTH_APP_CATALOG, *FIFTH_APP_CATALOG, *SIXTH_APP_CATALOG, *SEVENTH_APP_CATALOG, *EIGHTH_APP_CATALOG, *NINTH_APP_CATALOG, *TENTH_APP_CATALOG, *ELEVENTH_APP_CATALOG, *TWELFTH_APP_CATALOG, *THIRTEENTH_APP_CATALOG)
     else:
         apps = (*APP_CATALOG, *NEW_APP_CATALOG, *THIRD_APP_CATALOG, *FOURTH_APP_CATALOG, *FIFTH_APP_CATALOG, *SIXTH_APP_CATALOG, *SEVENTH_APP_CATALOG, *EIGHTH_APP_CATALOG, *NINTH_APP_CATALOG, *TENTH_APP_CATALOG, *ELEVENTH_APP_CATALOG, *TWELFTH_APP_CATALOG, *THIRTEENTH_APP_CATALOG, *FOURTEENTH_APP_CATALOG)
-    if version in ("0.19.0", "0.20.0", "0.21.0", "0.22.0"):
+    if version in ("0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0"):
         apps = (*apps, *FIFTEENTH_APP_CATALOG)
-    if version in ("0.20.0", "0.21.0", "0.22.0"):
+    if version in ("0.20.0", "0.21.0", "0.22.0", "0.23.0"):
         apps = (*apps, *SIXTEENTH_APP_CATALOG)
     for app in apps:
         if not isinstance(app, dict):
@@ -2004,7 +2015,7 @@ def icon_catalog(version: str = VERSION) -> list[dict]:
                          and url.path == "/store/apps/details"
                          and parse_qs(url.query) == {"id": [package]} and not url.fragment)
         # Only these inspected Samsung records extend the current catalog's store contract.
-        galaxy_identity = (version in ("0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0") and package in {
+        galaxy_identity = (version in ("0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0") and package in {
             "com.samsung.android.game.gamehome", "com.samsung.android.themedesigner",
             "com.samsung.android.samsungpass", "com.samsung.android.app.tips",
         } and app["store_url"] == f"https://galaxystore.samsung.com/detail/{package}")
@@ -2014,63 +2025,63 @@ def icon_catalog(version: str = VERSION) -> list[dict]:
         packages.add(package)
         catalog.append(dict(app))
     drawings = set(APP_GLYPHS)
-    if version in ("0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0"):
+    if version in ("0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0"):
         if drawings & set(NEW_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(NEW_APP_GLYPHS)
-    if version in ("0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0"):
+    if version in ("0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0"):
         if drawings & set(THIRD_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(THIRD_APP_GLYPHS)
-    if version in ("0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0"):
+    if version in ("0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0"):
         if drawings & set(FOURTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(FOURTH_APP_GLYPHS)
-    if version in ("0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0"):
+    if version in ("0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0"):
         if drawings & set(FIFTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(FIFTH_APP_GLYPHS)
-    if version in ("0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0"):
+    if version in ("0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0"):
         if drawings & set(SIXTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(SIXTH_APP_GLYPHS)
-    if version in ("0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0"):
+    if version in ("0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0"):
         if drawings & set(SEVENTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(SEVENTH_APP_GLYPHS)
-    if version in ("0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0"):
+    if version in ("0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0"):
         if drawings & set(EIGHTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(EIGHTH_APP_GLYPHS)
-    if version in ("0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0"):
+    if version in ("0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0"):
         if drawings & set(NINTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(NINTH_APP_GLYPHS)
-    if version in ("0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0"):
+    if version in ("0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0"):
         if drawings & set(TENTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(TENTH_APP_GLYPHS)
-    if version in ("0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0"):
+    if version in ("0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0"):
         if drawings & set(ELEVENTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(ELEVENTH_APP_GLYPHS)
-    if version in ("0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0"):
+    if version in ("0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0"):
         if drawings & set(TWELFTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(TWELFTH_APP_GLYPHS)
-    if version in ("0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0"):
+    if version in ("0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0"):
         if drawings & set(THIRTEENTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(THIRTEENTH_APP_GLYPHS)
-    if version in ("0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0"):
+    if version in ("0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0"):
         if drawings & set(FOURTEENTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(FOURTEENTH_APP_GLYPHS)
-    if version in ("0.19.0", "0.20.0", "0.21.0", "0.22.0"):
+    if version in ("0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0"):
         if drawings & set(FIFTEENTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(FIFTEENTH_APP_GLYPHS)
-    if version in ("0.20.0", "0.21.0", "0.22.0"):
+    if version in ("0.20.0", "0.21.0", "0.22.0", "0.23.0"):
         if drawings & set(SIXTEENTH_APP_GLYPHS):
             raise ValueError("New named-app drawings replace an accepted ID")
         drawings |= set(SIXTEENTH_APP_GLYPHS)
@@ -2092,7 +2103,7 @@ def token_path(version: str = VERSION) -> Path:
     """Select the shared palette without changing a historical artwork revision."""
     if version not in VERSIONS:
         raise ValueError("Unsupported icon artwork version")
-    return ROOT / ("tokens-monochrome.json" if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0") else "tokens.json")
+    return ROOT / ("tokens-monochrome.json" if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0") else "tokens.json")
 
 
 def load_icon_tokens(version: str = VERSION, path: Path | None = None) -> dict:
@@ -2131,9 +2142,10 @@ def _render_icon(function: str, appearance: str, document: dict, grant: str, *, 
     group = ET.SubElement(svg, "g", {"fill": "none", "stroke": palette["text"],
         "stroke-width": str(12 if version == "0.1.0" else STROKE),
         "stroke-linecap": "round", "stroke-linejoin": "round"})
-    drawings = (SPACED_GLYPHS if version == "0.22.0" and function in SPACED_GLYPHS else
-                POLISHED_GLYPHS if version in ("0.21.0", "0.22.0") and function in POLISHED_GLYPHS else
-                REFINED_GLYPHS if version in ("0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0") and function in REFINED_GLYPHS else
+    drawings = (CONTAINED_GLYPHS if version == "0.23.0" and function in CONTAINED_GLYPHS else
+                SPACED_GLYPHS if version in ("0.22.0", "0.23.0") and function in SPACED_GLYPHS else
+                POLISHED_GLYPHS if version in ("0.21.0", "0.22.0", "0.23.0") and function in POLISHED_GLYPHS else
+                REFINED_GLYPHS if version in ("0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0") and function in REFINED_GLYPHS else
                 GLYPHS if version == "0.1.0" else
                 CURRENT_GLYPHS if function in CURRENT_GLYPHS else
                 APP_GLYPHS if function in APP_GLYPHS else
@@ -2165,7 +2177,7 @@ def render_icons(document: dict, *, version: str = VERSION) -> dict[str, bytes]:
     _validated(document)
     if version not in VERSIONS:
         raise ValueError("Unsupported icon artwork version")
-    if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0"):
+    if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0"):
         _monochrome(document)
     catalog = icon_catalog(version)
     names = [entry["id"] for entry in catalog]
@@ -2193,7 +2205,7 @@ def render_icons(document: dict, *, version: str = VERSION) -> dict[str, bytes]:
         "functions": names, "files": records,
         "scope": "Original functional glyphs; no brand logos, font assets or phone installation",
     }
-    if version in ("0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0"):
+    if version in ("0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0"):
         if version == "0.3.0":
             date, scope = CATALOG_DATE, CATALOG_SCOPE
         elif version == "0.4.0":
@@ -2229,7 +2241,7 @@ def render_icons(document: dict, *, version: str = VERSION) -> dict[str, bytes]:
         manifest.update(catalog=catalog, catalog_date=date, catalog_scope=scope,
                         scope="Original themed interpretations for named apps and general functions; "
                               "app names identify intended assignments, not publisher endorsement or installation")
-    if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0"):
+    if version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0"):
         manifest["palette_variant"] = "monochrome"
     files["manifest.json"] = (json.dumps(manifest, sort_keys=True, indent=2) + "\n").encode("utf-8")
     return files

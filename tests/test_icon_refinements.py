@@ -47,6 +47,7 @@ HISTORICAL_TREE_DIGESTS = {
 # Accepted deterministic SVG archives captured before each refinement.
 # The ZIP oracle is independent of the proposed drawing overlay.
 HISTORICAL_TREE_DIGESTS["0.21.0"] = "87762a66e397951f3683a1d6c84838d794ae9581674c3181ac70f75f98ae0b4b"
+HISTORICAL_TREE_DIGESTS["0.22.0"] = "cb0f5c015306139ff6566cd7f571f8c1a38e7078923815c76233049a8962ca51"
 
 HISTORICAL_ARCHIVE_DIGESTS = {'0.1.0': '040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34',
  '0.2.0': '6ae67a5aab7f4e0a50537bb6dcf3b383c5fc6e9e001d68db12a7413aaa376312',
@@ -70,6 +71,7 @@ HISTORICAL_ARCHIVE_DIGESTS = {'0.1.0': '040d7f472ca12d6cf115daaf2631b83477183dee
  '0.20.0': 'db1e52859497c2d4852362c1bd5d365a2aab2b6473069bc6aa49c4895d3e0ffa'}
 
 HISTORICAL_ARCHIVE_DIGESTS["0.21.0"] = "504402b2f2b93ea6315a92738487fd4545c949b7f28a10fcaa79f383e7db7caf"
+HISTORICAL_ARCHIVE_DIGESTS["0.22.0"] = "04d4d2bb80f61efff1b809a2b2253cca9bb4bea0bc7d254668518b6b13df5217"
 
 # SVG hashes come from accepted 0.20.0 exports and the exact earlier private
 # before/after drawings reviewed at small sizes, not from the new generator.
@@ -584,6 +586,124 @@ class IconSpacingTests(unittest.TestCase):
                     self.assertTrue(all(gap >= 12 for gap in gaps), gaps)
                 else:
                     self.assertLess(gaps[0], 0)
+
+
+# Literal hashes identify the accepted before and independently rendered private
+# inset selected at small sizes. They are not derived from the new generator.
+REVIEWED_CONTAINED_SVG_DIGESTS = {
+    "0.22.0": {
+        "Clair/proton-pass.svg": "8b5890777cb571d373fdbef98edcba0b93219cc674d1534f6d5ec27b2e9691f1",
+        "Obscur/proton-pass.svg": "a9aba165975632aea5aae7e4b8890c17b709421e6524517293a86ad8b3b76824",
+    },
+    "0.23.0": {
+        "Clair/proton-pass.svg": "4d8add103da9991860921eecaf26c488c85324fcf3fcd5d048825b3906964a4c",
+        "Obscur/proton-pass.svg": "f71408cb8a5548a6059bcc65a21539d3be5a27ef0d6597ee3f7b7dcb3f2ee978",
+    },
+}
+
+
+class IconKeyContainmentTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        document = icons.load_icon_tokens("0.23.0")
+        cls.old = icons.render_icons(document, version="0.22.0")
+        cls.current = icons.render_icons(document, version="0.23.0")
+
+    def test_only_reviewed_proton_pass_changes_and_other_291_drawings_remain_exact(self):
+        self.assertEqual(icons.VERSION, "0.23.0")
+        self.assertEqual(set(icons.CONTAINED_GLYPHS), {"proton-pass"})
+        self.assertEqual(set(self.current), set(self.old))
+        expected_changes = set(REVIEWED_CONTAINED_SVG_DIGESTS["0.23.0"])
+        actual_changes = {name for name in self.current if name.endswith(".svg")
+                          and self.current[name] != self.old[name]}
+        self.assertEqual(actual_changes, expected_changes)
+        unchanged = {name for name in self.current if name.endswith(".svg")} - actual_changes
+        self.assertEqual(len(unchanged), 2 * 291)
+        for name in unchanged:
+            self.assertEqual(self.current[name], self.old[name], name)
+        for version, files in (("0.22.0", self.old), ("0.23.0", self.current)):
+            for name, expected in REVIEWED_CONTAINED_SVG_DIGESTS[version].items():
+                self.assertEqual(hashlib.sha256(files[name]).hexdigest(), expected, (version, name))
+        old, current = (json.loads(files["manifest.json"]) for files in (self.old, self.current))
+        self.assertEqual(current["version"], "0.23.0")
+        self.assertEqual(len(current["catalog"]), 292)
+        self.assertEqual({key: value for key, value in current.items() if key not in {"version", "files"}},
+                         {key: value for key, value in old.items() if key not in {"version", "files"}})
+        self.assertEqual(_geometry(self.current["Clair/proton-pass.svg"]),
+                         _geometry(self.current["Obscur/proton-pass.svg"]))
+        for appearance in ("Clair", "Obscur"):
+            root = ET.fromstring(self.current[f"{appearance}/proton-pass.svg"])
+            group = root.find(NS + "g")
+            self.assertEqual(group.get("stroke-width"), "16")
+            self.assertEqual(group.get("stroke-linecap"), "round")
+            self.assertEqual(group.get("stroke-linejoin"), "round")
+            colors = {value for element in root.iter() for key, value in element.attrib.items()
+                      if key in ("fill", "stroke") and value != "none"}
+            self.assertEqual(colors, {"#ffffff", "#000000"})
+
+    def test_ring_and_shaft_clear_the_unchanged_diamond_instead_of_crossing_its_edge(self):
+        old, current = _group(self.old, "proton-pass"), _group(self.current, "proton-pass")
+        self.assertEqual([element.tag for element in current], [NS + "path", NS + "circle", NS + "path"])
+        self.assertEqual(current[0].attrib, old[0].attrib)
+        frame = _segments(current[0])
+        self.assertEqual(frame[1], ((392.0, 256.0), (256.0, 392.0)))
+        old_shaft = _segments(old[2])[0]
+        self.assertEqual(old_shaft, ((264.0, 264.0), (328.0, 328.0)))
+        # The old shaft really crosses this edge. A narrow positive upper-ring
+        # gap alone would not distinguish a key contained inside the diamond.
+        self.assertEqual(_point_segment_distance((324, 324), frame[1]), 0)
+        self.assertEqual(_point_segment_distance((324, 324), old_shaft), 0)
+        self.assertEqual(_segment_distance(old_shaft, frame[1]), 0)
+        width = float(current.get("stroke-width"))
+        self.assertLess(_outline_gap(old[0], old[2], width), 0)
+        self.assertLess(_segment_distance(_segments(old[2])[-1], frame[1]) - width, 0)
+        self.assertGreaterEqual(_outline_gap(current[0], current[2], width), 12)
+        self.assertAlmostEqual(_outline_gap(current[0], current[2], width), 40 / math.sqrt(2) - 16)
+        ring_gaps = []
+        for group in (old, current):
+            ring = group[1]
+            center = float(ring.get("cx")), float(ring.get("cy"))
+            ring_gaps.append(min(_point_segment_distance(center, edge) for edge in frame)
+                             - float(ring.get("r")) - width)
+        self.assertGreater(ring_gaps[0], 0)
+        self.assertLess(ring_gaps[0], 8)
+        self.assertGreaterEqual(ring_gaps[1], 12)
+        self.assertAlmostEqual(ring_gaps[1], 88 / math.sqrt(2) - 48)
+
+    def test_two_teeth_keep_the_original_spacing_and_intended_shaft_connections(self):
+        old, current = _group(self.old, "proton-pass"), _group(self.current, "proton-pass")
+        shaft, first, second = _segments(current[2])
+        self.assertEqual(shaft, ((256.0, 256.0), (304.0, 304.0)))
+        self.assertEqual(first, ((280.0, 280.0), (304.0, 256.0)))
+        self.assertEqual(second, ((304.0, 304.0), (328.0, 280.0)))
+        width = float(current.get("stroke-width"))
+        gap = _segment_distance(first, second) - width
+        self.assertGreaterEqual(gap, 16)
+        self.assertAlmostEqual(gap, 48 / math.sqrt(2) - 16)
+        old_teeth = _segments(old[2])[1:]
+        self.assertAlmostEqual(gap, _segment_distance(*old_teeth) - width)
+        for tooth in (first, second):
+            self.assertEqual((tooth[1][0] - tooth[0][0], tooth[1][1] - tooth[0][1]), (24, -24))
+            # These key-tooth junctions are required, not outline defects.
+            self.assertEqual(_point_segment_distance(tooth[0], shaft), 0)
+        self.assertEqual(second[0], shaft[1])
+
+    def test_smaller_counter_stays_open_while_the_ring_and_shaft_remain_joined(self):
+        old, current = _group(self.old, "proton-pass"), _group(self.current, "proton-pass")
+        ring = current[1]
+        center = float(ring.get("cx")), float(ring.get("cy"))
+        radius, width = float(ring.get("r")), float(current.get("stroke-width"))
+        shaft = _segments(current[2])[0]
+        self.assertEqual(center, (232, 232))
+        self.assertEqual(radius, 32)
+        self.assertEqual(2 * (radius - width / 2), 48)
+        self.assertEqual(2 * (float(old[1].get("r")) - width / 2), 64)
+        # Intentional overlap joins the shaft to the ring's outer stroke, while
+        # the shaft's round cap remains outside the inner counter.
+        self.assertLess(_point_segment_distance(center, shaft) - radius, width)
+        self.assertGreater(_point_segment_distance(center, shaft) - width / 2, radius - width / 2)
+        first_tooth = _segments(current[2])[1]
+        self.assertGreaterEqual(_point_segment_distance(center, first_tooth) - radius - width, 16)
 
 
 if __name__ == "__main__":

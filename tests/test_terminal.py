@@ -356,7 +356,7 @@ class TerminalPreviewTests(unittest.TestCase):
                         self.assertEqual(context, f"on {partner}" if partner else "on default")
 
     def test_terminal_preview_preserves_desktop_downloads_and_all_icon_revisions(self):
-        from preview import (POLISHED_ICON_ARCHIVE, VIDEO_EDITING_ICON_ARCHIVE, GBOARD_ICON_ARCHIVE, REFINED_ICON_ARCHIVE, PHONE_SERVICE_ICON_ARCHIVE, READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE, ICON_ARCHIVE, ICON_CHECKSUMS,
+        from preview import (SPACED_ICON_ARCHIVE, POLISHED_ICON_ARCHIVE, VIDEO_EDITING_ICON_ARCHIVE, GBOARD_ICON_ARCHIVE, REFINED_ICON_ARCHIVE, PHONE_SERVICE_ICON_ARCHIVE, READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE, ICON_ARCHIVE, ICON_CHECKSUMS,
                              LEGACY_ICON_ARCHIVE, PREVIOUS_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE,
                              MONOCHROME_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE,
                              PORTABLE_ARCHIVE, preview_files)
@@ -385,8 +385,23 @@ class TerminalPreviewTests(unittest.TestCase):
                                  "3c2a4316d0a118dfa585c637c3e8caebc0b961f9ab097d2950639475b5155b03")
                 self.assertEqual(json.loads(polished.read("manifest.json"))["version"], "0.21.0")
                 polished_previous_svg = {name: polished.read(name) for name in polished.namelist() if name.endswith(".svg")}
-            self.assertEqual(set(current_svg), set(polished_previous_svg))
-            self.assertEqual({name for name in current_svg if current_svg[name] != polished_previous_svg[name]},
+            with zipfile.ZipFile(io.BytesIO(delivery[SPACED_ICON_ARCHIVE])) as spaced:
+                self.assertEqual(hashlib.sha256(delivery[SPACED_ICON_ARCHIVE]).hexdigest(),
+                                 "04d4d2bb80f61efff1b809a2b2253cca9bb4bea0bc7d254668518b6b13df5217")
+                self.assertEqual(hashlib.sha256(spaced.read("manifest.json")).hexdigest(),
+                                 "8b6eaabd574d2618c693ccd72b46a3ef738dd5af72e0041a940543b8accd3ea0")
+                self.assertEqual(json.loads(spaced.read("manifest.json"))["version"], "0.22.0")
+                spaced_previous_svg = {name: spaced.read(name) for name in spaced.namelist() if name.endswith(".svg")}
+            self.assertEqual(set(current_svg), set(spaced_previous_svg))
+            self.assertEqual({name for name in current_svg if current_svg[name] != spaced_previous_svg[name]},
+                             {f"{appearance}/proton-pass.svg" for appearance in ("Clair", "Obscur")})
+            for name, expected in {
+                "Clair/proton-pass.svg": "4d8add103da9991860921eecaf26c488c85324fcf3fcd5d048825b3906964a4c",
+                "Obscur/proton-pass.svg": "f71408cb8a5548a6059bcc65a21539d3be5a27ef0d6597ee3f7b7dcb3f2ee978",
+            }.items():
+                self.assertEqual(hashlib.sha256(current_svg[name]).hexdigest(), expected, name)
+            self.assertEqual(set(spaced_previous_svg), set(polished_previous_svg))
+            self.assertEqual({name for name in spaced_previous_svg if spaced_previous_svg[name] != polished_previous_svg[name]},
                              {f"{appearance}/{identifier}.svg" for appearance in ("Clair", "Obscur")
                               for identifier in ("threads", "evernote", "myradar", "goodreads")})
             with zipfile.ZipFile(io.BytesIO(delivery[VIDEO_EDITING_ICON_ARCHIVE])) as video_editing:
@@ -541,10 +556,10 @@ class TerminalPreviewTests(unittest.TestCase):
                 self.assertEqual(set(current_svg) - set(gboard_svg), {f"{appearance}/{identifier}.svg"
                     for appearance in ("Clair", "Obscur") for identifier in video_editing_ids})
             with zipfile.ZipFile(io.BytesIO(delivery[ICON_ARCHIVE])) as current:
-                self.assertEqual(json.loads(current.read("manifest.json"))["version"], "0.22.0")
+                self.assertEqual(json.loads(current.read("manifest.json"))["version"], "0.23.0")
             self.assertEqual(delivery[ICON_CHECKSUMS],
                              ''.join(f'{hashlib.sha256(delivery[path]).hexdigest()}  {Path(path).name}\n'
-                                      for path in (ICON_ARCHIVE, POLISHED_ICON_ARCHIVE, VIDEO_EDITING_ICON_ARCHIVE, GBOARD_ICON_ARCHIVE, REFINED_ICON_ARCHIVE, PHONE_SERVICE_ICON_ARCHIVE, READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
+                                      for path in (ICON_ARCHIVE, SPACED_ICON_ARCHIVE, POLISHED_ICON_ARCHIVE, VIDEO_EDITING_ICON_ARCHIVE, GBOARD_ICON_ARCHIVE, REFINED_ICON_ARCHIVE, PHONE_SERVICE_ICON_ARCHIVE, READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
                                                   PREVIOUS_ICON_ARCHIVE, LEGACY_ICON_ARCHIVE)).encode())
         self.assertEqual(snapshot(self.artifacts), desktop)
         self.assertEqual((ROOT / "tokens.json").read_bytes(), token_bytes)
