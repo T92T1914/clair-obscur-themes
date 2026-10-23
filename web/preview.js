@@ -174,6 +174,7 @@ if (chooser && target && packageAppearance && choiceStatus && choiceResult) {
     const pathLine = document.createElement('p');
     pathLine.className = 'package-choice-path';
     const pathValue = document.createElement('code');
+    pathValue.setAttribute('translate', 'no');
     pathValue.textContent = action.getAttribute('href');
     pathLine.append('Package file: ', pathValue);
     const packageAction = action.cloneNode(true);
@@ -294,6 +295,7 @@ if (checker && localFile && clearFile && fileSelection && fileStatus && fileResu
     const pathLine = document.createElement('p');
     pathLine.className = 'identified-package-path';
     const pathValue = document.createElement('code');
+    pathValue.setAttribute('translate', 'no');
     pathValue.textContent = reference.path;
     pathLine.append('Referenced package file: ', pathValue);
     item.append(heading, identity, pathLine, reference.hash.cloneNode(true),
@@ -343,6 +345,7 @@ if (checker && localFile && clearFile && fileSelection && fileStatus && fileResu
     const digestLine = document.createElement('p');
     digestLine.className = 'local-file-hash';
     const digestValue = document.createElement('code');
+    digestValue.setAttribute('translate', 'no');
     digestValue.textContent = digest;
     digestLine.append('Computed SHA-256: ', digestValue);
     fileResult.append(digestLine);

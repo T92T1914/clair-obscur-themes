@@ -3605,6 +3605,7 @@ async function checkLocalPackageIdentification(page, manifest, payloads, { deliv
       assert.equal(page.url(), url, 'Identification must not navigate');
       assert.equal(await page.evaluate(() => document.activeElement.id), 'local-package-file');
       assert.equal(await page.locator('.local-file-hash code').textContent(), expectedHash);
+      assert.equal(await page.locator('.local-file-hash code').getAttribute('translate'), 'no');
       const matches = page.locator('#local-package-result .identified-package');
       assert.equal(await matches.count(), expected.length);
       assert.deepEqual((await matches.locator('.guide-link').evaluateAll(links => links.map(link => link.getAttribute('href')))).sort(),
@@ -3615,6 +3616,7 @@ async function checkLocalPackageIdentification(page, manifest, payloads, { deliv
         assert.ok(identity.includes('Package ' + choice.version));
         assert.ok(identity.includes(record.sha256));
         assert.equal(await match.locator('.identified-package-path code').textContent(), 'downloads/' + choice.path);
+        assert.equal(await match.locator('.identified-package-path code').getAttribute('translate'), 'no');
         assert.match(identity, /Native acceptance pending/);
         assert.ok(identity.includes(await page.locator(`#${choice.platform}-downloads > p`).first().textContent()));
         if (['equicord', 'vencord', 'betterdiscord'].includes(choice.platform)) assert.match(identity, /not Discord-endorsed/);
@@ -3941,6 +3943,7 @@ async function checkPackageChooser(page, manifest, { delivery, textScale = 100 }
         assert.equal(await page.locator('#package-choice-file').getAttribute('href'), 'downloads/' + item.path);
         assert.match(await page.locator('#package-choice-file').textContent(), delivery === 'portable' ? /^Open included / : /^Download /);
         assert.equal(await result.locator('.package-choice-path code').textContent(), 'downloads/' + item.path);
+        assert.equal(await result.locator('.package-choice-path code').getAttribute('translate'), 'no');
         const identity = await result.textContent();
         assert.ok(identity.includes('Package ' + item.version));
         assert.ok(identity.includes(record.sha256));

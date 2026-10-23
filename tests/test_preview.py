@@ -22,6 +22,7 @@ class PageLinks(HTMLParser):
     def __init__(self, text):
         super().__init__()
         self.ids, self.links = [], []
+        self.code, self.named_pre = [], []
         self.select_options, self._select = {}, None
         self.feed(text)
 
@@ -31,6 +32,10 @@ class PageLinks(HTMLParser):
             self.ids.append(attrs['id'])
         if tag == 'a':
             self.links.append(attrs)
+        if tag == 'code':
+            self.code.append(attrs)
+        if tag == 'pre' and 'aria-label' in attrs:
+            self.named_pre.append(attrs)
         if tag == 'select':
             self._select = attrs.get('id')
             self.select_options[self._select] = []
@@ -59,6 +64,17 @@ class PreviewTests(unittest.TestCase):
         release = json.loads(first['downloads/artifact-manifest.json'])
         for entry in release['files']:
             self.assertEqual(hashlib.sha256(first['downloads/' + entry['path']]).hexdigest(), entry['sha256'])
+
+    def test_code_literals_are_protected_in_hosted_and_portable_preview(self):
+        files = preview_files(ROOT, self.artifacts)
+        with zipfile.ZipFile(io.BytesIO(files[PORTABLE_ARCHIVE])) as archive:
+            pages = (files['index.html'], archive.read('index.html'))
+        for page in pages:
+            parsed = PageLinks(page.decode())
+            self.assertTrue(parsed.code)
+            self.assertTrue(all(node.get('translate') == 'no' for node in parsed.code))
+            self.assertTrue(parsed.named_pre)
+            self.assertTrue(all(node.get('translate') != 'no' for node in parsed.named_pre))
 
     def test_clair_equicord_chooser_uses_corrected_package_without_replacing_original(self):
         files = preview_files(ROOT, self.artifacts)
@@ -173,7 +189,7 @@ class PreviewTests(unittest.TestCase):
                     anchor = guide_anchor(item['platform'], appearance)
                     guide = re.search(rf'<div[^>]+id="{anchor}".*?</div>', page, re.DOTALL).group()
                     self.assertIn(f'href="downloads/{item["path"]}"', guide)
-                    self.assertIn(f'<code>{record["sha256"]}</code>', guide)
+                    self.assertIn(f'<code translate="no">{record["sha256"]}</code>', guide)
                     route_hashes[anchor] = record['sha256']
             self.assertEqual(max(sizes), 14037)
             self.assertEqual(len(route_hashes), 18)
