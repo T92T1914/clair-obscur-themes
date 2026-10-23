@@ -48,6 +48,7 @@ HISTORICAL_TREE_DIGESTS = {
 # The ZIP oracle is independent of the proposed drawing overlay.
 HISTORICAL_TREE_DIGESTS["0.21.0"] = "87762a66e397951f3683a1d6c84838d794ae9581674c3181ac70f75f98ae0b4b"
 HISTORICAL_TREE_DIGESTS["0.22.0"] = "cb0f5c015306139ff6566cd7f571f8c1a38e7078923815c76233049a8962ca51"
+HISTORICAL_TREE_DIGESTS["0.23.0"] = "5e47b44c9b0c07fe32ff047f6be5a5e2ca07824da1e43210a23b0db82c08c0df"
 
 HISTORICAL_ARCHIVE_DIGESTS = {'0.1.0': '040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34',
  '0.2.0': '6ae67a5aab7f4e0a50537bb6dcf3b383c5fc6e9e001d68db12a7413aaa376312',
@@ -72,6 +73,7 @@ HISTORICAL_ARCHIVE_DIGESTS = {'0.1.0': '040d7f472ca12d6cf115daaf2631b83477183dee
 
 HISTORICAL_ARCHIVE_DIGESTS["0.21.0"] = "504402b2f2b93ea6315a92738487fd4545c949b7f28a10fcaa79f383e7db7caf"
 HISTORICAL_ARCHIVE_DIGESTS["0.22.0"] = "04d4d2bb80f61efff1b809a2b2253cca9bb4bea0bc7d254668518b6b13df5217"
+HISTORICAL_ARCHIVE_DIGESTS["0.23.0"] = "89a9f0806580d981d539437d2374b700704f832c3e786d0e4cf3ee80e6d5e22e"
 
 # SVG hashes come from accepted 0.20.0 exports and the exact earlier private
 # before/after drawings reviewed at small sizes, not from the new generator.
@@ -610,7 +612,7 @@ class IconKeyContainmentTests(unittest.TestCase):
         cls.current = icons.render_icons(document, version="0.23.0")
 
     def test_only_reviewed_proton_pass_changes_and_other_291_drawings_remain_exact(self):
-        self.assertEqual(icons.VERSION, "0.23.0")
+        self.assertEqual(icons.VERSION, "0.24.0")
         self.assertEqual(set(icons.CONTAINED_GLYPHS), {"proton-pass"})
         self.assertEqual(set(self.current), set(self.old))
         expected_changes = set(REVIEWED_CONTAINED_SVG_DIGESTS["0.23.0"])
@@ -704,6 +706,150 @@ class IconKeyContainmentTests(unittest.TestCase):
         self.assertGreater(_point_segment_distance(center, shaft) - width / 2, radius - width / 2)
         first_tooth = _segments(current[2])[1]
         self.assertGreaterEqual(_point_segment_distance(center, first_tooth) - radius - width, 16)
+
+
+# Literal hashes bind the accepted 0.23 drawings and the independently rendered
+# private alternatives selected at 24, 32, 48, 64 and 128 px in both appearances.
+# Dunkin uses the translated-sprinkle alternative, retaining all five lengths.
+REVIEWED_CLEARANCE_SVG_DIGESTS = {
+    "0.23.0": {
+        "Clair/va.svg": "c084b154c9a52d32c1b30f2f9214d19b6f15060f967f8951c48e4375dcb51764",
+        "Obscur/va.svg": "5bad8de0bbde42b7b820c33c4f3ddd50dffe8026ebe165b567974b0d48c0354c",
+        "Clair/dunkin.svg": "5aac597802905077607ee2f7d7b734444d949d477899f6959332a3a567e48e80",
+        "Obscur/dunkin.svg": "1664842ab85e8780804adb5b3cc7c4bdfe12b1534317f7630116b6312237c6de",
+        "Clair/samsung-pass.svg": "caa3bca45c115a5487d7b07e61dee51aae105ca741fcddc53931c025e855e12c",
+        "Obscur/samsung-pass.svg": "d1a1f9259c0a34b7e986c4a4624bddd2b758386beef09e3482b4e0249d2956cb",
+        "Clair/sonic.svg": "c15b097d0711068bd21d562cf8b3ec5f69c41185da6a0fc2fe4374a25bd4c300",
+        "Obscur/sonic.svg": "785e7b264facfeb34593592305e52f31791169cb785243a31d931fcb319f5318",
+    },
+    "0.24.0": {
+        "Clair/va.svg": "9f2fbb0b78b7304c590d9686dcc0a9c0c98b3f5ff42bc03fc3dd8411db1e9fef",
+        "Obscur/va.svg": "7c8ba71f37b8eaff39af6319f9d75b7cf1f1c2db1b2b5c6d8ec725f02b37d79c",
+        "Clair/dunkin.svg": "ea6ea8199eb71d359536d66f4c784a150d9189c3750373fb6b803c9988a3f63b",
+        "Obscur/dunkin.svg": "28831d26b1b43d0f2fa21ce7fdadc308311b5e05b70b6c33d5d2551f054f5097",
+        "Clair/samsung-pass.svg": "a768c082f5a36c99c10107958e2bd0f31f4bd30bbabdfce5712d216cff817f07",
+        "Obscur/samsung-pass.svg": "3aaa4e423fb5d8bf831ccdd6842ef09226af2035a5e067ee7508f6b1970531bb",
+        "Clair/sonic.svg": "536771c25fd9ce4e3ba532b6795a136710ef77ff97a45bcc352401e2eccf7046",
+        "Obscur/sonic.svg": "4027284483d52d3cb2993992cb8fbba4ba0e6121d1f7a53ad7381ef214c7602e",
+    },
+}
+
+
+class IconClearanceRefinementTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        document = icons.load_icon_tokens("0.24.0")
+        cls.old = icons.render_icons(document, version="0.23.0")
+        cls.current = icons.render_icons(document, version="0.24.0")
+
+    def test_only_four_reviewed_drawings_change_and_other_288_remain_exact(self):
+        identifiers = {"va", "dunkin", "samsung-pass", "sonic"}
+        self.assertEqual(set(icons.CLEARANCE_GLYPHS), identifiers)
+        self.assertEqual(set(self.current), set(self.old))
+        changed = {name for name in self.current if name.endswith(".svg")
+                   and self.current[name] != self.old[name]}
+        self.assertEqual(changed, set(REVIEWED_CLEARANCE_SVG_DIGESTS["0.24.0"]))
+        unchanged = {name for name in self.current if name.endswith(".svg")} - changed
+        self.assertEqual(len(unchanged), 2 * 288)
+        for name in unchanged:
+            self.assertEqual(self.current[name], self.old[name], name)
+        for version, files in (("0.23.0", self.old), ("0.24.0", self.current)):
+            for name, expected in REVIEWED_CLEARANCE_SVG_DIGESTS[version].items():
+                self.assertEqual(hashlib.sha256(files[name]).hexdigest(), expected, (version, name))
+        old, current = (json.loads(files["manifest.json"]) for files in (self.old, self.current))
+        self.assertEqual(current["version"], "0.24.0")
+        self.assertEqual(len(current["catalog"]), 292)
+        self.assertEqual({key: value for key, value in current.items() if key not in {"version", "files"}},
+                         {key: value for key, value in old.items() if key not in {"version", "files"}})
+        for identifier in identifiers:
+            self.assertEqual(_geometry(self.current[f"Clair/{identifier}.svg"]),
+                             _geometry(self.current[f"Obscur/{identifier}.svg"]))
+            for appearance in ("Clair", "Obscur"):
+                root = ET.fromstring(self.current[f"{appearance}/{identifier}.svg"])
+                group = root.find(NS + "g")
+                self.assertEqual(group.get("stroke-width"), "16")
+                self.assertEqual(group.get("stroke-linecap"), "round")
+                self.assertEqual(group.get("stroke-linejoin"), "round")
+                colors = {value for element in root.iter() for key, value in element.attrib.items()
+                          if key in ("fill", "stroke") and value != "none"}
+                self.assertEqual(colors, {"#ffffff", "#000000"})
+
+    def test_va_star_moves_as_one_shape_and_clears_the_unchanged_folder(self):
+        old, current = _group(self.old, "va"), _group(self.current, "va")
+        self.assertEqual(current[0].attrib, old[0].attrib)
+        before, after = _segments(old[1]), _segments(current[1])
+        self.assertEqual(len(before), 10)
+        self.assertEqual(len(after), len(before))
+        for original, moved in zip(before, after):
+            self.assertEqual(moved, tuple((x, y - 8) for x, y in original))
+        width = float(current.get("stroke-width"))
+        self.assertEqual(_outline_gap(old[0], old[1], width), 0)
+        self.assertEqual(_outline_gap(current[0], current[1], width), 8)
+
+    def test_dunkin_sprinkles_keep_their_lengths_and_clear_both_circles(self):
+        old, current = _group(self.old, "dunkin"), _group(self.current, "dunkin")
+        self.assertEqual([element.attrib for element in current[:2]],
+                         [element.attrib for element in old[:2]])
+        before, after = _segments(old[2]), _segments(current[2])
+        translations = ((6, 6), (0, 8), (16, 0), (-6, 6), (0, -8))
+        self.assertEqual(len(before), 5)
+        self.assertEqual(len(after), len(before))
+        for original, moved, (dx, dy) in zip(before, after, translations):
+            self.assertEqual(moved, tuple((x + dx, y + dy) for x, y in original))
+            self.assertEqual(math.dist(*moved), math.dist(*original))
+        center = float(current[0].get("cx")), float(current[0].get("cy"))
+        outer, inner = float(current[0].get("r")), float(current[1].get("r"))
+        width = float(current.get("stroke-width"))
+
+        def gaps(segments):
+            return [(_point_segment_distance(center, segment) - inner - width,
+                     outer - max(math.dist(center, point) for point in segment) - width)
+                    for segment in segments]
+
+        old_gaps, current_gaps = gaps(before), gaps(after)
+        self.assertEqual(old_gaps[2][0], -4)
+        self.assertEqual(old_gaps[1][1], 0)
+        self.assertEqual(old_gaps[4][1], 0)
+        smallest = min(gap for pair in current_gaps for gap in pair)
+        self.assertGreaterEqual(smallest, 7)
+        self.assertAlmostEqual(smallest, 120 - math.sqrt(40 ** 2 + 88 ** 2) - 16)
+
+    def test_samsung_pass_check_retains_its_slope_and_clears_the_frame(self):
+        old, current = _group(self.old, "samsung-pass"), _group(self.current, "samsung-pass")
+        self.assertEqual([element.attrib for element in current[:2]],
+                         [element.attrib for element in old[:2]])
+        before, after = _segments(old[2]), _segments(current[2])
+        self.assertEqual(len(before), 5)
+        self.assertEqual(after[:-1], before[:-1])
+        self.assertEqual(after[-1][0], before[-1][0])
+        old_vector = tuple(b - a for a, b in zip(*before[-1]))
+        new_vector = tuple(b - a for a, b in zip(*after[-1]))
+        self.assertEqual(new_vector, tuple(0.75 * value for value in old_vector))
+        right_edge = _segments(current[0])[1]
+        width = float(current.get("stroke-width"))
+        self.assertEqual(_point_segment_distance(before[-1][1], right_edge) - width, 0)
+        self.assertEqual(_point_segment_distance(after[-1][1], right_edge) - width, 10)
+        # The keyhole-to-ring junction and the check's first arm remain intact.
+        self.assertEqual(after[:4], before[:4])
+
+    def test_sonic_straw_clears_the_awning_and_still_meets_the_cup_lip(self):
+        old, current = _group(self.old, "sonic"), _group(self.current, "sonic")
+        self.assertEqual(current[0].attrib, old[0].attrib)
+        before, after = _segments(old[1]), _segments(current[1])
+        self.assertEqual(len(before), 6)
+        self.assertEqual(len(after), 5)
+        self.assertEqual(after[:4], before[:4])
+        awning = _segments(current[0])
+        old_straw, new_straw = before[-1], after[-1]
+        old_vector = tuple(b - a for a, b in zip(*old_straw))
+        new_vector = tuple(b - a for a, b in zip(*new_straw))
+        self.assertEqual(old_vector, (32, -24))
+        self.assertEqual(new_vector, old_vector)
+        self.assertEqual(_segment_distance(old_straw, awning[3]), 0)
+        width = float(current.get("stroke-width"))
+        self.assertEqual(min(_segment_distance(new_straw, edge) for edge in awning) - width, 16)
+        self.assertEqual(new_straw[0], (272, 248))
+        self.assertEqual(_point_segment_distance(new_straw[0], after[0]), 0)
 
 
 if __name__ == "__main__":

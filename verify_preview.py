@@ -13,11 +13,11 @@ import sys
 from typing import BinaryIO
 
 MAX_MANIFEST_BYTES = 68_608
-MAX_DECLARED_FILES = 658
-MAX_ENTRIES = 682
+MAX_DECLARED_FILES = 659
+MAX_ENTRIES = 683
 MAX_FILE_BYTES = 8_388_608
-# The measured kit retains all prior artwork archives within a finite 22 MiB allowance.
-MAX_READ_BYTES = 23_068_672
+# The measured kit retains all prior artwork archives within a finite 24 MiB allowance.
+MAX_READ_BYTES = 25_165_824
 READ_CHUNK = 65_536
 MAX_REPORT_BYTES = 262_144
 MANIFEST_NAME = 'site-manifest.json'
@@ -243,7 +243,7 @@ def _root(value: str | Path) -> tuple[Path, dict[Path, Observation]]:
 
 
 def inventory(root: Path) -> dict[str, Observation]:
-    """Collect at most 682 entries without following links or reading content."""
+    """Collect at most 683 entries without following links or reading content."""
     result: dict[str, Observation] = {}
     pending = [root]
     files: set[str] = set()
