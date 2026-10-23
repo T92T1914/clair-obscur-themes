@@ -49,6 +49,7 @@ HISTORICAL_TREE_DIGESTS = {
 HISTORICAL_TREE_DIGESTS["0.21.0"] = "87762a66e397951f3683a1d6c84838d794ae9581674c3181ac70f75f98ae0b4b"
 HISTORICAL_TREE_DIGESTS["0.22.0"] = "cb0f5c015306139ff6566cd7f571f8c1a38e7078923815c76233049a8962ca51"
 HISTORICAL_TREE_DIGESTS["0.23.0"] = "5e47b44c9b0c07fe32ff047f6be5a5e2ca07824da1e43210a23b0db82c08c0df"
+HISTORICAL_TREE_DIGESTS["0.24.0"] = "7bb7affc6a27e7933ba318997168ff3186e6c9b8031cdd306a22838a1150a509"
 
 HISTORICAL_ARCHIVE_DIGESTS = {'0.1.0': '040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34',
  '0.2.0': '6ae67a5aab7f4e0a50537bb6dcf3b383c5fc6e9e001d68db12a7413aaa376312',
@@ -74,6 +75,7 @@ HISTORICAL_ARCHIVE_DIGESTS = {'0.1.0': '040d7f472ca12d6cf115daaf2631b83477183dee
 HISTORICAL_ARCHIVE_DIGESTS["0.21.0"] = "504402b2f2b93ea6315a92738487fd4545c949b7f28a10fcaa79f383e7db7caf"
 HISTORICAL_ARCHIVE_DIGESTS["0.22.0"] = "04d4d2bb80f61efff1b809a2b2253cca9bb4bea0bc7d254668518b6b13df5217"
 HISTORICAL_ARCHIVE_DIGESTS["0.23.0"] = "89a9f0806580d981d539437d2374b700704f832c3e786d0e4cf3ee80e6d5e22e"
+HISTORICAL_ARCHIVE_DIGESTS["0.24.0"] = "a20f93736ad0b5665f135dfa6de0fecbb14150dbadd026f402c2d3704f463cb2"
 
 # SVG hashes come from accepted 0.20.0 exports and the exact earlier private
 # before/after drawings reviewed at small sizes, not from the new generator.
@@ -612,7 +614,7 @@ class IconKeyContainmentTests(unittest.TestCase):
         cls.current = icons.render_icons(document, version="0.23.0")
 
     def test_only_reviewed_proton_pass_changes_and_other_291_drawings_remain_exact(self):
-        self.assertEqual(icons.VERSION, "0.24.0")
+        self.assertEqual(icons.VERSION, "0.25.0")
         self.assertEqual(set(icons.CONTAINED_GLYPHS), {"proton-pass"})
         self.assertEqual(set(self.current), set(self.old))
         expected_changes = set(REVIEWED_CONTAINED_SVG_DIGESTS["0.23.0"])
@@ -850,6 +852,18 @@ class IconClearanceRefinementTests(unittest.TestCase):
         self.assertEqual(min(_segment_distance(new_straw, edge) for edge in awning) - width, 16)
         self.assertEqual(new_straw[0], (272, 248))
         self.assertEqual(_point_segment_distance(new_straw[0], after[0]), 0)
+
+
+# Literal selected private SVG hashes precede generator integration.
+REVIEWED_MESSAGING_SVG_DIGESTS = {'Clair/line.svg': '9738096dc66e4f49f396e1dd04ce2e01ae65e043978065f9b6260d514198150b', 'Clair/viber.svg': 'b36c062a3e9427f545dc8a88e120d8889ca1f8a6244d168cdd9f337a206b36d6', 'Clair/wechat.svg': '75edda539cf26e38ea3a88610fd18876f9867c051c74d77d32716bc818bd8b12', 'Clair/kakaotalk.svg': '2e9035118e66f81b0922a4683d374d28a66e25869f567963f1cb0dcebd776a46', 'Obscur/line.svg': '4f309dc4d24337e1eee6a10dad508186481f9361b9574ba6b78bb473bc4a8a1c', 'Obscur/viber.svg': '16f7fc9f3416d0e02d783daa3371c9b7f673cfffd894a471de0bf60de2a93155', 'Obscur/wechat.svg': '61a4a789841e79ecaef778d3bb9650e25df29965ac38f197be97d946d80996ab', 'Obscur/kakaotalk.svg': '62c0817f07b589cb5a9343ecfa137aee8b6ada25dd6d877d921f5931860a6b86'}
+
+class MessagingDrawingIdentityTests(unittest.TestCase):
+    def test_current_drawings_match_the_independently_compared_private_sources(self):
+        files = icons.render_icons(icons.load_icon_tokens())
+        self.assertEqual(set(icons.SEVENTEENTH_APP_GLYPHS), {"line", "viber", "wechat", "kakaotalk"})
+        for name, expected in REVIEWED_MESSAGING_SVG_DIGESTS.items():
+            with self.subTest(name=name):
+                self.assertEqual(hashlib.sha256(files[name]).hexdigest(), expected)
 
 
 if __name__ == "__main__":

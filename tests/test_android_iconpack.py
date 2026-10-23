@@ -89,6 +89,18 @@ def video_editor_mappings():
     return rows
 
 
+MESSAGING_ALIASES = (('kakaotalk', 'com.kakao.talk', 9403, 'com.kakao.talk.activity.SplashActivity'), ('line', 'jp.naver.line.android', 10150, 'jp.naver.line.android.activity.SplashActivity'), ('line', 'jp.naver.line.android', 10151, 'jp.naver.line.android.basic_1'), ('line', 'jp.naver.line.android', 10152, 'jp.naver.line.android.design_cherry_blossom'), ('viber', 'com.viber.voip', 20305, 'com.viber.voip.WelcomeActivity.Night'), ('viber', 'com.viber.voip', 20306, 'com.viber.voip.HomeActivity'), ('viber', 'com.viber.voip', 20307, 'com.viber.voip.IdleActivity'), ('viber', 'com.viber.voip', 20308, 'com.viber.voip.LaunchActivity'), ('viber', 'com.viber.voip', 20309, 'com.viber.voip.registration.RegistrationActivity'), ('viber', 'com.viber.voip', 20310, 'com.viber.voip.SplashActivity'), ('viber', 'com.viber.voip', 20311, 'com.viber.voip.ViberApplication'), ('viber', 'com.viber.voip', 20312, 'com.viber.voip.WelcomeActivity'), ('wechat', 'com.tencent.mm', 20967, 'com.tencent.mm.ui.LauncherUI'), ('wechat', 'com.tencent.mm', 20968, 'com.tencent.mm.WeChatActivity'))
+
+def messaging_mappings():
+    rows = []
+    for identifier, package, line, activity in MESSAGING_ALIASES:
+        component = f"ComponentInfo{{{package}/{activity}}}"
+        rows.append({"icon_id": identifier, "android_package": package, "activity": activity,
+                     "component": component, "source_lines": [line],
+                     "source_components": [component], "source_types": ["item"]})
+    return rows
+
+
 class AndroidIconPackTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -115,7 +127,7 @@ class AndroidIconPackTests(unittest.TestCase):
                                     "source_svg_sha256": svg_hashes[f"{appearance}/{identifier}.svg"]})
         license_payload = (pack.ROOT / "LICENSE").read_bytes()
         (cls.export / "LICENSE").write_bytes(license_payload)
-        cls.document = {"schema_version": 1, "version": "0.24.0", "generator": "clair-obscur-png-export",
+        cls.document = {"schema_version": 1, "version": "0.25.0", "generator": "clair-obscur-png-export",
                         "exporter_version": "0.11.0", "token_version": "1.0.0", "palette_variant": "monochrome",
                         "tokens_file": "tokens-monochrome.json",
                         "source_manifest_sha256": digest(canonical_svg), "appearances": ["Clair", "Obscur"],
@@ -170,12 +182,12 @@ class AndroidIconPackTests(unittest.TestCase):
 
     def test_exact_resource_bytes_full_components_and_public_catalog(self):
         manifest = pack.prepare_iconpack(self.export, self.components, self.output)
-        self.assertEqual(manifest["version"], "0.1.7")
-        self.assertEqual(manifest["counts"]["drawables"], 292)
+        self.assertEqual(manifest["version"], "0.1.8")
+        self.assertEqual(manifest["counts"]["drawables"], 296)
         self.assertEqual(manifest["counts"]["component_mappings"], 3)
         self.assertEqual(manifest["counts"]["upstream_component_mappings"], 3)
         self.assertEqual(manifest["counts"]["observed_launcher_mappings"], 0)
-        self.assertEqual(manifest["counts"]["named_package_hints"], 268)
+        self.assertEqual(manifest["counts"]["named_package_hints"], 272)
         appfilter = (self.output / "res/xml/appfilter.xml").read_bytes()
         self.assertEqual(appfilter, (self.output / "assets/appfilter.xml").read_bytes())
         entries = {row.attrib["component"]: row.attrib["drawable"] for row in ET.fromstring(appfilter)}
@@ -186,20 +198,20 @@ class AndroidIconPackTests(unittest.TestCase):
         })
         self.assertNotIn('component="com.android.chrome"', appfilter.decode())
         manual = ET.parse(self.output / "res/xml/drawable.xml").getroot()
-        self.assertEqual(len(manual.findall("item")), 292)
+        self.assertEqual(len(manual.findall("item")), 296)
         self.assertEqual(manual.findall("item")[0].attrib, {"drawable": "co_phone"})
         for identifier in self.svg["functions"]:
             self.assertEqual((self.output / f"res/drawable-nodpi/co_{identifier.replace('-', '_')}.png").read_bytes(),
                              (self.export / f"Obscur/512/{identifier}.png").read_bytes())
         catalog = json.loads((self.output / "assets/catalog.json").read_bytes())
         self.assertEqual(set(catalog), {"schema_version", "artwork_version", "pack_version", "packages"})
-        self.assertEqual(catalog["pack_version"], "0.1.7")
-        self.assertEqual(catalog["artwork_version"], "0.24.0")
+        self.assertEqual(catalog["pack_version"], "0.1.8")
+        self.assertEqual(catalog["artwork_version"], "0.25.0")
         self.assertEqual(next(row for row in catalog["packages"]
                               if row["package"] == "com.google.android.inputmethod.latin"),
                          {"package": "com.google.android.inputmethod.latin", "label": "Gboard", "id": "gboard"})
-        self.assertEqual(len(catalog["packages"]), 269)
-        self.assertEqual(len({row["package"] for row in catalog["packages"]}), 269)
+        self.assertEqual(len(catalog["packages"]), 273)
+        self.assertEqual(len({row["package"] for row in catalog["packages"]}), 273)
         self.assertEqual(next(row["id"] for row in catalog["packages"] if row["package"] == "com.sec.android.app.sbrowser"), "samsung-browser")
         self.assertEqual(catalog["packages"][-1], {"package": "com.samsung.android.dialer", "label": "Phone", "id": "phone"})
         for row in manifest["files"]:
@@ -213,13 +225,14 @@ class AndroidIconPackTests(unittest.TestCase):
                              "8c7a1f9b76413ecc8886b8cc66244096b42ccba0ad116d40ef626a50a23cf47a",
                              "9851eb483c8588db4712bdabbe73248f43ba8749fd59193da96680c99ce7c636",
                              "9b2fcc10732f4af1489bb20300a08702575d09f92b40f86d3956bb27dc97b303",
-                             "2a773020fed10ddb2cd7c47d1c462cedfa6071240d2b0e94565cd599428cb8e8"):
+                             "2a773020fed10ddb2cd7c47d1c462cedfa6071240d2b0e94565cd599428cb8e8",
+                             "40fe3a771b39d9e73adf583dd060f660ef85c88ff961f80a3e3b3635e0f11cb2"):
             with self.subTest(pin=previous_pin), patch.object(pack, "PNG_MANIFEST_SHA256", previous_pin):
-                self.refused(message="qualified 0.24 manifest")
+                self.refused(message="qualified 0.25 manifest")
 
     def test_previous_artwork_is_not_admitted_by_a_matching_manifest_checksum(self):
         source = self.copy_export()
-        for previous_version in ("0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0"):
+        for previous_version in ("0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0", "0.24.0"):
             document = copy.deepcopy(self.document)
             document["version"] = previous_version
             with self.subTest(version=previous_version), self.changed_manifest(source, document):
@@ -341,7 +354,7 @@ class AndroidIconPackTests(unittest.TestCase):
         table = json.loads((pack.ROOT / "android/iconpack/components.json").read_bytes())
         observed = [row for row in table["mappings"] if "source_kind" in row]
         upstream = [row for row in table["mappings"] if "source_kind" not in row]
-        self.assertEqual(len(upstream), 1321)
+        self.assertEqual(len(upstream), 1335)
         self.assertEqual(len(observed), 11)
         self.assertEqual(table["source"], pack.COMPONENT_SOURCE)
         # New aliases are appended after the exact 0.1.1 mapping sequence.
@@ -374,7 +387,7 @@ class AndroidIconPackTests(unittest.TestCase):
             self.assertEqual(row["observed_on"], "2026-10-21")
             self.assertEqual(row["android_package"], catalog[row["icon_id"]]["android_package"])
             self.assertEqual(row["component"], f'ComponentInfo{{{row["android_package"]}/{row["activity"]}}}')
-        self.assertEqual(len({row["android_package"] for row in table["mappings"] if row["icon_id"] in catalog}), 256)
+        self.assertEqual(len({row["android_package"] for row in table["mappings"] if row["icon_id"] in catalog}), 260)
 
     def test_canonical_gboard_mappings_keep_exact_upstream_aliases_and_line_evidence(self):
         table = json.loads((pack.ROOT / "android/iconpack/components.json").read_bytes())
@@ -385,7 +398,7 @@ class AndroidIconPackTests(unittest.TestCase):
             (7123, "com.google.android.libraries.inputmethod.launcher.LauncherActivity"),
             (7126, "com.google.android.archive.ReactivateActivity"),
         )
-        self.assertEqual(len(table["mappings"]), 1332)
+        self.assertEqual(len(table["mappings"]), 1346)
         self.assertEqual(len(gboard), 4)
         for row, (line, activity) in zip(gboard, expected):
             component = f"ComponentInfo{{com.google.android.inputmethod.latin/{activity}}}"
@@ -401,8 +414,8 @@ class AndroidIconPackTests(unittest.TestCase):
                          "850bacf5285bd69a61c4b672fcec603010c594af13d10cc7a13e2c78123688a9")
         expected = video_editor_mappings()
         self.assertEqual(len(expected), 22)
-        self.assertEqual(table["mappings"][1310:], expected)
-        self.assertEqual(len(table["mappings"]), 1332)
+        self.assertEqual(table["mappings"][1310:1332], expected)
+        self.assertEqual(len(table["mappings"]), 1346)
         catalog = {row["id"]: row for row in self.svg["catalog"] if row["kind"] == "app"}
         for identifier, package, aliases in VIDEO_EDITOR_ALIASES:
             self.assertEqual(catalog[identifier]["android_package"], package)
@@ -421,6 +434,32 @@ class AndroidIconPackTests(unittest.TestCase):
         self.assertEqual(manifest["counts"]["observed_launcher_mappings"], 0)
         for row in expected:
             self.assertEqual(entries[row["component"]], "co_" + row["icon_id"].replace("-", "_"))
+            self.assertNotIn(row["android_package"], entries)
+
+    def test_messaging_aliases_append_only_exact_pinned_source_declarations(self):
+        table = json.loads((pack.ROOT / "android/iconpack/components.json").read_bytes())
+        self.assertEqual(digest(json.dumps(table["mappings"][:1332], sort_keys=True,
+                                          separators=(",", ":")).encode()),
+                         "56d1b25a1114ad578b96005816a818f226f0985386b161318f1c731f53a875fc")
+        expected = messaging_mappings()
+        self.assertEqual(len(expected), 14)
+        self.assertEqual(table["mappings"][1332:], expected)
+        self.assertEqual(len(table["mappings"]), 1346)
+        self.assertEqual({identifier: sum(row["icon_id"] == identifier for row in expected)
+                          for identifier in ("line", "viber", "wechat", "kakaotalk")},
+                         {"line": 3, "viber": 8, "wechat": 2, "kakaotalk": 1})
+        self.assertTrue(all("source_kind" not in row and "observed_on" not in row for row in expected))
+
+    def test_messaging_components_emit_distinct_named_resources_without_fallback(self):
+        expected = messaging_mappings()
+        self.table["mappings"].extend(expected)
+        self.write_table()
+        manifest = pack.prepare_iconpack(self.export, self.components, self.output)
+        entries = {row.attrib["component"]: row.attrib["drawable"]
+                   for row in ET.parse(self.output / "assets/appfilter.xml").getroot()}
+        self.assertEqual(manifest["counts"]["component_mappings"], 17)
+        for row in expected:
+            self.assertEqual(entries[row["component"]], "co_" + row["icon_id"])
             self.assertNotIn(row["android_package"], entries)
 
     def test_unknown_drawable_wrong_package_and_package_only_components_are_refused(self):

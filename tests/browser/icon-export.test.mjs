@@ -526,7 +526,31 @@ const videoEditingApps = [
     "com.alightcreative.motion"
   ]
 ];
-const apps = [...gboardCatalogApps, ...videoEditingApps];
+const clearanceApps = [...gboardCatalogApps, ...videoEditingApps];
+const clearanceFunctions = [...baseFunctions, ...clearanceApps.map(([id]) => id)];
+const messagingApps = [
+  [
+    "line",
+    "LINE",
+    "jp.naver.line.android"
+  ],
+  [
+    "viber",
+    "Viber",
+    "com.viber.voip"
+  ],
+  [
+    "wechat",
+    "WeChat",
+    "com.tencent.mm"
+  ],
+  [
+    "kakaotalk",
+    "KakaoTalk",
+    "com.kakao.talk"
+  ]
+];
+const apps = [...clearanceApps, ...messagingApps];
 const gboardFunctions = [...baseFunctions, ...gboardCatalogApps.map(([id]) => id)];
 const phoneServiceFunctions = [...baseFunctions, ...phoneServiceCatalogApps.map(([id]) => id)];
 const firstFunctions = [...baseFunctions, ...firstApps.map(([id]) => id)];
@@ -548,7 +572,7 @@ const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 let temporary, source, sourceBefore, legacySource, legacyBefore, previousSource, previousBefore,
   firstSource, firstBefore, secondSource, secondBefore, thirdSource, thirdBefore,
   monochromeSource, monochromeBefore, companionSource, companionBefore, broadSource, broadBefore, everydaySource, everydayBefore,
-  foodSource, foodBefore, travelSource, travelBefore, financeSource, financeBefore, weatherSource, weatherBefore, runningSource, runningBefore, learningSource, learningBefore, readingSource, readingBefore, phoneServiceSource, phoneServiceBefore, refinedSource, refinedBefore, gboardSource, gboardBefore, videoEditingSource, videoEditingBefore, polishedSource, polishedBefore, spacedSource, spacedBefore, containedSource, containedBefore;
+  foodSource, foodBefore, travelSource, travelBefore, financeSource, financeBefore, weatherSource, weatherBefore, runningSource, runningBefore, learningSource, learningBefore, readingSource, readingBefore, phoneServiceSource, phoneServiceBefore, refinedSource, refinedBefore, gboardSource, gboardBefore, videoEditingSource, videoEditingBefore, polishedSource, polishedBefore, spacedSource, spacedBefore, containedSource, containedBefore, clearanceSource, clearanceBefore;
 
 function execute(command, args, options = {}) {
   return spawnSync(command, args, { cwd: root, encoding: 'utf8', windowsHide: true,
@@ -668,14 +692,25 @@ before(async () => {
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stdout + result.stderr);
   sourceBefore = await snapshot(source);
+  clearanceSource = path.join(temporary, 'clearance-svg');
+  const clearanceRevision = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', clearanceSource, '--version', '0.24.0']);
+  assert.ifError(clearanceRevision.error);
+  assert.equal(clearanceRevision.status, 0, clearanceRevision.stdout + clearanceRevision.stderr);
+  clearanceBefore = await snapshot(clearanceSource);
+  assert.equal(clearanceBefore['manifest.json'], '919c7fcd13e01d83194baedea14ac2729384a9394f8fb1346d5f48a31ea3c52e');
+  assert.deepEqual(Object.keys(sourceBefore).filter(name => !Object.hasOwn(clearanceBefore, name)).sort(),
+    ['Clair', 'Obscur'].flatMap(appearance => messagingApps.map(([id]) => `${appearance}/${id}.svg`)).sort(),
+    'Only four messaging drawings are appended in both appearances');
+  for (const name of Object.keys(clearanceBefore).filter(name => name.endsWith('.svg')))
+    assert.equal(sourceBefore[name], clearanceBefore[name], 'Every accepted 0.24 SVG remains byte exact');
   containedSource = path.join(temporary, 'contained-svg');
   const containedRevision = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', containedSource, '--version', '0.23.0']);
   assert.ifError(containedRevision.error);
   assert.equal(containedRevision.status, 0, containedRevision.stdout + containedRevision.stderr);
   containedBefore = await snapshot(containedSource);
   assert.equal(containedBefore['manifest.json'], 'fd7baed90d161be794dc7ff88cdecba4534a2975b68e2b7a199dcfe68e9529c8');
-  assert.deepEqual(Object.keys(sourceBefore).sort(), Object.keys(containedBefore).sort(), 'Four refinements add no files');
-  const cleared = Object.keys(containedBefore).filter(name => name.endsWith('.svg') && sourceBefore[name] !== containedBefore[name]);
+  assert.deepEqual(Object.keys(clearanceBefore).sort(), Object.keys(containedBefore).sort(), 'Four refinements add no files');
+  const cleared = Object.keys(containedBefore).filter(name => name.endsWith('.svg') && clearanceBefore[name] !== containedBefore[name]);
   assert.deepEqual(cleared.sort(), ['Clair', 'Obscur'].flatMap(appearance =>
     ['dunkin', 'samsung-pass', 'sonic', 'va'].map(id => appearance + '/' + id + '.svg')).sort(),
     'Only the four independently compared drawings change');
@@ -685,7 +720,7 @@ before(async () => {
   assert.equal(spacedRevision.status, 0, spacedRevision.stdout + spacedRevision.stderr);
   spacedBefore = await snapshot(spacedSource);
   assert.equal(spacedBefore['manifest.json'], '8b6eaabd574d2618c693ccd72b46a3ef738dd5af72e0041a940543b8accd3ea0');
-  assert.deepEqual(Object.keys(sourceBefore).sort(), Object.keys(spacedBefore).sort(), 'Contained key adds no files');
+  assert.deepEqual(Object.keys(clearanceBefore).sort(), Object.keys(spacedBefore).sort(), 'Contained key adds no files');
   const contained = Object.keys(spacedBefore).filter(name => name.endsWith('.svg') && containedBefore[name] !== spacedBefore[name]);
   assert.deepEqual(contained.sort(), ['Clair/proton-pass.svg', 'Obscur/proton-pass.svg'],
     'Only the admitted Proton Pass drawing changes');
@@ -695,7 +730,7 @@ before(async () => {
   assert.equal(polishedRevision.status, 0, polishedRevision.stdout + polishedRevision.stderr);
   polishedBefore = await snapshot(polishedSource);
   assert.equal(polishedBefore['manifest.json'], '3c2a4316d0a118dfa585c637c3e8caebc0b961f9ab097d2950639475b5155b03');
-  assert.deepEqual(Object.keys(sourceBefore).sort(), Object.keys(polishedBefore).sort(), 'Spacing refinements add no files');
+  assert.deepEqual(Object.keys(clearanceBefore).sort(), Object.keys(polishedBefore).sort(), 'Spacing refinements add no files');
   const spaced = Object.keys(polishedBefore).filter(name => name.endsWith('.svg') && spacedBefore[name] !== polishedBefore[name]);
   assert.deepEqual(spaced.sort(), ['Clair', 'Obscur'].flatMap(appearance =>
     ['threads', 'evernote', 'myradar', 'goodreads'].map(id => `${appearance}/${id}.svg`)).sort(),
@@ -706,7 +741,7 @@ before(async () => {
   assert.equal(videoEditing.status, 0, videoEditing.stdout + videoEditing.stderr);
   videoEditingBefore = await snapshot(videoEditingSource);
   assert.equal(videoEditingBefore['manifest.json'], 'f451ea0520367d0f3b4057c87d6f1204e381122a8da4cd57f8f00d8dbf00efbe');
-  assert.deepEqual(Object.keys(sourceBefore).sort(), Object.keys(videoEditingBefore).sort(), 'Polish adds no files');
+  assert.deepEqual(Object.keys(clearanceBefore).sort(), Object.keys(videoEditingBefore).sort(), 'Polish adds no files');
   const polished = Object.keys(videoEditingBefore).filter(name => name.endsWith('.svg') && polishedBefore[name] !== videoEditingBefore[name]);
   assert.deepEqual(polished.sort(), ['Clair', 'Obscur'].flatMap(appearance =>
     ['ai-dungeon', 'usaa', 'discord', 'link-to-windows', 'chatgpt', 'prime-video', 'g2a']
@@ -719,7 +754,7 @@ before(async () => {
   assert.equal(gboardBefore['manifest.json'], 'a956a0abf1c478bd0ed9772eeab1f141bf20e1ecf359118db4e149337d0d2cee');
   for (const name of Object.keys(gboardBefore).filter(name => name.endsWith('.svg')))
     assert.equal(videoEditingBefore[name], gboardBefore[name], 'Every accepted 0.19 drawing remains exact');
-  assert.deepEqual(Object.keys(sourceBefore).filter(name => !Object.hasOwn(gboardBefore, name)).sort(),
+  assert.deepEqual(Object.keys(videoEditingBefore).filter(name => !Object.hasOwn(gboardBefore, name)).sort(),
     ['Clair', 'Obscur'].flatMap(appearance => videoEditingApps.map(([id]) => `${appearance}/${id}.svg`)).sort(),
     'Only the ten admitted video-editing drawings are added in each appearance');
   refinedSource = path.join(temporary, 'refined-svg');
@@ -908,20 +943,20 @@ after(async () => {
   }
 });
 
-test('PNG command exports 1168 monochrome icons with independent neutral-pixel decoding and assignment identities', async () => {
+test('PNG command exports 1184 monochrome icons with independent neutral-pixel decoding and assignment identities', async () => {
   const output = path.join(temporary, 'png');
   const result = exportTo(source, output);
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.match(result.stdout, /Exported 1168 PNG icons/);
+  assert.match(result.stdout, /Exported 1184 PNG icons/);
   const manifestBytes = await readFile(path.join(output, 'manifest.json'));
   const manifest = JSON.parse(manifestBytes);
   const expected = ['manifest.json', 'LICENSE'];
-  assert.equal(manifest.version, '0.24.0');
+  assert.equal(manifest.version, '0.25.0');
   assert.equal(manifest.exporter_version, '0.11.0');
   assert.equal(manifest.palette_variant, 'monochrome');
   assert.equal(manifest.token_version, '1.0.0');
-  assert.equal(manifest.files.length, 1168);
+  assert.equal(manifest.files.length, 1184);
   assert.deepEqual(manifest.functions, functions);
   assert.equal(manifest.source_manifest_sha256, sourceBefore['manifest.json']);
   assert.equal(manifest.tokens_file, 'tokens-monochrome.json');
@@ -930,7 +965,7 @@ test('PNG command exports 1168 monochrome icons with independent neutral-pixel d
   assert.equal(manifest.svg_catalog_sha256, sha(await readFile(path.join(root, 'themeforge/icon_apps.py'))));
   const svgManifest = JSON.parse(await readFile(path.join(source, 'manifest.json')));
   assert.deepEqual(manifest.catalog, svgManifest.catalog, 'Complete admitted assignment metadata survives PNG export');
-  assert.equal(manifest.catalog.length, 292);
+  assert.equal(manifest.catalog.length, 296);
   assert.deepEqual(manifest.catalog.filter(entry => entry.id === 'gboard').map(entry =>
     [entry.label, entry.android_package, entry.store_title, entry.store_url]),
     [['Gboard', 'com.google.android.inputmethod.latin', 'Gboard - the Google Keyboard',
@@ -948,7 +983,7 @@ test('PNG command exports 1168 monochrome icons with independent neutral-pixel d
   "videoshow": "Video Editor & Maker VideoShow",
   "alight-motion": "Alight Motion"
 });
-  assert.equal(manifest.catalog_date, '2026-10-22');
+  assert.equal(manifest.catalog_date, '2026-10-23');
   assert.equal(manifest.catalog_scope, svgManifest.catalog_scope);
   assert.match(manifest.catalog_scope, /No popularity ranking, device availability or phone installation is established\./);
   assert.deepEqual(manifest.catalog.filter(entry => entry.kind === 'function').map(entry => entry.id), baseFunctions);
@@ -1137,10 +1172,10 @@ test('PNG command exports 1168 monochrome icons with independent neutral-pixel d
   assert.equal(manifestBytes.toString().includes(root), false, 'No checkout path enters the export manifest');
   assert.equal(manifestBytes.toString().includes(temporary), false, 'No temporary or user path enters the export manifest');
   const records = new Map(manifest.files.map(record => [record.path, record]));
-  assert.equal(records.size, 1168);
+  assert.equal(records.size, 1184);
   for (const appearance of ['Clair', 'Obscur']) for (const size of [512, 1024]) {
     const hashes = functions.map(name => records.get(`${appearance}/${size}/${name}.png`)?.sha256);
-    assert.equal(new Set(hashes).size, 292, `${appearance}/${size} retains 292 distinct drawings`);
+    assert.equal(new Set(hashes).size, 296, `${appearance}/${size} retains 296 distinct drawings`);
     assert.equal(hashes.includes(undefined), false);
   }
   for (const appearance of ['Clair', 'Obscur']) for (const size of [512, 1024]) for (const name of functions) {
@@ -1158,7 +1193,7 @@ test('PNG command exports 1168 monochrome icons with independent neutral-pixel d
   assert.deepEqual(await snapshot(source), sourceBefore);
 });
 
-for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0', '0.15.0', '0.16.0', '0.17.0', '0.18.0', '0.19.0', '0.20.0', '0.21.0', '0.22.0', '0.23.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
+for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0', '0.15.0', '0.16.0', '0.17.0', '0.18.0', '0.19.0', '0.20.0', '0.21.0', '0.22.0', '0.23.0', '0.24.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
   const historical = {
     '0.1.0': { input: legacySource, before: legacyBefore, functions: baseFunctions, images: 96 },
     '0.2.0': { input: previousSource, before: previousBefore, functions: baseFunctions, images: 96 },
@@ -1196,14 +1231,16 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
       apps: phoneServiceCatalogApps, date: '2026-10-21', monochrome: true },
     '0.19.0': { input: gboardSource, before: gboardBefore, functions: gboardFunctions, images: 1128,
       apps: gboardCatalogApps, date: '2026-10-22', monochrome: true },
-    '0.20.0': { input: videoEditingSource, before: videoEditingBefore, functions, images: 1168,
-      apps, date: '2026-10-22', monochrome: true },
-    '0.21.0': { input: polishedSource, before: polishedBefore, functions, images: 1168,
-      apps, date: '2026-10-22', monochrome: true },
-    '0.22.0': { input: spacedSource, before: spacedBefore, functions, images: 1168,
-      apps, date: '2026-10-22', monochrome: true },
-    '0.23.0': { input: containedSource, before: containedBefore, functions, images: 1168,
-      apps, date: '2026-10-22', monochrome: true },
+    '0.20.0': { input: videoEditingSource, before: videoEditingBefore, functions: clearanceFunctions, images: 1168,
+      apps: clearanceApps, date: '2026-10-22', monochrome: true },
+    '0.21.0': { input: polishedSource, before: polishedBefore, functions: clearanceFunctions, images: 1168,
+      apps: clearanceApps, date: '2026-10-22', monochrome: true },
+    '0.22.0': { input: spacedSource, before: spacedBefore, functions: clearanceFunctions, images: 1168,
+      apps: clearanceApps, date: '2026-10-22', monochrome: true },
+    '0.23.0': { input: containedSource, before: containedBefore, functions: clearanceFunctions, images: 1168,
+      apps: clearanceApps, date: '2026-10-22', monochrome: true },
+    '0.24.0': { input: clearanceSource, before: clearanceBefore, functions: clearanceFunctions, images: 1168,
+      apps: clearanceApps, date: '2026-10-22', monochrome: true },
   }[version];
   const historicalSource = historical.input, historicalBefore = historical.before;
   const historicalFunctions = historical.functions, imageCount = historical.images;
@@ -1269,12 +1306,12 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
 
 test('unknown and mismatched artwork versions are refused before output reservation or browser launch', async () => {
   const admitted = [['0.1.0', legacySource], ['0.2.0', previousSource], ['0.3.0', firstSource],
-    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', foodSource], ['0.11.0', travelSource], ['0.12.0', financeSource], ['0.13.0', weatherSource], ['0.14.0', runningSource], ['0.15.0', learningSource], ['0.16.0', readingSource], ['0.17.0', phoneServiceSource], ['0.18.0', refinedSource], ['0.19.0', gboardSource], ['0.20.0', videoEditingSource], ['0.21.0', polishedSource], ['0.22.0', spacedSource], ['0.23.0', containedSource], ['0.24.0', source]];
-  const cases = [['unknown', source, '0.25.0']];
+    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', foodSource], ['0.11.0', travelSource], ['0.12.0', financeSource], ['0.13.0', weatherSource], ['0.14.0', runningSource], ['0.15.0', learningSource], ['0.16.0', readingSource], ['0.17.0', phoneServiceSource], ['0.18.0', refinedSource], ['0.19.0', gboardSource], ['0.20.0', videoEditingSource], ['0.21.0', polishedSource], ['0.22.0', spacedSource], ['0.23.0', containedSource], ['0.24.0', clearanceSource], ['0.25.0', source]];
+  const cases = [['unknown', source, '0.26.0']];
   for (const [actual, original] of admitted) for (const [claimed] of admitted) {
     if (actual !== claimed) cases.push([`${actual}-as-${claimed}`, original, claimed]);
   }
-  assert.equal(cases.length, 553, 'All 552 cross-version claims and one unsupported future version are exercised');
+  assert.equal(cases.length, 601, 'All 600 cross-version claims and one unsupported future version are exercised');
   for (const [name, original, version] of cases) {
     const input = path.join(temporary, name);
     await cp(original, input, { recursive: true });
