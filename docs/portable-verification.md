@@ -93,11 +93,21 @@ Other path, member and chunk limits remain in force.
 
 It checks path metadata against opened regular-file handles, repeats the bounded
 inventory, and requires the final manifest bytes to equal the captured bytes.
-Observed disappearance, replacement or change makes the result unverified. The
-content limits do not bound filesystem latency or guarantee a simultaneous
-snapshot. Portable standard-library observations cannot prevent an adversary
-from swapping directories between checks, or detect every race when metadata is
-restored or changes occur outside the observation window.
+Observations compare device, inode, mode, size, modification time and file
+attributes, plus a platform-specific timestamp. Windows uses `st_birthtime_ns`
+when available and falls back to legacy `st_ctime_ns` when birth time is absent.
+Windows path and handle observations can report different `ctime` values for an
+unchanged file. Creation time keeps those observations comparable. Other
+platforms continue comparing `st_ctime_ns` even when birth time is available.
+Timestamp comparisons remain exact, with no rounding or tolerance. Creation time
+is not a Windows metadata-change timestamp, so a change reflected only in `ctime`
+is outside that comparison.
+
+Observed disappearance, replacement or compared metadata change makes the result
+unverified. The content limits do not bound filesystem latency or guarantee a
+simultaneous snapshot. Portable standard-library observations cannot prevent an
+adversary from swapping directories between checks, or detect every race when
+metadata is restored or changes occur outside the observation window.
 
 ## What consistency establishes
 

@@ -52,7 +52,7 @@ class Observation:
     mode: int
     size: int
     mtime_ns: int
-    ctime_ns: int
+    metadata_time_ns: int  # POSIX change time or Windows creation time.
     attributes: int
 
 
@@ -209,8 +209,13 @@ def _observation(info: os.stat_result) -> Observation:
         kind = 'DIR'
     else:
         raise VerificationInputError('Nonregular entries are unsupported')
+    metadata_time = info.st_ctime_ns
+    if sys.platform == 'win32':
+        # Windows path and handle ctime can differ for an unchanged file.
+        # Older Python versions expose creation time only through ctime.
+        metadata_time = getattr(info, 'st_birthtime_ns', metadata_time)
     return Observation(kind, info.st_dev, info.st_ino, info.st_mode, info.st_size,
-                       info.st_mtime_ns, info.st_ctime_ns, attributes)
+                       info.st_mtime_ns, metadata_time, attributes)
 
 
 def _lstat(path: Path) -> Observation:
