@@ -1,5 +1,14 @@
 # Changes
 
+## Icon artwork 0.25.0
+
+October 23, 2026.
+
+- Add original LINE, Viber, WeChat and KakaoTalk interpretations after comparing two alternatives per app in both appearances at five small sizes. Use large forms and the existing black and white palette, shared stroke and rounded joins.
+- Extend the catalog to 272 named apps and 24 general functions, giving 296 choices, 592 SVG masters and 1,184 PNG exports at two sizes. Keep all 292 previous drawings and all twenty-four historical artwork archives unchanged.
+- Prepare the separate Android 0.1.8/code 9 candidate with fourteen launcher aliases from the existing pinned component source. Preserve the original 1,332 mappings in their previous order, the signing identity and permission-free package. Source declarations do not establish current phone coverage or Theme Park acceptance.
+- Preserve current and historical downloads, keyboard operation, the no-script catalog and bounded portable verification. Measure the composed inventory before selecting its finite allowances, retaining four-extra-entry reporting and the existing path, link, read, report and race protections.
+
 ## Icon artwork 0.24.0
 
 October 23, 2026.

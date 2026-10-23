@@ -2414,3 +2414,53 @@ SIXTEENTH_APP_CATALOG = (
         "selection_basis": "Inspected official Google Play listing with 100M+ cumulative downloads; missing mobile video-editing and motion-tool assignment"
     },
 )
+
+
+SEVENTEENTH_CATALOG_DATE = "2026-10-23"
+SEVENTEENTH_CATALOG_SCOPE = (
+    "Adds four messaging assignments from inspected official Google Play listings and their cumulative download bands. "
+    "No popularity ranking, device availability or phone installation is established."
+)
+
+SEVENTEENTH_APP_CATALOG = (
+    {
+        "id": "line",
+        "label": "LINE",
+        "store_title": "LINE: Calls & Messages",
+        "kind": "app",
+        "category": "communication",
+        "android_package": "jp.naver.line.android",
+        "store_url": "https://play.google.com/store/apps/details?id=jp.naver.line.android",
+        "selection_basis": "Inspected official Google Play listing with 1B+ cumulative downloads; missing messaging assignment",
+    },
+    {
+        "id": "viber",
+        "label": "Viber",
+        "store_title": "Rakuten Viber Messenger",
+        "kind": "app",
+        "category": "communication",
+        "android_package": "com.viber.voip",
+        "store_url": "https://play.google.com/store/apps/details?id=com.viber.voip",
+        "selection_basis": "Inspected official Google Play listing with 1B+ cumulative downloads; missing messaging assignment",
+    },
+    {
+        "id": "wechat",
+        "label": "WeChat",
+        "store_title": "WeChat",
+        "kind": "app",
+        "category": "communication",
+        "android_package": "com.tencent.mm",
+        "store_url": "https://play.google.com/store/apps/details?id=com.tencent.mm",
+        "selection_basis": "Inspected official Google Play listing with 100M+ cumulative downloads; missing messaging assignment",
+    },
+    {
+        "id": "kakaotalk",
+        "label": "KakaoTalk",
+        "store_title": "KakaoTalk : Messenger",
+        "kind": "app",
+        "category": "communication",
+        "android_package": "com.kakao.talk",
+        "store_url": "https://play.google.com/store/apps/details?id=com.kakao.talk",
+        "selection_basis": "Inspected official Google Play listing with 100M+ cumulative downloads; missing messaging assignment",
+    },
+)

@@ -19994,6 +19994,216 @@
       "source_types": [
         "item"
       ]
+    },
+    {
+      "activity": "com.kakao.talk.activity.SplashActivity",
+      "android_package": "com.kakao.talk",
+      "component": "ComponentInfo{com.kakao.talk/com.kakao.talk.activity.SplashActivity}",
+      "icon_id": "kakaotalk",
+      "source_components": [
+        "ComponentInfo{com.kakao.talk/com.kakao.talk.activity.SplashActivity}"
+      ],
+      "source_lines": [
+        9403
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "jp.naver.line.android.activity.SplashActivity",
+      "android_package": "jp.naver.line.android",
+      "component": "ComponentInfo{jp.naver.line.android/jp.naver.line.android.activity.SplashActivity}",
+      "icon_id": "line",
+      "source_components": [
+        "ComponentInfo{jp.naver.line.android/jp.naver.line.android.activity.SplashActivity}"
+      ],
+      "source_lines": [
+        10150
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "jp.naver.line.android.basic_1",
+      "android_package": "jp.naver.line.android",
+      "component": "ComponentInfo{jp.naver.line.android/jp.naver.line.android.basic_1}",
+      "icon_id": "line",
+      "source_components": [
+        "ComponentInfo{jp.naver.line.android/jp.naver.line.android.basic_1}"
+      ],
+      "source_lines": [
+        10151
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "jp.naver.line.android.design_cherry_blossom",
+      "android_package": "jp.naver.line.android",
+      "component": "ComponentInfo{jp.naver.line.android/jp.naver.line.android.design_cherry_blossom}",
+      "icon_id": "line",
+      "source_components": [
+        "ComponentInfo{jp.naver.line.android/jp.naver.line.android.design_cherry_blossom}"
+      ],
+      "source_lines": [
+        10152
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.viber.voip.WelcomeActivity.Night",
+      "android_package": "com.viber.voip",
+      "component": "ComponentInfo{com.viber.voip/com.viber.voip.WelcomeActivity.Night}",
+      "icon_id": "viber",
+      "source_components": [
+        "ComponentInfo{com.viber.voip/com.viber.voip.WelcomeActivity.Night}"
+      ],
+      "source_lines": [
+        20305
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.viber.voip.HomeActivity",
+      "android_package": "com.viber.voip",
+      "component": "ComponentInfo{com.viber.voip/com.viber.voip.HomeActivity}",
+      "icon_id": "viber",
+      "source_components": [
+        "ComponentInfo{com.viber.voip/com.viber.voip.HomeActivity}"
+      ],
+      "source_lines": [
+        20306
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.viber.voip.IdleActivity",
+      "android_package": "com.viber.voip",
+      "component": "ComponentInfo{com.viber.voip/com.viber.voip.IdleActivity}",
+      "icon_id": "viber",
+      "source_components": [
+        "ComponentInfo{com.viber.voip/com.viber.voip.IdleActivity}"
+      ],
+      "source_lines": [
+        20307
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.viber.voip.LaunchActivity",
+      "android_package": "com.viber.voip",
+      "component": "ComponentInfo{com.viber.voip/com.viber.voip.LaunchActivity}",
+      "icon_id": "viber",
+      "source_components": [
+        "ComponentInfo{com.viber.voip/com.viber.voip.LaunchActivity}"
+      ],
+      "source_lines": [
+        20308
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.viber.voip.registration.RegistrationActivity",
+      "android_package": "com.viber.voip",
+      "component": "ComponentInfo{com.viber.voip/com.viber.voip.registration.RegistrationActivity}",
+      "icon_id": "viber",
+      "source_components": [
+        "ComponentInfo{com.viber.voip/com.viber.voip.registration.RegistrationActivity}"
+      ],
+      "source_lines": [
+        20309
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.viber.voip.SplashActivity",
+      "android_package": "com.viber.voip",
+      "component": "ComponentInfo{com.viber.voip/com.viber.voip.SplashActivity}",
+      "icon_id": "viber",
+      "source_components": [
+        "ComponentInfo{com.viber.voip/com.viber.voip.SplashActivity}"
+      ],
+      "source_lines": [
+        20310
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.viber.voip.ViberApplication",
+      "android_package": "com.viber.voip",
+      "component": "ComponentInfo{com.viber.voip/com.viber.voip.ViberApplication}",
+      "icon_id": "viber",
+      "source_components": [
+        "ComponentInfo{com.viber.voip/com.viber.voip.ViberApplication}"
+      ],
+      "source_lines": [
+        20311
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.viber.voip.WelcomeActivity",
+      "android_package": "com.viber.voip",
+      "component": "ComponentInfo{com.viber.voip/com.viber.voip.WelcomeActivity}",
+      "icon_id": "viber",
+      "source_components": [
+        "ComponentInfo{com.viber.voip/com.viber.voip.WelcomeActivity}"
+      ],
+      "source_lines": [
+        20312
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.tencent.mm.ui.LauncherUI",
+      "android_package": "com.tencent.mm",
+      "component": "ComponentInfo{com.tencent.mm/com.tencent.mm.ui.LauncherUI}",
+      "icon_id": "wechat",
+      "source_components": [
+        "ComponentInfo{com.tencent.mm/com.tencent.mm.ui.LauncherUI}"
+      ],
+      "source_lines": [
+        20967
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.tencent.mm.WeChatActivity",
+      "android_package": "com.tencent.mm",
+      "component": "ComponentInfo{com.tencent.mm/com.tencent.mm.WeChatActivity}",
+      "icon_id": "wechat",
+      "source_components": [
+        "ComponentInfo{com.tencent.mm/com.tencent.mm.WeChatActivity}"
+      ],
+      "source_lines": [
+        20968
+      ],
+      "source_types": [
+        "item"
+      ]
     }
   ],
   "schema_version": 1,
