@@ -1138,7 +1138,7 @@ async function checkIconGallery(page) {
   assert.equal(await page.locator('#icon-artwork-second-app-download').getAttribute('href'), secondAppIconArchive);
   assert.equal(await page.locator('#icon-artwork-first-app-download').getAttribute('href'), firstAppIconArchive);
   assert.match(await page.locator('#icon-artwork-first-app-download').textContent(), /preserved 0\.3\.0/);
-  assert.match(await page.locator('#icon-artwork-download').textContent(), /0\.22\.0/);
+  assert.match(await page.locator('#icon-artwork-download').textContent(), /0\.23\.0/);
   assert.match(await page.locator('#icon-artwork-running-training-download').textContent(), /preserved 0\.14\.0/);
   assert.match(await page.locator('#icon-artwork-weather-download').textContent(), /preserved 0\.13\.0/);
   assert.match(await page.locator('#icon-artwork-finance-download').textContent(), /preserved 0\.12\.0/);
@@ -2434,11 +2434,11 @@ test('no-script keyboard navigation acquires current and all 22 preserved icon Z
     assert.deepEqual(learningBytes, await readFile(path.join(site, ...learningIconArchive.split('/'))));
     assert.equal(crypto.createHash('sha256').update(learningBytes).digest('hex'), learningIconDigest);
     await page.keyboard.press('Tab');
+    // Keep each deliberate archive-and-checksum batch at most ten acquisitions.
+    await new Promise(resolve => setTimeout(resolve, 1100));
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-running-training-download');
     await acquirePreservedIconArchive(page, ['icon-artwork-running-training-download', runningTrainingIconArchive, runningTrainingIconDigest]);
     await page.keyboard.press('Tab');
-    // Keep each deliberate archive-and-checksum batch at most ten acquisitions.
-    await new Promise(resolve => setTimeout(resolve, 1100));
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-weather-download');
     const [weatherDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
     assert.equal(await weatherDownload.failure(), null);
@@ -2529,6 +2529,8 @@ test('no-script keyboard navigation acquires current and all 22 preserved icon Z
     assert.deepEqual(thirdAppBytes, await readFile(path.join(site, ...thirdAppIconArchive.split('/'))));
     assert.equal(crypto.createHash('sha256').update(thirdAppBytes).digest('hex'), thirdAppIconDigest);
     await page.keyboard.press('Tab');
+    // Keep each deliberate archive-and-checksum batch at most ten acquisitions.
+    await new Promise(resolve => setTimeout(resolve, 1100));
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-second-app-download');
     const [secondAppDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
     assert.equal(await secondAppDownload.failure(), null);
@@ -2539,11 +2541,9 @@ test('no-script keyboard navigation acquires current and all 22 preserved icon Z
     assert.deepEqual(secondAppBytes, await readFile(path.join(site, ...secondAppIconArchive.split('/'))));
     assert.equal(crypto.createHash('sha256').update(secondAppBytes).digest('hex'), secondAppIconDigest);
     await page.keyboard.press('Tab');
-    // Keep each deliberate archive-and-checksum batch at most ten acquisitions.
-    await new Promise(resolve => setTimeout(resolve, 1100));
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-first-app-download');
     // Blink throttles more than ten downloads in a one-second burst.
-    // https://raw.githubusercontent.com/chromium/chromium/0e66b94549a8bd85f03fbdf189b752d6e7b63c32/third_party/blink/renderer/core/frame/local_frame.cc
+    // https://raw.githubusercontent.com/chromium/chromium/1d17a2e2ee147bb7d6ae2ab6abdb3a2510c17775/third_party/blink/renderer/core/frame/local_frame.cc
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-first-app-download');
     const [firstAppDownload] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
     assert.equal(await firstAppDownload.failure(), null);
