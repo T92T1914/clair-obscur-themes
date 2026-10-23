@@ -548,7 +548,7 @@ const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 let temporary, source, sourceBefore, legacySource, legacyBefore, previousSource, previousBefore,
   firstSource, firstBefore, secondSource, secondBefore, thirdSource, thirdBefore,
   monochromeSource, monochromeBefore, companionSource, companionBefore, broadSource, broadBefore, everydaySource, everydayBefore,
-  foodSource, foodBefore, travelSource, travelBefore, financeSource, financeBefore, weatherSource, weatherBefore, runningSource, runningBefore, learningSource, learningBefore, readingSource, readingBefore, phoneServiceSource, phoneServiceBefore, refinedSource, refinedBefore, gboardSource, gboardBefore, videoEditingSource, videoEditingBefore, polishedSource, polishedBefore;
+  foodSource, foodBefore, travelSource, travelBefore, financeSource, financeBefore, weatherSource, weatherBefore, runningSource, runningBefore, learningSource, learningBefore, readingSource, readingBefore, phoneServiceSource, phoneServiceBefore, refinedSource, refinedBefore, gboardSource, gboardBefore, videoEditingSource, videoEditingBefore, polishedSource, polishedBefore, spacedSource, spacedBefore;
 
 function execute(command, args, options = {}) {
   return spawnSync(command, args, { cwd: root, encoding: 'utf8', windowsHide: true,
@@ -668,6 +668,16 @@ before(async () => {
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stdout + result.stderr);
   sourceBefore = await snapshot(source);
+  spacedSource = path.join(temporary, 'spaced-svg');
+  const spacedRevision = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', spacedSource, '--version', '0.22.0']);
+  assert.ifError(spacedRevision.error);
+  assert.equal(spacedRevision.status, 0, spacedRevision.stdout + spacedRevision.stderr);
+  spacedBefore = await snapshot(spacedSource);
+  assert.equal(spacedBefore['manifest.json'], '8b6eaabd574d2618c693ccd72b46a3ef738dd5af72e0041a940543b8accd3ea0');
+  assert.deepEqual(Object.keys(sourceBefore).sort(), Object.keys(spacedBefore).sort(), 'Contained key adds no files');
+  const contained = Object.keys(spacedBefore).filter(name => name.endsWith('.svg') && sourceBefore[name] !== spacedBefore[name]);
+  assert.deepEqual(contained.sort(), ['Clair/proton-pass.svg', 'Obscur/proton-pass.svg'],
+    'Only the admitted Proton Pass drawing changes');
   polishedSource = path.join(temporary, 'polished-svg');
   const polishedRevision = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', polishedSource, '--version', '0.21.0']);
   assert.ifError(polishedRevision.error);
@@ -675,7 +685,7 @@ before(async () => {
   polishedBefore = await snapshot(polishedSource);
   assert.equal(polishedBefore['manifest.json'], '3c2a4316d0a118dfa585c637c3e8caebc0b961f9ab097d2950639475b5155b03');
   assert.deepEqual(Object.keys(sourceBefore).sort(), Object.keys(polishedBefore).sort(), 'Spacing refinements add no files');
-  const spaced = Object.keys(polishedBefore).filter(name => name.endsWith('.svg') && sourceBefore[name] !== polishedBefore[name]);
+  const spaced = Object.keys(polishedBefore).filter(name => name.endsWith('.svg') && spacedBefore[name] !== polishedBefore[name]);
   assert.deepEqual(spaced.sort(), ['Clair', 'Obscur'].flatMap(appearance =>
     ['threads', 'evernote', 'myradar', 'goodreads'].map(id => `${appearance}/${id}.svg`)).sort(),
     'Only the four admitted current drawings change');
@@ -896,7 +906,7 @@ test('PNG command exports 1168 monochrome icons with independent neutral-pixel d
   const manifestBytes = await readFile(path.join(output, 'manifest.json'));
   const manifest = JSON.parse(manifestBytes);
   const expected = ['manifest.json', 'LICENSE'];
-  assert.equal(manifest.version, '0.22.0');
+  assert.equal(manifest.version, '0.23.0');
   assert.equal(manifest.exporter_version, '0.11.0');
   assert.equal(manifest.palette_variant, 'monochrome');
   assert.equal(manifest.token_version, '1.0.0');
@@ -1137,7 +1147,7 @@ test('PNG command exports 1168 monochrome icons with independent neutral-pixel d
   assert.deepEqual(await snapshot(source), sourceBefore);
 });
 
-for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0', '0.15.0', '0.16.0', '0.17.0', '0.18.0', '0.19.0', '0.20.0', '0.21.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
+for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0', '0.15.0', '0.16.0', '0.17.0', '0.18.0', '0.19.0', '0.20.0', '0.21.0', '0.22.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
   const historical = {
     '0.1.0': { input: legacySource, before: legacyBefore, functions: baseFunctions, images: 96 },
     '0.2.0': { input: previousSource, before: previousBefore, functions: baseFunctions, images: 96 },
@@ -1178,6 +1188,8 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
     '0.20.0': { input: videoEditingSource, before: videoEditingBefore, functions, images: 1168,
       apps, date: '2026-10-22', monochrome: true },
     '0.21.0': { input: polishedSource, before: polishedBefore, functions, images: 1168,
+      apps, date: '2026-10-22', monochrome: true },
+    '0.22.0': { input: spacedSource, before: spacedBefore, functions, images: 1168,
       apps, date: '2026-10-22', monochrome: true },
   }[version];
   const historicalSource = historical.input, historicalBefore = historical.before;
@@ -1244,12 +1256,12 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
 
 test('unknown and mismatched artwork versions are refused before output reservation or browser launch', async () => {
   const admitted = [['0.1.0', legacySource], ['0.2.0', previousSource], ['0.3.0', firstSource],
-    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', foodSource], ['0.11.0', travelSource], ['0.12.0', financeSource], ['0.13.0', weatherSource], ['0.14.0', runningSource], ['0.15.0', learningSource], ['0.16.0', readingSource], ['0.17.0', phoneServiceSource], ['0.18.0', refinedSource], ['0.19.0', gboardSource], ['0.20.0', videoEditingSource], ['0.21.0', polishedSource], ['0.22.0', source]];
-  const cases = [['unknown', source, '0.23.0']];
+    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', foodSource], ['0.11.0', travelSource], ['0.12.0', financeSource], ['0.13.0', weatherSource], ['0.14.0', runningSource], ['0.15.0', learningSource], ['0.16.0', readingSource], ['0.17.0', phoneServiceSource], ['0.18.0', refinedSource], ['0.19.0', gboardSource], ['0.20.0', videoEditingSource], ['0.21.0', polishedSource], ['0.22.0', spacedSource], ['0.23.0', source]];
+  const cases = [['unknown', source, '0.24.0']];
   for (const [actual, original] of admitted) for (const [claimed] of admitted) {
     if (actual !== claimed) cases.push([`${actual}-as-${claimed}`, original, claimed]);
   }
-  assert.equal(cases.length, 463, 'All 462 cross-version claims and one unsupported future version are exercised');
+  assert.equal(cases.length, 507, 'All 506 cross-version claims and one unsupported future version are exercised');
   for (const [name, original, version] of cases) {
     const input = path.join(temporary, name);
     await cp(original, input, { recursive: true });

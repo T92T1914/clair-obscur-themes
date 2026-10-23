@@ -1,8 +1,8 @@
 # Obscur Android icon-pack candidate
 
-The separate 0.1.5 Android candidate prepares the 0.22.0 Obscur artwork for icon-pack consumers. It contains 292 original 512-pixel drawings and 1,332 explicit component mappings. Those mappings cover 256 of the 268 named app packages and 14 public system-app package identities across 13 general functions. Twelve named packages still have no qualified alias in this candidate. A package hint alone is not an automatic assignment.
+The separate 0.1.6 Android candidate prepares the 0.23.0 Obscur artwork for icon-pack consumers. It contains 292 original 512-pixel drawings and 1,332 explicit component mappings. Those mappings cover 256 of the 268 named app packages and 14 public system-app package identities across 13 general functions. Twelve named packages still have no qualified alias in this candidate. A package hint alone is not an automatic assignment.
 
-This version refines Threads, Evernote, MyRadar and Goodreads without adding apps or aliases. The retained 0.1.4 update refined seven other drawings as artwork 0.21.0. All 1,332 component mappings and the public package-query scope remain unchanged. The retained 0.1.3 video-editing update added ten drawings and 22 exact component declarations from the same pinned Lawnicons source. Those historical upstream declarations and the separately dated launcher observations do not establish the phone's current launcher identities. The updated APK still needs its own local coverage and Theme Park check. The original 0.1.0, 0.1.1, 0.1.2, 0.1.3 and 0.1.4 APKs and earlier artwork packages remain separate retained versions.
+This version refines Proton Pass without adding apps or aliases. The retained 0.1.5 update refined Threads, Evernote, MyRadar and Goodreads as artwork 0.22.0. The retained 0.1.4 update refined seven other drawings as artwork 0.21.0. All 1,332 component mappings and the public package-query scope remain unchanged. The retained 0.1.3 video-editing update added ten drawings and 22 exact component declarations from the same pinned Lawnicons source. Those historical upstream declarations and the separately dated launcher observations do not establish the phone's current launcher identities. The updated APK still needs its own local coverage and Theme Park check. The original 0.1.0, 0.1.1, 0.1.2, 0.1.3, 0.1.4 and 0.1.5 APKs and earlier artwork packages remain separate retained versions.
 
 This is an Obscur pack. Earlier icon collections remain unchanged. The pack adds no wallpaper, keyboard behavior, system font, notification service or theme engine. It does not replace the manual PNG bundle or publish a Galaxy Store product.
 
@@ -10,7 +10,9 @@ This is an Obscur pack. Earlier icon collections remain unchanged. The pack adds
 
 Use Python 3.11 or newer, a full JDK 17, Android SDK platform 36 and Build Tools 36.1.0. Select their paths explicitly. The build uses AAPT2, javac, D8, zipalign and, when signing is requested, apksigner. It does not install an SDK, alter PATH, start an emulator or contact a device.
 
-The current 0.22.0 candidate uses the qualified PNG export with manifest SHA-256 `9b2fcc10732f4af1489bb20300a08702575d09f92b40f86d3956bb27dc97b303`. Independent readback hashed and parsed all 584 SVGs and decoded all 1,168 PNGs. Eight SVGs and 16 PNGs change for the four selected drawings. The other 576 SVGs and 1,152 PNGs retain their exact 0.21.0 bytes. Actual saved images were inspected at 24, 32, 48, 64 and 128 pixels in both appearances. These source and asset checks are separate from the APK build, recognition, launcher masking and phone acceptance.
+The current 0.23.0 candidate uses the qualified PNG export with manifest SHA-256 `2a773020fed10ddb2cd7c47d1c462cedfa6071240d2b0e94565cd599428cb8e8`. Independent readback hashed and parsed all 584 SVGs and decoded all 1,168 PNGs. Two SVGs and four PNGs change for Proton Pass. The other 582 SVGs and 1,164 PNGs retain their exact 0.22.0 bytes. Actual saved images were inspected at 24, 32, 48, 64 and 128 pixels in both appearances. These source and asset checks are separate from APK resource readback, recognition, launcher masking and phone acceptance.
+
+The retained 0.1.5 candidate used the qualified PNG export with manifest SHA-256 `9b2fcc10732f4af1489bb20300a08702575d09f92b40f86d3956bb27dc97b303`. Independent readback hashed and parsed all 584 SVGs and decoded all 1,168 PNGs. Eight SVGs and 16 PNGs change for the four selected drawings. The other 576 SVGs and 1,152 PNGs retain their exact 0.21.0 bytes. Actual saved images were inspected at 24, 32, 48, 64 and 128 pixels in both appearances. These source and asset checks are separate from the APK build, recognition, launcher masking and phone acceptance.
 
 The retained 0.1.4 candidate used the qualified 0.21.0 PNG export with manifest SHA-256 `9851eb483c8588db4712bdabbe73248f43ba8749fd59193da96680c99ce7c636`. Independent readback hashed and parsed all 584 SVGs and decoded all 1,168 PNGs. Exactly fourteen SVGs and 28 PNGs changed for the seven selected drawings. The other 570 SVGs and 1,140 PNGs retain their exact 0.20.0 bytes. Actual saved images were inspected at 24, 32, 48, 64 and 128 pixels in both appearances. These source and asset checks are separate from the APK build, recognition, launcher masking and phone acceptance.
 
@@ -21,13 +23,13 @@ The retained 0.1.2 candidate used the qualified 0.19.0 export with manifest SHA-
 From the repository root, with local paths substituted:
 
 ```powershell
-python android/build.py --png-dir "C:/work/qualified-0.22/png" --sdk "C:/tools/android-sdk" --java-bin "C:/tools/jdk-17/bin" --output-dir "C:/work/builds/android-iconpack-01"
+python android/build.py --png-dir "C:/work/qualified-0.23/png" --sdk "C:/tools/android-sdk" --java-bin "C:/tools/jdk-17/bin" --output-dir "C:/work/builds/android-iconpack-01"
 ```
 
 The default result is unsigned and cannot be installed as a new Android app. For a signed candidate, provide an existing private Android keystore outside the repository and the name of an environment variable containing its password:
 
 ```powershell
-python android/build.py --png-dir "C:/work/qualified-0.22/png" --sdk "C:/tools/android-sdk" --java-bin "C:/tools/jdk-17/bin" --output-dir "C:/work/builds/android-iconpack-signed-01" --keystore "C:/private/obscur-icons.jks" --ks-pass-env OBSCUR_KEYSTORE_PASSWORD
+python android/build.py --png-dir "C:/work/qualified-0.23/png" --sdk "C:/tools/android-sdk" --java-bin "C:/tools/jdk-17/bin" --output-dir "C:/work/builds/android-iconpack-signed-01" --keystore "C:/private/obscur-icons.jks" --ks-pass-env OBSCUR_KEYSTORE_PASSWORD
 ```
 
 Keep the same private key for later updates. Never commit or redistribute it, use a watch developer key, or put its password in a command argument. This command reads the named environment variable. It does not create or export a key.

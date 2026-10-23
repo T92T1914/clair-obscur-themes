@@ -1,5 +1,14 @@
 # Changes
 
+## Icon artwork 0.23.0
+
+October 22, 2026.
+
+- Refine Proton Pass with an inset key, a continuous diamond and the existing tooth spacing. The smaller ring counter is the accepted tradeoff after the original and two alternatives were compared at five small sizes in both appearances.
+- Keep the same 292 choices, shared stroke and black and white palette. Preserve the other 291 drawings, all twenty-two prior archives, original desktop packages, Terminal schemes and Garmin source.
+- Prepare the separate Android 0.1.6/code 7 candidate from the qualified current export while retaining all 1,332 component mappings, 282 package queries and the existing signing identity. Actual export/packaging qualification and device application remain separate gates.
+- Extend current and historical acquisition checks without changing exporter behavior. Retain finite portable limits, adverse controls, no-script operation, keyboard access and the native font/restoration boundaries.
+
 ## Icon artwork 0.19.0
 
 October 22, 2026.
