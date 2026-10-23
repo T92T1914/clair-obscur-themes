@@ -347,7 +347,7 @@ class TerminalPreviewTests(unittest.TestCase):
                 for name, card in cards:
                     self.assertIn(f"Clair Obscur - {name}", card)
                     samples = re.findall(r'<div class="terminal-slot" data-ansi="([^"]+)"><p>[^<]+</p>'
-                                         r'<code style="([^"]+)">Aa 0123</code><small>([^<]+)</small></div>', card)
+                                         r'<code translate="no" style="([^"]+)">Aa 0123</code><small>([^<]+)</small></div>', card)
                     self.assertEqual([field for field, _, _ in samples], list(ANSI))
                     for field, style, context in samples:
                         partner = ("black" if name == "Clair" else "white") if field in FOREGROUND_EXCEPTIONS[name] else None
