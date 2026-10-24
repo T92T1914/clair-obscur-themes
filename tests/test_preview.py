@@ -527,9 +527,9 @@ class PreviewTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
         exported = json.loads((self.base / 'extracted-icons/manifest.json').read_bytes())
-        self.assertEqual(exported['version'], '0.25.0')
-        self.assertEqual(len(exported['functions']), 296)
-        self.assertEqual(len(exported['files']), 592)
+        self.assertEqual(exported['version'], '0.26.0')
+        self.assertEqual(len(exported['functions']), 300)
+        self.assertEqual(len(exported['files']), 600)
         self.assertEqual([entry['id'] for entry in exported['catalog']][233:241],
                          ['google-play-books', 'libby', 'kobo-books', 'goodreads',
                           'wattpad', 'webtoon', 'readera', 'moon-reader'])
@@ -545,6 +545,7 @@ class PreviewTests(unittest.TestCase):
             'inshot', 'youcut', 'vn-video-editor', 'kinemaster', 'powerdirector',
             'filmora', 'vivavideo', 'gopro-quik', 'videoshow', 'alight-motion',
             'line', 'viber', 'wechat', 'kakaotalk',
+            'imo', 'zalo', 'bip', 'google-chat',
         ])
 
     def test_vscode_candidate_builds_from_the_actual_source_snapshot(self):

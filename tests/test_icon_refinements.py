@@ -50,6 +50,7 @@ HISTORICAL_TREE_DIGESTS["0.21.0"] = "87762a66e397951f3683a1d6c84838d794ae9581674
 HISTORICAL_TREE_DIGESTS["0.22.0"] = "cb0f5c015306139ff6566cd7f571f8c1a38e7078923815c76233049a8962ca51"
 HISTORICAL_TREE_DIGESTS["0.23.0"] = "5e47b44c9b0c07fe32ff047f6be5a5e2ca07824da1e43210a23b0db82c08c0df"
 HISTORICAL_TREE_DIGESTS["0.24.0"] = "7bb7affc6a27e7933ba318997168ff3186e6c9b8031cdd306a22838a1150a509"
+HISTORICAL_TREE_DIGESTS["0.25.0"] = "44a652638124d52190d6308c6f1f74ea8f451943e10c15b078ec7ce93dd006d6"
 
 HISTORICAL_ARCHIVE_DIGESTS = {'0.1.0': '040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34',
  '0.2.0': '6ae67a5aab7f4e0a50537bb6dcf3b383c5fc6e9e001d68db12a7413aaa376312',
@@ -76,6 +77,7 @@ HISTORICAL_ARCHIVE_DIGESTS["0.21.0"] = "504402b2f2b93ea6315a92738487fd4545c949b7
 HISTORICAL_ARCHIVE_DIGESTS["0.22.0"] = "04d4d2bb80f61efff1b809a2b2253cca9bb4bea0bc7d254668518b6b13df5217"
 HISTORICAL_ARCHIVE_DIGESTS["0.23.0"] = "89a9f0806580d981d539437d2374b700704f832c3e786d0e4cf3ee80e6d5e22e"
 HISTORICAL_ARCHIVE_DIGESTS["0.24.0"] = "a20f93736ad0b5665f135dfa6de0fecbb14150dbadd026f402c2d3704f463cb2"
+HISTORICAL_ARCHIVE_DIGESTS["0.25.0"] = "f7ac7719af8b742a89bdffd5cf80fd0eb78a3b4fbed2f937b29a79b2f5f8e7d9"
 
 # SVG hashes come from accepted 0.20.0 exports and the exact earlier private
 # before/after drawings reviewed at small sizes, not from the new generator.
@@ -614,7 +616,7 @@ class IconKeyContainmentTests(unittest.TestCase):
         cls.current = icons.render_icons(document, version="0.23.0")
 
     def test_only_reviewed_proton_pass_changes_and_other_291_drawings_remain_exact(self):
-        self.assertEqual(icons.VERSION, "0.25.0")
+        self.assertEqual(icons.VERSION, "0.26.0")
         self.assertEqual(set(icons.CONTAINED_GLYPHS), {"proton-pass"})
         self.assertEqual(set(self.current), set(self.old))
         expected_changes = set(REVIEWED_CONTAINED_SVG_DIGESTS["0.23.0"])
@@ -858,13 +860,34 @@ class IconClearanceRefinementTests(unittest.TestCase):
 REVIEWED_MESSAGING_SVG_DIGESTS = {'Clair/line.svg': '9738096dc66e4f49f396e1dd04ce2e01ae65e043978065f9b6260d514198150b', 'Clair/viber.svg': 'b36c062a3e9427f545dc8a88e120d8889ca1f8a6244d168cdd9f337a206b36d6', 'Clair/wechat.svg': '75edda539cf26e38ea3a88610fd18876f9867c051c74d77d32716bc818bd8b12', 'Clair/kakaotalk.svg': '2e9035118e66f81b0922a4683d374d28a66e25869f567963f1cb0dcebd776a46', 'Obscur/line.svg': '4f309dc4d24337e1eee6a10dad508186481f9361b9574ba6b78bb473bc4a8a1c', 'Obscur/viber.svg': '16f7fc9f3416d0e02d783daa3371c9b7f673cfffd894a471de0bf60de2a93155', 'Obscur/wechat.svg': '61a4a789841e79ecaef778d3bb9650e25df29965ac38f197be97d946d80996ab', 'Obscur/kakaotalk.svg': '62c0817f07b589cb5a9343ecfa137aee8b6ada25dd6d877d921f5931860a6b86'}
 
 class MessagingDrawingIdentityTests(unittest.TestCase):
-    def test_current_drawings_match_the_independently_compared_private_sources(self):
-        files = icons.render_icons(icons.load_icon_tokens())
+    def test_accepted_0_25_drawings_match_the_independently_compared_private_sources(self):
+        files = icons.render_icons(icons.load_icon_tokens("0.25.0"), version="0.25.0")
         self.assertEqual(set(icons.SEVENTEENTH_APP_GLYPHS), {"line", "viber", "wechat", "kakaotalk"})
         for name, expected in REVIEWED_MESSAGING_SVG_DIGESTS.items():
             with self.subTest(name=name):
                 self.assertEqual(hashlib.sha256(files[name]).hexdigest(), expected)
 
+
+
+# Selected proposal hashes frozen before generator integration, independently read back.
+REVIEWED_COMMUNICATION_SVG_DIGESTS = {
+    "Clair/imo.svg": "1b14e93fd010277c4862abc262b910b3824af3980de3f7cdac1edc13e2829e3b",
+    "Clair/bip.svg": "9ca3d99d2e36571c58558d68e56a85dac4f3cb75a6dbb927be4aaba4ceafd0b2",
+    "Clair/google-chat.svg": "b903ea9a16f6906f2eee2b2adc778b056e9318f6bfee751e3b8d3297e457d414",
+    "Obscur/imo.svg": "044a5dde9dc9c50dfc0d626d0680cc16d9625cecfd33b47f7e4dfb5ec619219c",
+    "Obscur/bip.svg": "0d077a9915c3db844174a8ca0f80ca674d141f7f4d633a194c99a2c0e9cf5700",
+    "Obscur/google-chat.svg": "94e0bbf1ba989ac9da680976dd235c584945c56bd5150a321122075d8b5b5304",
+    "Clair/zalo.svg": "e210e6f96025ecd3ebf76b0000ea8f7aa67891e52d25684f861b37d6fce2f080",
+    "Obscur/zalo.svg": "3d251e4820123324f5cb31156db6241bab20df11c76b42f09c654efb367cb377"
+}
+
+class CommunicationDrawingIdentityTests(unittest.TestCase):
+    def test_current_0_26_drawings_match_the_independently_compared_private_sources(self):
+        files = icons.render_icons(icons.load_icon_tokens("0.26.0"), version="0.26.0")
+        self.assertEqual(set(icons.EIGHTEENTH_APP_GLYPHS), {"imo", "zalo", "bip", "google-chat"})
+        for name, expected in REVIEWED_COMMUNICATION_SVG_DIGESTS.items():
+            with self.subTest(name=name):
+                self.assertEqual(hashlib.sha256(files[name]).hexdigest(), expected)
 
 if __name__ == "__main__":
     unittest.main()

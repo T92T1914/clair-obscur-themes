@@ -20204,6 +20204,126 @@
       "source_types": [
         "item"
       ]
+    },
+    {
+      "activity": "com.turkcell.bip.ui.main.BipActivity",
+      "android_package": "com.turkcell.bip",
+      "component": "ComponentInfo{com.turkcell.bip/com.turkcell.bip.ui.main.BipActivity}",
+      "icon_id": "bip",
+      "source_components": [
+        "ComponentInfo{com.turkcell.bip/com.turkcell.bip.ui.main.BipActivity}"
+      ],
+      "source_lines": [
+        2053
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.turkcell.bip.ui.main.BipActivityAliasDefault",
+      "android_package": "com.turkcell.bip",
+      "component": "ComponentInfo{com.turkcell.bip/com.turkcell.bip.ui.main.BipActivityAliasDefault}",
+      "icon_id": "bip",
+      "source_components": [
+        "ComponentInfo{com.turkcell.bip/com.turkcell.bip.ui.main.BipActivityAliasDefault}"
+      ],
+      "source_lines": [
+        2054
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.google.android.archive.ReactivateActivity",
+      "android_package": "com.google.android.apps.dynamite",
+      "component": "ComponentInfo{com.google.android.apps.dynamite/com.google.android.archive.ReactivateActivity}",
+      "icon_id": "google-chat",
+      "source_components": [
+        "ComponentInfo{com.google.android.apps.dynamite/com.google.android.archive.ReactivateActivity}"
+      ],
+      "source_lines": [
+        7490
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.google.android.apps.dynamite.startup.StartUpActivity",
+      "android_package": "com.google.android.apps.dynamite",
+      "component": "ComponentInfo{com.google.android.apps.dynamite/com.google.android.apps.dynamite.startup.StartUpActivity}",
+      "icon_id": "google-chat",
+      "source_components": [
+        "ComponentInfo{com.google.android.apps.dynamite/com.google.android.apps.dynamite.startup.StartUpActivity}"
+      ],
+      "source_lines": [
+        7491
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.google.android.archive.ReactivateActivity",
+      "android_package": "com.imo.android.imoim",
+      "component": "ComponentInfo{com.imo.android.imoim/com.google.android.archive.ReactivateActivity}",
+      "icon_id": "imo",
+      "source_components": [
+        "ComponentInfo{com.imo.android.imoim/com.google.android.archive.ReactivateActivity}"
+      ],
+      "source_lines": [
+        8777
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.imo.android.imoim.home.Home",
+      "android_package": "com.imo.android.imoim",
+      "component": "ComponentInfo{com.imo.android.imoim/com.imo.android.imoim.home.Home}",
+      "icon_id": "imo",
+      "source_components": [
+        "ComponentInfo{com.imo.android.imoim/com.imo.android.imoim.home.Home}"
+      ],
+      "source_lines": [
+        8778
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.imo.android.imoim.activities.Home",
+      "android_package": "com.imo.android.imoim",
+      "component": "ComponentInfo{com.imo.android.imoim/com.imo.android.imoim.activities.Home}",
+      "icon_id": "imo",
+      "source_components": [
+        "ComponentInfo{com.imo.android.imoim/com.imo.android.imoim.activities.Home}"
+      ],
+      "source_lines": [
+        8779
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.zing.zalo.ui.SplashActivity",
+      "android_package": "com.zing.zalo",
+      "component": "ComponentInfo{com.zing.zalo/com.zing.zalo.ui.SplashActivity}",
+      "icon_id": "zalo",
+      "source_components": [
+        "ComponentInfo{com.zing.zalo/com.zing.zalo.ui.SplashActivity}"
+      ],
+      "source_lines": [
+        21844
+      ],
+      "source_types": [
+        "item"
+      ]
     }
   ],
   "schema_version": 1,

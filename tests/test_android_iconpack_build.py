@@ -22,6 +22,15 @@ class AndroidBuildAdmissionTests(unittest.TestCase):
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
 
+    def test_static_manifest_retains_the_current_separate_pack_identity(self):
+        root = ET.parse(build.ROOT / "android/app/AndroidManifest.xml").getroot()
+        self.assertEqual(root.attrib["package"], "io.github.t92t1914.obscuricons")
+        self.assertEqual(root.attrib[build.ANDROID + "versionCode"], "10")
+        self.assertEqual(root.attrib[build.ANDROID + "versionName"], "0.1.9")
+        self.assertEqual(root.findall("uses-permission"), [])
+        self.assertEqual(len(root.findall("queries")), 1)
+        self.assertEqual(list(root.find("queries")), [])
+
     def test_existing_output_and_managed_source_paths_are_refused(self):
         output = self.root / "existing"
         output.mkdir()
@@ -84,7 +93,7 @@ class AndroidBuildAdmissionTests(unittest.TestCase):
             {"package": "example.second", "label": "Second", "id": "second"},
         ]
         (project / "assets/catalog.json").write_text(json.dumps({"schema_version": 1,
-            "artwork_version": "0.25.0", "pack_version": "0.1.8", "packages": rows}), encoding="utf-8")
+            "artwork_version": "0.26.0", "pack_version": "0.1.9", "packages": rows}), encoding="utf-8")
         (project / "AndroidManifest.xml").write_text(
             '<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="' + build.PACKAGE + '">' +
             permission + '<queries/><application/></manifest>', encoding="utf-8")
@@ -106,8 +115,8 @@ class AndroidBuildAdmissionTests(unittest.TestCase):
         before = manifest.read_bytes()
         catalog_path = project / "assets/catalog.json"
         original = json.loads(catalog_path.read_text())
-        for field, value in (("pack_version", "0.1.0"), ("pack_version", "0.1.2"), ("pack_version", "0.1.3"), ("pack_version", "0.1.4"), ("pack_version", "0.1.5"), ("pack_version", "0.1.6"), ("pack_version", "0.1.7"),
-                             ("artwork_version", "0.17.0"), ("artwork_version", "0.19.0"), ("artwork_version", "0.20.0"), ("artwork_version", "0.21.0"), ("artwork_version", "0.22.0"), ("artwork_version", "0.23.0"), ("artwork_version", "0.24.0")):
+        for field, value in (("pack_version", "0.1.0"), ("pack_version", "0.1.2"), ("pack_version", "0.1.3"), ("pack_version", "0.1.4"), ("pack_version", "0.1.5"), ("pack_version", "0.1.6"), ("pack_version", "0.1.7"), ("pack_version", "0.1.8"),
+                             ("artwork_version", "0.17.0"), ("artwork_version", "0.19.0"), ("artwork_version", "0.20.0"), ("artwork_version", "0.21.0"), ("artwork_version", "0.22.0"), ("artwork_version", "0.23.0"), ("artwork_version", "0.24.0"), ("artwork_version", "0.25.0")):
             catalog_path.write_text(json.dumps({**original, field: value}), encoding="utf-8")
             with self.subTest(field=field), self.assertRaisesRegex(ValueError, "version is unsupported"):
                 build._write_queries(project)
@@ -168,7 +177,7 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
         (self.project / "assets/appfilter.xml").write_text(mapping)
         (self.project / "assets/catalog.json").write_text('{"scope":"synthetic byte fixture"}')
         self.prepared = {"files": []}
-        for index in range(296):
+        for index in range(300):
             (self.project / "res/drawable-nodpi" / ("co_icon_" + str(index) + ".png")).write_bytes(
                 b"Synthetic original icon bytes " + str(index).encode("ascii"))
         for path in sorted(self.project.rglob("*")):
@@ -178,7 +187,7 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
         self.dump = ('E: resources (line=1)\n  E: item (line=1)\n'
                      '    A: component="ComponentInfo{example.app/example.app.Main}"\n'
                      '    A: drawable="co_icon_0"\n')
-        self.badging = ("package: name='" + build.PACKAGE + "' versionCode='9' versionName='0.1.8'\n"
+        self.badging = ("package: name='" + build.PACKAGE + "' versionCode='10' versionName='0.1.9'\n"
                         "minSdkVersion:'26'\ntargetSdkVersion:'36'\n")
 
     def apk(self, changed=None):
@@ -193,7 +202,7 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
 
     def test_byte_boundary_accepts_unchanged_pngs_after_resource_path_versioning(self):
         result = build._verify_apk(self.apk(), self.project, self.prepared, self.dump, self.badging)
-        self.assertEqual(result["drawables_byte_exact"], 296)
+        self.assertEqual(result["drawables_byte_exact"], 300)
         self.assertEqual(result["compiled_component_mappings"], 1)
 
     def test_changed_png_bytes_are_refused(self):
@@ -222,7 +231,8 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
                            ("5", "0.1.5"), ("6", "0.1.4"), ("6", "0.1.5"),
                            ("6", "0.1.6"), ("7", "0.1.5"), ("7", "0.1.6"),
                            ("7", "0.1.7"), ("8", "0.1.6"), ("8", "0.1.7"),
-                           ("8", "0.1.8"), ("9", "0.1.7")):
+                           ("8", "0.1.8"), ("9", "0.1.7"),
+                           ("9", "0.1.8"), ("9", "0.1.9"), ("10", "0.1.8")):
             badging = (f"package: name='{build.PACKAGE}' versionCode='{code}' versionName='{name}'\n"
                        "minSdkVersion:'26'\ntargetSdkVersion:'36'\n")
             with self.subTest(code=code, name=name), self.assertRaisesRegex(ValueError, "package/version differs"):

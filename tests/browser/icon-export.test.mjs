@@ -550,7 +550,15 @@ const messagingApps = [
     "com.kakao.talk"
   ]
 ];
-const apps = [...clearanceApps, ...messagingApps];
+const messagingCatalogApps = [...clearanceApps, ...messagingApps];
+const addedCommunicationApps = [
+  ['imo', 'imo', 'com.imo.android.imoim'],
+  ['zalo', 'Zalo', 'com.zing.zalo'],
+  ['bip', 'BiP', 'com.turkcell.bip'],
+  ['google-chat', 'Google Chat', 'com.google.android.apps.dynamite'],
+];
+const apps = [...messagingCatalogApps, ...addedCommunicationApps];
+const messagingFunctions = [...baseFunctions, ...messagingCatalogApps.map(([id]) => id)];
 const gboardFunctions = [...baseFunctions, ...gboardCatalogApps.map(([id]) => id)];
 const phoneServiceFunctions = [...baseFunctions, ...phoneServiceCatalogApps.map(([id]) => id)];
 const firstFunctions = [...baseFunctions, ...firstApps.map(([id]) => id)];
@@ -572,7 +580,7 @@ const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 let temporary, source, sourceBefore, legacySource, legacyBefore, previousSource, previousBefore,
   firstSource, firstBefore, secondSource, secondBefore, thirdSource, thirdBefore,
   monochromeSource, monochromeBefore, companionSource, companionBefore, broadSource, broadBefore, everydaySource, everydayBefore,
-  foodSource, foodBefore, travelSource, travelBefore, financeSource, financeBefore, weatherSource, weatherBefore, runningSource, runningBefore, learningSource, learningBefore, readingSource, readingBefore, phoneServiceSource, phoneServiceBefore, refinedSource, refinedBefore, gboardSource, gboardBefore, videoEditingSource, videoEditingBefore, polishedSource, polishedBefore, spacedSource, spacedBefore, containedSource, containedBefore, clearanceSource, clearanceBefore;
+  foodSource, foodBefore, travelSource, travelBefore, financeSource, financeBefore, weatherSource, weatherBefore, runningSource, runningBefore, learningSource, learningBefore, readingSource, readingBefore, phoneServiceSource, phoneServiceBefore, refinedSource, refinedBefore, gboardSource, gboardBefore, videoEditingSource, videoEditingBefore, polishedSource, polishedBefore, spacedSource, spacedBefore, containedSource, containedBefore, clearanceSource, clearanceBefore, messagingSource, messagingBefore;
 
 function execute(command, args, options = {}) {
   return spawnSync(command, args, { cwd: root, encoding: 'utf8', windowsHide: true,
@@ -692,17 +700,28 @@ before(async () => {
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stdout + result.stderr);
   sourceBefore = await snapshot(source);
+  messagingSource = path.join(temporary, 'messaging-svg');
+  const messagingRevision = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', messagingSource, '--version', '0.25.0']);
+  assert.ifError(messagingRevision.error);
+  assert.equal(messagingRevision.status, 0, messagingRevision.stdout + messagingRevision.stderr);
+  messagingBefore = await snapshot(messagingSource);
+  assert.equal(messagingBefore['manifest.json'], '70808a12772c4e76ed80730047311e97654e8d3c6bca3ca7a3dfe007ffe21f75');
+  assert.deepEqual(Object.keys(sourceBefore).filter(name => !Object.hasOwn(messagingBefore, name)).sort(),
+    ['Clair', 'Obscur'].flatMap(appearance => addedCommunicationApps.map(([id]) => `${appearance}/${id}.svg`)).sort(),
+    'Only four newly qualified communication drawings are appended in both appearances');
+  for (const name of Object.keys(messagingBefore).filter(name => name.endsWith('.svg')))
+    assert.equal(sourceBefore[name], messagingBefore[name], 'Every accepted 0.25 SVG remains byte exact');
   clearanceSource = path.join(temporary, 'clearance-svg');
   const clearanceRevision = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', clearanceSource, '--version', '0.24.0']);
   assert.ifError(clearanceRevision.error);
   assert.equal(clearanceRevision.status, 0, clearanceRevision.stdout + clearanceRevision.stderr);
   clearanceBefore = await snapshot(clearanceSource);
   assert.equal(clearanceBefore['manifest.json'], '919c7fcd13e01d83194baedea14ac2729384a9394f8fb1346d5f48a31ea3c52e');
-  assert.deepEqual(Object.keys(sourceBefore).filter(name => !Object.hasOwn(clearanceBefore, name)).sort(),
+  assert.deepEqual(Object.keys(messagingBefore).filter(name => !Object.hasOwn(clearanceBefore, name)).sort(),
     ['Clair', 'Obscur'].flatMap(appearance => messagingApps.map(([id]) => `${appearance}/${id}.svg`)).sort(),
     'Only four messaging drawings are appended in both appearances');
   for (const name of Object.keys(clearanceBefore).filter(name => name.endsWith('.svg')))
-    assert.equal(sourceBefore[name], clearanceBefore[name], 'Every accepted 0.24 SVG remains byte exact');
+    assert.equal(messagingBefore[name], clearanceBefore[name], 'Every accepted 0.24 SVG remains byte exact');
   containedSource = path.join(temporary, 'contained-svg');
   const containedRevision = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', containedSource, '--version', '0.23.0']);
   assert.ifError(containedRevision.error);
@@ -943,20 +962,23 @@ after(async () => {
   }
 });
 
-test('PNG command exports 1184 monochrome icons with independent neutral-pixel decoding and assignment identities', async () => {
+test('PNG command exports 1200 monochrome icons with independent neutral-pixel decoding and assignment identities', async () => {
+  assert.equal(messagingCatalogApps.length, 272, 'All prior named assignments remain independently listed');
+  assert.equal(apps.length, 276);
+  assert.equal(functions.length, 300);
   const output = path.join(temporary, 'png');
   const result = exportTo(source, output);
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.match(result.stdout, /Exported 1184 PNG icons/);
+  assert.match(result.stdout, /Exported 1200 PNG icons/);
   const manifestBytes = await readFile(path.join(output, 'manifest.json'));
   const manifest = JSON.parse(manifestBytes);
   const expected = ['manifest.json', 'LICENSE'];
-  assert.equal(manifest.version, '0.25.0');
+  assert.equal(manifest.version, '0.26.0');
   assert.equal(manifest.exporter_version, '0.11.0');
   assert.equal(manifest.palette_variant, 'monochrome');
   assert.equal(manifest.token_version, '1.0.0');
-  assert.equal(manifest.files.length, 1184);
+  assert.equal(manifest.files.length, 1200);
   assert.deepEqual(manifest.functions, functions);
   assert.equal(manifest.source_manifest_sha256, sourceBefore['manifest.json']);
   assert.equal(manifest.tokens_file, 'tokens-monochrome.json');
@@ -965,7 +987,7 @@ test('PNG command exports 1184 monochrome icons with independent neutral-pixel d
   assert.equal(manifest.svg_catalog_sha256, sha(await readFile(path.join(root, 'themeforge/icon_apps.py'))));
   const svgManifest = JSON.parse(await readFile(path.join(source, 'manifest.json')));
   assert.deepEqual(manifest.catalog, svgManifest.catalog, 'Complete admitted assignment metadata survives PNG export');
-  assert.equal(manifest.catalog.length, 296);
+  assert.equal(manifest.catalog.length, 300);
   assert.deepEqual(manifest.catalog.filter(entry => entry.id === 'gboard').map(entry =>
     [entry.label, entry.android_package, entry.store_title, entry.store_url]),
     [['Gboard', 'com.google.android.inputmethod.latin', 'Gboard - the Google Keyboard',
@@ -983,7 +1005,14 @@ test('PNG command exports 1184 monochrome icons with independent neutral-pixel d
   "videoshow": "Video Editor & Maker VideoShow",
   "alight-motion": "Alight Motion"
 });
-  assert.equal(manifest.catalog_date, '2026-10-23');
+  assert.deepEqual(Object.fromEntries(manifest.catalog.filter(entry => addedCommunicationApps.some(([id]) => id === entry.id))
+    .map(entry => [entry.id, entry.store_title])), {
+    imo: 'imo-International Calls & Chat', zalo: 'Zalo', bip: 'BiP - Messenger, Video Call', 'google-chat': 'Google Chat',
+  });
+  assert.deepEqual(Object.fromEntries(manifest.catalog.filter(entry => addedCommunicationApps.some(([id]) => id === entry.id))
+    .map(entry => [entry.id, entry.selection_basis.match(/\b(?:1B|100M|50M)\+/)?.[0]])),
+    { imo: '1B+', zalo: '100M+', bip: '100M+', 'google-chat': '50M+' });
+  assert.equal(manifest.catalog_date, '2026-10-24');
   assert.equal(manifest.catalog_scope, svgManifest.catalog_scope);
   assert.match(manifest.catalog_scope, /No popularity ranking, device availability or phone installation is established\./);
   assert.deepEqual(manifest.catalog.filter(entry => entry.kind === 'function').map(entry => entry.id), baseFunctions);
@@ -1172,10 +1201,10 @@ test('PNG command exports 1184 monochrome icons with independent neutral-pixel d
   assert.equal(manifestBytes.toString().includes(root), false, 'No checkout path enters the export manifest');
   assert.equal(manifestBytes.toString().includes(temporary), false, 'No temporary or user path enters the export manifest');
   const records = new Map(manifest.files.map(record => [record.path, record]));
-  assert.equal(records.size, 1184);
+  assert.equal(records.size, 1200);
   for (const appearance of ['Clair', 'Obscur']) for (const size of [512, 1024]) {
     const hashes = functions.map(name => records.get(`${appearance}/${size}/${name}.png`)?.sha256);
-    assert.equal(new Set(hashes).size, 296, `${appearance}/${size} retains 296 distinct drawings`);
+    assert.equal(new Set(hashes).size, 300, `${appearance}/${size} retains 300 distinct drawings`);
     assert.equal(hashes.includes(undefined), false);
   }
   for (const appearance of ['Clair', 'Obscur']) for (const size of [512, 1024]) for (const name of functions) {
@@ -1193,7 +1222,7 @@ test('PNG command exports 1184 monochrome icons with independent neutral-pixel d
   assert.deepEqual(await snapshot(source), sourceBefore);
 });
 
-for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0', '0.15.0', '0.16.0', '0.17.0', '0.18.0', '0.19.0', '0.20.0', '0.21.0', '0.22.0', '0.23.0', '0.24.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
+for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0', '0.15.0', '0.16.0', '0.17.0', '0.18.0', '0.19.0', '0.20.0', '0.21.0', '0.22.0', '0.23.0', '0.24.0', '0.25.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
   const historical = {
     '0.1.0': { input: legacySource, before: legacyBefore, functions: baseFunctions, images: 96 },
     '0.2.0': { input: previousSource, before: previousBefore, functions: baseFunctions, images: 96 },
@@ -1241,6 +1270,8 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
       apps: clearanceApps, date: '2026-10-22', monochrome: true },
     '0.24.0': { input: clearanceSource, before: clearanceBefore, functions: clearanceFunctions, images: 1168,
       apps: clearanceApps, date: '2026-10-22', monochrome: true },
+    '0.25.0': { input: messagingSource, before: messagingBefore, functions: messagingFunctions, images: 1184,
+      apps: messagingCatalogApps, date: '2026-10-23', monochrome: true },
   }[version];
   const historicalSource = historical.input, historicalBefore = historical.before;
   const historicalFunctions = historical.functions, imageCount = historical.images;
@@ -1306,12 +1337,12 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
 
 test('unknown and mismatched artwork versions are refused before output reservation or browser launch', async () => {
   const admitted = [['0.1.0', legacySource], ['0.2.0', previousSource], ['0.3.0', firstSource],
-    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', foodSource], ['0.11.0', travelSource], ['0.12.0', financeSource], ['0.13.0', weatherSource], ['0.14.0', runningSource], ['0.15.0', learningSource], ['0.16.0', readingSource], ['0.17.0', phoneServiceSource], ['0.18.0', refinedSource], ['0.19.0', gboardSource], ['0.20.0', videoEditingSource], ['0.21.0', polishedSource], ['0.22.0', spacedSource], ['0.23.0', containedSource], ['0.24.0', clearanceSource], ['0.25.0', source]];
-  const cases = [['unknown', source, '0.26.0']];
+    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', foodSource], ['0.11.0', travelSource], ['0.12.0', financeSource], ['0.13.0', weatherSource], ['0.14.0', runningSource], ['0.15.0', learningSource], ['0.16.0', readingSource], ['0.17.0', phoneServiceSource], ['0.18.0', refinedSource], ['0.19.0', gboardSource], ['0.20.0', videoEditingSource], ['0.21.0', polishedSource], ['0.22.0', spacedSource], ['0.23.0', containedSource], ['0.24.0', clearanceSource], ['0.25.0', messagingSource], ['0.26.0', source]];
+  const cases = [['unknown', source, '0.27.0']];
   for (const [actual, original] of admitted) for (const [claimed] of admitted) {
     if (actual !== claimed) cases.push([`${actual}-as-${claimed}`, original, claimed]);
   }
-  assert.equal(cases.length, 601, 'All 600 cross-version claims and one unsupported future version are exercised');
+  assert.equal(cases.length, 651, 'All 650 cross-version claims and one unsupported future version are exercised');
   for (const [name, original, version] of cases) {
     const input = path.join(temporary, name);
     await cp(original, input, { recursive: true });
