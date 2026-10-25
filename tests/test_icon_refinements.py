@@ -51,6 +51,7 @@ HISTORICAL_TREE_DIGESTS["0.22.0"] = "cb0f5c015306139ff6566cd7f571f8c1a38e7078923
 HISTORICAL_TREE_DIGESTS["0.23.0"] = "5e47b44c9b0c07fe32ff047f6be5a5e2ca07824da1e43210a23b0db82c08c0df"
 HISTORICAL_TREE_DIGESTS["0.24.0"] = "7bb7affc6a27e7933ba318997168ff3186e6c9b8031cdd306a22838a1150a509"
 HISTORICAL_TREE_DIGESTS["0.25.0"] = "44a652638124d52190d6308c6f1f74ea8f451943e10c15b078ec7ce93dd006d6"
+HISTORICAL_TREE_DIGESTS["0.26.0"] = "e80c81f5d9fd7ad365273000d370d629476e2ba8cd9c2e3efc6658888614064c"
 
 HISTORICAL_ARCHIVE_DIGESTS = {'0.1.0': '040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34',
  '0.2.0': '6ae67a5aab7f4e0a50537bb6dcf3b383c5fc6e9e001d68db12a7413aaa376312',
@@ -78,6 +79,7 @@ HISTORICAL_ARCHIVE_DIGESTS["0.22.0"] = "04d4d2bb80f61efff1b809a2b2253cca9bb4bea0
 HISTORICAL_ARCHIVE_DIGESTS["0.23.0"] = "89a9f0806580d981d539437d2374b700704f832c3e786d0e4cf3ee80e6d5e22e"
 HISTORICAL_ARCHIVE_DIGESTS["0.24.0"] = "a20f93736ad0b5665f135dfa6de0fecbb14150dbadd026f402c2d3704f463cb2"
 HISTORICAL_ARCHIVE_DIGESTS["0.25.0"] = "f7ac7719af8b742a89bdffd5cf80fd0eb78a3b4fbed2f937b29a79b2f5f8e7d9"
+HISTORICAL_ARCHIVE_DIGESTS["0.26.0"] = "937a707475e5f63aadd1c371f8f9a7bc399bca1c417e4c94f016924bd0a0bbf4"
 
 # SVG hashes come from accepted 0.20.0 exports and the exact earlier private
 # before/after drawings reviewed at small sizes, not from the new generator.
@@ -616,7 +618,7 @@ class IconKeyContainmentTests(unittest.TestCase):
         cls.current = icons.render_icons(document, version="0.23.0")
 
     def test_only_reviewed_proton_pass_changes_and_other_291_drawings_remain_exact(self):
-        self.assertEqual(icons.VERSION, "0.26.0")
+        self.assertEqual(icons.VERSION, "0.27.0")
         self.assertEqual(set(icons.CONTAINED_GLYPHS), {"proton-pass"})
         self.assertEqual(set(self.current), set(self.old))
         expected_changes = set(REVIEWED_CONTAINED_SVG_DIGESTS["0.23.0"])
@@ -888,6 +890,57 @@ class CommunicationDrawingIdentityTests(unittest.TestCase):
         for name, expected in REVIEWED_COMMUNICATION_SVG_DIGESTS.items():
             with self.subTest(name=name):
                 self.assertEqual(hashlib.sha256(files[name]).hexdigest(), expected)
+
+class RouteClearanceTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.before = icons.render_icons(icons.load_icon_tokens("0.26.0"), version="0.26.0")
+        cls.after = icons.render_icons(icons.load_icon_tokens("0.27.0"), version="0.27.0")
+
+    def test_only_united_changes_and_all_other_299_drawings_remain_byte_exact(self):
+        before = json.loads(self.before["manifest.json"])
+        after = json.loads(self.after["manifest.json"])
+        self.assertEqual(after["version"], "0.27.0")
+        self.assertEqual(after["catalog"], before["catalog"])
+        self.assertEqual(after["functions"], before["functions"])
+        self.assertEqual(len(after["functions"]), 300)
+        self.assertEqual(set(self.after), set(self.before))
+        changed = {name for name in self.after if name.endswith(".svg")
+                   and self.after[name] != self.before[name]}
+        self.assertEqual(changed, {"Clair/united-airlines.svg", "Obscur/united-airlines.svg"})
+        self.assertEqual(sum(name.endswith(".svg") and name not in changed for name in self.after), 598)
+
+    def test_rendered_route_and_globe_have_more_than_one_24_pixel_sample_of_clearance(self):
+        # Flattened curve distance is a geometry regression, not a recognition test.
+        # The retained 0.26 witness remains below half a pixel at the same scale.
+        for appearance in ("Clair", "Obscur"):
+            with self.subTest(appearance=appearance):
+                name = appearance + "/united-airlines.svg"
+                old = ET.fromstring(self.before[name]).find(NS + "g")
+                new = ET.fromstring(self.after[name]).find(NS + "g")
+                stroke = float(new.get("stroke-width"))
+                self.assertLess(_outline_gap(old[0], old[2], stroke), 8.5)
+                self.assertGreaterEqual(_outline_gap(new[0], new[2], stroke), 23.5)
+                self.assertGreater(23.5 * 24 / 512, 1)
+
+    def test_reviewed_shape_keeps_the_original_route_endpoints_stroke_and_polarity(self):
+        # These hashes were captured from the independently viewed selected option.
+        expected = {
+            "Clair": "3557b9a9ae7019ac6322911cac54b195133de0071f51a9183eeb1eb707f24b78",
+            "Obscur": "5dcebc5bffa86b2a15b0dde44d5eff50f7972b255a42f78fbcc6ac3cb1853889",
+        }
+        for appearance, digest in expected.items():
+            name = appearance + "/united-airlines.svg"
+            self.assertEqual(hashlib.sha256(self.after[name]).hexdigest(), digest)
+            old = ET.fromstring(self.before[name]).find(NS + "g")
+            new = ET.fromstring(self.after[name]).find(NS + "g")
+            self.assertEqual(new.attrib, old.attrib)
+            self.assertEqual(new.get("stroke-width"), "16")
+            self.assertEqual([(n.tag, n.attrib) for n in new[2:]],
+                             [(n.tag, n.attrib) for n in old[2:]])
+        self.assertEqual(_geometry(self.after["Clair/united-airlines.svg"]),
+                         _geometry(self.after["Obscur/united-airlines.svg"]))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -70,17 +70,30 @@ Relative member paths have at most 240 ASCII characters and eight components.
 Windows device names, parent traversal and file/directory prefix conflicts are
 unsupported. These rules also apply to extra entries before any content is read.
 
-The measured 0.26.0 candidate uses the following finite allowances.
+The measured 0.27.0 source candidate uses the following finite allowances.
 
 | Limit | Value |
 | --- | --- |
 | Manifest | 70,656 bytes |
-| Declared hashes | 677 |
-| Expected or observed files and directories | 701, excluding the root |
+| Declared hashes | 678 |
+| Expected or observed files and directories | 702, excluding the root |
 | Each declared member | 8,388,608 bytes |
-| Total returned read bytes, including both manifest reads | 27,262,976 |
+| Total returned read bytes, including both manifest reads | 28,311,552 |
 | Read chunk | At most 65,536 bytes |
 | Complete stdout report, including LF newlines | 262,144 bytes |
+
+The first 0.27.0 capacity baseline measured 679 regular files and 19 directories,
+giving 698 entries and 678 declared hashes. It retains the complete 0.26.0 SVG
+archive beside the new collection and all earlier archives. Its manifest was
+70,084 bytes, and the largest member was the 2,764,251-byte source archive.
+Declared content and both manifest reads totaled 28,168,555 returned bytes.
+Admission needed two additional bytes for EOF and final-manifest reservation,
+giving a minimum allowance of 28,168,557 bytes. That measured minimum exceeds
+the former 26 MiB bound. The new finite aggregate allowance is 27 MiB, while
+the manifest, per-member, read-chunk and report bounds remain unchanged. The
+entry allowance retains room to report four extra files. These measurements
+precede the cap, test and guide updates. Qualify the final frozen source artifact
+and kit separately.
 
 The first corrected 0.26.0 precommit candidate measured 678 regular files and
 19 directories, giving 697 entries. It includes the current collection and all
@@ -88,8 +101,8 @@ The first corrected 0.26.0 precommit candidate measured 678 regular files and
 Its 69,969-byte manifest exceeds the former 68 KiB limit, so the finite allowance
 is 69 KiB. Declared content and both manifest reads totaled 26,846,251 returned
 bytes. Admission also needs two bytes of headroom for EOF and final-manifest
-reservation, giving a minimum allowance of 26,846,253 bytes. The aggregate bound
-is 26 MiB. That reservation is distinct from returned data or the ZIP file size.
+reservation, giving a minimum allowance of 26,846,253 bytes. Its aggregate bound
+was 26 MiB. That reservation is distinct from returned data or the ZIP file size.
 These measurements identify the first corrected precommit candidate. Qualify
 the final source artifact and kit separately.
 
