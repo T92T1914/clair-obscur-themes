@@ -10,10 +10,12 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 import xml.etree.ElementTree as ET
 from zipfile import ZipFile
 
 from android import build
+from themeforge import android_iconpack as pack
 
 
 class AndroidBuildAdmissionTests(unittest.TestCase):
@@ -25,11 +27,60 @@ class AndroidBuildAdmissionTests(unittest.TestCase):
     def test_static_manifest_retains_the_current_separate_pack_identity(self):
         root = ET.parse(build.ROOT / "android/app/AndroidManifest.xml").getroot()
         self.assertEqual(root.attrib["package"], "io.github.t92t1914.obscuricons")
-        self.assertEqual(root.attrib[build.ANDROID + "versionCode"], "10")
-        self.assertEqual(root.attrib[build.ANDROID + "versionName"], "0.1.9")
+        self.assertEqual(root.attrib[build.ANDROID + "versionCode"], "11")
+        self.assertEqual(root.attrib[build.ANDROID + "versionName"], "0.1.10")
         self.assertEqual(root.findall("uses-permission"), [])
         self.assertEqual(len(root.findall("queries")), 1)
         self.assertEqual(list(root.find("queries")), [])
+        build._validate_source_identity(build.ROOT / "android/app", pack.VERSION, pack.ARTWORK_VERSION)
+
+    def static_source(self):
+        source = self.root / "source/android/app"
+        (source / "res/values").mkdir(parents=True)
+        for name in ("AndroidManifest.xml", "res/values/strings.xml"):
+            (source / name).write_bytes((build.ROOT / "android/app" / name).read_bytes())
+        return source
+
+    def test_stale_displayed_versions_are_refused_before_build_output_or_sdk_work(self):
+        source = self.static_source()
+        strings = source / "res/values/strings.xml"
+        original = strings.read_text(encoding="utf-8")
+        output = self.root / "build"
+        arguments = ["--png-dir", str(self.root / "missing-png"), "--sdk", str(self.root / "missing-sdk"),
+                     "--java-bin", str(self.root / "missing-java/bin"), "--output-dir", str(output)]
+        for label in ("Icon pack 0.1.8 | Artwork 0.25.0", "Icon pack 0.1.9 | Artwork 0.26.0",
+                      "Icon pack 0.1.10 | Artwork 0.25.0"):
+            strings.write_text(original.replace(build._version_label(), label), encoding="utf-8")
+            diagnostic = io.StringIO()
+            with self.subTest(label=label), patch.object(build, "ROOT", source.parents[1]), \
+                    contextlib.redirect_stderr(diagnostic), self.assertRaises(SystemExit) as error:
+                build.main(arguments)
+            self.assertEqual(error.exception.code, 2)
+            self.assertIn("Static versions string differs", diagnostic.getvalue())
+            self.assertFalse(output.exists())
+
+    def test_missing_or_duplicate_static_versions_are_refused(self):
+        source = self.static_source()
+        strings = source / "res/values/strings.xml"
+        label = '<string name="versions">' + build._version_label() + '</string>'
+        for content in ("", label + label):
+            strings.write_text("<resources>" + content + "</resources>", encoding="utf-8")
+            with self.subTest(content=content), self.assertRaisesRegex(ValueError, "Static versions string differs"):
+                build._validate_source_identity(source, pack.VERSION, pack.ARTWORK_VERSION)
+
+    def test_static_manifest_and_preparer_versions_must_match_build_identity(self):
+        source = self.static_source()
+        manifest = source / "AndroidManifest.xml"
+        original = manifest.read_text(encoding="utf-8")
+        for old, replacement in (('versionCode="11"', 'versionCode="10"'),
+                                 ('versionName="0.1.10"', 'versionName="0.1.9"')):
+            manifest.write_text(original.replace(old, replacement), encoding="utf-8")
+            with self.subTest(replacement=replacement), self.assertRaisesRegex(ValueError, "manifest package/version"):
+                build._validate_source_identity(source, pack.VERSION, pack.ARTWORK_VERSION)
+        manifest.write_text(original, encoding="utf-8")
+        for version, artwork in (("0.1.9", "0.26.0"), ("0.1.10", "0.25.0")):
+            with self.subTest(version=version, artwork=artwork), self.assertRaisesRegex(ValueError, "preparer versions"):
+                build._validate_source_identity(source, version, artwork)
 
     def test_existing_output_and_managed_source_paths_are_refused(self):
         output = self.root / "existing"
@@ -93,7 +144,7 @@ class AndroidBuildAdmissionTests(unittest.TestCase):
             {"package": "example.second", "label": "Second", "id": "second"},
         ]
         (project / "assets/catalog.json").write_text(json.dumps({"schema_version": 1,
-            "artwork_version": "0.26.0", "pack_version": "0.1.9", "packages": rows}), encoding="utf-8")
+            "artwork_version": "0.26.0", "pack_version": "0.1.10", "packages": rows}), encoding="utf-8")
         (project / "AndroidManifest.xml").write_text(
             '<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="' + build.PACKAGE + '">' +
             permission + '<queries/><application/></manifest>', encoding="utf-8")
@@ -115,7 +166,7 @@ class AndroidBuildAdmissionTests(unittest.TestCase):
         before = manifest.read_bytes()
         catalog_path = project / "assets/catalog.json"
         original = json.loads(catalog_path.read_text())
-        for field, value in (("pack_version", "0.1.0"), ("pack_version", "0.1.2"), ("pack_version", "0.1.3"), ("pack_version", "0.1.4"), ("pack_version", "0.1.5"), ("pack_version", "0.1.6"), ("pack_version", "0.1.7"), ("pack_version", "0.1.8"),
+        for field, value in (("pack_version", "0.1.0"), ("pack_version", "0.1.2"), ("pack_version", "0.1.3"), ("pack_version", "0.1.4"), ("pack_version", "0.1.5"), ("pack_version", "0.1.6"), ("pack_version", "0.1.7"), ("pack_version", "0.1.8"), ("pack_version", "0.1.9"),
                              ("artwork_version", "0.17.0"), ("artwork_version", "0.19.0"), ("artwork_version", "0.20.0"), ("artwork_version", "0.21.0"), ("artwork_version", "0.22.0"), ("artwork_version", "0.23.0"), ("artwork_version", "0.24.0"), ("artwork_version", "0.25.0")):
             catalog_path.write_text(json.dumps({**original, field: value}), encoding="utf-8")
             with self.subTest(field=field), self.assertRaisesRegex(ValueError, "version is unsupported"):
@@ -187,8 +238,15 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
         self.dump = ('E: resources (line=1)\n  E: item (line=1)\n'
                      '    A: component="ComponentInfo{example.app/example.app.Main}"\n'
                      '    A: drawable="co_icon_0"\n')
-        self.badging = ("package: name='" + build.PACKAGE + "' versionCode='10' versionName='0.1.9'\n"
+        self.badging = ("package: name='" + build.PACKAGE + "' versionCode='11' versionName='0.1.10'\n"
                         "minSdkVersion:'26'\ntargetSdkVersion:'36'\n")
+        self.resources = ('Package name=' + build.PACKAGE + ' id=7f\n'
+                          '  type string id=02 entryCount=2\n'
+                          '    resource 0x7f020007 string/introduction\n'
+                          '      () "Black and white icons from Clair and Obscur."\n'
+                          '    resource 0x7f020008 string/versions\n'
+                          '      () "Icon pack 0.1.10 | Artwork 0.26.0"\n'
+                          '  type style id=03 entryCount=1\n')
 
     def apk(self, changed=None):
         path = self.root / "fixture.apk"
@@ -201,27 +259,48 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
         return path
 
     def test_byte_boundary_accepts_unchanged_pngs_after_resource_path_versioning(self):
-        result = build._verify_apk(self.apk(), self.project, self.prepared, self.dump, self.badging)
+        result = build._verify_apk(self.apk(), self.project, self.prepared, self.dump, self.badging, self.resources)
         self.assertEqual(result["drawables_byte_exact"], 300)
         self.assertEqual(result["compiled_component_mappings"], 1)
+        self.assertEqual(result["displayed_versions"], "Icon pack 0.1.10 | Artwork 0.26.0")
 
     def test_changed_png_bytes_are_refused(self):
         with self.assertRaisesRegex(ValueError, "PNG (size|byte)"):
             build._verify_apk(self.apk("res/drawable-nodpi/co_icon_0.png"), self.project,
-                              self.prepared, self.dump, self.badging)
+                              self.prepared, self.dump, self.badging, self.resources)
 
     def test_changed_project_asset_cannot_supply_its_own_expected_answer(self):
         (self.project / "assets/catalog.json").write_text('{"scope":"changed project"}')
         with self.assertRaisesRegex(ValueError, "Prepared project file changed"):
-            build._verify_apk(self.apk(), self.project, self.prepared, self.dump, self.badging)
+            build._verify_apk(self.apk(), self.project, self.prepared, self.dump, self.badging, self.resources)
 
     def test_compiled_mapping_and_permissions_are_independent_rejections(self):
         apk = self.apk()
         with self.assertRaisesRegex(ValueError, "Compiled appfilter"):
-            build._verify_apk(apk, self.project, self.prepared, self.dump.replace("co_icon_0", "co_wrong"), self.badging)
+            build._verify_apk(apk, self.project, self.prepared, self.dump.replace("co_icon_0", "co_wrong"), self.badging, self.resources)
         with self.assertRaisesRegex(ValueError, "permission"):
             build._verify_apk(apk, self.project, self.prepared, self.dump,
-                              self.badging + "uses-permission: name='android.permission.INTERNET'\n")
+                              self.badging + "uses-permission: name='android.permission.INTERNET'\n", self.resources)
+
+    def test_stale_compiled_versions_are_refused_despite_current_package_badging(self):
+        apk = self.apk()
+        for label in ("Icon pack 0.1.8 | Artwork 0.25.0", "Icon pack 0.1.9 | Artwork 0.26.0",
+                      "Icon pack 0.1.10 | Artwork 0.25.0"):
+            resources = self.resources.replace(build._version_label(), label)
+            with self.subTest(label=label), self.assertRaisesRegex(ValueError, "Compiled APK versions string differs"):
+                build._verify_apk(apk, self.project, self.prepared, self.dump, self.badging, resources)
+
+    def test_compiled_versions_require_one_default_without_configured_variants(self):
+        apk = self.apk()
+        default = '      () "' + build._version_label() + '"\n'
+        declaration = '    resource 0x7f020008 string/versions\n'
+        for resources in ("", self.resources.replace(declaration, declaration.replace("versions", "unrelated")),
+                          self.resources.replace(default, ""), self.resources.replace(default, default + default),
+                          self.resources.replace(default, '      (en) "' + build._version_label() + '"\n'),
+                          self.resources.replace(default, default + '      (en) "obsolete label"\n'),
+                          self.resources + declaration + default):
+            with self.subTest(resources=resources), self.assertRaisesRegex(ValueError, "Compiled APK versions string differs"):
+                build._verify_apk(apk, self.project, self.prepared, self.dump, self.badging, resources)
 
     def test_prior_or_mixed_apk_versions_are_refused(self):
         apk = self.apk()
@@ -232,11 +311,12 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
                            ("6", "0.1.6"), ("7", "0.1.5"), ("7", "0.1.6"),
                            ("7", "0.1.7"), ("8", "0.1.6"), ("8", "0.1.7"),
                            ("8", "0.1.8"), ("9", "0.1.7"),
-                           ("9", "0.1.8"), ("9", "0.1.9"), ("10", "0.1.8")):
+                           ("9", "0.1.8"), ("9", "0.1.9"), ("10", "0.1.8"),
+                           ("10", "0.1.9"), ("10", "0.1.10"), ("11", "0.1.9")):
             badging = (f"package: name='{build.PACKAGE}' versionCode='{code}' versionName='{name}'\n"
                        "minSdkVersion:'26'\ntargetSdkVersion:'36'\n")
             with self.subTest(code=code, name=name), self.assertRaisesRegex(ValueError, "package/version differs"):
-                build._verify_apk(apk, self.project, self.prepared, self.dump, badging)
+                build._verify_apk(apk, self.project, self.prepared, self.dump, badging, self.resources)
 
 
 if __name__ == "__main__":

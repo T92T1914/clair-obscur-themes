@@ -204,7 +204,7 @@ class AndroidIconPackTests(unittest.TestCase):
 
     def test_exact_resource_bytes_full_components_and_public_catalog(self):
         manifest = pack.prepare_iconpack(self.export, self.components, self.output)
-        self.assertEqual(manifest["version"], "0.1.9")
+        self.assertEqual(manifest["version"], "0.1.10")
         self.assertEqual(manifest["counts"]["drawables"], 300)
         self.assertEqual(manifest["counts"]["component_mappings"], 3)
         self.assertEqual(manifest["counts"]["upstream_component_mappings"], 3)
@@ -227,7 +227,7 @@ class AndroidIconPackTests(unittest.TestCase):
                              (self.export / f"Obscur/512/{identifier}.png").read_bytes())
         catalog = json.loads((self.output / "assets/catalog.json").read_bytes())
         self.assertEqual(set(catalog), {"schema_version", "artwork_version", "pack_version", "packages"})
-        self.assertEqual(catalog["pack_version"], "0.1.9")
+        self.assertEqual(catalog["pack_version"], "0.1.10")
         self.assertEqual(catalog["artwork_version"], "0.26.0")
         self.assertEqual(next(row for row in catalog["packages"]
                               if row["package"] == "com.google.android.inputmethod.latin"),
@@ -507,7 +507,7 @@ class AndroidIconPackTests(unittest.TestCase):
         canonical = pack.ROOT / "android/iconpack/components.json"
         with patch.object(pack, "COMPONENTS", canonical):
             manifest = pack.prepare_iconpack(self.export, canonical, self.output)
-        self.assertEqual(manifest["version"], "0.1.9")
+        self.assertEqual(manifest["version"], "0.1.10")
         self.assertEqual(manifest["artwork_version"], "0.26.0")
         self.assertEqual(manifest["counts"]["drawables"], 300)
         self.assertEqual(manifest["counts"]["component_mappings"], 1354)

@@ -15,8 +15,8 @@ import xml.etree.ElementTree as ET
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.1.9"
-VERSION_CODE = 10
+VERSION = "0.1.10"
+VERSION_CODE = 11
 ARTWORK_VERSION = "0.26.0"
 PACKAGE = "io.github.t92t1914.obscuricons"
 BUILD_TOOLS = "36.1.0"
@@ -103,6 +103,30 @@ def _copy_static(source: Path, project: Path) -> None:
             raise ValueError("Static source changed during copying: " + str(path))
 
 
+def _version_label() -> str:
+    return f"Icon pack {VERSION} | Artwork {ARTWORK_VERSION}"
+
+
+def _validate_source_identity(source: Path, preparer_version: str, preparer_artwork_version: str) -> None:
+    if (preparer_version, preparer_artwork_version) != (VERSION, ARTWORK_VERSION):
+        raise ValueError("Icon-pack preparer versions differ from the build identity.")
+    manifest, strings = source / "AndroidManifest.xml", source / "res/values/strings.xml"
+    _identity(manifest)
+    _identity(strings)
+    try:
+        root = ET.parse(manifest).getroot()
+        resources = ET.parse(strings).getroot()
+    except ET.ParseError as error:
+        raise ValueError("Static app identity XML is invalid.") from error
+    if (root.tag != "manifest" or (root.attrib.get("package"), root.attrib.get(ANDROID + "versionCode"),
+            root.attrib.get(ANDROID + "versionName")) != (PACKAGE, str(VERSION_CODE), VERSION)):
+        raise ValueError("Static app manifest package/version differs from the build identity.")
+    labels = resources.findall("string[@name='versions']")
+    if (resources.tag != "resources" or len(labels) != 1 or list(labels[0])
+            or labels[0].text != _version_label()):
+        raise ValueError("Static versions string differs from the pack and artwork identity.")
+
+
 def _write_queries(project: Path) -> list[str]:
     catalog_path = project / "assets/catalog.json"
     _identity(catalog_path)
@@ -163,7 +187,24 @@ def _compiled_pairs(text: str) -> list[tuple[str, str]]:
     return pairs
 
 
-def _verify_apk(apk: Path, project: Path, prepared: dict, compiled_filter: str, badging: str) -> dict:
+def _compiled_version_label(text: str) -> str:
+    declarations, values, current = 0, [], False
+    for line in text.splitlines():
+        resource = re.match(r"\s*resource\s+0x[0-9a-fA-F]+\s+(\S+)", line)
+        if resource:
+            current = resource[1] == "string/versions"
+            declarations += int(current)
+        elif re.match(r"\s*(?:type|Package)\s", line):
+            current = False
+        elif current and line.strip():
+            values.append(line.strip())
+    if declarations != 1 or values != ['() "' + _version_label() + '"']:
+        raise ValueError("Compiled APK versions string differs from the pack and artwork identity.")
+    return _version_label()
+
+
+def _verify_apk(apk: Path, project: Path, prepared: dict, compiled_filter: str, badging: str,
+                compiled_resources: str) -> dict:
     expected_png = {Path(row["path"]).name: row for row in prepared["files"]
                     if row["path"].startswith("res/drawable-nodpi/") and row["path"].endswith(".png")}
     if len(expected_png) != 300:
@@ -179,6 +220,7 @@ def _verify_apk(apk: Path, project: Path, prepared: dict, compiled_filter: str, 
         raise ValueError("The APK unexpectedly requests a permission.")
     if "minSdkVersion:'26'" not in badging or "targetSdkVersion:'36'" not in badging:
         raise ValueError("Compiled APK API requirements differ from this build.")
+    versions = _compiled_version_label(compiled_resources)
     for row in prepared["files"]:
         if _identity(project / row["path"]) != {key: row[key] for key in ("bytes", "sha256")}:
             raise ValueError("Prepared project file changed: " + row["path"])
@@ -214,7 +256,7 @@ def _verify_apk(apk: Path, project: Path, prepared: dict, compiled_filter: str, 
         if "classes.dex" not in names or not archive.read("classes.dex").startswith(b"dex\n"):
             raise ValueError("The APK has no DEX program.")
     return {"drawables_byte_exact": 300, "assets_byte_exact": len(assets),
-            "compiled_component_mappings": len(expected_pairs), "permissions": []}
+            "compiled_component_mappings": len(expected_pairs), "displayed_versions": versions, "permissions": []}
 
 
 def _run(argv: list[str], output: Path, name: str, report: dict, environment: dict) -> str:
@@ -270,13 +312,16 @@ def main(argv: list[str] | None = None) -> int:
                 raise ValueError("Use an existing Android keystore outside the repository.")
             if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", options.ks_pass_env) or options.ks_pass_env not in os.environ:
                 raise ValueError("--ks-pass-env must name an existing environment variable.")
+        sys.path.insert(0, str(ROOT))
+        from themeforge import android_iconpack
+        static = ROOT / "android/app"
+        _validate_source_identity(static, android_iconpack.VERSION, android_iconpack.ARTWORK_VERSION)
         bt = sdk / "build-tools" / BUILD_TOOLS
         executable = ".exe" if os.name == "nt" else ""
         tools = {"java": java_bin / ("java" + executable), "javac": java_bin / ("javac" + executable),
                  "aapt2": bt / ("aapt2" + executable), "zipalign": bt / ("zipalign" + executable),
                  "d8": bt / "lib/d8.jar", "apksigner": bt / "lib/apksigner.jar",
                  "android_jar": sdk / "platforms/android-36/android.jar"}
-        static = ROOT / "android/app"
         source_files = _tree_files(static) + [Path(__file__).absolute(), ROOT / "themeforge/android_iconpack.py",
             ROOT / "themeforge/icons.py", ROOT / "themeforge/icon_apps.py", ROOT / "tokens-monochrome.json",
             components, ROOT / "android/iconpack/components.json", png / "manifest.json"]
@@ -292,13 +337,12 @@ def main(argv: list[str] | None = None) -> int:
               "inputs": identities, "commands": []}
     receipt.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     try:
-        sys.path.insert(0, str(ROOT))
-        from themeforge.android_iconpack import prepare_iconpack
         project = output / "project"
-        prepared = prepare_iconpack(png, components, project)
+        prepared = android_iconpack.prepare_iconpack(png, components, project)
         if (prepared.get("version"), prepared.get("artwork_version"), prepared.get("appearance")) != (VERSION, ARTWORK_VERSION, "Obscur") or prepared.get("counts", {}).get("drawables") != 300:
             raise ValueError("Unexpected prepared icon-pack identity or inventory.")
         _copy_static(static, project)
+        _validate_source_identity(project, android_iconpack.VERSION, android_iconpack.ARTWORK_VERSION)
         queries = _write_queries(project)
         report["preparation"] = prepared
         report["package_queries"] = queries
@@ -360,7 +404,8 @@ def main(argv: list[str] | None = None) -> int:
         run("08-zipalign-check", [str(tools["zipalign"]), "-c", "-P", "16", "4", str(final)])
         tree = run("09-appfilter-readback", [str(tools["aapt2"]), "dump", "xmltree", str(final), "--file", "res/xml/appfilter.xml"])
         badging = run("10-package-readback", [str(tools["aapt2"]), "dump", "badging", str(final)])
-        report["APK_checks"] = _verify_apk(final, project, prepared, tree, badging)
+        resource_dump = run("11-resource-readback", [str(tools["aapt2"]), "dump", "resources", str(final)])
+        report["APK_checks"] = _verify_apk(final, project, prepared, tree, badging, resource_dump)
         if {str(path): _identity(path) for path in inputs} != identities:
             raise ValueError("Build source or SDK inputs changed. Preserve this build as unqualified.")
         if {str(path.relative_to(project)): _identity(path) for path in _tree_files(project)} != project_inputs:
