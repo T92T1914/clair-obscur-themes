@@ -17,7 +17,7 @@ import zlib
 from .icons import ROOT, _read_tree, _safe_output, load_icon_tokens, render_icons
 
 
-VERSION = "0.1.9"
+VERSION = "0.1.10"
 ARTWORK_VERSION = "0.26.0"
 APPEARANCE = "Obscur"
 COMPONENTS = ROOT / "android/iconpack/components.json"
