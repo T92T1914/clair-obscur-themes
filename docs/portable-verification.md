@@ -70,26 +70,34 @@ Relative member paths have at most 240 ASCII characters and eight components.
 Windows device names, parent traversal and file/directory prefix conflicts are
 unsupported. These rules also apply to extra entries before any content is read.
 
-The measured 0.25.0 kit uses the following finite allowances.
+The measured 0.26.0 candidate uses the following finite allowances.
 
 | Limit | Value |
 | --- | --- |
-| Manifest | 69,632 bytes |
-| Declared hashes | 668 |
-| Expected or observed files and directories | 692, excluding the root |
+| Manifest | 70,656 bytes |
+| Declared hashes | 677 |
+| Expected or observed files and directories | 701, excluding the root |
 | Each declared member | 8,388,608 bytes |
-| Total returned read bytes, including both manifest reads | 26,214,400 |
+| Total returned read bytes, including both manifest reads | 27,262,976 |
 | Read chunk | At most 65,536 bytes |
 | Complete stdout report, including LF newlines | 262,144 bytes |
 
-The 0.25.0 kit has 669 regular files and 19 directories, including the current
-collection and all 24 preserved SVG archives. The limits retain room to report
-four extra entries. Its complete declared bytes and two manifest reads exceed
-24 MiB, so the read limit is 25 MiB. Its manifest exceeds the earlier 67 KiB limit,
-so the finite allowance is 68 KiB. Admission of an intact kit also needs two bytes
-of headroom beyond its returned read total for EOF and final-manifest reservation
-checks. That reservation is distinct from returned data or the ZIP file size.
-Other path, member and chunk limits remain in force.
+The first corrected 0.26.0 precommit candidate measured 678 regular files and
+19 directories, giving 697 entries. It includes the current collection and all
+25 preserved SVG archives. The limits retain room to report four extra entries.
+Its 69,969-byte manifest exceeds the former 68 KiB limit, so the finite allowance
+is 69 KiB. Declared content and both manifest reads totaled 26,846,251 returned
+bytes. Admission also needs two bytes of headroom for EOF and final-manifest
+reservation, giving a minimum allowance of 26,846,253 bytes. The aggregate bound
+is 26 MiB. That reservation is distinct from returned data or the ZIP file size.
+These measurements identify the first corrected precommit candidate. Qualify
+the final source artifact and kit separately.
+
+The accepted 0.25.0 main kit remains separate: 669 regular files, 668 hashes,
+19 directories, 688 entries, a 69,069-byte manifest and 25,502,403 returned read
+bytes. Its former 668-hash, 692-entry, 68 KiB-manifest and 25 MiB-read boundaries
+remain covered as positive historical cases. Other path, member, chunk and
+report limits remain in force.
 
 It checks path metadata against opened regular-file handles, repeats the bounded
 inventory, and requires the final manifest bytes to equal the captured bytes.

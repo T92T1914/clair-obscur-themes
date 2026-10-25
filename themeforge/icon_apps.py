@@ -2464,3 +2464,53 @@ SEVENTEENTH_APP_CATALOG = (
         "selection_basis": "Inspected official Google Play listing with 100M+ cumulative downloads; missing messaging assignment",
     },
 )
+
+
+EIGHTEENTH_CATALOG_DATE = "2026-10-24"
+EIGHTEENTH_CATALOG_SCOPE = (
+    "Adds four communication assignments from inspected official Google Play listings and cumulative download bands. "
+    "No popularity ranking, device availability or phone installation is established."
+)
+
+EIGHTEENTH_APP_CATALOG = (
+    {
+        "id": "imo",
+        "label": "imo",
+        "store_title": "imo-International Calls & Chat",
+        "kind": "app",
+        "category": "communication",
+        "android_package": "com.imo.android.imoim",
+        "store_url": "https://play.google.com/store/apps/details?id=com.imo.android.imoim",
+        "selection_basis": "Inspected official Google Play listing with 1B+ cumulative downloads. Adds the missing main imo messaging assignment. Beta, HD and Lite use separate packages. Listing identity does not establish device availability or phone installation.",
+    },
+    {
+        "id": "zalo",
+        "label": "Zalo",
+        "store_title": "Zalo",
+        "kind": "app",
+        "category": "communication",
+        "android_package": "com.zing.zalo",
+        "store_url": "https://play.google.com/store/apps/details?id=com.zing.zalo",
+        "selection_basis": "Inspected official Google Play listing with 100M+ cumulative downloads. Adds a missing messaging assignment. Listing identity does not establish device availability or phone installation.",
+    },
+    {
+        "id": "bip",
+        "label": "BiP",
+        "store_title": "BiP - Messenger, Video Call",
+        "kind": "app",
+        "category": "communication",
+        "android_package": "com.turkcell.bip",
+        "store_url": "https://play.google.com/store/apps/details?id=com.turkcell.bip",
+        "selection_basis": "Inspected official Google Play listing with 100M+ cumulative downloads. Adds a missing messaging and calling assignment. Listing identity does not establish device availability or phone installation.",
+    },
+    {
+        "id": "google-chat",
+        "label": "Google Chat",
+        "store_title": "Google Chat",
+        "kind": "app",
+        "category": "communication",
+        "android_package": "com.google.android.apps.dynamite",
+        "store_url": "https://play.google.com/store/apps/details?id=com.google.android.apps.dynamite",
+        "selection_basis": "Inspected official Google Play listing with 50M+ cumulative downloads. Adds a missing workplace messaging assignment. The package is distinct from Google Messages and Meet. Listing identity does not establish device availability or phone installation.",
+    },
+)
