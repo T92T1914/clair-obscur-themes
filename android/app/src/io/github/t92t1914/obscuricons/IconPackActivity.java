@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Xml;
@@ -34,9 +33,10 @@ public final class IconPackActivity extends Activity {
         final int padding = dp(24);
         ScrollView scroll = new ScrollView(this);
         scroll.setFillViewport(true);
+        scroll.setBackgroundColor(getColor(R.color.iconpack_background));
         LinearLayout body = new LinearLayout(this);
         body.setOrientation(LinearLayout.VERTICAL);
-        body.setBackgroundColor(Color.BLACK);
+        body.setBackgroundColor(getColor(R.color.iconpack_background));
         body.setPadding(padding, padding, padding, padding);
         body.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
             @Override public WindowInsets onApplyWindowInsets(View view, WindowInsets insets) {
@@ -80,7 +80,7 @@ public final class IconPackActivity extends Activity {
                             }
                         });
                     }
-                }, "ObscurLocalCoverage").start();
+                }, "IconPackLocalCoverage").start();
             }
         });
         scroll.addView(body);
@@ -95,7 +95,7 @@ public final class IconPackActivity extends Activity {
     private TextView addText(LinearLayout body, String text, int size, boolean title) {
         TextView label = new TextView(this);
         label.setText(text);
-        label.setTextColor(Color.WHITE);
+        label.setTextColor(getColor(R.color.iconpack_foreground));
         label.setTextSize(size);
         label.setLineSpacing(dp(4), 1.0f);
         if (title) label.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));

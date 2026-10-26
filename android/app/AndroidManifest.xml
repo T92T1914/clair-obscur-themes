@@ -7,7 +7,7 @@
     <application android:label="@string/app_name" android:icon="@drawable/co_settings"
         android:allowBackup="false" android:fullBackupContent="false"
         android:supportsRtl="true" android:theme="@style/IconPackTheme">
-        <activity android:name=".IconPackActivity" android:exported="true">
+        <activity android:name="io.github.t92t1914.obscuricons.IconPackActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

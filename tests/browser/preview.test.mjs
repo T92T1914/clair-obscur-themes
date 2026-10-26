@@ -1129,6 +1129,85 @@ test('static delivery remains usable without JavaScript and internal links resol
   } finally { await context.close(); }
 });
 
+test('Clair and Obscur Android instructions retain keyboard source access and honest native limits', { timeout: 90000 }, async () => {
+  for (const scripted of [true, false]) for (const width of [390, 1280]) {
+    const { context, page, consoleErrors } = await pageFor({
+      javaScriptEnabled: scripted, viewport: { width, height: 900 },
+      setup: async (_context, page) => {
+        // Load enlarged CSS without relying on a script-driven style-load promise.
+        if (width === 390) await page.route('**/preview.css', async route => route.fulfill({
+          contentType: 'text/css', body: await readFile(path.join(site, 'preview.css'), 'utf8')
+            + '\n#icon-png-instructions p { font-size: 28px !important; line-height: 1.5 !important; }',
+        }));
+      },
+    });
+    try {
+      const chooser = [await page.locator('#package-target').inputValue(), await page.locator('#package-appearance').inputValue()];
+      for (const appearance of scripted ? ['Obscur', 'Clair'] : ['Obscur']) {
+        if (scripted) {
+          await page.getByRole('button', { name: appearance, exact: true }).focus();
+          await page.keyboard.press('Enter');
+        }
+        assert.equal(await page.locator('html').getAttribute('data-theme'), appearance);
+        const details = page.locator('#icon-png-instructions'), summary = details.locator(':scope > summary');
+        assert.equal(await details.evaluate(node => node.open), false);
+        await summary.focus(); await page.keyboard.press('Enter');
+        assert.equal(await details.evaluate(node => node.open), true);
+        const companion = details.locator('p').filter({ hasText: 'The Android source offers a separate Clair Android icon-pack' });
+        assert.equal(await companion.count(), 1); assert.ok(await companion.isVisible());
+        assert.match(await companion.innerText(), /Clair Android icon-pack 0\.1\.0 companion/);
+        assert.match(await companion.innerText(), /Obscur Android icon-pack 0\.1\.11/);
+        assert.match(await companion.innerText(), /accepted 0\.27\.0 artwork/);
+        assert.match(await companion.innerText(), /Obscur remains the default build appearance/);
+        assert.match(await companion.innerText(), /signed APK delivery stays private/);
+        const limits = await details.locator('p').last().innerText();
+        assert.match(limits, /Clair installation, coexistence and Theme Park recognition remain unobserved/);
+        assert.match(limits, /APK build or update does not establish assignments or refresh/);
+        assert.equal(await page.locator('a[href$=".apk"]').count(), 0);
+        const layout = await companion.evaluate(node => {
+          const box = node.getBoundingClientRect();
+          return { left: box.left, right: box.right, width: innerWidth, scrollWidth: document.documentElement.scrollWidth, fontSize: getComputedStyle(node).fontSize };
+        });
+        assert.ok(layout.left >= -1 && layout.right <= width + 1 && layout.scrollWidth <= width + 1, JSON.stringify(layout));
+        if (width === 390) assert.equal(layout.fontSize, '28px');
+        await summary.focus(); await page.keyboard.press('Tab');
+        const source = details.locator('a[href="#current-source"]');
+        assert.equal(await source.evaluate(node => node === document.activeElement), true);
+        await page.keyboard.press('Enter'); await page.waitForURL(origin + '/#current-source', { timeout: 5000, waitUntil: 'commit' });
+        assert.equal(await page.locator('#current-source').evaluate(node => node === document.activeElement), true);
+        if (!scripted && width === 390) {
+          const [saved] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }), page.keyboard.press('Enter')]);
+          assert.equal(await saved.failure(), null); assert.equal(saved.suggestedFilename(), 'source.zip');
+          const destination = path.join(temp, 'clair-companion-current-source.zip');
+          await saved.saveAs(destination);
+          const bytes = await readFile(destination), manifest = await (await context.request.get(origin + '/site-manifest.json')).json();
+          assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'), manifest.source.sha256);
+          run(['-c', `
+from pathlib import Path
+from zipfile import ZipFile
+import sys
+if not __debug__: raise RuntimeError('Source acceptance requires enabled assertions')
+p=Path(sys.argv[1]);assert p.stat().st_size < 8*1024*1024
+with ZipFile(p) as z:
+ names=z.namelist();assert len(names)==len(set(names)) and len(names)<512
+ assert sum(i.file_size for i in z.infolist())<32*1024*1024 and z.testzip() is None
+ assert 'android/app/res/values/colors.xml' in names
+ assert b'io.github.t92t1914.clairicons' in z.read('themeforge/android_iconpack.py')
+ assert b'--appearance Clair' in z.read('docs/android-iconpack.md')
+ assert b'io.github.t92t1914.obscuricons' in z.read('docs/android-iconpack.md')
+ assert not any(n.endswith(('.apk','.p12','.jks','.dpapi')) for n in names)
+`, destination]);
+        }
+        await summary.focus(); await page.keyboard.press('Space');
+        assert.equal(await details.evaluate(node => node.open), false);
+        results.scenarios.push({ name: 'paired Android source instructions', scripted, width, appearance, layout, sourceRoute: 'native disclosure and keyboard anchor', scope: 'Text, navigation and one saved source ZIP; no APK, phone, app UI or font acceptance' });
+      }
+      assert.deepEqual([await page.locator('#package-target').inputValue(), await page.locator('#package-appearance').inputValue()], chooser);
+      assert.deepEqual(consoleErrors, []);
+    } finally { await context.close(); }
+  }
+});
+
 async function checkIconGallery(page) {
   assert.equal(await page.locator('#icons').getAttribute('aria-labelledby'), 'icons-heading');
   assert.equal(await page.locator('#icons-heading').textContent(), 'Matching app icons');

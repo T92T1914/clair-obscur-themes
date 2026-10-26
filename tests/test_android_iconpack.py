@@ -26,11 +26,11 @@ def encoded(value):
     return (json.dumps(value, sort_keys=True, indent=2) + "\n").encode()
 
 
-def image(size, color_type=6):
+def image(size, color_type=6, *, level=0):
     def chunk(kind, data):
         return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xffffffff)
     # Synthetic, compressible RGBA bytes. No renderer or installed font is used.
-    scanline = b"\0" + b"\0\0\0\xff" * size
+    scanline = b"\0" + (bytes([level, level, level]) + b"\xff") * size
     return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", size, size, 8, color_type, 0, 0, 0))
             + chunk(b"IDAT", zlib.compress(scanline * size)) + chunk(b"IEND", b""))
 
@@ -135,6 +135,7 @@ class AndroidIconPackTests(unittest.TestCase):
                                      version=pack.ARTWORK_VERSION)["manifest.json"]
         svg_hashes = {row["path"]: row["sha256"] for row in cls.svg["files"]}
         cls.payloads = {size: image(size) for size in (512, 1024)}
+        cls.clair_payloads = {size: image(size, level=255) for size in (512, 1024)}
         records = []
         for appearance in ("Clair", "Obscur"):
             for size in (512, 1024):
@@ -142,7 +143,7 @@ class AndroidIconPackTests(unittest.TestCase):
                 directory.mkdir(parents=True)
                 for identifier in cls.svg["functions"]:
                     relative = f"{appearance}/{size}/{identifier}.png"
-                    raw = cls.payloads[size]
+                    raw = (cls.clair_payloads if appearance == "Clair" else cls.payloads)[size]
                     (cls.export / relative).write_bytes(raw)
                     records.append({"path": relative, "appearance": appearance, "function": identifier,
                                     "width": size, "height": size, "bytes": len(raw), "sha256": digest(raw),
@@ -241,6 +242,49 @@ class AndroidIconPackTests(unittest.TestCase):
             self.assertEqual((len(raw), digest(raw)), (row["bytes"], row["sha256"]))
         self.assertEqual(json.loads((self.output / "iconpack-manifest.json").read_bytes()), manifest)
         self.assertNotIn(str(self.base), json.dumps(manifest))
+
+    def test_clair_selects_all_light_images_and_a_distinct_literal_identity(self):
+        manifest = pack.prepare_iconpack(self.export, self.components, self.output,
+                                         appearance="Clair")
+        self.assertEqual((manifest["appearance"], manifest["application_id"],
+                          manifest["app_label"], manifest["version"], manifest["version_code"]),
+                         ("Clair", "io.github.t92t1914.clairicons", "Clair Icons", "0.1.0", 1))
+        self.assertEqual(manifest["artwork_version"], "0.27.0")
+        self.assertEqual(manifest["counts"]["drawables"], 300)
+        self.assertEqual(manifest["counts"]["component_mappings"], 3)
+        self.assertEqual(ET.parse(self.output / "res/xml/drawable.xml").find(
+            "category").attrib, {"title": "Clair"})
+        drawables = list((self.output / "res/drawable-nodpi").glob("*.png"))
+        self.assertEqual(len(drawables), 300)
+        for target in drawables:
+            self.assertEqual(target.read_bytes(), self.clair_payloads[512])
+            self.assertNotEqual(target.read_bytes(), self.payloads[512])
+        catalog = json.loads((self.output / "assets/catalog.json").read_bytes())
+        self.assertEqual(set(catalog), {"schema_version", "artwork_version", "pack_version", "packages"})
+        self.assertEqual((catalog["pack_version"], catalog["artwork_version"]), ("0.1.0", "0.27.0"))
+        self.assertEqual((self.output / "assets/appfilter.xml").read_bytes(),
+                         (self.output / "res/xml/appfilter.xml").read_bytes())
+
+    def test_cross_appearance_image_and_record_are_refused_for_clair(self):
+        source = self.copy_export()
+        target = source / "Clair/512/phone.png"
+        target.write_bytes(self.payloads[512])
+        with self.assertRaisesRegex(ValueError, "bytes differ"):
+            pack.prepare_iconpack(source, self.components, self.output, appearance="Clair")
+        self.assertFalse(self.output.exists())
+        target.write_bytes(self.clair_payloads[512])
+        document = copy.deepcopy(self.document)
+        document["files"][0]["appearance"] = "Obscur"
+        with self.changed_manifest(source, document), self.assertRaisesRegex(ValueError, "canonical SVG"):
+            pack.prepare_iconpack(source, self.components, self.output, appearance="Clair")
+        self.assertFalse(self.output.exists())
+
+    def test_unsupported_appearance_is_refused_before_input_or_output_access(self):
+        for appearance in (None, "", "clair", "Both", "Obscur/../Clair", True, {"appearance": "Clair"}):
+            with self.subTest(appearance=appearance), self.assertRaisesRegex(ValueError, "Unsupported icon-pack appearance"):
+                pack.prepare_iconpack(self.base / "missing-input", self.components,
+                                      self.output, appearance=appearance)
+            self.assertFalse(self.output.exists())
 
     def test_default_pin_rejects_an_unqualified_export_before_output(self):
         for previous_pin in ("0731e00b9922ada5537f5258fa9d24ea9f50b7eec6a43098fdc911a4c4bc23aa",

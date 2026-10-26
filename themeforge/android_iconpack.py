@@ -1,8 +1,9 @@
-"""Prepare versioned Obscur icon-pack resources from the qualified PNG export."""
+"""Prepare a selected icon-pack appearance from the qualified paired PNG export."""
 
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 from datetime import date
 import hashlib
 import json
@@ -11,6 +12,7 @@ from pathlib import Path
 import re
 import stat
 import struct
+from types import MappingProxyType
 import xml.etree.ElementTree as ET
 import zlib
 
@@ -21,6 +23,30 @@ VERSION = "0.1.11"
 ARTWORK_VERSION = "0.27.0"
 APPEARANCE = "Obscur"
 COMPONENTS = ROOT / "android/iconpack/components.json"
+
+
+@dataclass(frozen=True)
+class IconPackConfiguration:
+    appearance: str
+    package: str
+    label: str
+    version: str
+    version_code: int
+
+
+CONFIGURATIONS = MappingProxyType({
+    "Obscur": IconPackConfiguration("Obscur", "io.github.t92t1914.obscuricons",
+                                     "Obscur Icons", VERSION, 12),
+    "Clair": IconPackConfiguration("Clair", "io.github.t92t1914.clairicons",
+                                    "Clair Icons", "0.1.0", 1),
+})
+
+
+def configuration(appearance: str = APPEARANCE) -> IconPackConfiguration:
+    """Select one supported identity, never an arbitrary package or version."""
+    if type(appearance) is not str or appearance not in CONFIGURATIONS:
+        raise ValueError("Unsupported icon-pack appearance; select Clair or Obscur")
+    return CONFIGURATIONS[appearance]
 
 # Exact export identity; decoded pixel and visual qualification are separate checks.
 PNG_MANIFEST_SHA256 = "0228d1325264b0414977587cbc39fe2557c0ba12f673f38790abdad67d817f1b"
@@ -136,7 +162,8 @@ def drawable_name(identifier: str) -> str:
     return "co_" + identifier.replace("-", "_")
 
 
-def _export(root: Path) -> tuple[dict, dict[str, bytes], dict[Path, str]]:
+def _export(root: Path, selected_appearance: str = APPEARANCE) -> tuple[dict, dict[str, bytes], dict[Path, str]]:
+    configuration(selected_appearance)
     root = _plain(root)
     raw = _read(root / "manifest.json")
     if _digest(raw) != PNG_MANIFEST_SHA256:
@@ -202,7 +229,7 @@ def _export(root: Path) -> tuple[dict, dict[str, bytes], dict[Path, str]]:
         _png(payload, size)
         guards[path] = row["sha256"]
         observed.add(relative)
-        if appearance == APPEARANCE and size == 512:
+        if appearance == selected_appearance and size == 512:
             selected[identifier] = payload
     if observed != expected:
         raise ValueError("PNG export is incomplete")
@@ -308,8 +335,10 @@ def _xml(document: ET.Element) -> bytes:
     return ET.tostring(document, encoding="utf-8", xml_declaration=True) + b"\n"
 
 
-def prepare_iconpack(png_export: Path, components: Path, output: Path) -> dict:
+def prepare_iconpack(png_export: Path, components: Path, output: Path, *,
+                     appearance: str = APPEARANCE) -> dict:
     """Create new APK source resources. Do not build, sign, install or launch anything."""
+    selected = configuration(appearance)
     output = _plain(output, missing=True)
     _safe_output(output)
     if (output == ROOT or output in ROOT.parents or output == ROOT / "outputs"
@@ -320,7 +349,7 @@ def prepare_iconpack(png_export: Path, components: Path, output: Path) -> dict:
     source, component_path = _plain(png_export), _plain(components)
     if output == source or output in source.parents or source in output.parents:
         raise ValueError("Icon-pack output and PNG input trees must be separate")
-    document, images, guards = _export(source)
+    document, images, guards = _export(source, selected.appearance)
     table, component_bytes, table_guards = _components(component_path, document["catalog"])
     guards.update(table_guards)
     names = {identifier: drawable_name(identifier) for identifier in document["functions"]}
@@ -333,7 +362,7 @@ def prepare_iconpack(png_export: Path, components: Path, output: Path) -> dict:
         ET.SubElement(appfilter, "item", {"component": row["component"], "drawable": names[row["icon_id"]]})
     files["res/xml/appfilter.xml"] = files["assets/appfilter.xml"] = _xml(appfilter)
     index = ET.Element("resources")
-    ET.SubElement(index, "category", {"title": "Obscur"})
+    ET.SubElement(index, "category", {"title": selected.appearance})
     for identifier in document["functions"]:
         ET.SubElement(index, "item", {"drawable": names[identifier]})
     files["res/xml/drawable.xml"] = _xml(index)
@@ -351,10 +380,12 @@ def prepare_iconpack(png_export: Path, components: Path, output: Path) -> dict:
                 packages.append({"package": package, "label": row["label"], "id": row["id"]})
                 seen.add(package)
     files["assets/catalog.json"] = _json_bytes({"schema_version": 1, "artwork_version": ARTWORK_VERSION,
-                                              "pack_version": VERSION, "packages": packages})
+                                              "pack_version": selected.version, "packages": packages})
     files["assets/icon-artwork-LICENSE.txt"] = images["LICENSE"]
-    manifest = {"schema_version": 1, "generator": "themeforge.android_iconpack", "version": VERSION,
-        "appearance": APPEARANCE, "artwork_version": ARTWORK_VERSION,
+    manifest = {"schema_version": 1, "generator": "themeforge.android_iconpack", "version": selected.version,
+        "appearance": selected.appearance, "artwork_version": ARTWORK_VERSION,
+        "application_id": selected.package, "app_label": selected.label,
+        "version_code": selected.version_code,
         "source": {"png_manifest_sha256": _digest(_read(source / "manifest.json")),
                    "svg_manifest_sha256": document["source_manifest_sha256"],
                    "components_sha256": _digest(component_bytes), "component_source": table["source"]},
@@ -366,7 +397,7 @@ def prepare_iconpack(png_export: Path, components: Path, output: Path) -> dict:
                    "named_package_hints": 276, "package_hints": len(packages)},
         "files": [{"path": name, "bytes": len(payload), "sha256": _digest(payload)}
                   for name, payload in sorted(files.items())],
-        "scope": "Obscur APK source resources and exact reviewed activity mappings only. "
+        "scope": f"{selected.appearance} APK source resources and exact reviewed activity mappings only. "
                  "No APK build, signing, installation, launcher/Theme Park or phone acceptance."}
 
     def unchanged():
@@ -399,12 +430,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--png-export", type=Path, required=True)
     parser.add_argument("--components", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--appearance", choices=tuple(CONFIGURATIONS), default=APPEARANCE)
     options = parser.parse_args(argv)
     try:
-        manifest = prepare_iconpack(options.png_export, options.components, options.output)
+        manifest = prepare_iconpack(options.png_export, options.components, options.output,
+                                    appearance=options.appearance)
     except (OSError, ValueError, TypeError, KeyError) as error:
         parser.exit(1, f"Android icon-pack preparation: {error}\n")
-    print(f'Prepared {manifest["counts"]["drawables"]} Obscur drawables with '
+    print(f'Prepared {manifest["counts"]["drawables"]} {manifest["appearance"]} drawables with '
           f'{manifest["counts"]["component_mappings"]} exact component mappings; native acceptance unverified')
     return 0
 
