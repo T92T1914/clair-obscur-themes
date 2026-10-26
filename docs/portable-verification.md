@@ -70,17 +70,29 @@ Relative member paths have at most 240 ASCII characters and eight components.
 Windows device names, parent traversal and file/directory prefix conflicts are
 unsupported. These rules also apply to extra entries before any content is read.
 
-The measured 0.27.0 source candidate uses the following finite allowances.
+The measured keyboard companion 0.1.0 source candidate, retaining artwork 0.27.0,
+uses the following finite allowances.
 
 | Limit | Value |
 | --- | --- |
-| Manifest | 70,656 bytes |
-| Declared hashes | 678 |
-| Expected or observed files and directories | 702, excluding the root |
+| Manifest | 72,704 bytes |
+| Declared hashes | 687 |
+| Expected or observed files and directories | 713, excluding the root |
 | Each declared member | 8,388,608 bytes |
-| Total returned read bytes, including both manifest reads | 28,311,552 |
+| Total returned read bytes, including both manifest reads | 28,442,624 |
 | Read chunk | At most 65,536 bytes |
 | Complete stdout report, including LF newlines | 262,144 bytes |
+
+The keyboard companion capacity baseline measured 688 regular files and 21
+directories, giving 709 entries and 687 declared hashes. Its manifest was 71,057
+bytes. Declared payload was 28,299,647 bytes, and both manifest reads brought
+returned bytes to 28,370,704. The largest member was the 2,879,043-byte current
+source archive. These measurements precede the cap, test and guide updates.
+The finite read allowance adds 128 KiB to the former 27 MiB limit. The manifest
+allowance adds 2 KiB, the declaration limit matches the new inventory and the
+entry allowance retains room to diagnose four ordinary extras. Per-member,
+path, traversal, read-chunk, stability and report rules are unchanged. Qualify
+the final frozen source artifact and kit separately.
 
 The first 0.27.0 capacity baseline measured 679 regular files and 19 directories,
 giving 698 entries and 678 declared hashes. It retains the complete 0.26.0 SVG

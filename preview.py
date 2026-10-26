@@ -18,6 +18,7 @@ from themeforge.build import (
 from themeforge.equicord import FACES
 from themeforge.guides import guide_anchor, render_guides
 from themeforge.icons import render_icons
+from themeforge.keyboard import BACKGROUNDS as KEYBOARD_BACKGROUNDS, keyboard_section, render_keyboard
 from themeforge.terminal import ANSI_FIELDS, ARCHIVE as TERMINAL_ARCHIVE, FRAGMENT as TERMINAL_FRAGMENT, render_terminal
 from themeforge.legal import normalize_license
 from themeforge.tokens import load
@@ -87,6 +88,7 @@ ANDROID_SOURCE_FILES = (
     'android/app/assets/licenses/Lawnicons-Apache-2.0.txt',
     'android/app/assets/licenses/Clair-Obscur-MIT.txt',
 )
+KEYBOARD_SOURCE_FILES = tuple(f'assets/keyboard/{spec[0]}' for spec in KEYBOARD_BACKGROUNDS.values())
 
 
 def site_manifest(files: dict[str, bytes], source: dict, release: dict, distribution: dict) -> bytes:
@@ -121,6 +123,7 @@ def source_files(root: Path) -> dict[str, bytes]:
     # SDKs, keys, compiled programs and debug XML stay outside this inventory.
     paths.extend(root / name for name in GARMIN_SOURCE_FILES)
     paths.extend(root / name for name in ANDROID_SOURCE_FILES)
+    paths.extend(root / name for name in KEYBOARD_SOURCE_FILES)
     for folder, endings in (
         ('themeforge', {'.py'}), ('tests', {'.py', '.mjs'}),
         ('web', {'.html', '.css', '.js'}), ('docs', {'.md'}),
@@ -333,6 +336,10 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
         raise ValueError('Source license differs from the generated Terminal grant')
     files.update({f'terminal/{name}': payload for name, payload in terminal_files.items()})
     files['terminal/installation.md'] = sources['docs/windows-terminal.md']
+    keyboard_files = render_keyboard(identity_document, {
+        name: sources[f'assets/keyboard/{spec[0]}'] for name, spec in KEYBOARD_BACKGROUNDS.items()
+    }, sources['docs/keyboard-companion.md'], license_bytes)
+    files.update({f'keyboard/{name}': data for name, data in keyboard_files.items()})
     terminal_cards = []
     foreground_exceptions = json.loads(terminal_files['manifest.json'])['foreground_exceptions']
     for name, scheme in zip(('Clair', 'Obscur'), json.loads(terminal_files[TERMINAL_FRAGMENT])['schemes']):
@@ -396,6 +403,7 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
             .replace('{{ICON_CHECKSUMS}}', ICON_CHECKSUMS)
             .replace('{{TERMINAL_SPECIMENS}}', '\n'.join(terminal_cards))
             .replace('{{TERMINAL_ARCHIVE}}', f'terminal/{TERMINAL_ARCHIVE}')
+            .replace('{{KEYBOARD_COMPANION}}', keyboard_section(identity_document))
             .replace('{{TARGET_OPTIONS}}', '\n'.join(
                 f'<option value="{html.escape(platform, quote=True)}">{html.escape(label)}</option>'
                 for platform, label in labels.items() if groups[platform]))
