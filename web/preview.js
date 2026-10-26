@@ -1,5 +1,40 @@
 const choices = [...document.querySelectorAll('[data-appearance]')];
 
+// Each card owns its asset URL. Page appearance never selects a keyboard file.
+(() => {
+  const chooser = document.querySelector('#keyboard-chooser');
+  const platform = document.querySelector('#keyboard-platform');
+  const appearance = document.querySelector('#keyboard-appearance');
+  const status = document.querySelector('#keyboard-choice-status');
+  const cards = [...document.querySelectorAll('[data-keyboard-platform][data-keyboard-appearance]')];
+  if (!chooser || !platform || !appearance || !status || cards.length !== 4) return;
+  const update = () => {
+    for (const card of cards) card.hidden = card.dataset.keyboardPlatform !== platform.value ||
+      (appearance.value !== 'both' && card.dataset.keyboardAppearance !== appearance.value);
+    const label = platform.selectedOptions[0].textContent;
+    status.textContent = label + ': ' + (appearance.value === 'both' ? 'comparing Clair and Obscur' : appearance.value) +
+      '. Design choice is independent of page appearance.';
+  };
+  platform.addEventListener('change', update);
+  appearance.addEventListener('change', update);
+  chooser.addEventListener('submit', event => event.preventDefault());
+  for (const image of document.querySelectorAll('[data-keyboard-background]')) {
+    const id = image.dataset.keyboardBackground;
+    const link = document.querySelector('[data-keyboard-download="' + id + '"]');
+    const message = document.querySelector('[data-keyboard-asset-status="' + id + '"]');
+    if (!link || !message) continue;
+    const unavailable = () => {
+      link.hidden = true;
+      image.hidden = true;
+      message.textContent = 'Background unavailable in this copy. Keep a native plain theme, or obtain the complete companion bundle. No substitute image was selected.';
+    };
+    image.addEventListener('error', unavailable, { once: true });
+    if (image.complete && image.naturalWidth === 0) unavailable();
+  }
+  update();
+  chooser.hidden = false;
+})();
+
 // Keep the static gallery complete if this optional enhancement cannot initialize.
 (() => {
   const finder = document.querySelector('#icon-finder');

@@ -509,6 +509,35 @@ class PreviewTests(unittest.TestCase):
             path.write_bytes(b'private fixture, never publish')
         self.assertEqual(source_files(extracted), captured)
 
+    def test_keyboard_assets_source_and_portable_routes_use_the_same_qualified_bytes(self):
+        captured = source_files(ROOT)
+        assets = {'assets/keyboard/Clair-Gboard-Background.png', 'assets/keyboard/Obscur-Gboard-Background.png'}
+        self.assertEqual({name for name in captured if name.startswith('assets/')}, assets)
+        files = preview_files(ROOT, self.artifacts)
+        with zipfile.ZipFile(io.BytesIO(files[PORTABLE_ARCHIVE])) as portable, \
+                zipfile.ZipFile(io.BytesIO(files['source.zip'])) as source:
+            for path in assets:
+                output = 'keyboard/backgrounds/' + Path(path).name
+                self.assertEqual(files[output], captured[path])
+                self.assertEqual(portable.read(output), captured[path])
+                self.assertEqual(source.read(path), captured[path])
+            for path in ('themeforge/keyboard.py', 'docs/keyboard-companion.md'):
+                self.assertEqual(source.read(path), captured[path])
+            for path in files:
+                if path.startswith('keyboard/'):
+                    self.assertEqual(portable.read(path), files[path])
+        extracted = self.base / 'keyboard-source'
+        for name, payload in captured.items():
+            target = extracted / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(payload)
+        (extracted / 'assets/keyboard/private-font.ttf').write_bytes(b'not a public asset')
+        (extracted / 'assets/keyboard/private-phone.png').write_bytes(b'not a public asset')
+        self.assertEqual(source_files(extracted), captured)
+        with patch('preview._linked', side_effect=lambda path: path == ROOT / 'assets/keyboard'):
+            with self.assertRaisesRegex(ValueError, 'Linked source input'):
+                source_files(ROOT)
+
     def test_icon_export_command_is_in_the_source_snapshot(self):
         captured = source_files(ROOT)
         name = 'tools/export-icons.mjs'

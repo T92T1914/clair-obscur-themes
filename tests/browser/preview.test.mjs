@@ -857,8 +857,9 @@ test('both appearances work at desktop and phone widths without horizontal overf
         results.scenarios.push({ name, viewport: width, measurements, status: 'passed' });
         if (evidence && width !== 2560) await page.screenshot({ path: path.join(evidence, `${name.toLowerCase()}-${width}-specimen.png`), fullPage: true });
       }
-      assert.deepEqual([...new Set(network)].sort(), [origin + '/', ...['tokens.css', 'preview.css', 'preview.js', ...iconPaths].map(file => origin + '/' + file)].sort(),
-        'The page requests only its four original local assets and the 600 declared local SVGs');
+      assert.deepEqual([...new Set(network)].sort(), [origin + '/', ...['tokens.css', 'preview.css', 'preview.js', ...iconPaths,
+        'keyboard/backgrounds/Clair-Gboard-Background.png', 'keyboard/backgrounds/Obscur-Gboard-Background.png'].map(file => origin + '/' + file)].sort(),
+        'The page requests only its four original local assets, the 600 declared local SVGs and the two qualified local keyboard PNGs');
       assert.deepEqual(consoleErrors, []);
     } finally { await context.close(); }
   }
@@ -1126,6 +1127,239 @@ test('static delivery remains usable without JavaScript and internal links resol
     assert.ok(await page.locator('#equicord-downloads').isVisible());
     assert.deepEqual(consoleErrors, []);
     results.scenarios.push({ name: 'no-JavaScript palette comparison, grouped downloads and anchor navigation', status: 'passed' });
+  } finally { await context.close(); }
+});
+
+const keyboardBackgroundPins = {
+  Clair: ['Clair-Gboard-Background.png', 'da5f4f92115ed5453a57c61d30221782246cec7de9ba70cdf8efeaa5da05f347'],
+  Obscur: ['Obscur-Gboard-Background.png', '633b9b88e1d2967c755519a84b1845f0d0ba8f392a4cca0715ac77df773b19d6'],
+};
+
+async function keyboardDownload(page, locator, expectedName) {
+  let timer;
+  const work = async () => {
+    await locator.focus({ timeout: 3000 });
+    const [download] = await Promise.all([page.waitForEvent('download', { timeout: 10000 }), page.keyboard.press('Enter')]);
+    assert.equal(download.suggestedFilename(), expectedName);
+    assert.equal(await download.failure(), null);
+    const chunks = []; let size = 0;
+    for await (const chunk of await download.createReadStream()) {
+      size += chunk.length; assert.ok(size <= 4 * 1024 * 1024, 'Keyboard/source download exceeds its finite bound'); chunks.push(chunk);
+    }
+    return Buffer.concat(chunks);
+  };
+  try {
+    return await Promise.race([work(), new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error('Keyboard download completion deadline')), 15000);
+    })]);
+  } finally { clearTimeout(timer); }
+}
+
+async function keyboardSourceFocus(page) {
+  const link = page.locator('#keyboards a[href="#current-source"]');
+  await link.focus(); await page.keyboard.press('Enter');
+  await page.waitForURL(url => url.hash === '#current-source', { timeout: 3000 });
+  const end = Date.now() + 3000;
+  while (Date.now() < end) {
+    if (await page.locator('#current-source').evaluate(node => node === document.activeElement)) return;
+    await new Promise(resolve => setTimeout(resolve, 30));
+  }
+  assert.fail('Keyboard source anchor did not receive native/guide focus before the host deadline');
+}
+
+async function assertKeyboardModifierLabels(card) {
+  const modifiers = await card.locator('[data-keyboard-modifier], .keyboard-space').evaluateAll(nodes => nodes.map(node => {
+    const box = node.getBoundingClientRect();
+    const range = document.createRange(); range.selectNodeContents(node);
+    const text = [...range.getClientRects()].map(rect => ({ left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom }));
+    return { role: node.dataset.keyboardModifier || 'space', label: node.textContent, lines: text.length, text,
+      box: { left: box.left, right: box.right, top: box.top, bottom: box.bottom },
+      width: node.clientWidth, scrollWidth: node.scrollWidth, height: node.clientHeight, scrollHeight: node.scrollHeight };
+  }));
+  assert.deepEqual(modifiers.map(node => [node.role, node.label]), [['shift', '⇧'], ['backspace', '⌫'], ['mode', '123'], ['space', 'Space'], ['enter', '↵']]);
+  for (const node of modifiers) {
+    assert.equal(node.lines, 1, 'Illustrative modifier label must occupy one line: ' + JSON.stringify(node));
+    assert.ok(node.scrollWidth <= node.width + 1 && node.scrollHeight <= node.height + 1, JSON.stringify(node));
+    assert.ok(node.text.every(rect => rect.left >= node.box.left - 1 && rect.right <= node.box.right + 1 &&
+      rect.top >= node.box.top - 1 && rect.bottom <= node.box.bottom + 1), 'Modifier text must fit inside its key: ' + JSON.stringify(node));
+  }
+  return modifiers;
+}
+
+async function assertKeyboardAllKeyLabels(card) {
+  const expected = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
+    'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
+    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l',
+    '⇧', 'z', 'x', 'c', 'v', 'b', 'n', 'm', '⌫', '123', ',', 'Space', '.', '↵'];
+  const keys = await card.locator('.keyboard-key').evaluateAll(nodes => nodes.map(node => {
+    const box = node.getBoundingClientRect(), range = document.createRange(); range.selectNodeContents(node);
+    return { label: node.textContent, lines: range.getClientRects().length,
+      text: [...range.getClientRects()].map(rect => ({ left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom })),
+      box: { left: box.left, right: box.right, top: box.top, bottom: box.bottom },
+      width: node.clientWidth, scrollWidth: node.scrollWidth, height: node.clientHeight, scrollHeight: node.scrollHeight };
+  }));
+  assert.equal(keys.length, 43, 'Every literal key must remain present');
+  assert.deepEqual(keys.map(node => node.label), expected, 'Illustrative key labels and order must remain unchanged');
+  for (const node of keys) {
+    assert.equal(node.lines, 1, 'Every key label must occupy one line: ' + JSON.stringify(node));
+    assert.ok(node.scrollWidth <= node.width + 1 && node.scrollHeight <= node.height + 1, JSON.stringify(node));
+    assert.ok(node.text.every(rect => rect.left >= node.box.left - 1 && rect.right <= node.box.right + 1 &&
+      rect.top >= node.box.top - 1 && rect.bottom <= node.box.bottom + 1), 'Every key label must fit inside its key: ' + JSON.stringify(node));
+  }
+  return keys;
+}
+
+test('keyboard companion choices stay independent of page appearance and download the exact paired backgrounds', { timeout: 90000 }, async () => {
+  for (const width of [320, 390, 1280]) {
+    let baselineRoot;
+    const { context, page, consoleErrors } = await pageFor({ viewport: { width, height: 900 },
+      setup: async (_context, page) => {
+        baselineRoot = await page.evaluate(() => getComputedStyle(document.documentElement).fontSize);
+        if (width <= 390) await page.route('**/preview.css', async route => route.fulfill({ contentType: 'text/css',
+          body: await readFile(path.join(site, 'preview.css'), 'utf8') + '\nhtml { font-size:32px !important; }' }));
+      },
+    });
+    try {
+      await page.locator('#keyboard-platform').focus(); await page.keyboard.press('End'); await page.keyboard.press('Enter');
+      assert.equal(await page.locator('#keyboard-platform').inputValue(), 'samsung');
+      assert.equal(await page.locator('.keyboard-card:visible').count(), 2);
+      assert.equal(await page.locator('.keyboard-card:visible [data-keyboard-download]').count(), 0);
+      for (const design of ['Clair', 'Obscur']) {
+        const samsung = page.locator('#keyboard-samsung-' + design.toLowerCase());
+        assert.ok(await samsung.isVisible());
+        assert.match(await samsung.innerText(), /Manual recipe only/);
+        await assertKeyboardModifierLabels(samsung);
+        await assertKeyboardAllKeyLabels(samsung);
+        const box = await samsung.evaluate(node => ({ left: node.getBoundingClientRect().left, right: node.getBoundingClientRect().right, width: innerWidth }));
+        assert.ok(box.left >= -1 && box.right <= box.width + 1, JSON.stringify(box));
+      }
+      await page.keyboard.press('Home'); await page.keyboard.press('Enter');
+      assert.equal(await page.locator('#keyboard-platform').inputValue(), 'gboard');
+      for (const [design, pageAppearance] of [['Clair', 'Obscur'], ['Obscur', 'Clair']]) {
+        await page.locator('#keyboard-appearance').focus(); await page.keyboard.press('Home');
+        await page.keyboard.press(design === 'Clair' ? 'ArrowDown' : 'End'); await page.keyboard.press('Enter');
+        assert.equal(await page.locator('#keyboard-appearance').inputValue(), design);
+        await page.getByRole('button', { name: pageAppearance, exact: true }).focus(); await page.keyboard.press('Enter');
+        assert.equal(await page.locator('#keyboard-appearance').inputValue(), design);
+        assert.equal(await page.locator('.keyboard-card:visible').count(), 1);
+        const card = page.locator('#keyboard-gboard-' + design.toLowerCase());
+        assert.ok(await card.isVisible());
+        await assertKeyboardModifierLabels(card);
+        await assertKeyboardAllKeyLabels(card);
+        const [filename, digest] = keyboardBackgroundPins[design];
+        const download = card.locator('[data-keyboard-download]');
+        assert.equal(await download.getAttribute('href'), 'keyboard/backgrounds/' + filename);
+        const bytes = await keyboardDownload(page, download, filename);
+        assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'), digest);
+        assert.deepEqual(bytes, await readFile(path.join(site, 'keyboard/backgrounds', filename)));
+        const focus = await download.evaluate(node => ({ outline: getComputedStyle(node).outlineStyle, width: getComputedStyle(node).outlineWidth }));
+        assert.notEqual(focus.outline, 'none'); assert.ok(parseFloat(focus.width) >= 2);
+      }
+      await page.locator('#keyboard-appearance').selectOption('both');
+      const layout = await page.locator('#keyboards').evaluate(node => {
+        const box = node.getBoundingClientRect();
+        return { left: box.left, right: box.right, width: innerWidth, scroll: document.documentElement.scrollWidth,
+          text: getComputedStyle(node.querySelector('p.status')).fontSize,
+          rootSize: getComputedStyle(document.documentElement).fontSize,
+          control: getComputedStyle(node.querySelector('#keyboard-appearance')).fontSize,
+          download: getComputedStyle(node.querySelector('[data-keyboard-download]')).fontSize,
+          drawings: [...node.querySelectorAll('.keyboard-card:not([hidden]) .keyboard-reference')].map(el => ({ width: el.clientWidth, scroll: el.scrollWidth })) };
+      });
+      assert.ok(layout.left >= -1 && layout.right <= width + 1 && layout.scroll <= width + 1, JSON.stringify(layout));
+      assert.ok(layout.drawings.every(box => box.scroll <= box.width + 1), JSON.stringify(layout));
+      if (width <= 390) {
+        assert.equal(layout.text, '32px'); assert.equal(layout.control, '32px'); assert.equal(layout.download, '32px');
+        assert.equal(layout.rootSize, '32px'); assert.equal(parseFloat(layout.rootSize) / parseFloat(baselineRoot), 2);
+      }
+      await keyboardSourceFocus(page);
+      assert.deepEqual(consoleErrors, []);
+      results.scenarios.push({ name: 'keyboard companion independent design selection and paired exact PNGs', width, layout, scope: 'Illustrative web reference and native HTML keyboard actions, no phone acceptance' });
+    } finally { await context.close(); }
+  }
+});
+
+test('keyboard companion no-script routes acquire the bundle and maintained source with exact member bytes', { timeout: 90000 }, async () => {
+  const bundleName = 'Clair-Obscur-Keyboard-Companion-0.1.0.zip';
+  for (const width of [320, 390, 1280]) {
+    let baselineRoot;
+    const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false, viewport: { width, height: 900 },
+      setup: async (_context, page) => {
+        baselineRoot = await page.evaluate(() => getComputedStyle(document.documentElement).fontSize);
+        if (width <= 390) await page.route('**/preview.css', async route => route.fulfill({ contentType: 'text/css',
+          body: await readFile(path.join(site, 'preview.css'), 'utf8') + '\nhtml { font-size:32px !important; }' }));
+      },
+    });
+    try {
+      assert.ok(await page.locator('#keyboard-chooser').isHidden());
+      assert.equal(await page.locator('.keyboard-card:visible').count(), 4);
+      assert.equal(await page.locator('#keyboards [data-keyboard-download]:visible').count(), 2);
+      for (const id of ['gboard-clair', 'gboard-obscur', 'samsung-clair', 'samsung-obscur']) {
+        await assertKeyboardModifierLabels(page.locator('#keyboard-' + id));
+        await assertKeyboardAllKeyLabels(page.locator('#keyboard-' + id));
+      }
+      for (const design of ['Clair', 'Obscur']) assert.equal(await page.locator('#keyboard-gboard-' + design.toLowerCase() + ' [data-keyboard-download]').getAttribute('href'), 'keyboard/backgrounds/' + keyboardBackgroundPins[design][0]);
+      assert.equal(await page.locator('a[href$=".apk"]').count(), 0);
+      const dimensions = await page.locator('#keyboards').evaluate(node => ({ width: innerWidth, scroll: document.documentElement.scrollWidth,
+        fontSize: getComputedStyle(node.querySelector('p.status')).fontSize, rootSize: getComputedStyle(document.documentElement).fontSize,
+        download: getComputedStyle(node.querySelector('[data-keyboard-download]')).fontSize }));
+      assert.ok(dimensions.scroll <= width + 1, JSON.stringify(dimensions));
+      if (width <= 390) {
+        assert.equal(dimensions.fontSize, '32px'); assert.equal(dimensions.download, '32px');
+        assert.equal(dimensions.rootSize, '32px'); assert.equal(parseFloat(dimensions.rootSize) / parseFloat(baselineRoot), 2);
+        const [filename, digest] = keyboardBackgroundPins.Obscur;
+        const background = await keyboardDownload(page, page.locator('[data-keyboard-download="obscur"]'), filename);
+        assert.equal(crypto.createHash('sha256').update(background).digest('hex'), digest);
+      }
+      if (width === 1280) {
+        const bundle = await keyboardDownload(page, page.locator('#keyboard-bundle'), bundleName);
+        assert.deepEqual(bundle, await readFile(path.join(site, 'keyboard', bundleName)));
+        const bundleDigest = crypto.createHash('sha256').update(bundle).digest('hex');
+        assert.equal(await readFile(path.join(site, 'keyboard/bundle-SHA256SUMS'), 'utf8'), bundleDigest + '  ' + bundleName + '\n');
+        const saved = path.join(temp, 'keyboard-bundle-acquired.zip'); await writeFile(saved, bundle);
+        run(['-I', '-B', '-c', [
+          'import hashlib,pathlib,sys,zipfile',
+          'archive_path,site_root=map(pathlib.Path,sys.argv[1:])',
+          'expected={"backgrounds/Clair-Gboard-Background.png","backgrounds/Obscur-Gboard-Background.png","installation.md","LICENSE.txt","palette-reference.json","manifest.json","SHA256SUMS"}',
+          'with zipfile.ZipFile(archive_path) as z:',
+          ' assert z.namelist()==sorted(expected) and z.testzip() is None',
+          ' for name in expected: assert z.read(name)==(site_root/"keyboard"/name).read_bytes()',
+          ' for line in z.read("SHA256SUMS").decode().splitlines():',
+          '  digest,name=line.split("  "); assert hashlib.sha256(z.read(name)).hexdigest()==digest',
+        ].join('\n'), saved, site]);
+      }
+      await keyboardSourceFocus(page);
+      if (width === 1280) {
+        const bytes = await keyboardDownload(page, page.locator('#current-source'), 'source.zip');
+        const manifest = JSON.parse(await readFile(path.join(site, 'site-manifest.json'), 'utf8'));
+        assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'), manifest.source.sha256);
+        const saved = path.join(temp, 'keyboard-source-acquired.zip'); await writeFile(saved, bytes);
+        run(['-I', '-B', '-c', [
+          'import pathlib,sys,zipfile', 'archive_path,root=map(pathlib.Path,sys.argv[1:])',
+          'with zipfile.ZipFile(archive_path) as z:',
+          ' for name in ("themeforge/keyboard.py","docs/keyboard-companion.md","assets/keyboard/Clair-Gboard-Background.png","assets/keyboard/Obscur-Gboard-Background.png"):',
+          '  assert z.read(name)==(root/name).read_bytes()',
+        ].join('\n'), saved, root]);
+      }
+      assert.deepEqual(consoleErrors, []);
+      results.scenarios.push({ name: 'keyboard companion no-script static routes and actual bundle/source acquisition', width, dimensions });
+    } finally { await context.close(); }
+  }
+});
+
+test('keyboard companion missing background is unavailable and never substitutes the other appearance', { timeout: 30000 }, async () => {
+  const { context, page, consoleErrors } = await pageFor({ setup: async (_context, page) => {
+    await page.route('**/keyboard/backgrounds/Clair-Gboard-Background.png', route => route.abort());
+  } });
+  try {
+    await page.locator('#keyboard-appearance').selectOption('Clair');
+    assert.ok(await page.locator('[data-keyboard-download="clair"]').isHidden());
+    assert.match(await page.locator('[data-keyboard-asset-status="clair"]').innerText(), /Background unavailable/);
+    assert.equal(await page.locator('[data-keyboard-download="clair"]').getAttribute('href'), 'keyboard/backgrounds/Clair-Gboard-Background.png');
+    await page.locator('#keyboard-appearance').selectOption('Obscur');
+    assert.ok(await page.locator('[data-keyboard-download="obscur"]').isVisible());
+    assert.equal(await page.locator('[data-keyboard-download="obscur"]').getAttribute('href'), 'keyboard/backgrounds/Obscur-Gboard-Background.png');
+    assert.ok(consoleErrors.length >= 1 && consoleErrors.every(line => /Failed to load resource: net::ERR_FAILED/.test(line)), JSON.stringify(consoleErrors));
+    results.scenarios.push({ name: 'keyboard companion explicit missing-asset fallback without wrong-appearance substitution', expectedBlockedBackground: true });
   } finally { await context.close(); }
 });
 
@@ -3272,7 +3506,7 @@ async function waitForPackageState(page, state) {
 // These are user spacing overrides, not new design defaults. The separate
 // Japanese and Arabic samples retain their writing-system-specific spacing.
 const textSpacingOverride = `
-  body :is(a, p, h1, h2, h3, h4, blockquote, span, strong, b, em, mark, code, pre, label, button, input, select, option, summary, small, li, figcaption):not(:lang(ja), :lang(ar)) {
+  body :is(a, p, h1, h2, h3, h4, blockquote, span, strong, b, em, mark, code, pre, label, button, input, select, option, summary, small, li, figcaption, caption, th, td):not(:lang(ja), :lang(ar)) {
     line-height: 1.5 !important;
     letter-spacing: .12em !important;
     word-spacing: .16em !important;
@@ -3544,6 +3778,61 @@ async function terminalSpacingJourney(page, baseline, { javaScriptEnabled = true
   return { ...acquisition, appearances: specimens.map(card => card.appearance), labeledSlots: 32, admission,
     returnedAdmission, returnedToPreview: true, previewOverridesReadmitted: true, nativeTerminalVerified: false };
 }
+
+test('keyboard recipes retain their full text within 320px at global 200 percent with and without scripts', { timeout: 60000 }, async () => {
+  for (const scripted of [true, false]) {
+    const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: scripted, viewport: { width: 320, height: 900 },
+      setup: async (_context, page) => page.route('**/preview.css', async route => route.fulfill({ contentType: 'text/css',
+        body: await readFile(path.join(site, 'preview.css'), 'utf8') + '\nhtml { font-size:32px !important; }' })),
+    });
+    try {
+      const recipes = await page.locator('.keyboard-recipes').evaluate(node => ({ rootFont: getComputedStyle(document.documentElement).fontSize,
+        width: innerWidth, documentWidth: document.documentElement.scrollWidth, track: node.getBoundingClientRect().width,
+        articles: [...node.querySelectorAll('article')].map(article => {
+          const box = article.getBoundingClientRect();
+          return { id: article.id, text: article.textContent, left: box.left, right: box.right, width: article.clientWidth,
+            scrollWidth: article.scrollWidth, visible: box.width > 0 && box.height > 0,
+            textRects: [...article.querySelectorAll('p, li')].flatMap(item => { const range = document.createRange(); range.selectNodeContents(item);
+              return [...range.getClientRects()].map(rect => ({ left: rect.left, right: rect.right })); }) };
+        }) }));
+      assert.equal(recipes.rootFont, '32px'); assert.equal(recipes.width, 320); assert.ok(recipes.documentWidth <= 321, JSON.stringify(recipes));
+      assert.deepEqual(recipes.articles.map(article => article.id), ['keyboard-gboard-recipe', 'keyboard-samsung-recipe', 'keyboard-system-recipe']);
+      for (const article of recipes.articles) {
+        assert.ok(article.visible && article.text.trim().length > 250);
+        assert.ok(article.left >= -1 && article.right <= 321 && article.width <= recipes.track + 1 && article.scrollWidth <= article.width + 1, JSON.stringify(article));
+        assert.ok(article.textRects.length > 0 && article.textRects.every(rect => rect.left >= article.left - 1 && rect.right <= article.right + 1), JSON.stringify(article));
+      }
+      assert.deepEqual(consoleErrors, []);
+      results.scenarios.push({ name: 'keyboard recipe grid at 320px and global 200 percent', scripted, status: 'passed', recipes });
+    } finally { await context.close(); }
+  }
+});
+
+test('keyboard toolbar and table text admit all spacing overrides without changing typography or excluding the companion', async () => {
+  const { context, page, consoleErrors } = await pageFor();
+  try {
+    const baseline = await spacingContentBaseline(page);
+    const semanticNodes = await page.locator('#keyboards').evaluate(node => [...node.querySelectorAll('.keyboard-card:not([hidden]) .keyboard-toolbar > span, .keyboard-support caption, .keyboard-support th, .keyboard-support td')].map(item => ({
+      tag: item.tagName, text: item.textContent, font: [getComputedStyle(item).fontSize, getComputedStyle(item).fontFamily, getComputedStyle(item).fontWeight, getComputedStyle(item).fontStyle] })));
+    assert.equal(semanticNodes.length, 24);
+    assert.equal(semanticNodes.filter(node => node.tag === 'SPAN').length, 6);
+    assert.equal(semanticNodes.filter(node => node.tag === 'CAPTION').length, 1);
+    await page.addStyleTag({ content: textSpacingOverride });
+    for (const appearance of ['Obscur', 'Clair']) {
+      await page.getByRole('button', { name: appearance, exact: true }).focus(); await page.keyboard.press('Enter');
+      const admission = await assertTextSpacing(page, baseline);
+      const observed = await page.locator('#keyboards').evaluate(node => [...node.querySelectorAll('.keyboard-card:not([hidden]) .keyboard-toolbar > span, .keyboard-support caption, .keyboard-support th, .keyboard-support td')].map(item => {
+        const style = getComputedStyle(item), size = parseFloat(style.fontSize);
+        return { tag: item.tagName, text: item.textContent, font: [style.fontSize, style.fontFamily, style.fontWeight, style.fontStyle],
+          line: parseFloat(style.lineHeight) / size, letter: parseFloat(style.letterSpacing) / size, word: parseFloat(style.wordSpacing) / size };
+      }));
+      assert.deepEqual(observed.map(({ tag, text, font }) => ({ tag, text, font })), semanticNodes);
+      for (const node of observed) assert.ok(node.line >= 1.499 && node.letter >= .1199 && node.word >= .1599, JSON.stringify(node));
+      results.scenarios.push({ name: 'keyboard semantic spacing nodes', appearance, status: 'passed', admission, nodes: observed });
+    }
+    assert.deepEqual(consoleErrors, []);
+  } finally { await context.close(); }
+});
 
 test('text spacing alone preserves content and the keyboard package journey in both appearances', async () => {
   for (const appearance of ['Obscur', 'Clair']) {

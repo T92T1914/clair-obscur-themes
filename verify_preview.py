@@ -12,12 +12,13 @@ import stat
 import sys
 from typing import BinaryIO
 
-MAX_MANIFEST_BYTES = 70_656
-MAX_DECLARED_FILES = 678
-MAX_ENTRIES = 702
+MAX_MANIFEST_BYTES = 72_704
+MAX_DECLARED_FILES = 687
+MAX_ENTRIES = 713
 MAX_FILE_BYTES = 8_388_608
-# The measured 0.27 candidate retains all prior artwork within a finite 27 MiB allowance.
-MAX_READ_BYTES = 28_311_552
+# Keyboard companion 0.1.0 adds assets/references while retaining the 0.27 artwork.
+# Its measured kit needs the former 27 MiB allowance plus a bounded 128 KiB.
+MAX_READ_BYTES = 28_442_624
 READ_CHUNK = 65_536
 MAX_REPORT_BYTES = 262_144
 MANIFEST_NAME = 'site-manifest.json'
