@@ -56,18 +56,18 @@ details p { padding-top: .75rem; }
 .palette-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 1.25rem; }
 .icon-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 1rem; margin-block: 1.5rem; }
 .keyboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 25rem), 1fr)); gap: 1.25rem; margin-block: 1.5rem; }
-.keyboard-card { min-width: 0; padding: 1rem; border: 1px solid var(--border); border-radius: .6rem; }
-.keyboard-reference { margin: 0 0 1rem; padding: .8rem; background: var(--canvas); color: var(--text); border: 1px solid var(--border); border-radius: .6rem; }
+.keyboard-card { min-width: 0; padding: min(1rem, 2vw); border: 1px solid var(--border); border-radius: .6rem; }
+.keyboard-reference { margin: 0 0 1rem; padding: min(.8rem, 1vw); background: var(--canvas); color: var(--text); border: 1px solid var(--border); border-radius: .6rem; }
 .keyboard-reference figcaption { margin-top: 1rem; line-height: 1.5; font-size: .875rem; }
 .keyboard-drawing { font-size: clamp(.7rem, 2.5vw, 1rem); }
 .keyboard-toolbar, .keyboard-suggestions { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5em; padding: .6em .2em; }
 .keyboard-toolbar { color: var(--muted); font-size: .85em; }
 .keyboard-suggestions { border-block: 1px solid var(--divider); margin-bottom: .6em; }
-.keyboard-row { display: flex; justify-content: center; gap: .2em; margin-block: .3em; }
+.keyboard-row { display: flex; justify-content: center; gap: min(.2em, 1vw); margin-block: .3em; }
 .keyboard-row-home { margin-inline: 5%; }
-.keyboard-key { display: flex; flex: 1 1 0; min-width: 0; min-height: 2.5em; align-items: center; justify-content: center; overflow-wrap: anywhere; padding: .25em .05em; border: 1px solid var(--border); border-radius: .25em; color: var(--text); background: var(--control); }
+.keyboard-key { display: flex; flex: 1 1 0; min-width: max-content; min-height: 2.5em; align-items: center; justify-content: center; overflow-wrap: anywhere; padding: .25em .05em; border: 1px solid var(--border); border-radius: .25em; color: var(--text); background: var(--control); }
 .keyboard-space { flex-grow: 4; font-size: .85em; white-space: nowrap; overflow-wrap: normal; }
-.keyboard-modifier { flex-grow: 1.5; font-size: .8em; white-space: nowrap; overflow-wrap: normal; }
+.keyboard-modifier { flex-grow: 1.5; min-width: max-content; font-size: .8em; white-space: nowrap; overflow-wrap: normal; }
 .keyboard-mode { flex-grow: 2.25; }
 .keyboard-action { flex-grow: 2; color: var(--on-accent); background: var(--accent); font-weight: 600; white-space: nowrap; overflow-wrap: normal; }
 .keyboard-background { display: block; width: 5rem; height: 2.5rem; border: 1px solid var(--border); object-fit: contain; }

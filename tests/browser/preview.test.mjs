@@ -1186,13 +1186,36 @@ async function assertKeyboardModifierLabels(card) {
   return modifiers;
 }
 
+async function assertKeyboardAllKeyLabels(card) {
+  const expected = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
+    'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
+    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l',
+    '⇧', 'z', 'x', 'c', 'v', 'b', 'n', 'm', '⌫', '123', ',', 'Space', '.', '↵'];
+  const keys = await card.locator('.keyboard-key').evaluateAll(nodes => nodes.map(node => {
+    const box = node.getBoundingClientRect(), range = document.createRange(); range.selectNodeContents(node);
+    return { label: node.textContent, lines: range.getClientRects().length,
+      text: [...range.getClientRects()].map(rect => ({ left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom })),
+      box: { left: box.left, right: box.right, top: box.top, bottom: box.bottom },
+      width: node.clientWidth, scrollWidth: node.scrollWidth, height: node.clientHeight, scrollHeight: node.scrollHeight };
+  }));
+  assert.equal(keys.length, 43, 'Every literal key must remain present');
+  assert.deepEqual(keys.map(node => node.label), expected, 'Illustrative key labels and order must remain unchanged');
+  for (const node of keys) {
+    assert.equal(node.lines, 1, 'Every key label must occupy one line: ' + JSON.stringify(node));
+    assert.ok(node.scrollWidth <= node.width + 1 && node.scrollHeight <= node.height + 1, JSON.stringify(node));
+    assert.ok(node.text.every(rect => rect.left >= node.box.left - 1 && rect.right <= node.box.right + 1 &&
+      rect.top >= node.box.top - 1 && rect.bottom <= node.box.bottom + 1), 'Every key label must fit inside its key: ' + JSON.stringify(node));
+  }
+  return keys;
+}
+
 test('keyboard companion choices stay independent of page appearance and download the exact paired backgrounds', { timeout: 90000 }, async () => {
-  for (const width of [390, 1280]) {
+  for (const width of [320, 390, 1280]) {
     let baselineRoot;
     const { context, page, consoleErrors } = await pageFor({ viewport: { width, height: 900 },
       setup: async (_context, page) => {
         baselineRoot = await page.evaluate(() => getComputedStyle(document.documentElement).fontSize);
-        if (width === 390) await page.route('**/preview.css', async route => route.fulfill({ contentType: 'text/css',
+        if (width <= 390) await page.route('**/preview.css', async route => route.fulfill({ contentType: 'text/css',
           body: await readFile(path.join(site, 'preview.css'), 'utf8') + '\nhtml { font-size:32px !important; }' }));
       },
     });
@@ -1206,6 +1229,7 @@ test('keyboard companion choices stay independent of page appearance and downloa
         assert.ok(await samsung.isVisible());
         assert.match(await samsung.innerText(), /Manual recipe only/);
         await assertKeyboardModifierLabels(samsung);
+        await assertKeyboardAllKeyLabels(samsung);
         const box = await samsung.evaluate(node => ({ left: node.getBoundingClientRect().left, right: node.getBoundingClientRect().right, width: innerWidth }));
         assert.ok(box.left >= -1 && box.right <= box.width + 1, JSON.stringify(box));
       }
@@ -1221,6 +1245,7 @@ test('keyboard companion choices stay independent of page appearance and downloa
         const card = page.locator('#keyboard-gboard-' + design.toLowerCase());
         assert.ok(await card.isVisible());
         await assertKeyboardModifierLabels(card);
+        await assertKeyboardAllKeyLabels(card);
         const [filename, digest] = keyboardBackgroundPins[design];
         const download = card.locator('[data-keyboard-download]');
         assert.equal(await download.getAttribute('href'), 'keyboard/backgrounds/' + filename);
@@ -1242,7 +1267,7 @@ test('keyboard companion choices stay independent of page appearance and downloa
       });
       assert.ok(layout.left >= -1 && layout.right <= width + 1 && layout.scroll <= width + 1, JSON.stringify(layout));
       assert.ok(layout.drawings.every(box => box.scroll <= box.width + 1), JSON.stringify(layout));
-      if (width === 390) {
+      if (width <= 390) {
         assert.equal(layout.text, '32px'); assert.equal(layout.control, '32px'); assert.equal(layout.download, '32px');
         assert.equal(layout.rootSize, '32px'); assert.equal(parseFloat(layout.rootSize) / parseFloat(baselineRoot), 2);
       }
@@ -1255,12 +1280,12 @@ test('keyboard companion choices stay independent of page appearance and downloa
 
 test('keyboard companion no-script routes acquire the bundle and maintained source with exact member bytes', { timeout: 90000 }, async () => {
   const bundleName = 'Clair-Obscur-Keyboard-Companion-0.1.0.zip';
-  for (const width of [390, 1280]) {
+  for (const width of [320, 390, 1280]) {
     let baselineRoot;
     const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false, viewport: { width, height: 900 },
       setup: async (_context, page) => {
         baselineRoot = await page.evaluate(() => getComputedStyle(document.documentElement).fontSize);
-        if (width === 390) await page.route('**/preview.css', async route => route.fulfill({ contentType: 'text/css',
+        if (width <= 390) await page.route('**/preview.css', async route => route.fulfill({ contentType: 'text/css',
           body: await readFile(path.join(site, 'preview.css'), 'utf8') + '\nhtml { font-size:32px !important; }' }));
       },
     });
@@ -1268,14 +1293,17 @@ test('keyboard companion no-script routes acquire the bundle and maintained sour
       assert.ok(await page.locator('#keyboard-chooser').isHidden());
       assert.equal(await page.locator('.keyboard-card:visible').count(), 4);
       assert.equal(await page.locator('#keyboards [data-keyboard-download]:visible').count(), 2);
-      for (const id of ['gboard-clair', 'gboard-obscur', 'samsung-clair', 'samsung-obscur']) await assertKeyboardModifierLabels(page.locator('#keyboard-' + id));
+      for (const id of ['gboard-clair', 'gboard-obscur', 'samsung-clair', 'samsung-obscur']) {
+        await assertKeyboardModifierLabels(page.locator('#keyboard-' + id));
+        await assertKeyboardAllKeyLabels(page.locator('#keyboard-' + id));
+      }
       for (const design of ['Clair', 'Obscur']) assert.equal(await page.locator('#keyboard-gboard-' + design.toLowerCase() + ' [data-keyboard-download]').getAttribute('href'), 'keyboard/backgrounds/' + keyboardBackgroundPins[design][0]);
       assert.equal(await page.locator('a[href$=".apk"]').count(), 0);
       const dimensions = await page.locator('#keyboards').evaluate(node => ({ width: innerWidth, scroll: document.documentElement.scrollWidth,
         fontSize: getComputedStyle(node.querySelector('p.status')).fontSize, rootSize: getComputedStyle(document.documentElement).fontSize,
         download: getComputedStyle(node.querySelector('[data-keyboard-download]')).fontSize }));
       assert.ok(dimensions.scroll <= width + 1, JSON.stringify(dimensions));
-      if (width === 390) {
+      if (width <= 390) {
         assert.equal(dimensions.fontSize, '32px'); assert.equal(dimensions.download, '32px');
         assert.equal(dimensions.rootSize, '32px'); assert.equal(parseFloat(dimensions.rootSize) / parseFloat(baselineRoot), 2);
         const [filename, digest] = keyboardBackgroundPins.Obscur;
