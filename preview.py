@@ -81,6 +81,7 @@ ANDROID_SOURCE_FILES = (
     'android/build.py', 'android/iconpack/components.json',
     'android/app/AndroidManifest.xml',
     'android/app/res/values/strings.xml', 'android/app/res/values/styles.xml',
+    'android/app/res/values/colors.xml',
     'android/app/src/io/github/t92t1914/obscuricons/IconPackActivity.java',
     'android/app/assets/NOTICE.txt',
     'android/app/assets/licenses/Lawnicons-Apache-2.0.txt',
