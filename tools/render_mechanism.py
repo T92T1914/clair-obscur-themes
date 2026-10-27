@@ -180,7 +180,13 @@ def render(directory: Path) -> None:
             target.parent.mkdir(parents=True, exist_ok=True)
             with matplotlib.rc_context({"svg.fonttype": "path", "svg.hashsalt": config["id"]}):
                 metadata = {"Date": None, "Description": description} if ext == "svg" else {"Description": description}
-                fig.savefig(target, dpi=100, facecolor=roles["canvas"], metadata=metadata)
+                if ext == "svg":
+                    with target.open("wb") as stream:
+                        fig.savefig(stream, format="svg", dpi=100, facecolor=roles["canvas"],
+                                    metadata=metadata)
+                    target.write_bytes(target.read_bytes().replace(b"\r\n", b"\n"))
+                else:
+                    fig.savefig(target, dpi=100, facecolor=roles["canvas"], metadata=metadata)
             outputs[name] = digest(target)
     if inputs(config) != source_before:
         raise ValueError("Source changed while rendering")
@@ -189,7 +195,7 @@ def render(directory: Path) -> None:
               "inputs_sha256_lf": source_before, "fonts": font_records,
               "renderer": {"matplotlib": matplotlib.__version__, "fonttools": fontTools.__version__, "backend": "Agg"},
               "layouts": layouts, "outputs_sha256": outputs}
-    RECEIPT.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+    RECEIPT.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8", newline="\n")
     check()
 
 

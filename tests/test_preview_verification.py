@@ -282,7 +282,7 @@ class ManifestAdmissionTests(KitFixture):
             ('source hash', lambda doc: doc['source'].update(sha256='0' * 64)),
             ('source archive', lambda doc: doc['source'].update(archive='other.zip')),
             ('version', lambda doc: doc['release'].update(version='1.2')),
-            ('version nonascii', lambda doc: doc['release'].update(version='ï¼‘.2.3')),
+            ('version nonascii', lambda doc: doc['release'].update(version='１.2.3')),
             ('wrong release URL', lambda doc: doc['release'].update(source_url='https://example.invalid/source.zip')),
             ('uppercase digest', lambda doc: doc['files'].update(LICENSE='A' * 64)),
             ('bool digest', lambda doc: doc['files'].update(LICENSE=True)),
@@ -300,7 +300,7 @@ class ManifestAdmissionTests(KitFixture):
 
     def test_unsafe_collision_and_prefix_paths_include_unhashed_manifest(self):
         for name in ('../file', '/file', 'C:/file', 'a\\b', 'a:b', 'a//b', 'a/./b',
-                     'name.', 'CON.txt', 'aux', 'Lpt9.log', 'a/COM1.data', 'cafÃ©',
+                     'name.', 'CON.txt', 'aux', 'Lpt9.log', 'a/COM1.data', 'café',
                      'a\x85b', 'a' * 241, 'a/b/c/d/e/f/g/h/i', 'Site-manifest.json',
                      'INDEX.html', 'index.html/child', 'downloads'):
             with self.subTest(name=name):
@@ -369,7 +369,7 @@ class ManifestAdmissionTests(KitFixture):
 
     def test_actual_inventory_depth_and_unsafe_extra_are_refused_before_reads(self):
         extra_count = 0
-        for admitted_count in (352, 448, 480, 501, 522, 539, 556, 573, 654, 655, 657, 658, 678, 679, 680, 681, 682, 683, 688, 689, 690, 691, 693, 694, 697, 698, 699, 700, 701, 702, 708, 709, 712, 713, 719):
+        for admitted_count in (352, 448, 480, 501, 522, 539, 556, 573, 654, 655, 657, 658, 678, 679, 680, 681, 682, 683, 688, 689, 690, 691, 692, 693, 694, 697, 698, 699, 700, 701, 702, 708, 709, 712, 713, 719):
             additional = admitted_count - len(verifier.inventory(self.kit))
             for number in range(extra_count, extra_count + additional):
                 (self.kit / f'extra{number}.txt').touch()
