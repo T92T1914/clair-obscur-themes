@@ -28,8 +28,8 @@ class AndroidBuildAdmissionTests(unittest.TestCase):
     def test_static_manifest_retains_the_current_separate_pack_identity(self):
         root = ET.parse(build.ROOT / "android/app/AndroidManifest.xml").getroot()
         self.assertEqual(root.attrib["package"], "io.github.t92t1914.obscuricons")
-        self.assertEqual(root.attrib[build.ANDROID + "versionCode"], "13")
-        self.assertEqual(root.attrib[build.ANDROID + "versionName"], "0.1.12")
+        self.assertEqual(root.attrib[build.ANDROID + "versionCode"], "14")
+        self.assertEqual(root.attrib[build.ANDROID + "versionName"], "0.1.13")
         self.assertEqual(root.findall("uses-permission"), [])
         self.assertEqual(len(root.findall("queries")), 1)
         self.assertEqual(list(root.find("queries")), [])
@@ -46,13 +46,13 @@ class AndroidBuildAdmissionTests(unittest.TestCase):
         build._configure_project(source, selected)
         root = ET.parse(source / "AndroidManifest.xml").getroot()
         self.assertEqual(root.get("package"), "io.github.t92t1914.clairicons")
-        self.assertEqual(root.get(build.ANDROID + "versionCode"), "2")
-        self.assertEqual(root.get(build.ANDROID + "versionName"), "0.1.1")
+        self.assertEqual(root.get(build.ANDROID + "versionCode"), "3")
+        self.assertEqual(root.get(build.ANDROID + "versionName"), "0.1.2")
         self.assertEqual(root.find("application/activity").get(build.ANDROID + "name"),
                          "io.github.t92t1914.clairicons.IconPackActivity")
         strings = ET.parse(source / "res/values/strings.xml").getroot()
         self.assertEqual(strings.find("string[@name='app_name']").text, "Clair Icons")
-        self.assertEqual(strings.find("string[@name='versions']").text, "Icon pack 0.1.1 | Artwork 0.28.0")
+        self.assertEqual(strings.find("string[@name='versions']").text, "Icon pack 0.1.2 | Artwork 0.29.0")
         self.assertIn("separate icon-theme draft", strings.find("string[@name='instructions']").text)
         colors = ET.parse(source / "res/values/colors.xml").getroot()
         self.assertEqual({node.get("name"): node.text for node in colors},
@@ -66,7 +66,28 @@ class AndroidBuildAdmissionTests(unittest.TestCase):
         java = source / "src/io/github/t92t1914/clairicons/IconPackActivity.java"
         self.assertTrue(java.read_text().startswith("package io.github.t92t1914.clairicons;\n"))
         self.assertFalse((source / "src/io/github/t92t1914/obscuricons/IconPackActivity.java").exists())
-        build._validate_source_identity(source, "0.1.1", "0.28.0", selected)
+        build._validate_source_identity(source, "0.1.2", "0.29.0", selected)
+
+    def test_clair_prior_or_mixed_source_versions_are_refused(self):
+        source = self.static_source()
+        selected = pack.configuration("Clair")
+        build._configure_project(source, selected)
+        manifest = source / "AndroidManifest.xml"
+        original = manifest.read_text(encoding="utf-8")
+        for code, name in (("2", "0.1.1"), ("2", "0.1.2"), ("3", "0.1.1")):
+            changed = original.replace('versionCode="3"', f'versionCode="{code}"').replace(
+                'versionName="0.1.2"', f'versionName="{name}"')
+            manifest.write_text(changed, encoding="utf-8")
+            with self.subTest(code=code, name=name), self.assertRaisesRegex(ValueError, "manifest package/version"):
+                build._validate_source_identity(source, "0.1.2", "0.29.0", selected)
+        manifest.write_text(original, encoding="utf-8")
+        strings = source / "res/values/strings.xml"
+        original = strings.read_text(encoding="utf-8")
+        for label in ("Icon pack 0.1.1 | Artwork 0.28.0", "Icon pack 0.1.1 | Artwork 0.29.0",
+                      "Icon pack 0.1.2 | Artwork 0.28.0"):
+            strings.write_text(original.replace("Icon pack 0.1.2 | Artwork 0.29.0", label), encoding="utf-8")
+            with self.subTest(label=label), self.assertRaisesRegex(ValueError, "Static versions string differs"):
+                build._validate_source_identity(source, "0.1.2", "0.29.0", selected)
 
     def test_default_materialization_preserves_every_copied_obscur_byte(self):
         source = self.static_source()
@@ -87,13 +108,14 @@ class AndroidBuildAdmissionTests(unittest.TestCase):
             with self.subTest(name=name):
                 p.write_bytes(original.replace(old.encode(), new.encode()))
                 with self.assertRaises(ValueError):
-                    build._validate_source_identity(source, "0.1.12", "0.28.0")
+                    build._validate_source_identity(source, "0.1.13", "0.29.0")
                 p.write_bytes(original)
 
     def test_forged_configuration_and_unsupported_cli_appearance_are_refused(self):
         selected = pack.configuration("Clair")
         for forged in (replace(selected, package="io.github.t92t1914.obscuricons"),
                        replace(selected, label="Obscur Icons"), replace(selected, version_code=12),
+                       replace(selected, version="0.1.1"), replace(selected, version_code=2),
                        replace(selected, version_code=True)):
             with self.subTest(forged=forged), self.assertRaisesRegex(ValueError, "Unsupported"):
                 build._write_queries(self.root / "absent", forged)
@@ -111,7 +133,9 @@ class AndroidBuildAdmissionTests(unittest.TestCase):
         arguments = ["--png-dir", str(self.root / "missing-png"), "--sdk", str(self.root / "missing-sdk"),
                      "--java-bin", str(self.root / "missing-java/bin"), "--output-dir", str(output)]
         for label in ("Icon pack 0.1.8 | Artwork 0.25.0", "Icon pack 0.1.9 | Artwork 0.26.0",
-                      "Icon pack 0.1.10 | Artwork 0.26.0", "Icon pack 0.1.12 | Artwork 0.26.0"):
+                      "Icon pack 0.1.10 | Artwork 0.26.0", "Icon pack 0.1.12 | Artwork 0.26.0",
+                      "Icon pack 0.1.12 | Artwork 0.28.0", "Icon pack 0.1.12 | Artwork 0.29.0",
+                      "Icon pack 0.1.13 | Artwork 0.28.0"):
             strings.write_text(original.replace(build._version_label(), label), encoding="utf-8")
             diagnostic = io.StringIO()
             with self.subTest(label=label), patch.object(build, "ROOT", source.parents[1]), \
@@ -134,13 +158,17 @@ class AndroidBuildAdmissionTests(unittest.TestCase):
         source = self.static_source()
         manifest = source / "AndroidManifest.xml"
         original = manifest.read_text(encoding="utf-8")
-        for old, replacement in (('versionCode="13"', 'versionCode="11"'),
-                                 ('versionName="0.1.12"', 'versionName="0.1.10"')):
+        for old, replacement in (('versionCode="14"', 'versionCode="11"'),
+                                 ('versionName="0.1.13"', 'versionName="0.1.10"'),
+                                 ('versionCode="14"', 'versionCode="13"'),
+                                 ('versionName="0.1.13"', 'versionName="0.1.12"')):
             manifest.write_text(original.replace(old, replacement), encoding="utf-8")
             with self.subTest(replacement=replacement), self.assertRaisesRegex(ValueError, "manifest package/version"):
                 build._validate_source_identity(source, pack.VERSION, pack.ARTWORK_VERSION)
         manifest.write_text(original, encoding="utf-8")
-        for version, artwork in (("0.1.10", "0.28.0"), ("0.1.12", "0.26.0")):
+        for version, artwork in (("0.1.10", "0.28.0"), ("0.1.12", "0.26.0"),
+                                 ("0.1.12", "0.28.0"), ("0.1.12", "0.29.0"),
+                                 ("0.1.13", "0.28.0")):
             with self.subTest(version=version, artwork=artwork), self.assertRaisesRegex(ValueError, "preparer versions"):
                 build._validate_source_identity(source, version, artwork)
 
@@ -206,7 +234,7 @@ class AndroidBuildAdmissionTests(unittest.TestCase):
             {"package": "example.second", "label": "Second", "id": "second"},
         ]
         (project / "assets/catalog.json").write_text(json.dumps({"schema_version": 1,
-            "artwork_version": "0.28.0", "pack_version": "0.1.12", "packages": rows}), encoding="utf-8")
+            "artwork_version": "0.29.0", "pack_version": "0.1.13", "packages": rows}), encoding="utf-8")
         (project / "AndroidManifest.xml").write_text(
             '<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="' + build.PACKAGE + '">' +
             permission + '<queries/><application/></manifest>', encoding="utf-8")
@@ -228,8 +256,8 @@ class AndroidBuildAdmissionTests(unittest.TestCase):
         before = manifest.read_bytes()
         catalog_path = project / "assets/catalog.json"
         original = json.loads(catalog_path.read_text())
-        for field, value in (("pack_version", "0.1.0"), ("pack_version", "0.1.2"), ("pack_version", "0.1.3"), ("pack_version", "0.1.4"), ("pack_version", "0.1.5"), ("pack_version", "0.1.6"), ("pack_version", "0.1.7"), ("pack_version", "0.1.8"), ("pack_version", "0.1.9"), ("pack_version", "0.1.10"), ("pack_version", "0.1.11"),
-                             ("artwork_version", "0.17.0"), ("artwork_version", "0.19.0"), ("artwork_version", "0.20.0"), ("artwork_version", "0.21.0"), ("artwork_version", "0.22.0"), ("artwork_version", "0.23.0"), ("artwork_version", "0.24.0"), ("artwork_version", "0.25.0"), ("artwork_version", "0.26.0"), ("artwork_version", "0.27.0")):
+        for field, value in (("pack_version", "0.1.0"), ("pack_version", "0.1.2"), ("pack_version", "0.1.3"), ("pack_version", "0.1.4"), ("pack_version", "0.1.5"), ("pack_version", "0.1.6"), ("pack_version", "0.1.7"), ("pack_version", "0.1.8"), ("pack_version", "0.1.9"), ("pack_version", "0.1.10"), ("pack_version", "0.1.11"), ("pack_version", "0.1.12"),
+                             ("artwork_version", "0.17.0"), ("artwork_version", "0.19.0"), ("artwork_version", "0.20.0"), ("artwork_version", "0.21.0"), ("artwork_version", "0.22.0"), ("artwork_version", "0.23.0"), ("artwork_version", "0.24.0"), ("artwork_version", "0.25.0"), ("artwork_version", "0.26.0"), ("artwork_version", "0.27.0"), ("artwork_version", "0.28.0")):
             catalog_path.write_text(json.dumps({**original, field: value}), encoding="utf-8")
             with self.subTest(field=field), self.assertRaisesRegex(ValueError, "version is unsupported"):
                 build._write_queries(project)
@@ -288,8 +316,8 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
         (self.project / "assets").mkdir()
         mapping = '<resources><item component="ComponentInfo{example.app/example.app.Main}" drawable="co_icon_0"/></resources>'
         (self.project / "assets/appfilter.xml").write_text(mapping)
-        (self.project / "assets/catalog.json").write_text(json.dumps({"schema_version": 1, "artwork_version": "0.28.0",
-            "pack_version": "0.1.12", "packages": [{"package": "example.app", "label": "Example", "id": "example"},
+        (self.project / "assets/catalog.json").write_text(json.dumps({"schema_version": 1, "artwork_version": "0.29.0",
+            "pack_version": "0.1.13", "packages": [{"package": "example.app", "label": "Example", "id": "example"},
             {"package": "example.second", "label": "Second", "id": "second"}]}))
         (self.project / "AndroidManifest.xml").write_bytes((build.ROOT / "android/app/AndroidManifest.xml").read_bytes())
         self.prepared = {"files": []}
@@ -303,7 +331,7 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
         self.dump = ('E: resources (line=1)\n  E: item (line=1)\n'
                      '    A: component="ComponentInfo{example.app/example.app.Main}"\n'
                      '    A: drawable="co_icon_0"\n')
-        self.badging = ("package: name='" + build.PACKAGE + "' versionCode='13' versionName='0.1.12'\n"
+        self.badging = ("package: name='" + build.PACKAGE + "' versionCode='14' versionName='0.1.13'\n"
                         "minSdkVersion:'26'\ntargetSdkVersion:'36'\napplication-label:'Obscur Icons'\n"
                         "launchable-activity: name='io.github.t92t1914.obscuricons.IconPackActivity' label='Obscur Icons'\n")
         self.resources = ('Package name=' + build.PACKAGE + ' id=7f\n'
@@ -315,7 +343,7 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
                           '    resource 0x7f020003 string/instructions\n'
                           '      () "In Theme Park, edit an icon theme, open Icon, then Iconpack, and select Obscur Icons. Preview the result and save it as a new theme before applying."\n'
                           '    resource 0x7f020008 string/versions\n'
-                          '      () "Icon pack 0.1.12 | Artwork 0.28.0"\n'
+                          '      () "Icon pack 0.1.13 | Artwork 0.29.0"\n'
                           '  type style id=03 entryCount=1\n'
                           '    resource 0x7f030000 style/IconPackTheme\n'
                           '      () (style) size=5 parent=0x0103022e\n'
@@ -334,8 +362,8 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
                           '      () (file) res/drawable-nodpi/co_settings.png type=PNG\n')
         self.manifest = '''E: manifest (line=2)
   A: package="io.github.t92t1914.obscuricons"
-  A: android:versionCode=13
-  A: android:versionName="0.1.12"
+  A: android:versionCode=14
+  A: android:versionName="0.1.13"
   E: uses-sdk
     A: android:minSdkVersion=26
     A: android:targetSdkVersion=36
@@ -390,12 +418,12 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
     def clair(self):
         """Literal counterpart fixture, independent of the production rendering helpers."""
         self.badging = self.badging.replace("obscuricons", "clairicons").replace("Obscur Icons", "Clair Icons").replace(
-            "versionCode='13'", "versionCode='2'").replace("versionName='0.1.12'", "versionName='0.1.1'")
-        self.manifest = self.manifest.replace("obscuricons", "clairicons").replace("versionCode=13", "versionCode=2").replace('"0.1.12"', '"0.1.1"')
+            "versionCode='14'", "versionCode='3'").replace("versionName='0.1.13'", "versionName='0.1.2'")
+        self.manifest = self.manifest.replace("obscuricons", "clairicons").replace("versionCode=14", "versionCode=3").replace('"0.1.13"', '"0.1.2"')
         self.dex_dump = self.dex_dump.replace("obscuricons", "clairicons")
         for old, new in [
             ("io.github.t92t1914.obscuricons", "io.github.t92t1914.clairicons"), ("Obscur Icons", "Clair Icons"),
-            ("Icon pack 0.1.12 | Artwork 0.28.0", "Icon pack 0.1.1 | Artwork 0.28.0"),
+            ("Icon pack 0.1.13 | Artwork 0.29.0", "Icon pack 0.1.2 | Artwork 0.29.0"),
             ("Black and white icons from Clair and Obscur.", "Black icons on white tiles from Clair and Obscur."),
             ("In Theme Park, edit an icon theme, open Icon, then Iconpack, and select Clair Icons. Preview the result and save it as a new theme before applying.",
              "In Theme Park, edit a separate icon-theme draft, open Icon, then Iconpack, and select Clair Icons. Preview it before saving or applying. Keep your working theme available for restoration. Installing this pack does not apply a theme."),
@@ -407,7 +435,7 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
             "() #ffffffff", "() #ff000000").replace("() BLACK_PLACEHOLDER", "() #ffffffff")
         catalog = self.project / "assets/catalog.json"
         document = json.loads(catalog.read_text())
-        document["pack_version"] = "0.1.1"
+        document["pack_version"] = "0.1.2"
         catalog.write_text(json.dumps(document))
         record = next(row for row in self.prepared["files"] if row["path"] == "assets/catalog.json")
         record.update(build._identity(catalog))
@@ -427,7 +455,7 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
         result = self.verify(self.apk())
         self.assertEqual(result["drawables_byte_exact"], 300)
         self.assertEqual(result["compiled_component_mappings"], 1)
-        self.assertEqual(result["displayed_versions"], "Icon pack 0.1.12 | Artwork 0.28.0")
+        self.assertEqual(result["displayed_versions"], "Icon pack 0.1.13 | Artwork 0.29.0")
 
     def test_changed_png_bytes_are_refused(self):
         with self.assertRaisesRegex(ValueError, "PNG (size|byte)"):
@@ -448,7 +476,9 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
     def test_stale_compiled_versions_are_refused_despite_current_package_badging(self):
         apk = self.apk()
         for label in ("Icon pack 0.1.8 | Artwork 0.25.0", "Icon pack 0.1.9 | Artwork 0.26.0",
-                      "Icon pack 0.1.10 | Artwork 0.26.0", "Icon pack 0.1.12 | Artwork 0.26.0"):
+                      "Icon pack 0.1.10 | Artwork 0.26.0", "Icon pack 0.1.12 | Artwork 0.26.0",
+                      "Icon pack 0.1.12 | Artwork 0.28.0", "Icon pack 0.1.12 | Artwork 0.29.0",
+                      "Icon pack 0.1.13 | Artwork 0.28.0"):
             resources = self.resources.replace(build._version_label(), label)
             with self.subTest(label=label), self.assertRaisesRegex(ValueError, "Compiled APK versions string differs"):
                 self.verify(apk, resources=resources)
@@ -476,7 +506,8 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
                            ("8", "0.1.8"), ("9", "0.1.7"),
                            ("9", "0.1.8"), ("9", "0.1.9"), ("10", "0.1.8"),
                            ("10", "0.1.9"), ("10", "0.1.10"), ("11", "0.1.9"),
-                           ("11", "0.1.10"), ("11", "0.1.12"), ("12", "0.1.10"), ("12", "0.1.11"), ("13", "0.1.11"), ("12", "0.1.12")):
+                           ("11", "0.1.10"), ("11", "0.1.12"), ("12", "0.1.10"), ("12", "0.1.11"), ("13", "0.1.11"), ("12", "0.1.12"),
+                           ("13", "0.1.12"), ("13", "0.1.13"), ("14", "0.1.12")):
             badging = (f"package: name='{build.PACKAGE}' versionCode='{code}' versionName='{name}'\n"
                        "minSdkVersion:'26'\ntargetSdkVersion:'36'\n")
             with self.subTest(code=code, name=name), self.assertRaisesRegex(ValueError, "package/version differs"):
@@ -489,7 +520,25 @@ class AndroidAPKByteBoundaryTests(unittest.TestCase):
         self.assertEqual(result["activity"], "io.github.t92t1914.clairicons.IconPackActivity")
         self.assertEqual(result["compiled_package_queries"], 2)
         self.assertEqual(result["DEX_class_definitions"], 1)
-        self.assertEqual(result["displayed_versions"], "Icon pack 0.1.1 | Artwork 0.28.0")
+        self.assertEqual(result["displayed_versions"], "Icon pack 0.1.2 | Artwork 0.29.0")
+
+    def test_clair_prior_or_mixed_compiled_versions_are_refused(self):
+        selected = self.clair()
+        apk = self.apk()
+        for code, name in (("2", "0.1.1"), ("2", "0.1.2"), ("3", "0.1.1")):
+            badging = self.badging.replace("versionCode='3'", f"versionCode='{code}'").replace(
+                "versionName='0.1.2'", f"versionName='{name}'")
+            manifest = self.manifest.replace("versionCode=3", f"versionCode={code}").replace(
+                'versionName="0.1.2"', f'versionName="{name}"')
+            with self.subTest(code=code, name=name, layer="badging"), self.assertRaisesRegex(ValueError, "package/version differs"):
+                self.verify(apk, configuration=selected, badging=badging)
+            with self.subTest(code=code, name=name, layer="manifest"), self.assertRaisesRegex(ValueError, "Compiled manifest differs"):
+                self.verify(apk, configuration=selected, manifest=manifest)
+        for label in ("Icon pack 0.1.1 | Artwork 0.28.0", "Icon pack 0.1.1 | Artwork 0.29.0",
+                      "Icon pack 0.1.2 | Artwork 0.28.0"):
+            resources = self.resources.replace("Icon pack 0.1.2 | Artwork 0.29.0", label)
+            with self.subTest(label=label), self.assertRaisesRegex(ValueError, "Compiled APK versions string differs"):
+                self.verify(apk, configuration=selected, resources=resources)
 
     def test_actual_sdk_symbolic_style_references_require_the_exact_admitted_colors(self):
         # Exact five-item Obscur style bag observed in Build Tools36.1.0 output.

@@ -1,5 +1,15 @@
 # Changes
 
+## Icon artwork 0.29.0 and keyboard reference hierarchy
+
+October 27, 2026.
+
+- Refine Fly Delta, American Airlines, Southwest Airlines, Wikipedia and Google Earth after the complete 300-choice overview and original outline, solid and hybrid comparisons at 24, 32, 48, 64 and 128 pixels in both appearances. Select app-specific facets, wing forms, a segmented heart, an open serif W and a layered sphere. Correct the Southwest outline's projecting seam ends before selection. Record the alternatives, retained compromises and source limits in the [art-direction guide](docs/art-direction.md).
+- Change ten SVGs and twenty PNGs, preserving the other 590 SVGs and 1,180 PNGs exactly from 0.28.0. Independently decode all 1,200 current PNGs. Retain all 28 historical SVG archives, 300 choices, labels, 1,354 ordered mappings and 290 narrow public package queries, including the earlier Claude and Perplexity geometry and retained ChatGPT decision.
+- Give the maintained keyboard illustration a quieter utility hierarchy and an explicitly styled example suggestion. Keep every Keyboard Companion 0.1.0 bundle output, background and bundled guide unchanged. The illustration adds no native Gboard or Samsung setting and changes no font or autocorrect behavior.
+- Configure separate private Clair Icons 0.1.2/code 3 and Obscur Icons 0.1.13/code 14 companions for the qualified 0.29.0 export. Verify each resulting APK's resources and signature before private delivery. Preserve accepted Clair 0.1.1, Obscur 0.1.12 and earlier binaries, original desktop packages and PR84 preview surfaces.
+- Keep human recognition and preference unmeasured. Declared clipping illustrations do not establish actual launcher masks. Native installation, assignment, both displays, switching, restart and restoration remain separately deferred.
+
 ## Icon artwork 0.25.0
 
 October 23, 2026.

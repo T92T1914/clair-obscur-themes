@@ -76,6 +76,25 @@ class KeyboardTests(unittest.TestCase):
         for name, record in manifest['files'].items():
             self.assertEqual(record, {'bytes': len(files[name]), 'sha256': hashlib.sha256(files[name]).hexdigest()})
 
+    def test_art_direction_reference_preserves_all_nine_accepted_companion_outputs(self):
+        # Captured from the accepted 0.1.0 files, independently of this renderer.
+        expected = {
+            'Clair-Obscur-Keyboard-Companion-0.1.0.zip': (29085, 'b30d65e2e72d5b077b182193861c16ea92ed6aa0b0d827bdc6c01087fb90b735'),
+            'LICENSE.txt': (1065, '4a0c167c3e57f46605c607890e29afd8f26d6f3e5a6915f4163b53710d5fadbd'),
+            'SHA256SUMS': (542, '09cf91e6bb18eee19fffc9a277db80cee051d4e2789135da3829b8f884607e5f'),
+            'backgrounds/Clair-Gboard-Background.png': PINS['Clair'][1:],
+            'backgrounds/Obscur-Gboard-Background.png': PINS['Obscur'][1:],
+            'installation.md': (9277, 'e4568243ecae3ee099370d5d71c568ac124435f87a2a364aa2bdcbe18699b8f4'),
+            'bundle-SHA256SUMS': (108, '65358d3d78657438da7e3c6e6123d766e04a620decca98ee413b1fe448ddea5d'),
+            'manifest.json': (1914, 'c0eea53d1b77222a32e4b460e996e229e7107ac3899ebbbf8e1b58a3dde44d42'),
+            'palette-reference.json': (1283, '6841298b234acdd2bf3033c7071a306223323c7be331332691dc078dcd7777ad'),
+        }
+        files = self.render()
+        self.assertEqual(set(files), set(expected))
+        for name, (size, digest) in expected.items():
+            with self.subTest(path=name):
+                self.assertEqual((len(files[name]), hashlib.sha256(files[name]).hexdigest()), (size, digest))
+
     def test_monochrome_role_map_has_readable_legends_and_boundaries(self):
         palette = json.loads(self.render()['palette-reference.json'])
         for name, field, legend in [('Clair', '#ffffff', '#000000'), ('Obscur', '#000000', '#ffffff')]:
@@ -99,7 +118,16 @@ class KeyboardTests(unittest.TestCase):
         self.assertIn('No Samsung theme file or importer', page)
         self.assertIn('href="#current-source"', page)
         self.assertIn('Illustrations, not native screenshots', page)
-        self.assertIn('Shift, Backspace, numeric/symbol mode, Space, punctuation and Enter', page)
+        self.assertIn('number row, an example selected suggestion, Shift, Backspace, numeric/symbol mode, Space, punctuation and Enter', page)
         self.assertIn('data-keyboard-modifier="enter">↵</span>', page)
         self.assertNotIn('<button', page)
         self.assertNotIn('C:/', page)
+
+    def test_selected_suggestion_and_number_row_are_explicit_illustrations(self):
+        page = keyboard_section(self.tokens)
+        self.assertEqual(page.count('class="keyboard-row keyboard-row-numbers"'), 4)
+        self.assertEqual(page.count('class="keyboard-suggestion-current">clear</span>'), 4)
+        self.assertEqual(page.count('Illustrative selected suggestion, with no automatic correction implied.'), 4)
+        self.assertEqual(page.count('Not a native screenshot or typing control.'), 4)
+        self.assertIn('background pixels only', page)
+        self.assertIn('Preserve native states. Independent editors not promised.', page)

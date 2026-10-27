@@ -13,12 +13,12 @@ import sys
 from typing import BinaryIO
 
 MAX_MANIFEST_BYTES = 72_704
-MAX_DECLARED_FILES = 693
-MAX_ENTRIES = 719
+MAX_DECLARED_FILES = 694
+MAX_ENTRIES = 720
 MAX_FILE_BYTES = 8_388_608
-# The Obscur explainer adds five files to the accepted artwork 0.28 kit.
-# Its composed comparison returned 30,412,715 bytes; add one bounded 64 KiB chunk.
-MAX_READ_BYTES = 30_474_240
+# Artwork 0.29 retains the complete 0.28 archive beside the earlier collections.
+# Round its measured 31,761,396-byte minimum to the next 64 KiB read chunk.
+MAX_READ_BYTES = 31_784_960
 READ_CHUNK = 65_536
 MAX_REPORT_BYTES = 262_144
 MANIFEST_NAME = 'site-manifest.json'

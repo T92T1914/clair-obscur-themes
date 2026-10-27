@@ -321,7 +321,7 @@ class ManifestAdmissionTests(KitFixture):
             self.assert_refused(message='File byte limit')
         self.assertEqual(self.snapshot(), before)
         self.document = manifest_document(self.files)
-        for number in range(694 - len(self.document['files'])):
+        for number in range(695 - len(self.document['files'])):
             self.document['files'][f'file{number}.txt'] = '0' * 64
         self.write_manifest()
         self.assert_refused(message='declared file count')
@@ -337,15 +337,15 @@ class ManifestAdmissionTests(KitFixture):
         for name in self.document['files']:
             parts = name.split('/')
             expected_entries.update('/'.join(parts[:end]) for end in range(1, len(parts) + 1))
-        self.assertLess(len(self.document['files']), 693)
-        self.assertGreater(len(expected_entries), 719)
+        self.assertLess(len(self.document['files']), 694)
+        self.assertGreater(len(expected_entries), 720)
         self.write_manifest()
         self.assert_refused(message='Combined inventory')
 
-    def test_expanded_declared_inventory_accepts_prior_and_693_hashes_and_refuses_694(self):
+    def test_expanded_declared_inventory_accepts_prior_and_694_hashes_and_refuses_695(self):
         # Exercise a complete comparison at the published limit. The current
         # named-app portable kit also runs through ProducerInclusionTests.
-        for count in (192, 224, 240, 248, 256, 313, 320, 410, 416, 435, 448, 456, 477, 498, 515, 532, 549, 630, 631, 633, 634, 654, 655, 656, 657, 658, 659, 668, 669, 677, 678, 679, 686, 687, 688, 692, 693):
+        for count in (192, 224, 240, 248, 256, 313, 320, 410, 416, 435, 448, 456, 477, 498, 515, 532, 549, 630, 631, 633, 634, 654, 655, 656, 657, 658, 659, 668, 669, 677, 678, 679, 686, 687, 688, 692, 693, 694):
             while len(self.files) < count:
                 number = len(self.files)
                 name = f'expanded{number}.txt'
@@ -364,12 +364,12 @@ class ManifestAdmissionTests(KitFixture):
         with patch.object(verifier, '_read', wraps=verifier._read) as reads:
             self.assert_refused(message='declared file count')
         self.assertEqual([call.args[1] for call in reads.call_args_list], ['site-manifest.json'],
-                          'The 694th declaration is refused before any declared member is read')
+                          'The 695th declaration is refused before any declared member is read')
         self.assertEqual(self.snapshot(), before)
 
     def test_actual_inventory_depth_and_unsafe_extra_are_refused_before_reads(self):
         extra_count = 0
-        for admitted_count in (352, 448, 480, 501, 522, 539, 556, 573, 654, 655, 657, 658, 678, 679, 680, 681, 682, 683, 688, 689, 690, 691, 692, 693, 694, 697, 698, 699, 700, 701, 702, 708, 709, 712, 713, 719):
+        for admitted_count in (352, 448, 480, 501, 522, 539, 556, 573, 654, 655, 657, 658, 678, 679, 680, 681, 682, 683, 688, 689, 690, 691, 692, 693, 694, 697, 698, 699, 700, 701, 702, 708, 709, 712, 713, 719, 720):
             additional = admitted_count - len(verifier.inventory(self.kit))
             for number in range(extra_count, extra_count + additional):
                 (self.kit / f'extra{number}.txt').touch()
@@ -381,7 +381,7 @@ class ManifestAdmissionTests(KitFixture):
             self.assertIn(f'extra FILE "extra{extra_count - 1}.txt"'.encode(), report)
             self.assertEqual(self.snapshot(), before)
         (self.kit / f'extra{extra_count}.txt').touch()
-        self.assertEqual(len(list(self.kit.rglob('*'))), 720)
+        self.assertEqual(len(list(self.kit.rglob('*'))), 721)
         with patch.object(verifier, '_read', side_effect=AssertionError('content read')):
             with self.assertRaisesRegex(verifier.VerificationInputError, 'Actual inventory'):
                 verifier.verify(self.kit)
@@ -587,7 +587,7 @@ class ReadObservationTests(KitFixture):
         self.assertEqual(observed[-1][2],
                          2 * len(encoded(self.document)) + sum(map(len, self.files.values())))
         self.assertTrue(any(reserve == len(encoded(self.document)) + 1 for _, reserve, _ in observed))
-        # Former read boundaries remain admitted, while the current 29 MiB bound stays finite.
+        # Former read boundaries remain admitted while the measured bound stays finite.
         keyboard = verifier.ReadBudget(used=28_442_623)
         self.assertEqual(keyboard.read(io.BytesIO(b'xx'), 2, 0), b'xx')
         former = verifier.ReadBudget(used=16_777_215)
@@ -621,9 +621,12 @@ class ReadObservationTests(KitFixture):
         historical_artwork_limit = verifier.ReadBudget(used=30_408_703)
         self.assertEqual(historical_artwork_limit.read(io.BytesIO(b'xx'), 2, 0), b'xx')
         self.assertEqual(historical_artwork_limit.used, 30_408_705)
-        final = verifier.ReadBudget(used=verifier.MAX_READ_BYTES - 1)
+        historical_explainer_limit = verifier.ReadBudget(used=30_474_239)
+        self.assertEqual(historical_explainer_limit.read(io.BytesIO(b'xx'), 2, 0), b'xx')
+        self.assertEqual(historical_explainer_limit.used, 30_474_241)
+        final = verifier.ReadBudget(used=31_784_959)
         self.assertEqual(final.read(io.BytesIO(b'x'), 1, 0), b'x')
-        self.assertEqual(final.used, verifier.MAX_READ_BYTES)
+        self.assertEqual(final.used, 31_784_960)
         with self.assertRaisesRegex(verifier.VerificationInputError, 'Aggregate read limit'):
             final.read(io.BytesIO(b'x'), 1, 0)
         reserved = verifier.ReadBudget(used=verifier.MAX_READ_BYTES - 2)
@@ -943,10 +946,10 @@ class ProducerInclusionTests(KitFixture):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
         self.assertEqual(verifier.verify(extracted)[0], 0)
-        # The Obscur explainer candidate has 715 entries. Preserve room to diagnose ordinary
+        # The artwork 0.29 candidate has 716 entries. Preserve room to diagnose ordinary
         # extras rather than refusing its first extra entry as unsupported.
-        self.assertEqual(len(portable['files']), 693)
-        self.assertEqual(len(verifier.inventory(extracted)), 715)
+        self.assertEqual(len(portable['files']), 694)
+        self.assertEqual(len(verifier.inventory(extracted)), 716)
         (extracted / 'unassigned-extra.txt').write_bytes(b'preserved extra file\n')
         before = {name.relative_to(extracted).as_posix(): name.read_bytes()
                   for name in extracted.rglob('*') if name.is_file()}
@@ -957,7 +960,7 @@ class ProducerInclusionTests(KitFixture):
                           for name in extracted.rglob('*') if name.is_file()}, before)
         for number in range(3):
             (extracted / f'extra-headroom-{number}.txt').write_bytes(b'preserved extra file\n')
-        self.assertEqual(len(verifier.inventory(extracted)), 719)
+        self.assertEqual(len(verifier.inventory(extracted)), 720)
         before = {name.relative_to(extracted).as_posix(): name.read_bytes()
                   for name in extracted.rglob('*') if name.is_file()}
         status, report = verifier.verify(extracted)

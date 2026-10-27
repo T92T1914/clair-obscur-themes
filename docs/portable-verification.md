@@ -70,7 +70,41 @@ Relative member paths have at most 240 ASCII characters and eight components.
 Windows device names, parent traversal and file/directory prefix conflicts are
 unsupported. These rules also apply to extra entries before any content is read.
 
-The Obscur explanation adds one appearance script and four mechanism images to
+The artwork 0.29.0 preview retains the complete 0.28.0 SVG archive, the earlier
+collections, Keyboard Companion 0.1.0 and PR84's appearance/mechanism files. Its
+finite allowances are:
+
+| Limit | Value |
+| --- | --- |
+| Manifest | 72,704 bytes |
+| Declared hashes | 694 |
+| Expected or observed files and directories | 720, excluding the root |
+| Each declared member | 8,388,608 bytes |
+| Total returned read bytes, including both manifest reads | 31,784,960 bytes |
+| Read chunk | At most 65,536 bytes |
+| Complete stdout report, including LF newlines | 262,144 bytes |
+
+The actual source composition before this cap/test/guide update measured 695
+regular files, 21 directories and 716 entries. Its 694 declared hashes included
+31,617,826 payload bytes. The manifest measured 71,784 bytes, and an instrumented
+ordinary comparison returned 31,761,394 bytes across content and both manifest
+reads. EOF and final-manifest admission require two further bytes, giving a
+31,761,396-byte minimum. The largest member was the 3,334,208-byte current source
+archive. These are measurements of that source composition, not the final frozen
+archive or a published consumer.
+
+The retained PR84 verifier refused that actual kit at its 693-declaration limit.
+Overriding only the measured scalar caps admitted an intact ordinary comparison.
+The new declared-file limit matches the measured inventory, and the 720-entry
+limit retains room to report four ordinary extras. Rounding the measured read
+minimum to the next 65,536-byte boundary gives the finite 31,784,960-byte allowance
+with 23,564 bytes above that minimum. Manifest, member, chunk, report, path, link,
+depth and stability protections are unchanged. Source and guide finalization can
+change the source archive's size. Qualify the final frozen kit through its actual
+included verifier before distribution.
+
+The earlier PR84 Obscur explanation capacity record remains historical. It adds
+one appearance script and four mechanism images to
 the accepted artwork 0.28.0 preview. The composed route admits 693 declared
 hashes and 719 file/directory entries, preserving room to diagnose four ordinary
 extras. The first composed kit measured 694 regular files, 21 directories, a

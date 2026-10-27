@@ -15,9 +15,9 @@ import xml.etree.ElementTree as ET
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.1.12"
-VERSION_CODE = 13
-ARTWORK_VERSION = "0.28.0"
+VERSION = "0.1.13"
+VERSION_CODE = 14
+ARTWORK_VERSION = "0.29.0"
 PACKAGE = "io.github.t92t1914.obscuricons"
 BUILD_TOOLS = "36.1.0"
 API = 36
@@ -612,7 +612,7 @@ def _run(argv: list[str], output: Path, name: str, report: dict, environment: di
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--png-dir", type=Path, required=True, help="Qualified 0.27 PNG export directory")
+    parser.add_argument("--png-dir", type=Path, required=True, help="Qualified current artwork PNG export directory")
     parser.add_argument("--appearance", choices=("Obscur", "Clair"), default="Obscur", help="Closed package/artwork variant; default preserves Obscur")
     parser.add_argument("--components", type=Path, default=ROOT / "android/iconpack/components.json")
     parser.add_argument("--sdk", type=Path, required=True, help="Explicit Android SDK root with API36 and Build Tools36.1.0")

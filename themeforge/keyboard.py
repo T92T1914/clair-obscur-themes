@@ -76,20 +76,21 @@ def keyboard_section(document: dict) -> str:
             slug = appearance.lower()
             rows = []
             for row in ('1234567890', 'qwertyuiop', 'asdfghjkl', 'zxcvbnm'):
-                row_class = ' keyboard-row-home' if row == 'asdfghjkl' else ''
+                row_class = (' keyboard-row-home' if row == 'asdfghjkl' else
+                             ' keyboard-row-numbers' if row == '1234567890' else '')
                 keys = ''.join(f'<span class="keyboard-key">{letter}</span>' for letter in row)
                 if row == 'zxcvbnm':
                     keys = '<span class="keyboard-key keyboard-modifier" data-keyboard-modifier="shift">⇧</span>' + keys + '<span class="keyboard-key keyboard-modifier" data-keyboard-modifier="backspace">⌫</span>'
                 rows.append(f'<div class="keyboard-row{row_class}">{keys}</div>')
             figure = (f'<figure class="keyboard-reference" data-palette="{appearance}">'
-                f'<div role="img" aria-label="Illustrative {appearance} keyboard with number row, suggestions, Shift, Backspace, numeric/symbol mode, Space, punctuation and Enter. Not a native screenshot or typing control.">'
+                f'<div role="img" aria-label="Illustrative {appearance} keyboard with number row, an example selected suggestion, Shift, Backspace, numeric/symbol mode, Space, punctuation and Enter. Not a native screenshot or typing control.">'
                 '<div class="keyboard-drawing" aria-hidden="true"><div class="keyboard-toolbar"><span>Tools</span><span>Design reference</span><span>Settings</span></div>'
-                '<div class="keyboard-suggestions"><span>quiet</span><span>clear</span><span>simple</span></div>'
+                '<div class="keyboard-suggestions"><span>quiet</span><span class="keyboard-suggestion-current">clear</span><span>simple</span></div>'
                 + ''.join(rows) + '<div class="keyboard-row"><span class="keyboard-key keyboard-modifier keyboard-mode" data-keyboard-modifier="mode">123</span><span class="keyboard-key">,</span>'
                 '<span class="keyboard-key keyboard-space">Space</span><span class="keyboard-key">.</span><span class="keyboard-key keyboard-action" data-keyboard-modifier="enter">↵</span></div>'
                 '<div class="keyboard-state-samples"><span class="keyboard-state keyboard-pressed">Pressed</span><span class="keyboard-state keyboard-selected">Selected</span>'
                 '<span class="keyboard-state keyboard-focused">Focus</span><span class="keyboard-state keyboard-disabled">Unavailable</span></div></div></div>'
-                '<figcaption>Illustrative positions and legends. Your existing native layout, touch targets and typography stay unchanged.</figcaption></figure>')
+                '<figcaption>Illustrative selected suggestion, with no automatic correction implied. Native layout, touch targets and typography stay unchanged.</figcaption></figure>')
             if platform_id == 'gboard':
                 filename = BACKGROUNDS[appearance][0]
                 action = (f'<p><img class="keyboard-background" src="keyboard/backgrounds/{filename}" width="2048" height="1024" alt="Solid {"white" if appearance == "Clair" else "black"} optional background" data-keyboard-background="{slug}"></p>'
@@ -110,6 +111,7 @@ def keyboard_section(document: dict) -> str:
         '<h2 id="keyboards-heading">A matching keyboard, within its own controls.</h2>'
         '<p class="lead">Choose a platform and compare Clair and Obscur. These are design references and manual recipes, separate from the icon packs and page appearance.</p>'
         '<p class="status">Illustrations, not native screenshots. The browser requests locally installed Inter and keeps its fallback. Neither establishes a phone font, typing performance or completed theme application.</p>'
+        '<p>Letters carry the main visual weight in this reference. The quieter number row and outlined utility keys stay readable, while bold text and an underline identify an example suggestion. These are illustration choices, not extra Gboard or Samsung controls. <a href="https://github.com/T92T1914/clair-obscur-themes/blob/main/docs/art-direction.md">Design decisions and platform limits</a>.</p>'
         '<form id="keyboard-chooser" class="paper" hidden><div class="chooser-controls">'
         '<label for="keyboard-platform">Keyboard platform<select id="keyboard-platform"><option value="gboard">Gboard</option><option value="samsung">Samsung Keyboard</option></select></label>'
         '<label for="keyboard-appearance">Keyboard design appearance<select id="keyboard-appearance"><option value="both">Compare both</option><option value="Clair">Clair</option><option value="Obscur">Obscur</option></select></label></div>'
