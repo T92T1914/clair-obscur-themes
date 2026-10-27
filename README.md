@@ -4,6 +4,16 @@ Clair and Obscur are two appearances built around black and white. Clair uses a 
 
 The current icons, preview and watch source use this palette, with Inter where the host supports it and native font fallbacks elsewhere. Earlier desktop packages keep their accepted colors and versions. Downloads remain previews, and native acceptance depends on the application and exact version.
 
+<a href="https://t92t1914.github.io/clair-obscur-themes/#how-it-works"><picture>
+  <source media="(min-width: 900px)" srcset="web/mechanism-obscur-wide.png">
+  <img src="web/mechanism-obscur-narrow.png" width="960" alt="Conceptual route: shared canvas, text and focus roles become explicit platform mappings and versioned packages. Inspect the preview, then qualify native behavior separately for each host.">
+</picture></a>
+
+The diagram explains the mechanism, not a native installation result. For example,
+the Obscur preview's black canvas and white text do not change Chrome's native UI
+font. [Explore the project](https://t92t1914.github.io/clair-obscur-themes/#how-it-works)
+or inspect the [figure source and limits](docs/mechanism.md).
+
 Limited earlier Equibop and Chrome 0.1.1 observations do not establish complete native interface or typography coverage. Chrome switching, removal and cleanup remain open. The webpage specimen is not an application screenshot. The [compatibility and acceptance record](docs/acceptance.md) separates observed behavior from checks still open.
 
 [Read in another language](https://github.com/T92T1914/T92T1914/blob/main/TRANSLATION.md).

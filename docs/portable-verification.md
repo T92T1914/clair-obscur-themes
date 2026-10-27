@@ -70,20 +70,30 @@ Relative member paths have at most 240 ASCII characters and eight components.
 Windows device names, parent traversal and file/directory prefix conflicts are
 unsupported. These rules also apply to extra entries before any content is read.
 
-The measured keyboard companion 0.1.0 source candidate, retaining artwork 0.27.0,
+The measured Obscur explainer source candidate, retaining keyboard companion 0.1.0 and artwork 0.27.0,
 uses the following finite allowances.
 
 | Limit | Value |
 | --- | --- |
 | Manifest | 72,704 bytes |
-| Declared hashes | 687 |
-| Expected or observed files and directories | 713, excluding the root |
+| Declared hashes | 692 |
+| Expected or observed files and directories | 718, excluding the root |
 | Each declared member | 8,388,608 bytes |
-| Total returned read bytes, including both manifest reads | 28,442,624 |
+| Total returned read bytes, including both manifest reads | 29,163,520 |
 | Read chunk | At most 65,536 bytes |
 | Complete stdout report, including LF newlines | 262,144 bytes |
 
-The keyboard companion capacity baseline measured 688 regular files and 21
+The first Obscur explainer capacity baseline measured 693 regular files and 21
+directories, giving 714 entries and 692 declared hashes. Its manifest was 71,554
+bytes. Declared content and both manifest reads totaled 29,100,687 bytes. These
+measurements precede this cap, regression and guide correction. The declaration
+limit matches the five added appearance/graphic files. The entry allowance keeps
+four ordinary extras diagnosable, and the read allowance rounds the observed
+comparison up to the next 65,536-byte boundary. Manifest, per-member, path,
+traversal, stability and report limits remain unchanged. Qualify the final frozen
+source and kit separately.
+
+The earlier keyboard companion capacity baseline measured 688 regular files and 21
 directories, giving 709 entries and 687 declared hashes. Its manifest was 71,057
 bytes. Declared payload was 28,299,647 bytes, and both manifest reads brought
 returned bytes to 28,370,704. The largest member was the 2,879,043-byte current

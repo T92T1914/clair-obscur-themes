@@ -24,7 +24,9 @@ from themeforge.legal import normalize_license
 from themeforge.tokens import load
 
 ROOT = Path(__file__).resolve().parent
-WEB_ASSETS = frozenset({'index.html', 'preview.css', 'preview.js'})
+WEB_ASSETS = frozenset({'index.html', 'preview.css', 'preview.js', 'appearance.js',
+                        'mechanism-obscur-wide.png', 'mechanism-obscur-wide.svg',
+                        'mechanism-obscur-narrow.png', 'mechanism-obscur-narrow.svg'})
 REPOSITORY_URL = 'https://github.com/T92T1914/clair-obscur-themes'
 PORTABLE_ARCHIVE = 'Clair-Obscur-portable-preview.zip'
 PORTABLE_CHECKSUMS = 'portable-SHA256SUMS'
@@ -118,6 +120,8 @@ def source_files(root: Path) -> dict[str, bytes]:
         'verify_preview.py',
         'package.json', 'package-lock.json', '.gitignore', '.gitattributes',
         'tools/export-icons.mjs',
+        'tools/render_mechanism.py', 'docs/mechanism.json',
+        'docs/mechanism-rendering.json', 'docs/requirements-figures.txt',
     )]
     # Only the reviewed project files belong in the public source snapshot.
     # SDKs, keys, compiled programs and debug XML stay outside this inventory.
@@ -126,7 +130,7 @@ def source_files(root: Path) -> dict[str, bytes]:
     paths.extend(root / name for name in KEYBOARD_SOURCE_FILES)
     for folder, endings in (
         ('themeforge', {'.py'}), ('tests', {'.py', '.mjs'}),
-        ('web', {'.html', '.css', '.js'}), ('docs', {'.md'}),
+        ('web', {'.html', '.css', '.js', '.png', '.svg'}), ('docs', {'.md'}),
         ('research', {'.md', '.json', '.csv'}), ('.github', {'.yml', '.md'}),
     ):
         pending = [root / folder]
