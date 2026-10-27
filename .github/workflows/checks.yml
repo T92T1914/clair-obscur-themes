@@ -40,6 +40,8 @@ jobs:
           TEMP: ${{ runner.temp }}
           TMP: ${{ runner.temp }}
         run: python -m unittest discover -s tests -v
+      - name: Verify the committed conceptual graphic
+        run: python tools/render_mechanism.py --check
       - name: Build reviewed theme artifacts
         run: python build.py
       - name: Verify reproducible output

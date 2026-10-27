@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="appearance.js"></script>
   <meta name="color-scheme" content="dark light">
   <meta name="description" content="Clair and Obscur, a quiet theme family with native browser and self-contained client CSS candidates.">
   <title>Clair &amp; Obscur</title>
@@ -17,6 +18,7 @@
     <fieldset class="switcher"><legend>Preview appearance</legend>
       <button type="button" data-appearance="Obscur" aria-label="Obscur" aria-pressed="true">Obscur</button>
       <button type="button" data-appearance="Clair" aria-label="Clair" aria-pressed="false">Clair</button>
+      <button type="button" data-appearance="Auto" aria-label="Use system appearance" aria-pressed="false">Auto</button>
     </fieldset>
   </header>
   <main id="main">
@@ -32,6 +34,19 @@
       <a id="keyboard-preview-link" class="secondary-link" href="#keyboards">Keyboard companion</a>
       <a class="secondary-link" href="https://github.com/T92T1914/T92T1914/blob/main/TRANSLATION.md">Read in another language</a>
       <noscript><p>Page controls need JavaScript. Both palette specimens, downloads and installation instructions remain available below.</p></noscript>
+    </section>
+
+    <section id="how-it-works" aria-labelledby="mechanism-heading">
+      <h2 id="mechanism-heading">From shared roles to a platform candidate</h2>
+      <figure class="mechanism-figure">
+        <a href="mechanism-obscur-wide.svg"><picture>
+          <source media="(min-width: 700px)" srcset="mechanism-obscur-wide.png">
+          <img src="mechanism-obscur-narrow.png" width="960" height="1210" alt="Conceptual route: shared canvas, text and focus roles feed explicit platform mappings and versioned packages. A preview can be inspected, while native behavior needs separate checks for each host.">
+        </picture></a>
+        <figcaption>A conceptual mechanism, not a native application capture. Open the graphic for a full-size SVG.</figcaption>
+      </figure>
+      <p>The current Obscur specimen uses black canvas and white text. A browser theme maps roles to supported browser fields. It does not replace Chrome's native UI font. Client CSS has a different mapping and its own fallback behavior.</p>
+      <p>Current monochrome source and earlier desktop palettes remain distinct. Preview checks and package hashes do not establish native loading, appearance or restoration. <a href="#installation">Inspect installation and limits</a>, <a href="https://github.com/T92T1914/clair-obscur-themes/blob/main/docs/mechanism.md">the graphic's source record</a> or <a href="https://github.com/T92T1914/T92T1914">return to the portfolio</a>.</p>
     </section>
 
     <section aria-labelledby="palettes-heading">

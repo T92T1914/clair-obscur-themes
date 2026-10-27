@@ -1,5 +1,3 @@
-const choices = [...document.querySelectorAll('[data-appearance]')];
-
 // Each card owns its asset URL. Page appearance never selects a keyboard file.
 (() => {
   const chooser = document.querySelector('#keyboard-chooser');
@@ -157,15 +155,6 @@ const choices = [...document.querySelectorAll('[data-appearance]')];
   help.textContent = 'Use PNG 512 beside an appearance to prepare that individual image in your browser. Each file is 512 by 512 pixels with a transparent outer margin. The full SVG archives and two-size PNG export remain available.';
 })();
 
-for (const choice of choices) {
-  choice.addEventListener('click', () => {
-    const appearance = choice.dataset.appearance;
-    if (!['Clair', 'Obscur'].includes(appearance)) return;
-    document.documentElement.dataset.theme = appearance;
-    for (const button of choices) button.setAttribute('aria-pressed', String(button === choice));
-    document.querySelector('#appearance-status').textContent = `Showing ${appearance}`;
-  });
-}
 document.querySelector('#sample-button').addEventListener('click', () => {
   document.querySelector('#control-status').textContent = 'Control activated. This specimen changes no application settings.';
 });

@@ -1,0 +1,45 @@
+{
+  "id": "themes-mechanism-20261026",
+  "basis_revision": "bfe50ba72860da600cd3923a9a454c79c158ba37",
+  "title": "One family, explicit mappings",
+  "subtitle": "A preview is not native acceptance.",
+  "footer": "Native behavior needs its own checks.",
+  "output_prefix": "web/mechanism-obscur",
+  "adapter": {
+    "source": "tokens-monochrome.json",
+    "roles": {
+      "canvas": "#000000",
+      "panel": "#151515",
+      "text": "#ffffff",
+      "muted": "#cccccc",
+      "line": "#999999"
+    }
+  },
+  "source_paths": [
+    "docs/platform-portability.md",
+    "docs/acceptance.md"
+  ],
+  "panels": [
+    {
+      "title": "Shared roles",
+      "lines": [
+        "Canvas, text and focus",
+        "Versioned source tokens"
+      ]
+    },
+    {
+      "title": "Platform mapping",
+      "lines": [
+        "Explicit host fields",
+        "Versioned packages"
+      ]
+    },
+    {
+      "title": "Preview + native",
+      "lines": [
+        "Inspect the specimen",
+        "Qualify each native host"
+      ]
+    }
+  ]
+}

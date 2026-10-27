@@ -13,17 +13,19 @@ import sys
 from typing import BinaryIO
 
 MAX_MANIFEST_BYTES = 72_704
-MAX_DECLARED_FILES = 688
-MAX_ENTRIES = 714
+MAX_DECLARED_FILES = 693
+MAX_ENTRIES = 719
 MAX_FILE_BYTES = 8_388_608
-# Artwork 0.28 retains the full 0.27 archive and unchanged keyboard companion.
-# Its measured kit needs a finite 29 MiB aggregate allowance.
-MAX_READ_BYTES = 30_408_704
+# The Obscur explainer adds five files to the accepted artwork 0.28 kit.
+# Its composed comparison returned 30,412,715 bytes; add one bounded 64 KiB chunk.
+MAX_READ_BYTES = 30_474_240
 READ_CHUNK = 65_536
 MAX_REPORT_BYTES = 262_144
 MANIFEST_NAME = 'site-manifest.json'
 CORE_FILES = frozenset({
-    'index.html', 'preview.css', 'preview.js', 'tokens.css', 'LICENSE',
+    'index.html', 'preview.css', 'preview.js', 'appearance.js', 'tokens.css', 'LICENSE',
+    'mechanism-obscur-wide.png', 'mechanism-obscur-wide.svg',
+    'mechanism-obscur-narrow.png', 'mechanism-obscur-narrow.svg',
     'source.zip', 'source-SHA256SUMS', 'release-SHA256SUMS',
     'downloads/artifact-manifest.json', 'downloads/SHA256SUMS',
 })
@@ -249,7 +251,7 @@ def _root(value: str | Path) -> tuple[Path, dict[Path, Observation]]:
 
 
 def inventory(root: Path) -> dict[str, Observation]:
-    """Collect at most 702 entries without following links or reading content."""
+    """Collect at most MAX_ENTRIES without following links or reading content."""
     result: dict[str, Observation] = {}
     pending = [root]
     files: set[str] = set()
