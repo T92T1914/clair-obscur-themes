@@ -15,9 +15,9 @@ import xml.etree.ElementTree as ET
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.1.11"
-VERSION_CODE = 12
-ARTWORK_VERSION = "0.27.0"
+VERSION = "0.1.12"
+VERSION_CODE = 13
+ARTWORK_VERSION = "0.28.0"
 PACKAGE = "io.github.t92t1914.obscuricons"
 BUILD_TOOLS = "36.1.0"
 API = 36

@@ -70,30 +70,46 @@ Relative member paths have at most 240 ASCII characters and eight components.
 Windows device names, parent traversal and file/directory prefix conflicts are
 unsupported. These rules also apply to extra entries before any content is read.
 
-The measured Obscur explainer source candidate, retaining keyboard companion 0.1.0 and artwork 0.27.0,
+The Obscur explanation adds one appearance script and four mechanism images to
+the accepted artwork 0.28.0 preview. The composed route admits 693 declared
+hashes and 719 file/directory entries, preserving room to diagnose four ordinary
+extras. It retains the accepted finite 29 MiB read allowance (30,408,704 bytes),
+72,704-byte manifest cap and all existing member, path, traversal, stability and
+report limits. The final actual kit must pass the ordinary comparison before
+distribution. The earlier capacity records below remain historical.
+
+The measured artwork 0.28.0 candidate retains Keyboard Companion 0.1.0 and the complete 0.27.0 SVG archive. Its finite allowances are:
+
+| Limit | Value |
+| --- | --- |
+| Manifest | 72,704 bytes |
+| Declared hashes | 688 |
+| Expected or observed files and directories | 714, excluding the root |
+| Each declared member | 8,388,608 bytes |
+| Total returned read bytes, including both manifest reads | 30,408,704, or 29 MiB |
+| Read chunk | At most 65,536 bytes |
+| Complete stdout report, including LF newlines | 262,144 bytes |
+
+The pre-cap-update candidate measured 689 regular files and 21 directories, giving 710 entries and 688 declared hashes. Its manifest was 71,172 bytes. Declared payload was 29,551,085 bytes, and both manifest reads brought returned bytes to 29,693,429. Including EOF and final-manifest admission requires at least 29,693,431 bytes. The largest member was the 2,906,268-byte current source archive.
+
+The accepted keyboard verifier refused this actual kit at its earlier declaration limit. The additional retained archive also exceeds its aggregate-read allowance. The new declaration limit matches the measured inventory, and the entry limit preserves room to diagnose four ordinary extras. A finite 29 MiB read allowance leaves room for source and guide finalization. Manifest, member, path, traversal, chunk, stability and report bounds are unchanged. These measurements precede the cap, test and guide updates. Qualify the final frozen artifact and portable consumer separately.
+
+The earlier keyboard companion capacity record follows unchanged.
+
+The measured keyboard companion 0.1.0 source candidate, retaining artwork 0.27.0,
 uses the following finite allowances.
 
 | Limit | Value |
 | --- | --- |
 | Manifest | 72,704 bytes |
-| Declared hashes | 692 |
-| Expected or observed files and directories | 718, excluding the root |
+| Declared hashes | 687 |
+| Expected or observed files and directories | 713, excluding the root |
 | Each declared member | 8,388,608 bytes |
-| Total returned read bytes, including both manifest reads | 29,163,520 |
+| Total returned read bytes, including both manifest reads | 28,442,624 |
 | Read chunk | At most 65,536 bytes |
 | Complete stdout report, including LF newlines | 262,144 bytes |
 
-The first Obscur explainer capacity baseline measured 693 regular files and 21
-directories, giving 714 entries and 692 declared hashes. Its manifest was 71,554
-bytes. Declared content and both manifest reads totaled 29,100,687 bytes. These
-measurements precede this cap, regression and guide correction. The declaration
-limit matches the five added appearance/graphic files. The entry allowance keeps
-four ordinary extras diagnosable, and the read allowance rounds the observed
-comparison up to the next 65,536-byte boundary. Manifest, per-member, path,
-traversal, stability and report limits remain unchanged. Qualify the final frozen
-source and kit separately.
-
-The earlier keyboard companion capacity baseline measured 688 regular files and 21
+The keyboard companion capacity baseline measured 688 regular files and 21
 directories, giving 709 entries and 687 declared hashes. Its manifest was 71,057
 bytes. Declared payload was 28,299,647 bytes, and both manifest reads brought
 returned bytes to 28,370,704. The largest member was the 2,879,043-byte current

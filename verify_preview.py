@@ -13,12 +13,12 @@ import sys
 from typing import BinaryIO
 
 MAX_MANIFEST_BYTES = 72_704
-MAX_DECLARED_FILES = 692
-MAX_ENTRIES = 718
+MAX_DECLARED_FILES = 693
+MAX_ENTRIES = 719
 MAX_FILE_BYTES = 8_388_608
-# The Obscur explainer adds five public files to the keyboard companion kit.
-# Its measured comparison uses 29,100,687 bytes; round up to the next 64 KiB.
-MAX_READ_BYTES = 29_163_520
+# The Obscur explainer adds five files to the accepted artwork 0.28 kit.
+# Retain its finite 29 MiB allowance; qualify the composed actual kit separately.
+MAX_READ_BYTES = 30_408_704
 READ_CHUNK = 65_536
 MAX_REPORT_BYTES = 262_144
 MANIFEST_NAME = 'site-manifest.json'

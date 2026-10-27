@@ -19,8 +19,8 @@ import zlib
 from .icons import ROOT, _read_tree, _safe_output, load_icon_tokens, render_icons
 
 
-VERSION = "0.1.11"
-ARTWORK_VERSION = "0.27.0"
+VERSION = "0.1.12"
+ARTWORK_VERSION = "0.28.0"
 APPEARANCE = "Obscur"
 COMPONENTS = ROOT / "android/iconpack/components.json"
 
@@ -36,9 +36,9 @@ class IconPackConfiguration:
 
 CONFIGURATIONS = MappingProxyType({
     "Obscur": IconPackConfiguration("Obscur", "io.github.t92t1914.obscuricons",
-                                     "Obscur Icons", VERSION, 12),
+                                     "Obscur Icons", VERSION, 13),
     "Clair": IconPackConfiguration("Clair", "io.github.t92t1914.clairicons",
-                                    "Clair Icons", "0.1.0", 1),
+                                    "Clair Icons", "0.1.1", 2),
 })
 
 
@@ -49,7 +49,7 @@ def configuration(appearance: str = APPEARANCE) -> IconPackConfiguration:
     return CONFIGURATIONS[appearance]
 
 # Exact export identity; decoded pixel and visual qualification are separate checks.
-PNG_MANIFEST_SHA256 = "0228d1325264b0414977587cbc39fe2557c0ba12f673f38790abdad67d817f1b"
+PNG_MANIFEST_SHA256 = "c16df5b56cf8e1c3b9d23017c20250e008c0a2c8866a20a41e16afd5695068b0"
 COMPONENT_SOURCE = {
     "repository": "LawnchairLauncher/lawnicons",
     "revision": "c85fc8fb825228b021317f83c0a1a9f00b1c889d",
