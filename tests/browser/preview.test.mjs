@@ -1389,11 +1389,11 @@ test('Clair and Obscur Android instructions retain keyboard source access and ho
         assert.equal(await details.evaluate(node => node.open), false);
         await summary.focus(); await page.keyboard.press('Enter');
         assert.equal(await details.evaluate(node => node.open), true);
-        const companion = details.locator('p').filter({ hasText: 'The Android source offers a separate Clair Android icon-pack' });
+        const companion = details.locator('p').filter({ hasText: 'The Android source offers Clair Android icon-pack' });
         assert.equal(await companion.count(), 1); assert.ok(await companion.isVisible());
-        assert.match(await companion.innerText(), /Clair Android icon-pack 0\.1\.0 companion/);
-        assert.match(await companion.innerText(), /Obscur Android icon-pack 0\.1\.11/);
-        assert.match(await companion.innerText(), /accepted 0\.27\.0 artwork/);
+        assert.match(await companion.innerText(), /Clair Android icon-pack 0\.1\.1/);
+        assert.match(await companion.innerText(), /Obscur Android icon-pack 0\.1\.12/);
+        assert.match(await companion.innerText(), /Both select the 0\.28\.0 artwork/);
         assert.match(await companion.innerText(), /Obscur remains the default build appearance/);
         assert.match(await companion.innerText(), /signed APK delivery stays private/);
         const limits = await details.locator('p').last().innerText();
@@ -2835,7 +2835,7 @@ test('icon gallery decodes every current appearance at phone widths and enlarged
   }
 });
 
-test('no-script keyboard navigation acquires current and all 26 preserved icon ZIPs with exact checksums', async () => {
+test('no-script keyboard navigation acquires current and all 27 preserved icon ZIPs with exact checksums', async () => {
   const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false, viewport: { width: 320, height: 844 },
     setup: async (context, page) => page.route('**/preview.css', async route => route.fulfill({ contentType: 'text/css',
       body: await readFile(path.join(site, 'preview.css'), 'utf8') + '\nhtml { font-size: 200%; }\n' + textSpacingOverride })) });
@@ -3083,24 +3083,28 @@ test('no-script keyboard navigation acquires current and all 26 preserved icon Z
       ' assert [entry["id"] for entry in manifest["catalog"]]==functions',
       ' for record in manifest["files"]:',
       '  assert hashlib.sha256(archive.read(record["path"])).hexdigest()==record["sha256"]',
-      'united_refinement={',
+      'expected_refinements={',
       ' "Clair/united-airlines.svg": ("a4195887afd191df0c6baf551195969a11ce4ef66cad9b1b3d68dfc1bcbad8da","3557b9a9ae7019ac6322911cac54b195133de0071f51a9183eeb1eb707f24b78"),',
       ' "Obscur/united-airlines.svg": ("0c2c47c27ce3ae6c782604bf061ed8f958b5be4a29338f2362660eb237389114","5dcebc5bffa86b2a15b0dde44d5eff50f7972b255a42f78fbcc6ac3cb1853889"),',
+      ' "Clair/claude.svg": ("e25da1b0a375c97dc42a32cce0364cf6d23a8c64a68fd706988c72dde8663f37","c4bbebf5b19c39405b5bbac44f97664b1eb7d93a3d6dba5123891dbc74e83f80"),',
+      ' "Obscur/claude.svg": ("36e06cba14f85154dd91c38475e33fd1a4c1963c3a1bf29c39cb36584bba8b50","eb9e82168935fc0744df5865afbf604b29322f9fe1df331a37c443815a0247ac"),',
+      ' "Clair/perplexity.svg": ("4802f94f94e7df70ea38cbab6bd577e947f85360b3c34e118b1ca9eda174a2f9","685d6aa1d16eb53b234c313bf6734822f192f275f9c9f7c05e9114389cb034d2"),',
+      ' "Obscur/perplexity.svg": ("3896be33b778d220a50877fe0ba13d796624ab54d68aa50b162dbb589f11c73d","db0e4441ee9caaddf9d268614f8ec0dffe92b16083e0dca6bb2e4893b1b6235d"),',
       '}',
-      'def assert_preserved_united_refinement(historical, records):',
+      'def assert_preserved_refinements(historical, records):',
       ' changed=set()',
       ' for record in records:',
       '  name=record["path"]; old=historical.read(name); current=(site/"icons"/name).read_bytes()',
       '  assert hashlib.sha256(old).hexdigest()==record["sha256"]',
-      '  if name in united_refinement:',
-      '   old_sha,new_sha=united_refinement[name]',
+      '  if name in expected_refinements:',
+      '   old_sha,new_sha=expected_refinements[name]',
       '   assert hashlib.sha256(old).hexdigest()==old_sha',
       '   assert hashlib.sha256(current).hexdigest()==new_sha',
       '   assert old!=current',
       '   changed.add(name)',
       '  else:',
       '   assert old==current',
-      ' assert changed==set(united_refinement)',
+      ' assert changed==set(expected_refinements)',
       `previous_functions=${JSON.stringify(contactSpacedIconManifestFunctions)}`,
       'previous_names={f"{appearance}/{function}.svg" for appearance in ("Clair","Obscur") for function in previous_functions}',
       'with zipfile.ZipFile(site/"icons"/"Clair-Obscur-SVG-Icons-0.24.0.zip") as previous:',
@@ -3110,7 +3114,7 @@ test('no-script keyboard navigation acquires current and all 26 preserved icon Z
       ' assert previous_manifest["version"]=="0.24.0" and len(previous_manifest["files"])==584',
       ' assert previous_manifest["functions"]==previous_functions and len(previous_names)==584',
       ' assert expected-previous_names=={f"{appearance}/{function}.svg" for appearance in ("Clair","Obscur") for function in ("line","viber","wechat","kakaotalk","imo","zalo","bip","google-chat")}',
-      ' assert_preserved_united_refinement(previous, previous_manifest["files"])',
+      ' assert_preserved_refinements(previous, previous_manifest["files"])',
       `messaging_functions=${JSON.stringify(messagingIconManifestFunctions)}`,
       'messaging_names={f"{appearance}/{function}.svg" for appearance in ("Clair","Obscur") for function in messaging_functions}',
       'with zipfile.ZipFile(site/"icons"/"Clair-Obscur-SVG-Icons-0.25.0.zip") as messaging:',
@@ -3123,7 +3127,7 @@ test('no-script keyboard navigation acquires current and all 26 preserved icon Z
       ' assert [entry["id"] for entry in messaging_manifest["catalog"]]==messaging_functions',
       ' assert manifest["catalog"][:296]==messaging_manifest["catalog"]',
       ' assert expected-messaging_names=={f"{appearance}/{function}.svg" for appearance in ("Clair","Obscur") for function in ("imo","zalo","bip","google-chat")}',
-      ' assert_preserved_united_refinement(messaging, messaging_manifest["files"])',
+      ' assert_preserved_refinements(messaging, messaging_manifest["files"])',
     ].join('\n'), archivePath, site]);
     run(['-c', [
       'import hashlib,json,sys,zipfile',
@@ -3332,7 +3336,7 @@ test('no-script keyboard navigation acquires current and all 26 preserved icon Z
     assert.deepEqual(consoleErrors, []);
     results.scenarios.push({ name: 'no-script icon artwork keyboard acquisition', status: 'passed', tabs,
       sha256: digest, messagingSha256: messagingIconDigest, contactSpacedSha256: contactSpacedIconDigest, gboardSha256: gboardIconDigest, refinedSha256: refinedIconDigest, phoneServiceSha256: phoneServiceIconDigest, readingSha256: readingIconDigest, learningSha256: learningIconDigest, weatherSha256: weatherIconDigest, financeSha256: financeIconDigest, travelSha256: travelIconDigest, foodOrderSha256: foodOrderIconDigest, everydaySha256: everydayIconDigest, broadSha256: broadIconDigest, companionSha256: companionIconDigest, monochromeSha256: monochromeIconDigest, secondAppSha256: secondAppIconDigest, firstAppSha256: firstAppIconDigest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
-      currentArchiveFiles: 602, messagingArchiveFiles: 594, contactSpacedArchiveFiles: 586, preservedArchiveCount: 26, gboardArchiveFiles: 566, refinedArchiveFiles: 564, readingArchiveFiles: 484, learningArchiveFiles: 468, weatherArchiveFiles: 436, financeArchiveFiles: 416, travelArchiveFiles: 396, foodOrderArchiveFiles: 376, everydayArchiveFiles: 352, broadArchiveFiles: 256, companionArchiveFiles: 192, monochromeArchiveFiles: 180, secondAppArchiveFiles: 164, firstAppArchiveFiles: 116, preservedArchiveFiles: 50, nativePhoneVerified: false,
+      currentArchiveFiles: 602, messagingArchiveFiles: 594, contactSpacedArchiveFiles: 586, preservedArchiveCount: 27, gboardArchiveFiles: 566, refinedArchiveFiles: 564, readingArchiveFiles: 484, learningArchiveFiles: 468, weatherArchiveFiles: 436, financeArchiveFiles: 416, travelArchiveFiles: 396, foodOrderArchiveFiles: 376, everydayArchiveFiles: 352, broadArchiveFiles: 256, companionArchiveFiles: 192, monochromeArchiveFiles: 180, secondAppArchiveFiles: 164, firstAppArchiveFiles: 116, preservedArchiveFiles: 50, nativePhoneVerified: false,
       width: 320, rootFontSize: '32px', spacingAdmission, mappingKeyboard,
       scope: 'Combined no-script, narrow, enlarged and spacing stress; separate from spacing-only acceptance' });
   } finally { await context.close(); }
