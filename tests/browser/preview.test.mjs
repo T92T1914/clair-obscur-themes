@@ -1730,9 +1730,21 @@ async function setIconHistoryOpen(page, open, key = 'Enter') {
   }
 }
 
+async function tabThroughArtDirectionGuide(page) {
+  await page.keyboard.press('Tab');
+  const guide = page.getByRole('link', { name: 'Read the design decisions and compromises', exact: true });
+  assert.equal(await guide.isVisible(), true, 'The maintained design guide stays visible and keyboard reachable');
+  assert.equal(await guide.evaluate(node => node === document.activeElement), true,
+    'Tab must reach the actual design-guide anchor before the finder or history');
+  assert.equal(await guide.getAttribute('href'),
+    'https://github.com/T92T1914/clair-obscur-themes/blob/main/docs/art-direction.md');
+}
+
 async function focusBeforeIconCards(page) {
   await setIconHistoryOpen(page, false);
-  await (await page.locator('#icon-finder').isVisible() ? page.locator('#icon-clear') : page.locator('#icon-artwork-checksums')).focus();
+  const finderVisible = await page.locator('#icon-finder').isVisible();
+  await (finderVisible ? page.locator('#icon-clear') : page.locator('#icon-artwork-checksums')).focus();
+  if (!finderVisible) await tabThroughArtDirectionGuide(page);
   await page.keyboard.press('Tab');
   assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-history-summary');
   assert.equal(await page.locator('#icon-history a:visible').count(), 0, 'Closed history must not add archive keyboard stops');
@@ -1792,6 +1804,7 @@ test('current icon acquisition precedes preserved history with native keyboard d
         for (const id of ['icon-artwork-checksums', 'icon-query', 'icon-kind', 'icon-clear', 'icon-history-summary']) {
           await page.keyboard.press('Tab');
           assert.equal(await page.evaluate(() => document.activeElement.id), id, 'Current task keyboard order before preserved links');
+          if (id === 'icon-artwork-checksums') await tabThroughArtDirectionGuide(page);
         }
         assert.equal(await page.locator('#icon-history a:visible').count(), 0);
         await page.locator('#icon-query').fill('weather-channel'); await assertFinderResults(page, ['weather-channel']);
@@ -3025,6 +3038,7 @@ test('no-script keyboard navigation acquires current and all 28 preserved icon Z
     const chunks = []; for await (const chunk of await checksumDownload.createReadStream()) chunks.push(chunk);
     const digest = crypto.createHash('sha256').update(bytes).digest('hex');
     assert.equal(Buffer.concat(chunks).toString('utf8'), iconChecksums(digest));
+    await tabThroughArtDirectionGuide(page);
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-history-summary');
     assert.equal(await page.locator('#icon-history').evaluate(node => node.open), false);
