@@ -17,8 +17,8 @@ MAX_DECLARED_FILES = 693
 MAX_ENTRIES = 719
 MAX_FILE_BYTES = 8_388_608
 # The Obscur explainer adds five files to the accepted artwork 0.28 kit.
-# Retain its finite 29 MiB allowance; qualify the composed actual kit separately.
-MAX_READ_BYTES = 30_408_704
+# Its composed comparison returned 30,412,715 bytes; add one bounded 64 KiB chunk.
+MAX_READ_BYTES = 30_474_240
 READ_CHUNK = 65_536
 MAX_REPORT_BYTES = 262_144
 MANIFEST_NAME = 'site-manifest.json'

@@ -73,10 +73,13 @@ unsupported. These rules also apply to extra entries before any content is read.
 The Obscur explanation adds one appearance script and four mechanism images to
 the accepted artwork 0.28.0 preview. The composed route admits 693 declared
 hashes and 719 file/directory entries, preserving room to diagnose four ordinary
-extras. It retains the accepted finite 29 MiB read allowance (30,408,704 bytes),
-72,704-byte manifest cap and all existing member, path, traversal, stability and
-report limits. The final actual kit must pass the ordinary comparison before
-distribution. The earlier capacity records below remain historical.
+extras. The first composed kit measured 694 regular files, 21 directories, a
+71,666-byte manifest and 30,412,715 returned comparison bytes. The prior 29 MiB
+read allowance refused that actual kit. One additional 65,536-byte chunk raises
+the finite limit to 30,474,240 bytes. The 72,704-byte manifest cap and all member,
+path, traversal, stability and report limits remain unchanged. These measurements
+precede this final cap/guide correction. The final actual kit must pass the
+ordinary comparison before distribution. Earlier capacity records remain historical.
 
 The measured artwork 0.28.0 candidate retains Keyboard Companion 0.1.0 and the complete 0.27.0 SVG archive. Its finite allowances are:
 
