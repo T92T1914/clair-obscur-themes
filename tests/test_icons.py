@@ -933,7 +933,7 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(set(files), expected | {"manifest.json"})
         manifest = json.loads(files["manifest.json"])
         self.assertEqual(manifest["functions"], NAMES)
-        self.assertEqual(manifest["version"], "0.28.0")
+        self.assertEqual(manifest["version"], "0.29.0")
         self.assertEqual(manifest["token_schema"], 1)
         self.assertEqual(manifest["token_version"], "1.0.0")
         self.assertEqual(manifest["palette_variant"], "monochrome")
@@ -1006,7 +1006,7 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(icons.token_path(), ROOT / "tokens-monochrome.json")
         for version in ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0"):
             self.assertEqual(icons.token_path(version), ROOT / "tokens.json")
-        for version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0", "0.24.0", "0.25.0", "0.26.0", "0.27.0", "0.28.0"):
+        for version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0", "0.24.0", "0.25.0", "0.26.0", "0.27.0", "0.28.0", "0.29.0"):
             self.assertEqual(icons.token_path(version), ROOT / "tokens-monochrome.json")
         for version, document in (("0.5.0", self.legacy_document), ("0.6.0", self.document),
                                   ("0.7.0", self.document), ("0.8.0", self.document),
@@ -1015,7 +1015,7 @@ class FunctionalIconTests(unittest.TestCase):
                                   ("0.13.0", self.document), ("0.14.0", self.document),
                                   ("0.15.0", self.document), ("0.16.0", self.document), ("0.17.0", self.document),
                                   ("0.18.0", self.document), ("0.19.0", self.document), ("0.20.0", self.document),
-                                  ("0.21.0", self.document), ("0.22.0", self.document), ("0.23.0", self.document), ("0.24.0", self.document), ("0.25.0", self.document), ("0.26.0", self.document), ("0.27.0", self.document), ("0.28.0", self.document)):
+                                  ("0.21.0", self.document), ("0.22.0", self.document), ("0.23.0", self.document), ("0.24.0", self.document), ("0.25.0", self.document), ("0.26.0", self.document), ("0.27.0", self.document), ("0.28.0", self.document), ("0.29.0", self.document)):
             with self.subTest(version=version), tempfile.TemporaryDirectory() as temporary:
                 base = Path(temporary)
                 explicit = base / "explicit.json"
@@ -1200,7 +1200,7 @@ class FunctionalIconTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "differs"):
                 icons.build_icons(self.document, output, check=True)
             self.assertEqual(tree_snapshot(output), before)
-        for unsupported in ("0.0.0", "0.29.0", None, [], {}):
+        for unsupported in ("0.0.0", "0.30.0", None, [], {}):
             with self.subTest(version=unsupported), self.assertRaisesRegex(ValueError, "Unsupported"):
                 icons.render_icons(self.document, version=unsupported)
 
@@ -2014,7 +2014,7 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(len(manifest["files"]), 584)
         self.assertEqual(len(manifest["catalog"]), 292)
         self.assertEqual(icons.VERSIONS,
-                         tuple(f"0.{number}.0" for number in range(1, 29)))
+                         tuple(f"0.{number}.0" for number in range(1, 30)))
 
     def test_messaging_apps_append_eight_svgs_and_preserve_every_accepted_drawing(self):
         previous = icons.render_icons(self.document, version="0.24.0")

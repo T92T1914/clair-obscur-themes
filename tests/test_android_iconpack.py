@@ -150,7 +150,7 @@ class AndroidIconPackTests(unittest.TestCase):
                                     "source_svg_sha256": svg_hashes[f"{appearance}/{identifier}.svg"]})
         license_payload = (pack.ROOT / "LICENSE").read_bytes()
         (cls.export / "LICENSE").write_bytes(license_payload)
-        cls.document = {"schema_version": 1, "version": "0.28.0", "generator": "clair-obscur-png-export",
+        cls.document = {"schema_version": 1, "version": "0.29.0", "generator": "clair-obscur-png-export",
                         "exporter_version": "0.11.0", "token_version": "1.0.0", "palette_variant": "monochrome",
                         "tokens_file": "tokens-monochrome.json",
                         "source_manifest_sha256": digest(canonical_svg), "appearances": ["Clair", "Obscur"],
@@ -205,7 +205,8 @@ class AndroidIconPackTests(unittest.TestCase):
 
     def test_exact_resource_bytes_full_components_and_public_catalog(self):
         manifest = pack.prepare_iconpack(self.export, self.components, self.output)
-        self.assertEqual(manifest["version"], "0.1.12")
+        self.assertEqual(manifest["version"], "0.1.13")
+        self.assertEqual(manifest["version_code"], 14)
         self.assertEqual(manifest["counts"]["drawables"], 300)
         self.assertEqual(manifest["counts"]["component_mappings"], 3)
         self.assertEqual(manifest["counts"]["upstream_component_mappings"], 3)
@@ -228,8 +229,8 @@ class AndroidIconPackTests(unittest.TestCase):
                              (self.export / f"Obscur/512/{identifier}.png").read_bytes())
         catalog = json.loads((self.output / "assets/catalog.json").read_bytes())
         self.assertEqual(set(catalog), {"schema_version", "artwork_version", "pack_version", "packages"})
-        self.assertEqual(catalog["pack_version"], "0.1.12")
-        self.assertEqual(catalog["artwork_version"], "0.28.0")
+        self.assertEqual(catalog["pack_version"], "0.1.13")
+        self.assertEqual(catalog["artwork_version"], "0.29.0")
         self.assertEqual(next(row for row in catalog["packages"]
                               if row["package"] == "com.google.android.inputmethod.latin"),
                          {"package": "com.google.android.inputmethod.latin", "label": "Gboard", "id": "gboard"})
@@ -248,8 +249,8 @@ class AndroidIconPackTests(unittest.TestCase):
                                          appearance="Clair")
         self.assertEqual((manifest["appearance"], manifest["application_id"],
                           manifest["app_label"], manifest["version"], manifest["version_code"]),
-                         ("Clair", "io.github.t92t1914.clairicons", "Clair Icons", "0.1.1", 2))
-        self.assertEqual(manifest["artwork_version"], "0.28.0")
+                         ("Clair", "io.github.t92t1914.clairicons", "Clair Icons", "0.1.2", 3))
+        self.assertEqual(manifest["artwork_version"], "0.29.0")
         self.assertEqual(manifest["counts"]["drawables"], 300)
         self.assertEqual(manifest["counts"]["component_mappings"], 3)
         self.assertEqual(ET.parse(self.output / "res/xml/drawable.xml").find(
@@ -261,7 +262,7 @@ class AndroidIconPackTests(unittest.TestCase):
             self.assertNotEqual(target.read_bytes(), self.payloads[512])
         catalog = json.loads((self.output / "assets/catalog.json").read_bytes())
         self.assertEqual(set(catalog), {"schema_version", "artwork_version", "pack_version", "packages"})
-        self.assertEqual((catalog["pack_version"], catalog["artwork_version"]), ("0.1.1", "0.28.0"))
+        self.assertEqual((catalog["pack_version"], catalog["artwork_version"]), ("0.1.2", "0.29.0"))
         self.assertEqual((self.output / "assets/appfilter.xml").read_bytes(),
                          (self.output / "res/xml/appfilter.xml").read_bytes())
 
@@ -294,13 +295,14 @@ class AndroidIconPackTests(unittest.TestCase):
                              "2a773020fed10ddb2cd7c47d1c462cedfa6071240d2b0e94565cd599428cb8e8",
                              "40fe3a771b39d9e73adf583dd060f660ef85c88ff961f80a3e3b3635e0f11cb2",
                              "4c955dbac362d37ba35477b623ec79abcb2271ea32b75ed4bf78397f6ac3775a",
-                             "a88655c9fa5f5d8e3709c1ef700b4139cb15477a4bbae09c0d46699deb9161e8"):
+                             "a88655c9fa5f5d8e3709c1ef700b4139cb15477a4bbae09c0d46699deb9161e8",
+                             "c16df5b56cf8e1c3b9d23017c20250e008c0a2c8866a20a41e16afd5695068b0"):
             with self.subTest(pin=previous_pin), patch.object(pack, "PNG_MANIFEST_SHA256", previous_pin):
-                self.refused(message="qualified 0.27 manifest")
+                self.refused(message="qualified current artwork manifest")
 
     def test_previous_artwork_is_not_admitted_by_a_matching_manifest_checksum(self):
         source = self.copy_export()
-        for previous_version in ("0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0", "0.24.0", "0.25.0", "0.26.0"):
+        for previous_version in ("0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0", "0.24.0", "0.25.0", "0.26.0", "0.27.0", "0.28.0"):
             document = copy.deepcopy(self.document)
             document["version"] = previous_version
             with self.subTest(version=previous_version), self.changed_manifest(source, document):
@@ -552,8 +554,8 @@ class AndroidIconPackTests(unittest.TestCase):
         canonical = pack.ROOT / "android/iconpack/components.json"
         with patch.object(pack, "COMPONENTS", canonical):
             manifest = pack.prepare_iconpack(self.export, canonical, self.output)
-        self.assertEqual(manifest["version"], "0.1.12")
-        self.assertEqual(manifest["artwork_version"], "0.28.0")
+        self.assertEqual(manifest["version"], "0.1.13")
+        self.assertEqual(manifest["artwork_version"], "0.29.0")
         self.assertEqual(manifest["counts"]["drawables"], 300)
         self.assertEqual(manifest["counts"]["component_mappings"], 1354)
         self.assertEqual(manifest["counts"]["upstream_component_mappings"], 1343)

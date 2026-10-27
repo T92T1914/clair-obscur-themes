@@ -69,12 +69,15 @@ details p { padding-top: .75rem; }
 .keyboard-drawing { font-size: clamp(.7rem, 2.5vw, 1rem); }
 .keyboard-toolbar, .keyboard-suggestions { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5em; padding: .6em .2em; }
 .keyboard-toolbar { color: var(--muted); font-size: .85em; }
-.keyboard-suggestions { border-block: 1px solid var(--divider); margin-bottom: .6em; }
+.keyboard-suggestions { border-block: 1px solid var(--divider); margin-bottom: .6em; align-items: center; padding: .5em .2em .7em; }
+.keyboard-suggestion-current { font-weight: 600; border-bottom: 3px solid var(--text); padding: .1em .3em; }
 .keyboard-row { display: flex; justify-content: center; gap: min(.2em, 1vw); margin-block: .3em; }
 .keyboard-row-home { margin-inline: 5%; }
+.keyboard-row-numbers .keyboard-key { background: transparent; border-color: transparent; min-height: 2em; font-size: .85em; }
 .keyboard-key { display: flex; flex: 1 1 0; min-width: max-content; min-height: 2.5em; align-items: center; justify-content: center; overflow-wrap: anywhere; padding: .25em .05em; border: 1px solid var(--border); border-radius: .25em; color: var(--text); background: var(--control); }
 .keyboard-space { flex-grow: 4; font-size: .85em; white-space: nowrap; overflow-wrap: normal; }
 .keyboard-modifier { flex-grow: 1.5; min-width: max-content; font-size: .8em; white-space: nowrap; overflow-wrap: normal; }
+.keyboard-modifier:not(.keyboard-action) { background: var(--canvas); color: var(--text); }
 .keyboard-mode { flex-grow: 2.25; }
 .keyboard-action { flex-grow: 2; color: var(--on-accent); background: var(--accent); font-weight: 600; white-space: nowrap; overflow-wrap: normal; }
 .keyboard-background { display: block; width: 5rem; height: 2.5rem; border: 1px solid var(--border); object-fit: contain; }

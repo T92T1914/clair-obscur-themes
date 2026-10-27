@@ -19,8 +19,8 @@ import zlib
 from .icons import ROOT, _read_tree, _safe_output, load_icon_tokens, render_icons
 
 
-VERSION = "0.1.12"
-ARTWORK_VERSION = "0.28.0"
+VERSION = "0.1.13"
+ARTWORK_VERSION = "0.29.0"
 APPEARANCE = "Obscur"
 COMPONENTS = ROOT / "android/iconpack/components.json"
 
@@ -36,9 +36,9 @@ class IconPackConfiguration:
 
 CONFIGURATIONS = MappingProxyType({
     "Obscur": IconPackConfiguration("Obscur", "io.github.t92t1914.obscuricons",
-                                     "Obscur Icons", VERSION, 13),
+                                     "Obscur Icons", VERSION, 14),
     "Clair": IconPackConfiguration("Clair", "io.github.t92t1914.clairicons",
-                                    "Clair Icons", "0.1.1", 2),
+                                    "Clair Icons", "0.1.2", 3),
 })
 
 
@@ -49,7 +49,7 @@ def configuration(appearance: str = APPEARANCE) -> IconPackConfiguration:
     return CONFIGURATIONS[appearance]
 
 # Exact export identity; decoded pixel and visual qualification are separate checks.
-PNG_MANIFEST_SHA256 = "c16df5b56cf8e1c3b9d23017c20250e008c0a2c8866a20a41e16afd5695068b0"
+PNG_MANIFEST_SHA256 = "37f462e9d74707802c1b43f242f2604546f04e5b896f5eea7f77afe24c1de643"
 COMPONENT_SOURCE = {
     "repository": "LawnchairLauncher/lawnicons",
     "revision": "c85fc8fb825228b021317f83c0a1a9f00b1c889d",
@@ -167,7 +167,7 @@ def _export(root: Path, selected_appearance: str = APPEARANCE) -> tuple[dict, di
     root = _plain(root)
     raw = _read(root / "manifest.json")
     if _digest(raw) != PNG_MANIFEST_SHA256:
-        raise ValueError("PNG export differs from the qualified 0.27 manifest")
+        raise ValueError("PNG export differs from the qualified current artwork manifest")
     document = _document(raw)
     canonical = render_icons(load_icon_tokens(ARTWORK_VERSION), version=ARTWORK_VERSION)
     svg = _document(canonical["manifest.json"])

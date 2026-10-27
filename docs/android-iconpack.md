@@ -1,17 +1,17 @@
 # Clair and Obscur Android icon packs
 
-The maintained Android path prepares two separately identified packs from the same 0.28.0 artwork. Clair Icons selects the 300 Clair PNGs and light application surfaces. Obscur Icons selects the 300 Obscur PNGs and remains the default. Both retain native font fallbacks and the same 1,354 ordered component mappings and 290 narrow public package queries. No Inter font binary is packaged.
+The maintained Android path prepares two separately identified packs from the same 0.29.0 artwork. Clair Icons selects the 300 Clair PNGs and light application surfaces. Obscur Icons selects the 300 Obscur PNGs and remains the default. Both retain native font fallbacks and the same 1,354 ordered component mappings and 290 narrow public package queries. No Inter font binary is packaged.
 
 | Appearance | App label | Application ID | Pack version | Version code | Signed output filename |
 | --- | --- | --- | --- | ---: | --- |
-| Clair | Clair Icons | `io.github.t92t1914.clairicons` | 0.1.1 | 2 | `Clair-Icons-0.1.1.apk` |
-| Obscur | Obscur Icons | `io.github.t92t1914.obscuricons` | 0.1.12 | 13 | `Clair-Obscur-Icons-0.1.12.apk` |
+| Clair | Clair Icons | `io.github.t92t1914.clairicons` | 0.1.2 | 3 | `Clair-Icons-0.1.2.apk` |
+| Obscur | Obscur Icons | `io.github.t92t1914.obscuricons` | 0.1.13 | 14 | `Clair-Obscur-Icons-0.1.13.apk` |
 
-Package versions are independent from artwork 0.28.0. The fixed appearance choice selects its package, label, version, source resources and output identity. Distinct package identities can be inspected in the APKs. Actual device coexistence and consumer recognition remain separate native questions.
+Package versions are independent from artwork 0.29.0. The fixed appearance choice selects its package, label, version, source resources and output identity. The table records the current configured identities and intended signed filenames. Verify each resulting APK's resources and signature before private delivery. Actual device coexistence and consumer recognition remain separate native questions.
 
-The mappings cover 264 of the 276 named app packages and 14 public system-app package identities across 13 general functions. Twelve named packages still have no qualified alias. A package hint alone is not an automatic assignment. The accepted Obscur 0.1.11 APK and earlier releases remain preserved, without rebuilding or replacing an accepted binary under the same identity.
+The mappings cover 264 of the 276 named app packages and 14 public system-app package identities across 13 general functions. Twelve named packages still have no qualified alias. A package hint alone is not an automatic assignment. Accepted Clair 0.1.1, Obscur 0.1.12 and earlier releases remain preserved, without rebuilding or replacing an accepted binary under the same identity.
 
-Clair 0.1.1/code 2 and Obscur 0.1.12/code 13 adopt the two selected [identity refinements](icon-identity.md) in artwork 0.28.0. The catalogue, mappings, package queries, coverage algorithm and permissions remain unchanged. The accepted Clair 0.1.0 and Obscur 0.1.11 binaries remain preserved. Compiled resources and native phone behavior are separate checks.
+Clair 0.1.2/code 3 and Obscur 0.1.13/code 14 select the five [art-direction refinements](art-direction.md) in artwork 0.29.0. The catalogue, mappings, package queries, coverage algorithm, palettes and permissions remain unchanged. The retained Clair 0.1.1/code 2 and Obscur 0.1.12/code 13 adopted the two [assistant-app identity refinements](icon-identity.md) in artwork 0.28.0. Source artwork, exported pixels, compiled resources and native phone behavior remain separate checks.
 
 The retained Obscur 0.1.11 adopts the United Airlines clearance revision in artwork 0.27.0, with version code 12. The catalog, mapping table, 290 public package queries, coverage algorithm and permissions remain unchanged. Export qualification, final APK resource readback and phone checks remain separate.
 
@@ -25,7 +25,9 @@ These are icon-pack companions. Earlier icon collections remain unchanged. Neith
 
 Use Python 3.11 or newer, a full JDK 17, Android SDK platform 36 and Build Tools 36.1.0. Select their paths explicitly. The build uses AAPT2, javac, D8, zipalign and, when signing is requested, apksigner. It does not install an SDK, alter PATH, start an emulator or contact a device.
 
-Both current appearance configurations require the qualified 0.28.0 PNG export with manifest SHA-256 `c16df5b56cf8e1c3b9d23017c20250e008c0a2c8866a20a41e16afd5695068b0`. Its 600 SVG masters produce 1,200 PNGs across both appearances and export sizes. Eight Claude/Perplexity PNGs change, while the other 1,192 PNGs retain their exact 0.27.0 bytes under the same renderer. The other 298 drawings retain all 596 SVG files byte for byte. Export checks do not establish recognition, launcher masking or phone acceptance.
+Both current appearance configurations require the qualified 0.29.0 PNG export with manifest SHA-256 `37f462e9d74707802c1b43f242f2604546f04e5b896f5eea7f77afe24c1de643`. Its 600 SVG masters produce 1,200 PNGs across both appearances and export sizes. All 1,200 saved PNGs were independently decoded and checked for neutral RGBA pixels and exact identities. Twenty PNGs change for Delta, American, Southwest, Wikipedia and Earth, while the other 1,180 retain their exact 0.28.0 bytes. Ten SVGs change and the other 590 retain their exact bytes. This export records headless Chrome 156.0.8078.48 with Playwright 1.63.0 and Node v24.16.0. Qualify the resulting APK's compiled resources and signature separately. Export checks do not establish human recognition, launcher masking or phone acceptance.
+
+The retained Clair 0.1.1/code 2 and Obscur 0.1.12/code 13 require the qualified 0.28.0 export with manifest SHA-256 `c16df5b56cf8e1c3b9d23017c20250e008c0a2c8866a20a41e16afd5695068b0`. Its eight Claude/Perplexity PNGs changed from 0.27.0, preserving the other 1,192 PNGs and 596 SVGs under the same renderer. That historical pin is not an input identity for the current 0.29.0 configuration.
 
 The retained Clair 0.1.0 and Obscur 0.1.11 use the qualified 0.27.0 export with manifest SHA-256 `0228d1325264b0414977587cbc39fe2557c0ba12f673f38790abdad67d817f1b`. Its four United Airlines PNGs changed from 0.26.0, preserving the other 1,196 PNGs and 598 SVGs.
 
@@ -43,12 +45,12 @@ The retained 0.1.4 candidate used the qualified 0.21.0 PNG export with manifest 
 
 The retained 0.1.3 candidate used the 0.20.0 PNG export whose `manifest.json` has SHA-256 `8c7a1f9b76413ecc8886b8cc66244096b42ccba0ad116d40ef626a50a23cf47a`. All 1,168 saved images were independently decoded and checked against their hashes, dimensions, transparent margins and neutral pixel values. All 1,128 previous PNGs retain their exact 0.19.0 bytes. The 40 added PNGs supply ten new drawings in both appearances and both export sizes. The saved 512-pixel images were inspected at 24, 32, 48, 64 and 96 pixels in both appearances. These asset checks do not establish recognition, masking or readability on a phone. The Android build and actual consumer checks remain separate. The generator checks the SVG source identities, catalog and complete PNG inventory before copying artwork. An export from another browser can have different raster bytes and is not silently admitted. Qualify that export explicitly before changing the source pin.
 
-The retained 0.1.2 candidate used the qualified 0.19.0 export with manifest SHA-256 `728c13ef9aaf57afaa3291e740900dbba59bb916cefbc4a02bc9688be9620662`. All 1,128 saved images were independently decoded and checked against their hashes, dimensions, transparent margins and neutral pixel values. Its 1,124 previous PNGs retained their exact 0.18.0 bytes. The 0.1.1 candidate used the 0.18.0 export with manifest SHA-256 `0731e00b9922ada5537f5258fa9d24ea9f50b7eec6a43098fdc911a4c4bc23aa`. These pins and the earlier 0.17.0 artwork remain historical identities.
+The retained Obscur 0.1.2 candidate used the qualified 0.19.0 export with manifest SHA-256 `728c13ef9aaf57afaa3291e740900dbba59bb916cefbc4a02bc9688be9620662`. It is a different package identity from current Clair 0.1.2. All 1,128 saved images were independently decoded and checked against their hashes, dimensions, transparent margins and neutral pixel values. Its 1,124 previous PNGs retained their exact 0.18.0 bytes. The Obscur 0.1.1 candidate used the 0.18.0 export with manifest SHA-256 `0731e00b9922ada5537f5258fa9d24ea9f50b7eec6a43098fdc911a4c4bc23aa`. These pins and the earlier 0.17.0 artwork remain historical identities.
 
 From the repository root, with local paths substituted, prepare Clair resources without compiling or signing:
 
 ```powershell
-python -m themeforge.android_iconpack --appearance Clair --png-export "C:/work/qualified-0.27/png" --components android/iconpack/components.json --output "C:/work/prepared/clair-icons-01"
+python -m themeforge.android_iconpack --appearance Clair --png-export "C:/work/qualified-0.29/png" --components android/iconpack/components.json --output "C:/work/prepared/clair-icons-01"
 ```
 
 The builder performs its own preparation, so this inspection step is optional. Both commands accept only `Clair` or `Obscur` as the appearance. Omitting `--appearance` keeps Obscur. Package IDs, versions and labels are fixed for each appearance rather than independent overrides.
@@ -56,25 +58,25 @@ The builder performs its own preparation, so this inspection step is optional. B
 Build the Clair companion with the same explicit SDK and JDK inputs:
 
 ```powershell
-python android/build.py --appearance Clair --png-dir "C:/work/qualified-0.27/png" --sdk "C:/tools/android-sdk" --java-bin "C:/tools/jdk-17/bin" --output-dir "C:/work/builds/clair-icons-01"
+python android/build.py --appearance Clair --png-dir "C:/work/qualified-0.29/png" --sdk "C:/tools/android-sdk" --java-bin "C:/tools/jdk-17/bin" --output-dir "C:/work/builds/clair-icons-01"
 ```
 
 The existing Obscur command and default remain available:
 
 ```powershell
-python android/build.py --png-dir "C:/work/qualified-0.27/png" --sdk "C:/tools/android-sdk" --java-bin "C:/tools/jdk-17/bin" --output-dir "C:/work/builds/android-iconpack-01"
+python android/build.py --png-dir "C:/work/qualified-0.29/png" --sdk "C:/tools/android-sdk" --java-bin "C:/tools/jdk-17/bin" --output-dir "C:/work/builds/android-iconpack-01"
 ```
 
 The default result is unsigned and cannot be installed as a new Android app. For a signed candidate, provide an existing private Android keystore outside the repository and the name of an environment variable containing its password:
 
 ```powershell
-python android/build.py --png-dir "C:/work/qualified-0.27/png" --sdk "C:/tools/android-sdk" --java-bin "C:/tools/jdk-17/bin" --output-dir "C:/work/builds/android-iconpack-signed-01" --keystore "C:/private/obscur-icons.jks" --ks-pass-env OBSCUR_KEYSTORE_PASSWORD
+python android/build.py --png-dir "C:/work/qualified-0.29/png" --sdk "C:/tools/android-sdk" --java-bin "C:/tools/jdk-17/bin" --output-dir "C:/work/builds/android-iconpack-signed-01" --keystore "C:/private/obscur-icons.jks" --ks-pass-env OBSCUR_KEYSTORE_PASSWORD
 ```
 
 For a signed Clair candidate, add the appearance flag and choose a separate fresh output directory while using the existing authorized signing configuration:
 
 ```powershell
-python android/build.py --appearance Clair --png-dir "C:/work/qualified-0.27/png" --sdk "C:/tools/android-sdk" --java-bin "C:/tools/jdk-17/bin" --output-dir "C:/work/builds/clair-icons-signed-01" --keystore "C:/private/obscur-icons.jks" --ks-pass-env OBSCUR_KEYSTORE_PASSWORD
+python android/build.py --appearance Clair --png-dir "C:/work/qualified-0.29/png" --sdk "C:/tools/android-sdk" --java-bin "C:/tools/jdk-17/bin" --output-dir "C:/work/builds/clair-icons-signed-01" --keystore "C:/private/obscur-icons.jks" --ks-pass-env OBSCUR_KEYSTORE_PASSWORD
 ```
 
 Keep the same private key for later updates. Never commit or redistribute it, use a watch developer key, or put its password in a command argument. This command reads the named environment variable. It does not create or export a key.
@@ -85,7 +87,7 @@ The generated project contains exact artwork copies, both XML and asset forms of
 
 ## Apply through the actual consumer
 
-Both packs have minimum API 26 and target API 36 and declare no permissions. The identity table above distinguishes Clair Icons 0.1.1/code 2 from Obscur Icons 0.1.12/code 13. Installation still requires the device owner's approved Android installation path. Preserve the accepted Obscur app and working icon-theme selection when trying the separate Clair package. Do not change security settings or replace an unrelated application to force installation.
+Both packs have minimum API 26 and target API 36 and declare no permissions. The identity table above distinguishes Clair Icons 0.1.2/code 3 from Obscur Icons 0.1.13/code 14. Installation still requires the device owner's approved Android installation path. Preserve the accepted Obscur app and working icon-theme selection when trying the separate Clair package. Do not change security settings or replace an unrelated application to force installation.
 
 For later native acceptance, first record the installed Android, launcher and Theme Park/module versions, both display layouts, installed pack identities and current theme selection. Keep the working theme and home-screen arrangement. After an approved installation, open each installed pack and check its exact package/artwork label. Opening the app or pressing Check icon coverage does not apply a theme.
 
