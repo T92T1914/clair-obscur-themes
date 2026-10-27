@@ -13,12 +13,12 @@ import sys
 from typing import BinaryIO
 
 MAX_MANIFEST_BYTES = 72_704
-MAX_DECLARED_FILES = 687
-MAX_ENTRIES = 713
+MAX_DECLARED_FILES = 688
+MAX_ENTRIES = 714
 MAX_FILE_BYTES = 8_388_608
-# Keyboard companion 0.1.0 adds assets/references while retaining the 0.27 artwork.
-# Its measured kit needs the former 27 MiB allowance plus a bounded 128 KiB.
-MAX_READ_BYTES = 28_442_624
+# Artwork 0.28 retains the full 0.27 archive and unchanged keyboard companion.
+# Its measured kit needs a finite 29 MiB aggregate allowance.
+MAX_READ_BYTES = 30_408_704
 READ_CHUNK = 65_536
 MAX_REPORT_BYTES = 262_144
 MANIFEST_NAME = 'site-manifest.json'

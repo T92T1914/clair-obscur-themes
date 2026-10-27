@@ -70,6 +70,24 @@ Relative member paths have at most 240 ASCII characters and eight components.
 Windows device names, parent traversal and file/directory prefix conflicts are
 unsupported. These rules also apply to extra entries before any content is read.
 
+The measured artwork 0.28.0 candidate retains Keyboard Companion 0.1.0 and the complete 0.27.0 SVG archive. Its finite allowances are:
+
+| Limit | Value |
+| --- | --- |
+| Manifest | 72,704 bytes |
+| Declared hashes | 688 |
+| Expected or observed files and directories | 714, excluding the root |
+| Each declared member | 8,388,608 bytes |
+| Total returned read bytes, including both manifest reads | 30,408,704, or 29 MiB |
+| Read chunk | At most 65,536 bytes |
+| Complete stdout report, including LF newlines | 262,144 bytes |
+
+The pre-cap-update candidate measured 689 regular files and 21 directories, giving 710 entries and 688 declared hashes. Its manifest was 71,172 bytes. Declared payload was 29,551,085 bytes, and both manifest reads brought returned bytes to 29,693,429. Including EOF and final-manifest admission requires at least 29,693,431 bytes. The largest member was the 2,906,268-byte current source archive.
+
+The accepted keyboard verifier refused this actual kit at its earlier declaration limit. The additional retained archive also exceeds its aggregate-read allowance. The new declaration limit matches the measured inventory, and the entry limit preserves room to diagnose four ordinary extras. A finite 29 MiB read allowance leaves room for source and guide finalization. Manifest, member, path, traversal, chunk, stability and report bounds are unchanged. These measurements precede the cap, test and guide updates. Qualify the final frozen artifact and portable consumer separately.
+
+The earlier keyboard companion capacity record follows unchanged.
+
 The measured keyboard companion 0.1.0 source candidate, retaining artwork 0.27.0,
 uses the following finite allowances.
 
