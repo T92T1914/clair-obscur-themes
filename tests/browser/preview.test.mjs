@@ -859,9 +859,25 @@ test('both appearances work at desktop and phone widths without horizontal overf
         results.scenarios.push({ name, viewport: width, measurements, status: 'passed' });
         if (evidence && width !== 2560) await page.screenshot({ path: path.join(evidence, `${name.toLowerCase()}-${width}-specimen.png`), fullPage: true });
       }
-      assert.deepEqual([...new Set(network)].sort(), [origin + '/', ...['tokens.css', 'preview.css', 'preview.js', ...iconPaths,
-        'keyboard/backgrounds/Clair-Gboard-Background.png', 'keyboard/backgrounds/Obscur-Gboard-Background.png'].map(file => origin + '/' + file)].sort(),
-        'The page requests only its four original local assets, the 600 declared local SVGs and the two qualified local keyboard PNGs');
+      const narrowViewport = width < 700;
+      const mechanismImage = `mechanism-obscur-${narrowViewport ? 'narrow' : 'wide'}.png`;
+      const displayedMechanism = await page.locator('.mechanism-figure img').evaluate(async image => {
+        await image.decode();
+        return { currentSrc: image.currentSrc, width: image.naturalWidth, height: image.naturalHeight };
+      });
+      assert.deepEqual(displayedMechanism, {
+        currentSrc: origin + '/' + mechanismImage,
+        width: narrowViewport ? 960 : 1800, height: narrowViewport ? 1210 : 800,
+      }, 'The displayed mechanism decodes the edition selected for this viewport');
+      const expectedAssets = ['tokens.css', 'preview.css', 'preview.js', 'appearance.js', mechanismImage, ...iconPaths,
+        'keyboard/backgrounds/Clair-Gboard-Background.png', 'keyboard/backgrounds/Obscur-Gboard-Background.png'];
+      const requests = new Set(network);
+      // Wide layouts can also request the retained narrow fallback. Only this known extra is admitted.
+      if (!narrowViewport && requests.has(origin + '/mechanism-obscur-narrow.png')) {
+        expectedAssets.push('mechanism-obscur-narrow.png');
+      }
+      assert.deepEqual([...requests].sort(), [origin + '/', ...expectedAssets.map(file => origin + '/' + file)].sort(),
+        'Only reviewed local assets, the selected mechanism with its bounded fallback, all 600 SVGs and both keyboard PNGs are requested');
       assert.deepEqual(consoleErrors, []);
     } finally { await context.close(); }
   }
