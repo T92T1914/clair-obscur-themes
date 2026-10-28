@@ -3113,11 +3113,11 @@ test('no-script keyboard navigation acquires current and all 29 preserved icon Z
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-spaced-download');
     await acquirePreservedIconArchive(page, ['icon-artwork-spaced-download', spacedIconArchive, spacedIconDigest]);
+    // Current ZIP, checksums and eight preserved ZIPs fill the first ten-download batch.
+    await new Promise(resolve => setTimeout(resolve, 1100));
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-polished-download');
     await acquirePreservedIconArchive(page, ['icon-artwork-polished-download', polishedIconArchive, polishedIconDigest]);
-    // Current ZIP, checksums and eight preserved ZIPs fill the first ten-download batch.
-    await new Promise(resolve => setTimeout(resolve, 1100));
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-video-editing-download');
     await acquirePreservedIconArchive(page, ['icon-artwork-video-editing-download', videoEditingIconArchive, videoEditingIconDigest]);
@@ -5040,6 +5040,8 @@ for (const { capability, javaScriptEnabled, testedWidth, expected } of portableC
       const polishedAcquisition = await acquirePreservedIconArchive(localPage,
         ['icon-artwork-polished-download', polishedIconArchive, polishedIconDigest]);
       assert.equal(inner.files[polishedIconArchive], polishedAcquisition.sha256);
+      // Current ZIP and nine preserved ZIPs fill the first ten-download batch.
+      await new Promise(resolve => setTimeout(resolve, 1100));
       await localPage.locator('#icon-artwork-video-editing-download').focus();
       const videoEditingAcquisition = await acquirePreservedIconArchive(localPage,
         ['icon-artwork-video-editing-download', videoEditingIconArchive, videoEditingIconDigest]);
@@ -5048,8 +5050,6 @@ for (const { capability, javaScriptEnabled, testedWidth, expected } of portableC
       const gboardAcquisition = await acquirePreservedIconArchive(localPage,
         ['icon-artwork-gboard-download', gboardIconArchive, gboardIconDigest]);
       assert.equal(inner.files[gboardIconArchive], gboardAcquisition.sha256);
-      // Current ZIP and nine preserved ZIPs fill the first ten-download batch.
-      await new Promise(resolve => setTimeout(resolve, 1100));
       await localPage.locator('#icon-artwork-refined-download').focus();
       const refinedAcquisition = await acquirePreservedIconArchive(localPage,
         ['icon-artwork-refined-download', refinedIconArchive, refinedIconDigest]);
@@ -5210,7 +5210,7 @@ for (const { capability, javaScriptEnabled, testedWidth, expected } of portableC
       assert.equal(inner.files[legacyIconArchive], legacyIconDigest);
       iconJourneys.push({ javaScriptEnabled, width, decoded: decodedIcons.length, sha256: iconDigest,
         messagingSha256: messagingIconDigest, contactSpacedSha256: contactSpacedIconDigest, containedSha256: containedIconDigest, spacedSha256: spacedIconDigest, polishedSha256: polishedIconDigest, videoEditingSha256: videoEditingIconDigest, gboardSha256: gboardIconDigest, refinedSha256: refinedIconDigest, phoneServiceSha256: phoneServiceIconDigest, readingSha256: readingIconDigest, learningSha256: learningIconDigest, weatherSha256: weatherIconDigest, financeSha256: financeIconDigest, travelSha256: travelIconDigest, foodOrderSha256: foodOrderIconDigest, everydaySha256: everydayIconDigest, broadSha256: broadIconDigest, companionSha256: companionIconDigest, monochromeSha256: monochromeIconDigest, secondAppSha256: secondAppIconDigest, firstAppSha256: firstAppIconDigest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
-        method: 'saved included current and all twenty-eight preserved SVG archives' });
+        method: 'saved included current and all twenty-nine preserved SVG archives' });
       const terminalSpecimens = await checkTerminalSpecimens(localPage, terminalDocument);
       // Keep each deliberate local archive batch at most ten acquisitions.
       await new Promise(resolve => setTimeout(resolve, 1100));
