@@ -580,7 +580,7 @@ const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 let temporary, source, sourceBefore, legacySource, legacyBefore, previousSource, previousBefore,
   firstSource, firstBefore, secondSource, secondBefore, thirdSource, thirdBefore,
   monochromeSource, monochromeBefore, companionSource, companionBefore, broadSource, broadBefore, everydaySource, everydayBefore,
-  foodSource, foodBefore, travelSource, travelBefore, financeSource, financeBefore, weatherSource, weatherBefore, runningSource, runningBefore, learningSource, learningBefore, readingSource, readingBefore, phoneServiceSource, phoneServiceBefore, refinedSource, refinedBefore, gboardSource, gboardBefore, videoEditingSource, videoEditingBefore, polishedSource, polishedBefore, spacedSource, spacedBefore, containedSource, containedBefore, clearanceSource, clearanceBefore, messagingSource, messagingBefore, communicationSource, communicationBefore, routeSource, routeBefore, identitySource, identityBefore;
+  foodSource, foodBefore, travelSource, travelBefore, financeSource, financeBefore, weatherSource, weatherBefore, runningSource, runningBefore, learningSource, learningBefore, readingSource, readingBefore, phoneServiceSource, phoneServiceBefore, refinedSource, refinedBefore, gboardSource, gboardBefore, videoEditingSource, videoEditingBefore, polishedSource, polishedBefore, spacedSource, spacedBefore, containedSource, containedBefore, clearanceSource, clearanceBefore, messagingSource, messagingBefore, communicationSource, communicationBefore, routeSource, routeBefore, identitySource, identityBefore, artDirectionSource, artDirectionBefore;
 
 function execute(command, args, options = {}) {
   return spawnSync(command, args, { cwd: root, encoding: 'utf8', windowsHide: true,
@@ -700,6 +700,14 @@ before(async () => {
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stdout + result.stderr);
   sourceBefore = await snapshot(source);
+  assert.equal(JSON.parse(await readFile(path.join(source, 'manifest.json'))).version, '0.30.0');
+  artDirectionSource = path.join(temporary, 'art-direction-svg');
+  const artDirectionRevision = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', artDirectionSource, '--version', '0.29.0']);
+  assert.ifError(artDirectionRevision.error);
+  assert.equal(artDirectionRevision.status, 0, artDirectionRevision.stdout + artDirectionRevision.stderr);
+  artDirectionBefore = await snapshot(artDirectionSource);
+  assert.equal(artDirectionBefore['manifest.json'], '5e24ec84b4f495a0da954416232c5b18ecc5933761c89e828042625f062b3723');
+  assert.deepEqual(Object.keys(sourceBefore).sort(), Object.keys(artDirectionBefore).sort());
   identitySource = path.join(temporary, 'identity-svg');
   const identityRevision = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', identitySource, '--version', '0.28.0']);
   assert.ifError(identityRevision.error);
@@ -719,15 +727,15 @@ before(async () => {
     'Clair/google-earth.svg': ['50cdfb8caa538e54e2df8ba10bf2e1773442ffa15b4a8966cb40a751bb28d933', '50b6687a2c7448297f657cccef686cc526daae73399be1457d100a3ff8a17d62'],
     'Obscur/google-earth.svg': ['43e7fb74d590b9dc23c40a65034dd65f8c51a1d22abf17df9738e74fdbe57d33', '21dfd0fb5eea71dbb0d0bc7e227b897b87b440944020493da60a28212f5a9a44'],
   };
-  assert.deepEqual(Object.keys(sourceBefore).filter(name => name.endsWith('.svg')
-    && sourceBefore[name] !== identityBefore[name]).sort(), Object.keys(artDirectionPins).sort(),
+  assert.deepEqual(Object.keys(artDirectionBefore).filter(name => name.endsWith('.svg')
+    && artDirectionBefore[name] !== identityBefore[name]).sort(), Object.keys(artDirectionPins).sort(),
   'Only the five independently selected drawings change in each appearance');
   for (const name of Object.keys(identityBefore).filter(name => name.endsWith('.svg'))) {
     if (Object.hasOwn(artDirectionPins, name)) {
       const [oldPin, selectedPin] = artDirectionPins[name];
       assert.equal(identityBefore[name], oldPin, 'Accepted 0.28 source pin: ' + name);
-      assert.equal(sourceBefore[name], selectedPin, 'Independently reviewed original-vector pin: ' + name);
-    } else assert.equal(sourceBefore[name], identityBefore[name], 'All other 590 accepted SVGs remain exact: ' + name);
+      assert.equal(artDirectionBefore[name], selectedPin, 'Independently reviewed original-vector pin: ' + name);
+    } else assert.equal(artDirectionBefore[name], identityBefore[name], 'All other 590 accepted SVGs remain exact: ' + name);
   }
   routeSource = path.join(temporary, 'route-svg');
   const routeRevision = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', routeSource, '--version', '0.27.0']);
@@ -1024,7 +1032,7 @@ test('PNG command exports 1200 monochrome icons with independent neutral-pixel d
   const manifestBytes = await readFile(path.join(output, 'manifest.json'));
   const manifest = JSON.parse(manifestBytes);
   const expected = ['manifest.json', 'LICENSE'];
-  assert.equal(manifest.version, '0.29.0');
+  assert.equal(manifest.version, '0.30.0');
   assert.equal(manifest.exporter_version, '0.11.0');
   assert.equal(manifest.palette_variant, 'monochrome');
   assert.equal(manifest.token_version, '1.0.0');
@@ -1034,6 +1042,7 @@ test('PNG command exports 1200 monochrome icons with independent neutral-pixel d
   assert.equal(manifest.tokens_file, 'tokens-monochrome.json');
   assert.equal(manifest.tokens_sha256, sha(await readFile(path.join(root, 'tokens-monochrome.json'))));
   assert.equal(manifest.svg_generator_sha256, sha(await readFile(path.join(root, 'themeforge/icons.py'))));
+  assert.equal(manifest.svg_craft_sha256, sha(await readFile(path.join(root, 'themeforge/icon_craft.py'))));
   assert.equal(manifest.svg_catalog_sha256, sha(await readFile(path.join(root, 'themeforge/icon_apps.py'))));
   const svgManifest = JSON.parse(await readFile(path.join(source, 'manifest.json')));
   assert.deepEqual(manifest.catalog, svgManifest.catalog, 'Complete admitted assignment metadata survives PNG export');
@@ -1254,7 +1263,11 @@ test('PNG command exports 1200 monochrome icons with independent neutral-pixel d
   assert.equal(records.size, 1200);
   for (const appearance of ['Clair', 'Obscur']) for (const size of [512, 1024]) {
     const hashes = functions.map(name => records.get(`${appearance}/${size}/${name}.png`)?.sha256);
-    assert.equal(new Set(hashes).size, 300, `${appearance}/${size} retains 300 distinct drawings`);
+    assert.equal(new Set(hashes).size, 299, `${appearance}/${size} preserves the deliberate Zillow-family shared mark`);
+    const groups = new Map();
+    functions.forEach((name, index) => groups.set(hashes[index], [...(groups.get(hashes[index]) || []), name]));
+    assert.deepEqual([...groups.values()].filter(names => names.length > 1).map(names => names.sort()),
+      [['zillow', 'zillow-rentals']], 'Only the two independently retained Zillow assignments share pixels');
     assert.equal(hashes.includes(undefined), false);
   }
   for (const appearance of ['Clair', 'Obscur']) for (const size of [512, 1024]) for (const name of functions) {
@@ -1272,7 +1285,7 @@ test('PNG command exports 1200 monochrome icons with independent neutral-pixel d
   assert.deepEqual(await snapshot(source), sourceBefore);
 });
 
-for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0', '0.15.0', '0.16.0', '0.17.0', '0.18.0', '0.19.0', '0.20.0', '0.21.0', '0.22.0', '0.23.0', '0.24.0', '0.25.0', '0.26.0', '0.27.0', '0.28.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
+for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0', '0.15.0', '0.16.0', '0.17.0', '0.18.0', '0.19.0', '0.20.0', '0.21.0', '0.22.0', '0.23.0', '0.24.0', '0.25.0', '0.26.0', '0.27.0', '0.28.0', '0.29.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
   const historical = {
     '0.1.0': { input: legacySource, before: legacyBefore, functions: baseFunctions, images: 96 },
     '0.2.0': { input: previousSource, before: previousBefore, functions: baseFunctions, images: 96 },
@@ -1328,6 +1341,8 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
       apps, date: '2026-10-24', monochrome: true },
     '0.28.0': { input: identitySource, before: identityBefore, functions, images: 1200,
       apps, date: '2026-10-24', monochrome: true },
+    '0.29.0': { input: artDirectionSource, before: artDirectionBefore, functions, images: 1200,
+      apps, date: '2026-10-24', monochrome: true },
   }[version];
   const historicalSource = historical.input, historicalBefore = historical.before;
   const historicalFunctions = historical.functions, imageCount = historical.images;
@@ -1346,6 +1361,8 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
   if (historical.monochrome) assert.equal(manifest.palette_variant, 'monochrome');
   else assert.equal(Object.hasOwn(manifest, 'palette_variant'), false);
   assert.equal(manifest.source_manifest_sha256, historicalBefore['manifest.json']);
+  assert.equal(manifest.svg_craft_sha256, sha(await readFile(path.join(root, 'themeforge/icon_craft.py'))),
+    'A fresh historical rebuild records its actual generator module without rewriting old deliveries');
   assert.deepEqual(manifest.functions, historicalFunctions);
   if (historical.apps) {
     const svgManifest = JSON.parse(await readFile(path.join(historicalSource, 'manifest.json')));
@@ -1393,12 +1410,12 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
 
 test('unknown and mismatched artwork versions are refused before output reservation or browser launch', async () => {
   const admitted = [['0.1.0', legacySource], ['0.2.0', previousSource], ['0.3.0', firstSource],
-    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', foodSource], ['0.11.0', travelSource], ['0.12.0', financeSource], ['0.13.0', weatherSource], ['0.14.0', runningSource], ['0.15.0', learningSource], ['0.16.0', readingSource], ['0.17.0', phoneServiceSource], ['0.18.0', refinedSource], ['0.19.0', gboardSource], ['0.20.0', videoEditingSource], ['0.21.0', polishedSource], ['0.22.0', spacedSource], ['0.23.0', containedSource], ['0.24.0', clearanceSource], ['0.25.0', messagingSource], ['0.26.0', communicationSource], ['0.27.0', routeSource], ['0.28.0', identitySource], ['0.29.0', source]];
-  const cases = [['unknown', source, '0.30.0']];
+    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', foodSource], ['0.11.0', travelSource], ['0.12.0', financeSource], ['0.13.0', weatherSource], ['0.14.0', runningSource], ['0.15.0', learningSource], ['0.16.0', readingSource], ['0.17.0', phoneServiceSource], ['0.18.0', refinedSource], ['0.19.0', gboardSource], ['0.20.0', videoEditingSource], ['0.21.0', polishedSource], ['0.22.0', spacedSource], ['0.23.0', containedSource], ['0.24.0', clearanceSource], ['0.25.0', messagingSource], ['0.26.0', communicationSource], ['0.27.0', routeSource], ['0.28.0', identitySource], ['0.29.0', artDirectionSource], ['0.30.0', source]];
+  const cases = [['unknown', source, '0.31.0']];
   for (const [actual, original] of admitted) for (const [claimed] of admitted) {
     if (actual !== claimed) cases.push([`${actual}-as-${claimed}`, original, claimed]);
   }
-  assert.equal(cases.length, 813, 'All 812 cross-version claims and one unsupported future version are exercised');
+  assert.equal(cases.length, 871, 'All 870 cross-version claims and one unsupported future version are exercised');
   for (const [name, original, version] of cases) {
     const input = path.join(temporary, name);
     await cp(original, input, { recursive: true });
@@ -1520,10 +1537,10 @@ test('altered app assignments and mixed previous/current artwork fail admission 
   }
 });
 
-for (const drift of ['catalog', 'tokens']) test(`a ${drift} edit during export refuses the final manifest and preserves rendered evidence`, async () => {
+for (const drift of ['catalog', 'tokens', 'craft']) test(`a ${drift} edit during export refuses the final manifest and preserves rendered evidence`, async () => {
   // A disposable source copy introduces a harmless module edit at the final
   // qualification boundary. The admitted drawings and input manifest stay valid,
-  // so the catalog identity check, rather than an unrelated parse error, must fail.
+  // so the source identity check, rather than an unrelated parse error, must fail.
   const fixture = path.join(temporary, `${drift}-drift-fixture`);
   await mkdir(path.join(fixture, 'tools'), { recursive: true });
   await cp(path.join(root, 'themeforge'), path.join(fixture, 'themeforge'), { recursive: true });
@@ -1536,15 +1553,16 @@ for (const drift of ['catalog', 'tokens']) test(`a ${drift} edit during export r
   const boundary = '    // Retain any partial output if source changes or final qualification fails.\n';
   assert.equal(original.split(boundary).length, 2, 'One explicit final qualification boundary is instrumented');
   const fixtureExporter = path.join(fixture, 'tools', 'export-icons.mjs');
-  const edited = drift === 'catalog' ? 'themeforge/icon_apps.py' : 'tokens-monochrome.json';
-  const append = drift === 'catalog' ? '\\n# Owned drift fixture\\n' : '\\n';
+  const edited = { catalog: 'themeforge/icon_apps.py', tokens: 'tokens-monochrome.json', craft: 'themeforge/icon_craft.py' }[drift];
+  const append = drift === 'tokens' ? '\\n' : '\\n# Owned drift fixture\\n';
   await writeFile(fixtureExporter, original.replace(boundary, boundary +
     `    await writeFile(path.join(root, '${edited}'), '${append}', { flag: 'a' });\n`));
   const output = path.join(temporary, `${drift}-drift-output`);
   const result = execute(process.execPath, [fixtureExporter, '--input', source, '--output', output]);
   assert.ifError(result.error);
   assert.equal(result.status, 1, result.stdout + result.stderr);
-  assert.match(result.stderr, drift === 'catalog' ? /Named-app catalog module changed during export/ : /Tokens changed during export/);
+  assert.match(result.stderr, { catalog: /Named-app catalog module changed during export/,
+    tokens: /Tokens changed during export/, craft: /Icon craft module changed during export/ }[drift]);
   assert.doesNotMatch(result.stderr, /Icon output differs|browserType\.launch|SyntaxError|ModuleNotFoundError/);
   assert.equal((await lstat(path.join(output, 'Clair', '512', 'google-chrome.png'))).isFile(), true,
     'The source-change refusal retains completed image evidence');

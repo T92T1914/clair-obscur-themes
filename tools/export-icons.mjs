@@ -93,6 +93,7 @@ result = {
     "tokens_file": document_path.name,
     "tokens_sha256": digest(document_path.read_bytes()),
     "generator_sha256": digest((ROOT / "themeforge/icons.py").read_bytes()),
+    "craft_module_sha256": digest((ROOT / "themeforge/icon_craft.py").read_bytes()),
     "license": license_payload.decode("utf-8"),
     "license_sha256": digest(license_payload),
     "functions": manifest["functions"],
@@ -211,6 +212,8 @@ async function exportIcons(input, output) {
     assert.equal(sha(await readFile(path.join(input, 'manifest.json'))), source.source_manifest_sha256, 'SVG manifest changed during export');
     assert.equal(sha(await readFile(path.join(root, source.tokens_file))), source.tokens_sha256, 'Tokens changed during export');
     assert.equal(sha(await readFile(path.join(root, 'themeforge/icons.py'))), source.generator_sha256, 'Generator changed during export');
+    assert.equal(sha(await readFile(path.join(root, 'themeforge/icon_craft.py'))), source.craft_module_sha256,
+      'Icon craft module changed during export');
     if (source.catalog) {
       assert.equal(sha(await readFile(path.join(root, 'themeforge/icon_apps.py'))), source.catalog_module_sha256,
         'Named-app catalog module changed during export');
@@ -223,6 +226,7 @@ async function exportIcons(input, output) {
       version: source.version,
       token_version: source.token_version, source_manifest_sha256: source.source_manifest_sha256,
       tokens_file: source.tokens_file, tokens_sha256: source.tokens_sha256, svg_generator_sha256: source.generator_sha256,
+      svg_craft_sha256: source.craft_module_sha256,
       ...(source.palette_variant ? { palette_variant: source.palette_variant } : {}),
       ...(source.catalog ? { catalog: source.catalog, catalog_date: source.catalog_date,
         catalog_scope: source.catalog_scope, svg_catalog_sha256: source.catalog_module_sha256 } : {}),

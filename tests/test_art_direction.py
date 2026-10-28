@@ -93,7 +93,7 @@ class ArtDirectionTests(unittest.TestCase):
     def test_catalogue_and_component_assignments_do_not_change(self):
         old, new = (json.loads(tree["manifest.json"]) for tree in (self.before, self.after))
         self.assertEqual(new["version"], "0.29.0")
-        self.assertEqual(icons.VERSIONS[-2:], ("0.28.0", "0.29.0"))
+        self.assertEqual(icons.VERSIONS[-3:], ("0.28.0", "0.29.0", "0.30.0"))
         for field in ("catalog", "catalog_date", "catalog_scope", "functions", "palette_variant",
                       "token_schema", "token_version", "tile", "stroke_width"):
             self.assertEqual(old[field], new[field], field)

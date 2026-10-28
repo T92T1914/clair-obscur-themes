@@ -1,5 +1,7 @@
 # Art direction: specific app cues in a restrained family
 
+This record describes artwork 0.29.0. The later [complete icon refinement](icon-craft.md) reevaluates every drawing while preserving this revision and its evidence.
+
 Artwork 0.29.0 refines five existing assignments while keeping the black and white family. Delta, American, Southwest, Wikipedia and Earth previously relied on general travel or reference metaphors. Their selected drawings preserve more specific app cues through a controlled mixture of outlines, fill and open space. The catalogue still has 276 named apps and 24 general functions. Labels, package identities, tile construction and mappings remain unchanged.
 
 Clair uses black marks on white tiles. Obscur reverses that relationship, with neutral gray for subordinate information in the wider preview. Interface text requests locally installed Inter with readable fallbacks. A specific app letterform, such as Wikipedia's W, can remain an original icon construction rather than becoming an Inter glyph. No font binary is included in these icon or keyboard downloads.
