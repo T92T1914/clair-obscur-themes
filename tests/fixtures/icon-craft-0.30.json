@@ -1,0 +1,742 @@
+{
+  "scope": "Frozen individually and independently inspected original drawings; not native or human-recognition acceptance",
+  "version": "0.30.0",
+  "selected": {
+    "ace-hardware": {
+      "Clair": "eb9269d10c5bdb9f1d4318a6a9240cfe36ee2b7a5819fb4f72d3aec691927a9d",
+      "Obscur": "988412ddd3e035c513907b4c49df20ac33894a273e8207192323974e4fe2c6cf"
+    },
+    "adidas-running": {
+      "Clair": "5200543bd88127281c1ed037780be60942e47e83e65fcb5970121fb14d0667e6",
+      "Obscur": "38001ea683873c636018f842f0fcc0597087cbcdf4c6c3286863d5cd4aad1bf1"
+    },
+    "adobe-acrobat": {
+      "Clair": "195532735a960f7b9576f9d5f2d04f9322d9d72facd18dc67240d58903771896",
+      "Obscur": "3be727da1f20bde48120c7de2a88a456f8af50447d9509d0f206d6262cb29769"
+    },
+    "adobe-lightroom": {
+      "Clair": "1803af6a2a5054003e2601702f5fafc14d2e5494a4a00b6eec605917cd81f2dc",
+      "Obscur": "f39c1a4295fd89c1800bba75b72ead97cc080904f141159e53d5434f811b402f"
+    },
+    "affirm": {
+      "Clair": "102c8885b1b03a6c90182aa5da9f142bdf69ad1a936c2f1b20fd8157cb4a31a6",
+      "Obscur": "38c7a34316076c13ff85c17c40172eb3e13e718dec8363f3c0273fdf9a0f707d"
+    },
+    "ai-dungeon": {
+      "Clair": "22067425375bfce1ca4d4057f193990cb32d7e230e589ec0ecc81e8d103a1e68",
+      "Obscur": "745f726fea55e50b3ced09d5524d3b628a6175eea3949c6fb27e37f26fe0d273"
+    },
+    "airbnb": {
+      "Clair": "55899413fa4680647fd8f00ff9d71cc903da8ff3b9603b6bde7cef6339599717",
+      "Obscur": "2ade14782bdeec9efd2eb8c7b20bd29d8e39d2c14923160dc794ea572e9db7be"
+    },
+    "aliexpress": {
+      "Clair": "a14404cd8e68a6421cfc0736da61dc64e3558b5d38cdc7618b66a09bd3d121aa",
+      "Obscur": "162f2358b930180e8dfcbd624283d9a0c39b6249b74743f02c4f44ead591c1d4"
+    },
+    "alight-motion": {
+      "Clair": "51e73dcbec9da58c43bceaf40c79597b412c3f68d72543d7034c0288d1700a75",
+      "Obscur": "82bd171049edde6092d37983d3d6cbec19dde587fe6059bc172441643b86c268"
+    },
+    "amazon-alexa": {
+      "Clair": "1d8c4b01fbaf50c393c7f5309a24f1780e0a2a8e83e78e10a4f8353b6930f95c",
+      "Obscur": "7119709954d2ab24eb871e641ede414a10fc249b7463c2d12b01db7441c310d8"
+    },
+    "amazon-kindle": {
+      "Clair": "323243820a9fd5de2309522c4bf359b8d1ef884bac0e9de15e466188e5547a2b",
+      "Obscur": "8bf835b43f647d16bb5e87e773bd80f82661c8a29efb479ff617a66f0073ef04"
+    },
+    "amazon-shopping": {
+      "Clair": "025e054f2b705bba21940b3ce4cbcd102311d80b488a7ca0dff183e9ef45e93f",
+      "Obscur": "0567627f36e1f387b65b61228b6d298c84f6bc0a9c17d058d16c56bfec958da9"
+    },
+    "amex": {
+      "Clair": "44f607ee09749740b739fbd566dfdcb22fb9a6ea8f0e9bebdf7e9e08410547ea",
+      "Obscur": "da189d379c2c8ddd83ed8894c1aaf061a4988ab69558136f008a644f9e8211cd"
+    },
+    "amtrak": {
+      "Clair": "8b193ef2df0d783a471fc58e7e8b8a05cdaf21cedeb64061f4695530d43facac",
+      "Obscur": "3c91bac6baaa85d7edbee5b87b24a9f928e0660bd8d10294def4ae3fe37de198"
+    },
+    "ap-news": {
+      "Clair": "0f7902f089b087c11ee2f8b8653acb3ec7e67b747a48098ba4eee9a5fa820d8f",
+      "Obscur": "9c4a1899c3caf4b8f8ec8f3adb0a05488ca0eb35665fafd7f6b529cb34e3992f"
+    },
+    "apple-tv": {
+      "Clair": "c8b9e648e89bbfa0d027333f5b1009702e983b2b6c85b4c3694bb4bc54a92cf3",
+      "Obscur": "a9d99330aa26e3f7c4b04eab7d344abbbd8859df3ba5417464f6c0348601e6f6"
+    },
+    "asics-runkeeper": {
+      "Clair": "e5d7cb46b33a10fd5f4bbf524e1e8ba862da8d2c20f3a0198fc5cc8de2dce2b7",
+      "Obscur": "9395748ea4c9d468f3d52e52a1e9e809388ec062c0380bd80a17abd1be113c41"
+    },
+    "audible": {
+      "Clair": "1caa2089df45aec7ea6f32bca582733ca15767c5ae3cd6530fb1f3b5685c076b",
+      "Obscur": "6674f1629124fb21bef0a9af1bc17add1c4075d190c60e40ec194781d11f8fac"
+    },
+    "bank-of-america": {
+      "Clair": "825475d976d4734fd8025ab42296952b6814401129623c88a8c769ee55eba1b8",
+      "Obscur": "7d296689bfd49db4cbbed085f8d5c74c344ff4257b412e8b4447216d6ef5798d"
+    },
+    "battle-net": {
+      "Clair": "1356c87df0f5c6d58506c374c834a7b41c34dee548d80e6fda0258bc3f1ebc52",
+      "Obscur": "c05220f146d9b27e68694c6e0b98c0bf0cd6c7c6be01e5d7072e5533cc71b63a"
+    },
+    "bip": {
+      "Clair": "b60ede30e9d247d9aac775e7cc4b0a840d34016fb8fd5e9313e46d5e8f22ebea",
+      "Obscur": "2f3184bb2329d55848f26ae778fb7c6e9085fff8bf69905b18ae4880cb898495"
+    },
+    "bitwarden": {
+      "Clair": "3e2285c958424d1ac87fd78bdfb94ae4df1d5ab59ab17f05c62ddb1153d38edc",
+      "Obscur": "7205052b1496f7b8a517f0c955e40b9b37da3ac15c4b575e63328e57f0b66357"
+    },
+    "blink": {
+      "Clair": "7c3d5f7f1e98712a01500587d65ed61494b5278f7dcb2a1b4151ab6a101f0ea7",
+      "Obscur": "ae67964e7fad20ddf091ed1feb9d1064fd803cb0b1cee0620bfe31821dcc06b3"
+    },
+    "brainly": {
+      "Clair": "843b981fd9643a651d4be0c6473893e6e7296c834b1cb374a80f2573503c3bcf",
+      "Obscur": "9f9bd8acd4c36e924348ebe1d99188d0d86dfc7685488ecf1a9b24194cb778d3"
+    },
+    "brave": {
+      "Clair": "511718ed693288fbac6c6a9bc1903e83a625ef716e71ea66ea40c231e1eeafec",
+      "Obscur": "05a15e068740dc22604fe281a23f5e801165f7e0d74e9de58027e9159bb50deb"
+    },
+    "burger-king": {
+      "Clair": "003f3a7073a8db249548fcd123cb08c20e55e237d4566f57a7d540a61d565b36",
+      "Obscur": "98e45570c32fd803c7d9953cb67c163a0af06927a4a9029d65f9ef403c965f48"
+    },
+    "canva": {
+      "Clair": "47a1148c8e41426d7ddd149b8c90798500186faa87017736420b967dcc4ab79f",
+      "Obscur": "3954ad7a40164996d884102e5b63ed7fb7d9dcb1592b8ca72218cd3437b70a6f"
+    },
+    "capcut": {
+      "Clair": "55abfed7b4b187636dea58fd86868f97d24740e0ad2e083741261d1beb53e044",
+      "Obscur": "02a9b498a8220c03b8fd610ff6491ffd1d06242589a21a7c48701683d7c48749"
+    },
+    "capital-one": {
+      "Clair": "5bcc34326414001cace18fa491c96e195747ceb016de21791f8755d664110506",
+      "Obscur": "1af34769e548abeedcdef33a32e30874f266fcf69c8ee159592c1cd1388b5efd"
+    },
+    "chase": {
+      "Clair": "962752f694dd68915431516f874bbeb26782f52c776361167f961497b5f6754d",
+      "Obscur": "e294900d5b0eb4a05848756e91a84d6875bd70429e74614712076bf9f86b465b"
+    },
+    "chatgpt": {
+      "Clair": "4b4b08ef1faa39ebf598412f96410254254ec7f949b0e2617abedcf8e45a407b",
+      "Obscur": "1888dbb8ff323e7912f33381522fb549564c40768ed2d5e61a48ace9ecdd50cd"
+    },
+    "chick-fil-a": {
+      "Clair": "f8b2a54478711742a677063e0335b7d12c608d5772f49678168b1430c3bc3b0c",
+      "Obscur": "e94fb49a10fa5d5721a2300b401176b80d6a755ce4337a90d90399dcbcd4ca6b"
+    },
+    "chime": {
+      "Clair": "19ad99b5a255c0bc7a025c12d5c7f2478804520c1f4011fc1077b7cad54b51ac",
+      "Obscur": "d9e70c66062e9ea52346fbe25584ad95a55e7ff55bd7ed4059dd8914b7c05774"
+    },
+    "chipotle": {
+      "Clair": "958a0ae2952e72b4346669ab1227210fa73d54f0eb45db296401974abd8ab240",
+      "Obscur": "76c43ffc3018294e609e28bc1cfe9f7451e430c711bff8da21ab1acf2c11f8fe"
+    },
+    "citymapper": {
+      "Clair": "e48e452e0173c96d6f8d0f8826bd1e0ca220c3091ff5937dde173c816009add0",
+      "Obscur": "7c638506114ba178c3a9a5cfd4d9567de79e72e51344a5429080fdf93f99603c"
+    },
+    "clime": {
+      "Clair": "a9dadb22dc7ab8308ac0721b9fec5a099c3eaa8e96a4f0914ba5722919aede4f",
+      "Obscur": "f051e8a5838d31ba2596a27e1ecdde81416fa4eefe438fbe815ceddd39ffcc63"
+    },
+    "coinbase": {
+      "Clair": "56a496ec447b4a19ee0d3fe7e156298c8f8534071935f4eafad66f8dbff7223e",
+      "Obscur": "3e2385d0e208feff58ab4dc7a0057e507dbee3c6815c9147cf8f93387ff2076e"
+    },
+    "connect-iq-store": {
+      "Clair": "e93d6a91ffe6ac5192f64940d93250a643b8c65792e820aa72bca6e6030abdf6",
+      "Obscur": "d382e515a5fa58c9e3b57f5c5c516724c67943e08cafae38ac13d98d4072da2a"
+    },
+    "costco": {
+      "Clair": "c998052eac6ff6f8aa65ee426c60377443cb00ba8c8be8266a2743733087877a",
+      "Obscur": "6769e3a308d6c636a8a5ac562cf00638b70815ef2f3226e3f996c67599ce717d"
+    },
+    "coursera": {
+      "Clair": "44a6471e4fd7eaf8946d7caa28b5a82e812dfb629d3e9cbebd3dd95fb565a4c1",
+      "Obscur": "356cab21cb6e4ea26168926433764ddd08323a109cb97127529f4ec9cd40c2e7"
+    },
+    "credit-one": {
+      "Clair": "fffa079fdd8467533d2e0c884425688c27b6b62bcec414041a928330f417aa22",
+      "Obscur": "da292996f55dda3e5cf59acb0e7de113e6d01b613dc19df901cfb4ddc28793da"
+    },
+    "crunchyroll": {
+      "Clair": "5f6409b25fb03bda12822059b7823e70f1a77e5204bbbd43027296f62af90bca",
+      "Obscur": "29ccd451efabadf42466d35e0c83c450adacebbfef9ab7cb47ca8631a2e0fa7e"
+    },
+    "discord": {
+      "Clair": "d956bd2b1412d84dc547d51c0c14bba5969b22e661e24cb79157467294c304a2",
+      "Obscur": "1b8aedb121ca5ad6454bf0814036b20db931cbaa72688313c55fb58224ee273c"
+    },
+    "discover": {
+      "Clair": "5ab102285a160f61f0e7aa7135da52062ce9b410b8c0f407e4254dd600c69776",
+      "Obscur": "fbe0628217f4a18cf3cfa0d26235eb52961ebdfe078b8525fb967b8282dd8261"
+    },
+    "dollar-general": {
+      "Clair": "0268e51571f1e8b5b3ee25bee9bba8f22253936f6bf1802ca727e8dcccb21f21",
+      "Obscur": "72614f4ec122a0811614e544a3b44fc53de3188d66725ec9469863c7723dbb89"
+    },
+    "dropbox": {
+      "Clair": "eb1a6a6939f122e834fa0b08349d9e5f332b94d795fd96d50d61dd68b4bf2d56",
+      "Obscur": "2c36c303e4da881d09b79ee50c50fea707a845d070d6f67b54e77f541e70fb0f"
+    },
+    "dunkin": {
+      "Clair": "4b04d9c19e861badfec150bda19e283ac7dd388a0bd93c6df2a636237879ca68",
+      "Obscur": "ee8e0b7eedead36bf33ffac6be3c6ac22e535d29efa6c79f47a5c106fa8a3ac8"
+    },
+    "ebay": {
+      "Clair": "5cef1d90c03d20b96fa4262bdf17f14b5ed92a28936a23afda5b68b9999568d1",
+      "Obscur": "fd5b1a4e4589844b88b4b7c2e90910c56a88f586339ccf0dff4ee9c712a1ea60"
+    },
+    "edx": {
+      "Clair": "26036da972a210406c104c8d9181dd11afcf92aed237f3f1a64653e2affa1ead",
+      "Obscur": "d22998b6a824dd61d8dd206a4043e7065d676804eb65aed8430c7e2e571ab805"
+    },
+    "etsy": {
+      "Clair": "c24b60eae3d3175dd291d7727418643ced649a6b2ff5555048abe6764bfa02be",
+      "Obscur": "2de1f883f29f1fa68607ccf3db36361f62a501fc02cd9cec8e799c7b9dcaaedf"
+    },
+    "expedia": {
+      "Clair": "6635408acb374a20022778a36d35d7b8725e8c71483ca0554095819f0571c268",
+      "Obscur": "2398b6a814ccff9b33af0b645aa19b6e867951ef0ef75060126a205b7619b429"
+    },
+    "facebook": {
+      "Clair": "273cce35d522a5945b0be45c63761cb30854d6a2731c316bd921a3d6c2cdb982",
+      "Obscur": "d3acd6a2342b38e5e13e3dc49c3571ac47c6ea4f173c63683271b47af6c020dc"
+    },
+    "fandom": {
+      "Clair": "a6c9e574a0f67ec6c3534012e28eb8db03fedcc2519f6dd303015dc2ae57c4b2",
+      "Obscur": "38ce519c43d18f1925244798cc77b21ded41628ac692421f6c05df1915bb10aa"
+    },
+    "fidelity-investments": {
+      "Clair": "2054aa869059ee8bd629e93e8823bf76be383ae19b244d62eb65d49733d192b2",
+      "Obscur": "ade0641a864a2f73eaf1c66a7bf6b54393ff66316db15562a6affa8cb6cb14a7"
+    },
+    "files-by-google": {
+      "Clair": "34891c574f3bd410e2db82c55f40017aca00f61da798aee5caf6bf509e1df650",
+      "Obscur": "2aabe6ee492a24029471160a37b8b450fdd86579f47c157ce170281d2a6150e2"
+    },
+    "filmora": {
+      "Clair": "7c7bfb1e88ab087660bc37079beab4e8be1243627906348b767e7afd09c1e456",
+      "Obscur": "f5a3cab05ba64345dbc6d0f02e1bfd5d100171f907045fd110b7a7b540824598"
+    },
+    "firefox": {
+      "Clair": "f2cb10548f97da98a1a3eccbce0e45a310ca791d267811ad7c103b63ef350ecb",
+      "Obscur": "6325f37767f66ef650a454492acaa17239aeac76f7eeb25c1b1ec566ded7a64f"
+    },
+    "fitbit": {
+      "Clair": "2d16eb370d1d48f0b2dae1ff4acf49eb28166ffafee585d4e583538539796caa",
+      "Obscur": "bac7cf91a23f53bca883b4901c05fbf6b2227e495c1c1bad7147638fc57241e1"
+    },
+    "g2a": {
+      "Clair": "2b67bd4746769d2ee89d928a9dd3446e5cccb0d8b6c6fd10a8cbf927df52513b",
+      "Obscur": "e6157a3518f8dec83e002ad6e80b8b4a3c163611493a68e1bd2030191551b5a9"
+    },
+    "galaxy-wearable": {
+      "Clair": "ce1c37745afdfbb962f585277987e59da4dc26a9e40da63d477cc738047f1422",
+      "Obscur": "969232c44e8e60a97f1b90572a57e2be90f154ac9da3eb4037533c07414dbe85"
+    },
+    "gaming-hub": {
+      "Clair": "d8b2ac46d9a765b1d046c91862b3bfce92ac973eed560ed05c723fdbf5b30634",
+      "Obscur": "2a58ff2c1c38b08ddf035b63454eeda438ba787adf2d855da581c195d0c6342e"
+    },
+    "garmin-connect": {
+      "Clair": "15c66ac72fe5f533d3de64c052981932cdb4d676c9dee8a974d569474712bbb1",
+      "Obscur": "0693a17e86d9fccc7f467112822986d563fe30daee24deb56fb185987223355d"
+    },
+    "gboard": {
+      "Clair": "d2125d91d3adf242d394d6c0bdafac41eeb507ab144cdc9c27fd2b6fe0913ad9",
+      "Obscur": "fe44f533e3fb53380b7827c3ce6d03b122055b5e29766d85456479e05f642442"
+    },
+    "github": {
+      "Clair": "e780d59de08ee4a16c8d3a294094e184b2ff4e9814ca7fd83de312f490e7d9c2",
+      "Obscur": "183b5ea8babb54883524e4141fd4a6aa1dc6050862c8a9846c4d681dcb3459f6"
+    },
+    "good-lock": {
+      "Clair": "e8137e2bd3e97f1f1c37cbb9fe093e0eb26012953509927735cfd455f00c2148",
+      "Obscur": "c1fe71160c22b5fb2473003e28994826ac497dd1c045922aac4ae166d90ff075"
+    },
+    "goodreads": {
+      "Clair": "d42bbb86a43f7100360939b2c3bf24b3c746ce029a1827a32bdad31a2bc51da1",
+      "Obscur": "706cfa502b95d663137832927212cf948970d825f08c46e63d7339d111bf7a0f"
+    },
+    "google-authenticator": {
+      "Clair": "81b905ead8595d4c1119f55a6f2a1613a399be44043b389b1f7c5943ac2505a0",
+      "Obscur": "9fa4839a40aa01ed9b3ca1b48c9f7105e2bd4d7766d74b6461fca21923448bbc"
+    },
+    "google-chat": {
+      "Clair": "6f9dc0900ad33cb5bcefc13ae6766f71ad5ba5d6210ad35a591106b98f3db6bf",
+      "Obscur": "aa3c4ac1543555b30f4b156dfc5499db381dad99ef7cf71ec2bac8bef1f636d0"
+    },
+    "google-classroom": {
+      "Clair": "934fc134f8e9419ad37bed626554583dcba44a89254a81e3c6e58dc15f29c5dc",
+      "Obscur": "a283ef0483b9d930bdc9d36565d21dfe9a54c1dfc91c9de14a80506ab50ff353"
+    },
+    "google-lens": {
+      "Clair": "76deda843e3f2cb894670dbc92b392fba81bdef8d18ec9ac1345a033044e95c5",
+      "Obscur": "163e076f347f753aa673381e7e4cb0a51ae2e8f42a32a0d37a4ab2723efa165d"
+    },
+    "google-meet": {
+      "Clair": "29b3f01bb64233c6aeb90599e2a6f58d984ea10bf46b7f0c873958bc19e32acc",
+      "Obscur": "64b5dc032d0086e3b25cbe50f2c2df3d4c909fe72455366906bc793ef1137e06"
+    },
+    "google-news": {
+      "Clair": "9eec3ca4cd3497c1e33757c5ee32fec60588a1006c72b8ea74595222dbbf913c",
+      "Obscur": "598c4cfdf8528ce67260e8c629ed12ebc35907b6be619f63d783836ab0a0df7b"
+    },
+    "google-one": {
+      "Clair": "2bbf6caf61c13f31e1967beb2c841ee5ad0989d73e34080c2e50db03f57b5f1b",
+      "Obscur": "7e022e307b40ced60448a01f295c99210cfa126a4bd467fb29f9988c190d8be5"
+    },
+    "google-play-books": {
+      "Clair": "47e0d66f22a37d381b56787f621aa3cc142d9f3631aa9013ac1c0df2a4384bdb",
+      "Obscur": "5aa35fec9ebe65fdde98a972b01e5fce4789ed9a467bf466e14dc3abea567469"
+    },
+    "google-translate": {
+      "Clair": "351b57f860d6a0f159891fd023737fe941131c25669177027f14e194dec1598e",
+      "Obscur": "2eeba8d2ced4d054f5ea2ee1ae9aa9c853435d82573a73f5fa6a32b3e59b43c1"
+    },
+    "google-wallet": {
+      "Clair": "d8aaa0bad1266b0fed2da9aded1a48511175bcb4a1185d94d10dc7b6117f4bcc",
+      "Obscur": "202987a59acb4fa0eefdcbd89be80cc4505a6ae6f2a87cfd433c80028217cb1a"
+    },
+    "gopro-quik": {
+      "Clair": "27a9b6a258f6d81ed13d803fc30968232555fc772cbb9cdba2f851523b38646c",
+      "Obscur": "798fc40870fe2302198c0f3e1bdd5e4c9a18cf70f4f1903614345e1049fc553a"
+    },
+    "grubhub": {
+      "Clair": "c64d9ce51762ff993f490360968afd4600391f739263c0c71f7341878f14cffd",
+      "Obscur": "e4f1e0ac0dfc8339e373acde9a3f3e728511956aa518426e3872d4e5b7089fd6"
+    },
+    "hbo-max": {
+      "Clair": "ed4db4a08fbe58b8c2f7a2e9b9544d5844a30b54c5351457c909eaa628eed6a2",
+      "Obscur": "8f1aca1e39cb0fc45019549fd11f326eefa6d79210b3beffc1f550e67c8f7297"
+    },
+    "home-depot": {
+      "Clair": "9ccfd80b94e0aed9fb5e3bfd2f007401998adbd1d4ea84457c2eb8f0aca46f12",
+      "Obscur": "c138ff544eb22526fba63753f827ca019d5def0350c22914fdaf14aece1ce1e5"
+    },
+    "hopper": {
+      "Clair": "a562e9357e38f351d2cafa04acbadfcbe73b18b4744be61deae9180090a8d185",
+      "Obscur": "584b0ca144094de3b0d6cbced34c8caa96aece3d9d16a33a2c51df50ce540cf9"
+    },
+    "hulu": {
+      "Clair": "4a3e8fb4d7d75f3cad4fc24861e3d37832ac5bc4d94e4e3b030cfc350c81f276",
+      "Obscur": "8b2451c6bd724390efbcf7549f921960ee424f09b992fbe662fe00934c8bb82c"
+    },
+    "inshot": {
+      "Clair": "de0eb1dc49dfd8bbe7ccf5a427497615f7d389cd233944b4e7cb205d5f6c9802",
+      "Obscur": "8428c1a5f8e12fa6e15d110ba6ddfb559d997e42e7579f581369e0f53ec5f482"
+    },
+    "kakaotalk": {
+      "Clair": "51836ccf55f93e49e48b49599411f59cce6bc53f7d4c157ec3292aed5943c4be",
+      "Obscur": "3ac4552a29048d6d47452cb0a87d88eb1fe1057ebf66d3718891a9d4d3792d11"
+    },
+    "kfc-us": {
+      "Clair": "15f2fac384a21fc0cf53b94066524309cd205b2d2ff117a43e0bf432f790b728",
+      "Obscur": "ad74ff94b28e666cf376614a96289dfa0899d91a285cd9b1beb1ee1a0311200a"
+    },
+    "khan-academy": {
+      "Clair": "7493b1f993ac28288b14458686ece3968a869d1525e67595071741ab8eb8d862",
+      "Obscur": "1f2007c1673763aadf4b2d2aaf75bb616d0812cd97afefb450b3d5c09e6bd5dc"
+    },
+    "kinemaster": {
+      "Clair": "3256bf13f536eb38708a4ca32d4976d2614d19e8ea40066baccf486e63ffa81e",
+      "Obscur": "aeaff1d0a2a994728e2d1b5e76c9b959b1fe37389cd64930e9a94ea9ddaeaf4c"
+    },
+    "komoot": {
+      "Clair": "62fb8180a73ae7bfa2600dd78832292601eef4a65827544a7b1e7a5152deaa44",
+      "Obscur": "87cbc5fcee18f54958c8dc4faca7c2a166fe26e012909220b2cf49f06450b443"
+    },
+    "kroger": {
+      "Clair": "e8bdb79b3ad2a216617b92907d9e6253fe02f85f956b2dba04904d90fce42bff",
+      "Obscur": "b26aa830db539ed8ae506431085dfe500a3fa39d3294b01c76a60859c3204411"
+    },
+    "libby": {
+      "Clair": "9111645915255e931db9f769991151e3d8b960befddf5df64cd73026e4c5c7aa",
+      "Obscur": "b8434f17cb054fbc02ef9d5e64dbdfc873efff6aecf70c320f3d903bb4326429"
+    },
+    "line": {
+      "Clair": "96d223377d892454c623b5bec4845d94538d84919ef9c739a17a1c21305353ef",
+      "Obscur": "73270c7b234a28c1ac7784ad8d5391ce6bf2019d5b079be00581b39ef46b2b92"
+    },
+    "lyft": {
+      "Clair": "da45e15e1c2e1b6951132a5c847c6113408ffc3e4cbf45f53294ba896b791f1f",
+      "Obscur": "aba236eb8b6b656d803284881ccb4cad81bf4c95ae756cdbb32959bd22c7b7bf"
+    },
+    "map-my-run": {
+      "Clair": "e77065bfd1aeac39ab8aa4acb388f79452c60a1626121e2bdf2fe446d2f0d4e4",
+      "Obscur": "65a4d82b2cbf5281c40ad0b4ea521fe8ce2b9999e184c7d1ff22190f468588dc"
+    },
+    "microsoft-authenticator": {
+      "Clair": "46fd3076848dd47bfbf24c63ed48018e6bf1fc8e9ef3a5f29d089e72c4a53b59",
+      "Obscur": "120588263c1fc827ddcf23aee1d8aaa0ce99db725089c57cb4678c5f58713ade"
+    },
+    "microsoft-copilot": {
+      "Clair": "04dcd72d5d9a049bdf81cf5c2b4def3654436deab63151e826ffd98e9dd6debb",
+      "Obscur": "33be9d57d5bafb1b27f2c90e45ab5d8e8c9a6639adbc19e45b20e1bae75d0101"
+    },
+    "microsoft-edge": {
+      "Clair": "169e95c47a832c8752642a39dac4298ea337abfdeaba691bdf7fb9e45d676300",
+      "Obscur": "9ee2263934c621ee2704f6f93adeef45e2894c4bf237ea6e7b912233dfa51251"
+    },
+    "microsoft-powerpoint": {
+      "Clair": "d113d957b9485763301c88505ef95652ceecb072bc13a276d7c4c5e77bb16729",
+      "Obscur": "146465fa26af71bd10c8fc8da7af33704062c0adbe3129798e561f4b39b72e5c"
+    },
+    "microsoft-word": {
+      "Clair": "f2d9cb8787970f48b5f64e6f7cf5f6fc928cc8c4a74ca86922b62d90ac4dd6a6",
+      "Obscur": "ddf4ecf13a37d6dbd8b0327b5db6130765ab6bdbcbd4b5f4f5e1bb04dd63c6af"
+    },
+    "mochi-health": {
+      "Clair": "787191a72a3d5dff43eb8788deeaf88903c77cf9865038916dc2c04eb82c8c2c",
+      "Obscur": "7cc77f3a2340396de2a668c5c003794ad2972dac35db8020597ae7bb75e1bb0c"
+    },
+    "myfitnesspal": {
+      "Clair": "88256bca387feb2bc50fc73d74bc7d0de4268c41c0f7cc8b08caad5f28442ca3",
+      "Obscur": "ce56dec7b937b025c436d31154cca7dba97a9d2ec5878f478008048972ea1488"
+    },
+    "netflix": {
+      "Clair": "f23f07fa62e46b2a2a587e01a85577a0780e212e88eba45b50e0a7deec615d31",
+      "Obscur": "1605c49a2e3b30fd2540fdd36da1077dd2a78a241ee2c340eccbf4d5b6d31d48"
+    },
+    "nike-run-club": {
+      "Clair": "f4995f5de2e66ac4275d84647fe0517d039ffb0acd90e19670f264026829ee43",
+      "Obscur": "c988f522fbb0ed9add381a24383fb7f3c208691e778afe3a170036919725edd2"
+    },
+    "one-weather": {
+      "Clair": "c147a3b292d9248135c556b483796034d375a5693208983c3063195fccedeca0",
+      "Obscur": "664ffb8668f98feba5cf48a13988c635d981507ebc7648e115c4e53bba960271"
+    },
+    "pandora": {
+      "Clair": "fd228010baae8da1f8dae2c0b3eda420b246974993607d25f816662269f3e819",
+      "Obscur": "b89942e8a02781f78f2591167c2bc7493752324fe7300fe332c1a22ce95f16fd"
+    },
+    "panera-bread": {
+      "Clair": "33cee2b0c520775361b5f2899137691bf21aa9b2c7a1a9222b26fdb23ac86356",
+      "Obscur": "216e483caae96ec31c7102e1d699184f62404478c69fc3ef647cef6964227f56"
+    },
+    "patreon": {
+      "Clair": "bf1e9a5aa71bc3032af948234e6ceb660cacdc08950cd95c6d7d5cd2fe6916fd",
+      "Obscur": "bc4258f7d193ee40017c62a93289be5978f33529f626490fab3a467740625121"
+    },
+    "peacock": {
+      "Clair": "58d82ef557f7f956217b5d4c73b37042a8c9995ae0ebd48d547d5c5e805e8a2f",
+      "Obscur": "ea4fdd313b6956b4e2a9f72c0f165bcd048d5b4f89c57dc4ad68daf31e56ce37"
+    },
+    "photomath": {
+      "Clair": "6c1b9628675d3b3b51d4b06b6954cd15efc4a630501c63f37a00c7296216aa18",
+      "Obscur": "456a3d009826064d0d1a1bead7d251ca69610eb5ca65a8d160e66e161cdcc57f"
+    },
+    "photoshop-express": {
+      "Clair": "ecc81cb6f552fe8ff297f9388c059ab679ad06bfac58f15b7f0ae81161349e15",
+      "Obscur": "bde20a8b2b5d12e3060a27cf6441c2db08944ac52bd2dcf7f63908ebe5fa10a4"
+    },
+    "picsart": {
+      "Clair": "1bd6ae8f13d8c873e87a98f2ba4ca145fa1e160d8740b0b7f8877e2c22bc8a60",
+      "Obscur": "e1571c15a2b61859a56987f481fbfef448627d261e8b38fc453d3fd12ea54ae7"
+    },
+    "pizza-hut": {
+      "Clair": "28ffe5a460ca2455de4801f05ef2b79fdef57f70cd345981b367d126d474a10c",
+      "Obscur": "f4a5ca3ef3481d0e4f20ad2117649022e0b4318b9099fd21cd9ce1cb0edf0efa"
+    },
+    "plex": {
+      "Clair": "41e56d32d0153c5b076f106bd406aaa4e1e8b300d1b0e14dda0d73271aae5167",
+      "Obscur": "84eba000da3b27792b8be65972f05fe0a3a3496c4795c8d9bfc763e19475caf0"
+    },
+    "pluto-tv": {
+      "Clair": "e3353c77f77351790c02398144ba9aeb6e89b8519f6b3123c6a134abbee21a04",
+      "Obscur": "90b7406e906356b10311ac6b1ea4297509d843a29258d6012ea7b18e5cc17499"
+    },
+    "pnc": {
+      "Clair": "57c465029baa492ba2e32abb503255848d25d4f912dbaae428f208bcde0ac151",
+      "Obscur": "27003c4d638ef5ec8277346c0a2b715b653696b24132c893c4aed6e11aca2568"
+    },
+    "pocket-casts": {
+      "Clair": "c0a58365ddfdb88a76363ccdf3627194669cf8c298203cc92fa9c245e764c2c8",
+      "Obscur": "21f160a109715b2927962b053e32fc740ccb0e4d45c6a93a53e581f7a39c00be"
+    },
+    "powerdirector": {
+      "Clair": "cc893489ce30b6a799f759fd19489510c999aaa3d67cb2a4f063196eab56535a",
+      "Obscur": "9ea310deb26bdf314c55559743d077333b1ab66b0a0e1275930a2c046cf1fe16"
+    },
+    "prime-video": {
+      "Clair": "302010201612fdcbdb09d895f015c91c273dfdb09a6581ea8d99859e5f3c9ca2",
+      "Obscur": "7c7ccde530b2fbba317b6443c77bad4a76301b2589d9e5b43613aee689e8b694"
+    },
+    "proton-authenticator": {
+      "Clair": "62df90c9c90897878091a7351be210cd10c24ea6da7555d730d2ff456e624f40",
+      "Obscur": "35da54b82542cca6bb56ba6fa8d9927facfe743313342e7f03eb885c2ceba78f"
+    },
+    "proton-mail": {
+      "Clair": "e97f5cb92aa305c2ca983f96bad1c0a1a79f162a177cbec57a8b47dfdb74137b",
+      "Obscur": "4951471635801ef16c36bb965a371be356e47be2b348ff54fd3dbeacbcaff725"
+    },
+    "proton-vpn": {
+      "Clair": "63470982b39044aa9b9d7acb50c433cca4479847f7d937496432705433a838c7",
+      "Obscur": "8e7142e39bd8108872b88d77b69922862dcb6f9917c111f146480351ca9b9f19"
+    },
+    "quizlet": {
+      "Clair": "422912bc710eb03d61a51c77bfd908550dd97056079f96d3b59fad252e01ae8f",
+      "Obscur": "ca30af2692ae7fd60e367784cb7a1126facc3d4b514923b2c9439aaac910bc4b"
+    },
+    "rainviewer": {
+      "Clair": "b09dee0b7c20e352f09e062b3b5238d3962498d9b8352817e0aebf5236774f62",
+      "Obscur": "527e65a0553e0cf15f215492a190d905119a184c44dd4afe2b0c00ed6a515d73"
+    },
+    "readera": {
+      "Clair": "2be5509645ca77e3dd1f1ff015f4767022d869f6ba645cba1e8195d362083e87",
+      "Obscur": "86a226361f89797f12bee33478fa677801c816fb3119f92b3e4ad0a1ed4049cf"
+    },
+    "relive": {
+      "Clair": "cb59d1388261362c12de14875a98093f6b152cd4008dce6b622a5486de00b55f",
+      "Obscur": "ecf92b83770eb3a3411e43cfd98dae91fe5504f7dd5b98f9c4d03a97a27f5584"
+    },
+    "reuters": {
+      "Clair": "d50337a3a5292c7873e37a7d7dded3ab2f2e520749f319988e42d0f82f25133a",
+      "Obscur": "1f4ed15b5c22e79de7e91582f93b3a5d52303cf8daf3d09cb6475c85d5e4e4dc"
+    },
+    "ring": {
+      "Clair": "1cb57e906e6bbf71273b8897a1bbfc905ce0e37c90bbdc65223f6d0317689d73",
+      "Obscur": "fb2cb0958b39d97416534c0bb300e2c8256b2667f03370d05722090a8cdcf98d"
+    },
+    "robinhood": {
+      "Clair": "a4c98f3e6133028cbe48a0a268da3ee40dfe9b28c3357775f96fdd3b8d20b80d",
+      "Obscur": "d1085aa8897e8e50db616f0bd5cff1e3b1551f0a61b504a0c9f169949b5684ff"
+    },
+    "roblox": {
+      "Clair": "db731359a55319e3c0aad2a61eac0a98eeae0452660c467b8f50c46f7b0fc78e",
+      "Obscur": "81c2bedc1eeffe42c682840fc412e39ebadb4ab6bfa05f13270f647ae3e26392"
+    },
+    "runna": {
+      "Clair": "a69e56e7ffc375ba889be902ead765e8e8b8cf120645b8f33dfc2e2ca073c021",
+      "Obscur": "7652c11bac53ed9a865ed78155cb6c79cece10b9b0b344415232fe54e642678f"
+    },
+    "samsung-find": {
+      "Clair": "6a5f6bf0cbeb80ce23d6b091bbe92a8931f7d130df22d8fd226c21d50dcf26e0",
+      "Obscur": "7f698bf245cd4a5f48bbe93014c0147af571a073e30ba73be6cab9a96bfb5273"
+    },
+    "samsung-global-goals": {
+      "Clair": "c8db182c86a12b72aaf38eaa71f98d7ab12fc1b81ef7d7393a714ade428e0db9",
+      "Obscur": "89b37993453ace85cdf6610e624c793c9ef730a399cdd40c4aa23b580d931f37"
+    },
+    "samsung-members": {
+      "Clair": "38b5a41c7f85bc4580f30ab5b7cfffe76b78ccba9b1c41ce5d18d93775e78ecc",
+      "Obscur": "87f0f4f358f92c714c0f314641104854d87212f24eed7c1306a61137067a82db"
+    },
+    "samsung-notes": {
+      "Clair": "166966dbc24bd6312e9622a44f66541844f083050f3ce1bd1f5eadc8b4556d8e",
+      "Obscur": "148c416e9f62f355c1c52930cb59e959620c6489ec7d6a0f58fc988aca1848bb"
+    },
+    "samsung-pass": {
+      "Clair": "52ff95780fbb9f1160b041c7636456709993595a357614537758558c560b39e4",
+      "Obscur": "b9987d5da9e6d8cdb3336f1a15b69152391f3ee5884bddecb56078e0fad982af"
+    },
+    "samsung-smartthings": {
+      "Clair": "8c8bd5b464107b470f58eec45b14b444fca9cc15b90bd69e40b12b3e8772518f",
+      "Obscur": "03bc904cbb2200ce9dcd2b9aa029556eaf857dc6ad5cb4535f8920668ff7f52f"
+    },
+    "samsung-tv-plus": {
+      "Clair": "8a463b2909545fddb57a816bafc40e5d391ddd9479a286739198cd6a144428f0",
+      "Obscur": "4b20d1139ee28734d865db1243b005c02c741bc3ef98502b7386f1ba91db6c9c"
+    },
+    "schwab": {
+      "Clair": "f06db75db4a4ecd4f547844262c959a5fe7c3259fc2d4fcfb27fdff2fc64b0c7",
+      "Obscur": "bfac293d8498c45a348b7a5082ed306cca58c13780745a9bc3965afe20896d61"
+    },
+    "shazam": {
+      "Clair": "701758edbf9e43c35f331b45cffb29970a5e0700fcdedc3d4197d84d8978e1ff",
+      "Obscur": "90d23341a24d582c82395ec24b35af6bbbbebe8ab8f23e9e66b08998ad4e16aa"
+    },
+    "shein": {
+      "Clair": "980350f04409173e8ca59ea9f856da07001359111f2c3a2486a59b420ef350c9",
+      "Obscur": "ee9e4a548c41d895a48aa71f96bb9357a3b29a4f6e7329bdee2aeceab686ddd9"
+    },
+    "shonen-jump": {
+      "Clair": "c9b1510aca3cbcb16171c634e83ca917752d7ecb96c8c1214170a31ebe4ba08c",
+      "Obscur": "e0d42b4fc4ee24095804dacaaf966063839bd71011e0d8ec095a4f2ae3987f55"
+    },
+    "shop": {
+      "Clair": "8a0447df7e27c499bf810bf2b0925248b38891fb20e293a8d862433cbc41cb25",
+      "Obscur": "624d9c61f2183fded33456b77ee1ddfc6b09b1d3c5fa2726d40d9c5ce0607d97"
+    },
+    "siriusxm": {
+      "Clair": "dc897ab5fb1008220db788dd13df2af1bc8e23c8db3cad2ed1f0ad1865fb4540",
+      "Obscur": "c2c6e2ada96ff045865ce3c19a92767793574646b16cdf49ca728b752aeb4209"
+    },
+    "slack": {
+      "Clair": "079d7c1a593d964988e6a527927e7837f55c2180b2b7e6eb5d3dcce01b627922",
+      "Obscur": "5b32fdbdab09d002b4842b85b26a67a84767f914159b1e228a3f63592b366dfc"
+    },
+    "smart-switch": {
+      "Clair": "106185548f05ff5f922396b44a5283c3ff77f146d1d53729f78b6820da3f2a59",
+      "Obscur": "036ed1c05924badde3034b3d53cd143f6d2484730ac1c4aaeb43cd2ba68718bf"
+    },
+    "sofi": {
+      "Clair": "a9c345ee1f93f5b025dee360e4f99ec1d5802254ecf523da05824f583b65e519",
+      "Obscur": "a467485f77134f21e5b0fa6a704eefd7dd38f8a5bce390f3f0367845a0f25c35"
+    },
+    "sonic": {
+      "Clair": "4be4289e35c8b73fe8e09c7695b9c95c2735c59ae20acc430969cb440e606910",
+      "Obscur": "54ef7d4f7e0f6cb71f4621b1c19082655ef145a857a6cd35b95283f3c91badd6"
+    },
+    "sound-connect": {
+      "Clair": "34447e0b8d3377830a147add25f30e96d92f0872106a120ec455133840f260f2",
+      "Obscur": "3b7c6642ed06f7cd62c8e6c17a248acc15ec5820f32319e764965be5f1058dbb"
+    },
+    "starbucks": {
+      "Clair": "c4fb0c1eca23a51724133bc3b21c2eabae35a64bb56f6fc4d41204e05d62af9f",
+      "Obscur": "ba44a61a515b575055af8e05fdde4f1c776fed910f5a66c93e1e56cb9cc0a391"
+    },
+    "steam": {
+      "Clair": "9be0ce57c6ef5bd7e4b584ac20a5725884b8c422e6c2bb8a04ec1ddef4787d50",
+      "Obscur": "4d8319e738da21f44cd6307d2e1be4a7c6a7df58ff408c2495fbbac3b49a64df"
+    },
+    "steam-chat": {
+      "Clair": "4757af71546098fafd7c4ae99409e2536d8e59efa589269edf6c761125da8a17",
+      "Obscur": "73f4dd05de7adb9bd6d97331dbe7f41f2158d183563bec38bfb24f19f54c9b14"
+    },
+    "strava": {
+      "Clair": "50dadfabf16b078298808fc200a72ccb010719822ea9039163183533049732e2",
+      "Obscur": "22177e2254f1c0145e0219930d4f3bb0cfa5bc0fd2c38d1fe234be3e2a67a556"
+    },
+    "subway": {
+      "Clair": "5feb42e9bedfa41467dcb29413c605cd26d0506620240ff676e50b984b912faa",
+      "Obscur": "1862ec2b54abb3180d244e28a6a64d6c379a9542b6994b292beed920145689f4"
+    },
+    "t-life": {
+      "Clair": "cce728144169f691b08ef11311b601b1cc0f1d4ba267d6414a5dcc68733cec9a",
+      "Obscur": "93588fd8f2a900ee71863396f5a438a4923ec56161640a29ae453f33f8af8eea"
+    },
+    "target": {
+      "Clair": "3cd25ce0d7df7f1b4bb4ec5c0fe98b9a18393f3391799529968cb3dd4e7706d9",
+      "Obscur": "39dd9184214d4eba65f635c9a2e8e5a4ddda96c93e74fc0a92df8f2163d8fcb9"
+    },
+    "temu": {
+      "Clair": "40b8e3b35917fbf5a19f15c55e0db1c9efa7e2f44619645727563395d23b2207",
+      "Obscur": "744363569f59be8399413d17adac4f60deddce59738789e76d97c05f2a5904c1"
+    },
+    "theme-park": {
+      "Clair": "764c67f91acdf17fa84cba182a02802296bf306a12e75b22a7f940015f7f55fa",
+      "Obscur": "2951c2d5b35102576932972e74f83270e09756c1158d52874974bbc4c9465afc"
+    },
+    "tiktok": {
+      "Clair": "4b1fb56789c3e8187a2a318d9330c5eaca08e2f4cd48e3632d070afd088733f4",
+      "Obscur": "ff60a2b4964c302a30e4d91267b9c1631d96843705a0c8496d8ee47aac34632e"
+    },
+    "todoist": {
+      "Clair": "e02caf963e3fef0ee7041e1a5482143bbc4df4c1b7cdc7d3074dce300a7d6bea",
+      "Obscur": "ca1c1d9a9a61814a92f6b43f299ea2d2c198e5b717d1345ba665712900a18224"
+    },
+    "trainingpeaks": {
+      "Clair": "f8649afb5e576f7b96fc5f549b763c82b130d409b45e2bb8f03fdf559a3346be",
+      "Obscur": "19f372e31c3bfb81cbe9c65d8473159621a757c9cd6f1d99aee0097a3b96f3f4"
+    },
+    "transit": {
+      "Clair": "b3047b631ae5dbd8dd1dc8e644bbb8c3be47c143eb23f58be537e9fd5ae55600",
+      "Obscur": "00591ebaf8a7395a9988be047600882d06040c8d3521ddd4a162c094090f61bc"
+    },
+    "tripit": {
+      "Clair": "c1ce07eea9db9e827d93ee6d2e541e82bdaafbefd5f09c2050401b5d08efe061",
+      "Obscur": "6f24e60fa992463ad4337c98c2047ae63a9cdb7d09c876dc5d543096a646ce94"
+    },
+    "tubi": {
+      "Clair": "8a5de401007a483e05a58e153b7881f4d366bab42f828831706bdf5286cbbe1b",
+      "Obscur": "5a37acbf3d36df6d33aa4898f3ca87baa81180a04824926f2283a533943795e0"
+    },
+    "uber": {
+      "Clair": "e1fd5b0c30d849648afa353f6ebb2eff580b5db9bb1023f095c035cf9597bdef",
+      "Obscur": "da7b859cd65186fcb11210312b89bdaa91cb1172414310816698091acfe36db0"
+    },
+    "uber-eats": {
+      "Clair": "e28387bad38c28715f79f489c8b7b343abcb605ea14114ed25928e52ad6e0b54",
+      "Obscur": "598261e2931f70f5cd3585da2a5d24e909052e37715767f371e80858cc739423"
+    },
+    "udemy": {
+      "Clair": "2fdcd6d404778e1427a827a6193c86cc44f927450dc9bf7d6c2b5049cbf50f10",
+      "Obscur": "3d9f3edb8beba353c93e8fa7548e4f2b97cb3af97ab7a6fe28118726155f50de"
+    },
+    "united-airlines": {
+      "Clair": "cfa8f6cc3612ff042c184736d43d7264930d7bc2af6865c96810788647541802",
+      "Obscur": "325042cc745e62fb9335db6338dedee5cbca5a79935955b801bc4b914410ce58"
+    },
+    "us-bank": {
+      "Clair": "14386d8ec410518aeb71db6da83aa6fbbc4a39e4151983a9b6c6ab89269d3c07",
+      "Obscur": "05008024e710bfb38119a129c2c6b2bd11193a25ae99fbd716f1cee7ba828624"
+    },
+    "usaa": {
+      "Clair": "971105dd2d480c0e2d7e542adbcdcba70a2742ca8ae60308520ef4b96fdf2294",
+      "Obscur": "59312deda19ab589b2a1e9154b0224ae1fd4f1a6f140b8fb3876be7534681b7d"
+    },
+    "va": {
+      "Clair": "34a8e36abe246a7323ad9b8c35b2eec03b53380943b9f575b03fd8dd97299087",
+      "Obscur": "f7f875f223d859f60a8a99dc874cf7a46c192bf68aec432584164ae32fb15ad5"
+    },
+    "viber": {
+      "Clair": "f26cf5249c381365af06dbcb1fdc951126f91aa9cd2604ca9b2ef68d1da35c43",
+      "Obscur": "b60d7f0e8cc504ae8040df2598bc6c4b4425b050b5d8b25ce72764a55f09767d"
+    },
+    "videoshow": {
+      "Clair": "685f0a2fde820992125eb2aa30e81fb40ebee2f760f5f10e4b4d3f830e2e2b97",
+      "Obscur": "85106540eb8789c389fc35719949a16da42c7360b371afd7f29f9672bcad851e"
+    },
+    "vivavideo": {
+      "Clair": "369b150d20db6a297a48a3f5220ff947b969368ae2e4dce3412f4e09e8e1bc5b",
+      "Obscur": "a19ee84e6139dbb0557cbece3f9719cbf25c41d52fec76a5f1ad09a795925658"
+    },
+    "vn-video-editor": {
+      "Clair": "0b00064c5f5659b16e0693074ca4005897a1a4e003285973564b9da888fe4251",
+      "Obscur": "68ac5f53dd4ead6e72751a30f3536d2a2319442d5206681610c6e97217896c5d"
+    },
+    "wattpad": {
+      "Clair": "ec44286597898efda1f1ab36d1cd32b3140a8d2c740825ac7f250abf366535c1",
+      "Obscur": "fb064e6343f31259085479c20c59d2c44caa4f993b4c01ac6dc4066a261d7201"
+    },
+    "waze": {
+      "Clair": "93d0aaacd67ff9747fbacda1f21fd39cc23382e95af8b4098cdd4e947389ef24",
+      "Obscur": "13851cd5d1c8c5e22b74427bc7701bb72e4d311f081ce0cb4f3f66eced774664"
+    },
+    "weather-underground": {
+      "Clair": "fc330c18917f6cacb169d48709f998d9a0164d9edbbe6aff0d94478c56d1af8b",
+      "Obscur": "044763849daea86a67f633ef20bfcdb0c806e4784873c20fce8993dab382bca8"
+    },
+    "wells-fargo": {
+      "Clair": "668ae937aedd80d0b917b7b44ad9871bd4a143be8e752aad4c1b192b990c64d3",
+      "Obscur": "8209234e8d75d2bc50d1f5e50f5f91302303633972a3e3e17832692204e578d8"
+    },
+    "windfinder": {
+      "Clair": "26742b85cf3bcd54fbe8bcc1d04474990da5596b13df84927b13f5a6fa4c7d7b",
+      "Obscur": "a30bb59873016e07cfc8c23a7d1c5e613408c54cc888c1cd9bcfd4de4d4f5eb6"
+    },
+    "windy-com": {
+      "Clair": "84a5b89c8d46dd65c16cab3a2d2cbcb6928c37f467053fe5b206d57e5995736b",
+      "Obscur": "dbcbf4a6345864f9fc44716523ee335450120102b1b461a44eed0455c4cf780e"
+    },
+    "xbox": {
+      "Clair": "be6a8858c526c8696a9eb0ebfc65afe34d3a8af68e2741cc4e239b775306d141",
+      "Obscur": "421d469ce60ef28a535458dedc39a14e52a21add66e2a8c819bbef67c1479e15"
+    },
+    "zalo": {
+      "Clair": "34094331d7d06995c4e0b8c5a828a17964da12ba82a26044075ecd6b19d38b3a",
+      "Obscur": "a3235a344ff057541a0fe6ede315158b9fd2c5112b7f4ae25b1159921a27c951"
+    },
+    "zillow": {
+      "Clair": "c9eeba8822c1e6dbe60e4cfb42de56c55e8df8351f79a064bb44221fc2f7ea92",
+      "Obscur": "508fcbd96a4b2389d3e9037d753bbea59fc0279dba8df85ce08f77be7d2be20d"
+    },
+    "zillow-rentals": {
+      "Clair": "f655a53677163a1c13e38f7f0a7b92cc93ef0cf5303c07975d3c2e8495e0eedf",
+      "Obscur": "018f0ef85cdca43fec7cfd03973c5675976e4ba0261248bbb160309b786d2969"
+    },
+    "zwift-companion": {
+      "Clair": "24964f295f2369b663291bbcf8e66a4745ecd598bc5cd2b685c7e56eeafb67d0",
+      "Obscur": "48688c34954d30f52fbae7059215e7b4c5206836e0a369ecc3d2ba5e1d5653d4"
+    }
+  }
+}

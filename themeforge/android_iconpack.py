@@ -19,8 +19,8 @@ import zlib
 from .icons import ROOT, _read_tree, _safe_output, load_icon_tokens, render_icons
 
 
-VERSION = "0.1.13"
-ARTWORK_VERSION = "0.29.0"
+VERSION = "0.1.14"
+ARTWORK_VERSION = "0.30.0"
 APPEARANCE = "Obscur"
 COMPONENTS = ROOT / "android/iconpack/components.json"
 
@@ -36,9 +36,9 @@ class IconPackConfiguration:
 
 CONFIGURATIONS = MappingProxyType({
     "Obscur": IconPackConfiguration("Obscur", "io.github.t92t1914.obscuricons",
-                                     "Obscur Icons", VERSION, 14),
+                                     "Obscur Icons", VERSION, 15),
     "Clair": IconPackConfiguration("Clair", "io.github.t92t1914.clairicons",
-                                    "Clair Icons", "0.1.2", 3),
+                                    "Clair Icons", "0.1.3", 4),
 })
 
 
@@ -49,7 +49,7 @@ def configuration(appearance: str = APPEARANCE) -> IconPackConfiguration:
     return CONFIGURATIONS[appearance]
 
 # Exact export identity; decoded pixel and visual qualification are separate checks.
-PNG_MANIFEST_SHA256 = "37f462e9d74707802c1b43f242f2604546f04e5b896f5eea7f77afe24c1de643"
+PNG_MANIFEST_SHA256 = "4ee13855c06da9b51a57b4559e79ac914b676300800099225aa2d77f9b7b5006"
 COMPONENT_SOURCE = {
     "repository": "LawnchairLauncher/lawnicons",
     "revision": "c85fc8fb825228b021317f83c0a1a9f00b1c889d",
@@ -189,6 +189,7 @@ def _export(root: Path, selected_appearance: str = APPEARANCE) -> tuple[dict, di
     guards = {root / "manifest.json": _digest(raw)}
     for key, relative in (("tokens_sha256", "tokens-monochrome.json"),
                           ("svg_generator_sha256", "themeforge/icons.py"),
+                          ("svg_craft_sha256", "themeforge/icon_craft.py"),
                           ("svg_catalog_sha256", "themeforge/icon_apps.py"),
                           ("exporter_sha256", "tools/export-icons.mjs")):
         path = ROOT / relative

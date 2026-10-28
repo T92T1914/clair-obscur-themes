@@ -15,9 +15,9 @@ import xml.etree.ElementTree as ET
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.1.13"
-VERSION_CODE = 14
-ARTWORK_VERSION = "0.29.0"
+VERSION = "0.1.14"
+VERSION_CODE = 15
+ARTWORK_VERSION = "0.30.0"
 PACKAGE = "io.github.t92t1914.obscuricons"
 BUILD_TOOLS = "36.1.0"
 API = 36
@@ -72,6 +72,18 @@ def _tree_files(root: Path) -> list[Path]:
                 raise ValueError("Source entries must be regular files: " + str(path))
             result.append(path)
     return sorted(result)
+
+
+def _build_inputs(static: Path, components: Path, png: Path, tools: dict) -> list[Path]:
+    sources = _tree_files(static) + [Path(__file__).absolute(), ROOT / "themeforge/android_iconpack.py",
+        ROOT / "themeforge/icons.py", ROOT / "themeforge/icon_craft.py", ROOT / "themeforge/icon_apps.py",
+        ROOT / "tokens-monochrome.json", components, ROOT / "android/iconpack/components.json", png / "manifest.json"]
+    return sorted(set(sources + list(tools.values())))
+
+
+def _verify_input_identities(inputs: list[Path], identities: dict) -> None:
+    if {str(path): _identity(path) for path in inputs} != identities:
+        raise ValueError("Build source or SDK inputs changed. Preserve this build as unqualified.")
 
 
 def _validate_output(output: Path, inputs: list[Path]) -> None:
@@ -646,10 +658,7 @@ def main(argv: list[str] | None = None) -> int:
                  "dexdump": bt / ("dexdump" + executable),
                  "d8": bt / "lib/d8.jar", "apksigner": bt / "lib/apksigner.jar",
                  "android_jar": sdk / "platforms/android-36/android.jar"}
-        source_files = _tree_files(static) + [Path(__file__).absolute(), ROOT / "themeforge/android_iconpack.py",
-            ROOT / "themeforge/icons.py", ROOT / "themeforge/icon_apps.py", ROOT / "tokens-monochrome.json",
-            components, ROOT / "android/iconpack/components.json", png / "manifest.json"]
-        inputs = sorted(set(source_files + list(tools.values())))
+        inputs = _build_inputs(static, components, png, tools)
         identities = {str(path): _identity(path) for path in inputs}
     except (OSError, ValueError) as error:
         parser.error(str(error))
@@ -754,8 +763,7 @@ def main(argv: list[str] | None = None) -> int:
                                           manifest_dump, dex_dump, dex_identity, selected)
         if _identity(final) != final_identity:
             raise ValueError("Final APK changed during compiled readback.")
-        if {str(path): _identity(path) for path in inputs} != identities:
-            raise ValueError("Build source or SDK inputs changed. Preserve this build as unqualified.")
+        _verify_input_identities(inputs, identities)
         if {str(path.relative_to(project)): _identity(path) for path in _tree_files(project)} != project_inputs:
             raise ValueError("Prepared build project changed. Preserve this build as unqualified.")
         report.update(status="built and verified signed APK" if key is not None else "built and verified unsigned APK; not installable until signed",

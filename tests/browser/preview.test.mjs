@@ -681,7 +681,9 @@ const iconFunctions = [...namedIconApps.map(row => row[0]), ...generalIconFuncti
 const iconManifestFunctions = [...generalIconFunctions, ...namedIconApps.map(row => row[0])];
 const iconLabels = new Map([...generalIconFunctions.map(name => [name, name.replaceAll('-', ' ').replace(/\b[a-z]/g, letter => letter.toUpperCase())]),
   ...namedIconApps.map(([id, label]) => [id, label])]);
-const iconArchive = 'icons/Clair-Obscur-SVG-Icons-0.29.0.zip';
+const iconArchive = 'icons/Clair-Obscur-SVG-Icons-0.30.0.zip';
+const artDirectionIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.29.0.zip';
+const artDirectionIconDigest = '1ef292dc97f91593bb134439302663bd9fa0824ef04295e880c4aecabd8e3f50';
 const identityIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.28.0.zip';
 const identityIconDigest = 'fe021dff47c0927fcd8098f8da688309d734b40317d72d6ae876f3c4d36dd92a';
 const routeIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.27.0.zip';
@@ -743,7 +745,7 @@ const previousIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.2.0.zip';
 const previousIconDigest = '6ae67a5aab7f4e0a50537bb6dcf3b383c5fc6e9e001d68db12a7413aaa376312';
 const legacyIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.1.0.zip';
 const legacyIconDigest = '040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34';
-const iconChecksums = digest => `${digest}  ${path.basename(iconArchive)}\n${identityIconDigest}  ${path.basename(identityIconArchive)}\n${routeIconDigest}  ${path.basename(routeIconArchive)}\n${communicationIconDigest}  ${path.basename(communicationIconArchive)}\n${messagingIconDigest}  ${path.basename(messagingIconArchive)}\n${contactSpacedIconDigest}  ${path.basename(contactSpacedIconArchive)}\n${containedIconDigest}  ${path.basename(containedIconArchive)}\n${spacedIconDigest}  ${path.basename(spacedIconArchive)}\n${polishedIconDigest}  ${path.basename(polishedIconArchive)}\n${videoEditingIconDigest}  ${path.basename(videoEditingIconArchive)}\n${gboardIconDigest}  ${path.basename(gboardIconArchive)}\n${refinedIconDigest}  ${path.basename(refinedIconArchive)}\n${phoneServiceIconDigest}  ${path.basename(phoneServiceIconArchive)}\n${readingIconDigest}  ${path.basename(readingIconArchive)}\n${learningIconDigest}  ${path.basename(learningIconArchive)}\n${runningTrainingIconDigest}  ${path.basename(runningTrainingIconArchive)}\n${weatherIconDigest}  ${path.basename(weatherIconArchive)}\n${financeIconDigest}  ${path.basename(financeIconArchive)}\n${travelIconDigest}  ${path.basename(travelIconArchive)}\n${foodOrderIconDigest}  ${path.basename(foodOrderIconArchive)}\n${everydayIconDigest}  ${path.basename(everydayIconArchive)}\n${broadIconDigest}  ${path.basename(broadIconArchive)}\n${companionIconDigest}  ${path.basename(companionIconArchive)}\n${monochromeIconDigest}  ${path.basename(monochromeIconArchive)}\n${thirdAppIconDigest}  ${path.basename(thirdAppIconArchive)}\n${secondAppIconDigest}  ${path.basename(secondAppIconArchive)}\n${firstAppIconDigest}  ${path.basename(firstAppIconArchive)}\n${previousIconDigest}  ${path.basename(previousIconArchive)}\n${legacyIconDigest}  ${path.basename(legacyIconArchive)}\n`;
+const iconChecksums = digest => `${digest}  ${path.basename(iconArchive)}\n${artDirectionIconDigest}  ${path.basename(artDirectionIconArchive)}\n${identityIconDigest}  ${path.basename(identityIconArchive)}\n${routeIconDigest}  ${path.basename(routeIconArchive)}\n${communicationIconDigest}  ${path.basename(communicationIconArchive)}\n${messagingIconDigest}  ${path.basename(messagingIconArchive)}\n${contactSpacedIconDigest}  ${path.basename(contactSpacedIconArchive)}\n${containedIconDigest}  ${path.basename(containedIconArchive)}\n${spacedIconDigest}  ${path.basename(spacedIconArchive)}\n${polishedIconDigest}  ${path.basename(polishedIconArchive)}\n${videoEditingIconDigest}  ${path.basename(videoEditingIconArchive)}\n${gboardIconDigest}  ${path.basename(gboardIconArchive)}\n${refinedIconDigest}  ${path.basename(refinedIconArchive)}\n${phoneServiceIconDigest}  ${path.basename(phoneServiceIconArchive)}\n${readingIconDigest}  ${path.basename(readingIconArchive)}\n${learningIconDigest}  ${path.basename(learningIconArchive)}\n${runningTrainingIconDigest}  ${path.basename(runningTrainingIconArchive)}\n${weatherIconDigest}  ${path.basename(weatherIconArchive)}\n${financeIconDigest}  ${path.basename(financeIconArchive)}\n${travelIconDigest}  ${path.basename(travelIconArchive)}\n${foodOrderIconDigest}  ${path.basename(foodOrderIconArchive)}\n${everydayIconDigest}  ${path.basename(everydayIconArchive)}\n${broadIconDigest}  ${path.basename(broadIconArchive)}\n${companionIconDigest}  ${path.basename(companionIconArchive)}\n${monochromeIconDigest}  ${path.basename(monochromeIconArchive)}\n${thirdAppIconDigest}  ${path.basename(thirdAppIconArchive)}\n${secondAppIconDigest}  ${path.basename(secondAppIconArchive)}\n${firstAppIconDigest}  ${path.basename(firstAppIconArchive)}\n${previousIconDigest}  ${path.basename(previousIconArchive)}\n${legacyIconDigest}  ${path.basename(legacyIconArchive)}\n`;
 const iconPaths = iconFunctions.flatMap(functionName => ['Clair', 'Obscur'].map(appearance => `icons/${appearance}/${functionName}.svg`));
 const terminalFragment = 'Clair-Obscur-Windows-Terminal-0.1.0.json';
 const terminalArchive = 'Clair-Obscur-Windows-Terminal-0.1.0.zip';
@@ -1668,7 +1670,8 @@ async function checkIconGallery(page) {
 }
 
 const iconHistoryArchives = [
-  ['icon-artwork-identity-download', identityIconArchive, identityIconDigest],
+  ['icon-artwork-art-direction-download', artDirectionIconArchive, artDirectionIconDigest],
+    ['icon-artwork-identity-download', identityIconArchive, identityIconDigest],
   ['icon-artwork-route-download', routeIconArchive, routeIconDigest],
   ['icon-artwork-communication-download', communicationIconArchive, communicationIconDigest],
   ['icon-artwork-messaging-download', messagingIconArchive, messagingIconDigest],
@@ -1854,7 +1857,7 @@ test('current icon acquisition keeps opened history spacing-only and additional 
         const bytes = await acquireIconPng(page, 'weather-channel', appearance);
         const png = await assertDownloadedIconPng(page, bytes, 'weather-channel', appearance);
         assert.equal(await page.locator('#icon-png-status').innerText(),
-          `Prepared Clair-Obscur-0.29.0-${appearance}-weather-channel-512.png. Your browser handles the download.`);
+          `Prepared Clair-Obscur-0.30.0-${appearance}-weather-channel-512.png. Your browser handles the download.`);
         assert.deepEqual(await iconPngSurroundings(page), before); assert.equal(await page.locator('#icon-history').evaluate(node => node.open), true);
         await page.locator('#icon-clear').focus(); await page.keyboard.press('Enter'); await assertFinderResults(page, iconFunctions);
         await assertTextSpacing(page, baseline); await assertIconHistoryLayout(page, { spacing: true });
@@ -1929,7 +1932,7 @@ async function tabToIconAction(page, id, action, packageId) {
   } else {
     assert.equal(active.tag, 'BUTTON'); assert.equal(active.png, true);
     assert.equal(active.appearance, action);
-    assert.equal(active.filename, `Clair-Obscur-0.29.0-${action}-${id}-512.png`);
+    assert.equal(active.filename, `Clair-Obscur-0.30.0-${action}-${id}-512.png`);
   }
   assert.ok(active.left >= -1 && active.right <= active.width + 1 && active.bottom > 0 && active.top < active.height,
     JSON.stringify(active));
@@ -2400,7 +2403,7 @@ async function acquireIconPng(page, id, appearance, { timeout = 15000 } = {}) {
     throw new Error(`PNG acquisition failed for ${id}/${appearance} within ${timeout}ms: ${error.message}` +
       '\nPNG acquisition state: ' + JSON.stringify(observation), { cause: error });
   }
-  assert.equal(download.suggestedFilename(), `Clair-Obscur-0.29.0-${appearance}-${id}-512.png`);
+  assert.equal(download.suggestedFilename(), `Clair-Obscur-0.30.0-${appearance}-${id}-512.png`);
   assert.equal(await download.failure(), null);
   const chunks = []; for await (const chunk of await download.createReadStream()) chunks.push(chunk);
   await page.waitForFunction(({ id, appearance }) => document.querySelector(
@@ -2470,12 +2473,12 @@ test('assistant identity selections and retained controls keep literal package k
     'Obscur/claude.svg': 'eb9e82168935fc0744df5865afbf604b29322f9fe1df331a37c443815a0247ac',
     'Clair/perplexity.svg': '685d6aa1d16eb53b234c313bf6734822f192f275f9c9f7c05e9114389cb034d2',
     'Obscur/perplexity.svg': 'db0e4441ee9caaddf9d268614f8ec0dffe92b16083e0dca6bb2e4893b1b6235d',
-    'Clair/chatgpt.svg': '9f17b70deb929be9d319f3ea33c15cf454a59cbe748857d8c346242dbc26f645',
-    'Obscur/chatgpt.svg': '9bbe5e5aa19238962fafdff5a0a050a864212d7e2bb29c50a70b1aab4beccce2',
+    'Clair/chatgpt.svg': '4b4b08ef1faa39ebf598412f96410254254ec7f949b0e2617abedcf8e45a407b',
+    'Obscur/chatgpt.svg': '1888dbb8ff323e7912f33381522fb549564c40768ed2d5e61a48ace9ecdd50cd',
     'Clair/google-gemini.svg': '38f0322afc8851d2c4588c4843338c9e539d69c782a55eec29834528bc9a1ab1',
     'Obscur/google-gemini.svg': '47fe9c375ca2a823f00eaaa91004c5513968771b82fbaaa53abd6e219ff9abb1',
-    'Clair/microsoft-copilot.svg': 'b8eaa861bdb4c0aef27ff4d26eb92e300e550cf14c95c5be2cef5c7716154326',
-    'Obscur/microsoft-copilot.svg': 'bb016ae9cc92450fff192e4042886801737bce0f4419f6ca88039590d201bf92',
+    'Clair/microsoft-copilot.svg': '04dcd72d5d9a049bdf81cf5c2b4def3654436deab63151e826ffd98e9dd6debb',
+    'Obscur/microsoft-copilot.svg': '33be9d57d5bafb1b27f2c90e45ab5d8e8c9a6639adbc19e45b20e1bae75d0101',
   };
   const { context, page, consoleErrors, network } = await pageFor({ viewport: { width: 390, height: 900 } });
   try {
@@ -2502,7 +2505,7 @@ test('assistant identity selections and retained controls keep literal package k
         assert.equal(crypto.createHash('sha256').update(source).digest('hex'), svgPins[relative]);
         const before = await iconPngSurroundings(page), requestsBefore = network.length;
         const bytes = await acquireIconPng(page, id, appearance);
-        const savedPath = path.join(evidence || temp, 'identity-0.29.0-' + appearance + '-' + id + '-512.png');
+        const savedPath = path.join(evidence || temp, 'identity-0.30.0-' + appearance + '-' + id + '-512.png');
         await writeFile(savedPath, bytes, { flag: 'wx' });
         const saved = await readFile(savedPath); assert.deepEqual(saved, bytes);
         downloads.push({ ...await assertDownloadedIconPng(page, saved, id, appearance), savedPath });
@@ -2522,6 +2525,47 @@ test('assistant identity selections and retained controls keep literal package k
   } finally { await context.close(); }
 });
 
+
+test('current icon craft selections retain package search and keyboard PNG acquisition', async () => {
+  const targets = [
+    ['github', 'GitHub', 'com.github.android'],
+    ['kinemaster', 'KineMaster', 'com.nexstreaming.app.kinemasterfree'],
+    ['weather-underground', 'Weather Underground', 'com.wunderground.android.weather'],
+  ];
+  // Frozen independently reviewed byte expectations, separate from page controls.
+  const pins = JSON.parse(await readFile(path.join(root, 'tests/fixtures/icon-craft-0.30.json'), 'utf8')).selected;
+  const { context, page, consoleErrors, network } = await pageFor({ viewport: { width: 390, height: 900 } });
+  try {
+    await snapshotFinderCatalog(page);
+    const downloads = [];
+    for (const [id, label, packageId] of targets) {
+      await page.locator('#icon-query').fill(packageId);
+      await page.locator('#icon-kind').selectOption('app');
+      await assertFinderResults(page, [id]);
+      const card = page.locator('[data-icon-function="' + id + '"]');
+      assert.equal(await card.locator('h4').innerText(), label);
+      assert.equal(await card.locator('p a').getAttribute('href'),
+        'https://play.google.com/store/apps/details?id=' + packageId);
+      for (const appearance of ['Clair', 'Obscur']) {
+        const opposite = appearance === 'Clair' ? 'Obscur' : 'Clair';
+        await page.getByRole('button', { name: opposite, exact: true }).click();
+        assert.equal(await page.locator('html').getAttribute('data-theme'), opposite);
+        const source = await readFile(path.join(site, 'icons', appearance, id + '.svg'));
+        assert.equal(crypto.createHash('sha256').update(source).digest('hex'), pins[id][appearance]);
+        const surroundings = await iconPngSurroundings(page), requests = network.length;
+        const bytes = await acquireIconPng(page, id, appearance);
+        downloads.push(await assertDownloadedIconPng(page, bytes, id, appearance));
+        assert.deepEqual(await iconPngSurroundings(page), surroundings);
+        assert.equal(network.length, requests);
+        assert.equal(await iconPngButton(page, id, appearance).evaluate(node => node === document.activeElement), true);
+      }
+    }
+    assert.equal(downloads.length, 6);
+    assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: '0.30 craft literal package and reviewed-pixel acquisition', status: 'passed',
+      downloads, width: 390, scope: 'Three changed identities, both appearances, keyboard activation and decoded page PNGs; no native phone or recognition result.' });
+  } finally { await context.close(); }
+});
 
 test('selected travel and reference art direction keeps literal package keyboard PNG acquisition', { timeout: 120000 }, async () => {
   const targets = [
@@ -2570,7 +2614,7 @@ test('selected travel and reference art direction keeps literal package keyboard
           assert.equal(crypto.createHash('sha256').update(source).digest('hex'), svgPins[relative]);
           const before = await iconPngSurroundings(page), requestsBefore = network.length;
           const bytes = await acquireIconPng(page, id, appearance);
-          const savedPath = path.join(evidence || temp, 'art-direction-0.29.0-' + width + '-' + appearance + '-' + id + '-512.png');
+          const savedPath = path.join(evidence || temp, 'art-direction-0.30.0-' + width + '-' + appearance + '-' + id + '-512.png');
           await writeFile(savedPath, bytes, { flag: 'wx' });
           const saved = await readFile(savedPath); assert.deepEqual(saved, bytes);
           downloads.push({ ...await assertDownloadedIconPng(page, saved, id, appearance), savedPath });
@@ -2617,7 +2661,7 @@ test('common messaging icons support literal package search and keyboard PNG acq
         await assertFinderResults(page, [id]);
         const before = await iconPngSurroundings(page), requestsBefore = network.length;
         const bytes = await acquireIconPng(page, id, appearance);
-        const savedPath = path.join(evidence || temp, 'messaging-0.29.0-' + appearance + '-' + id + '-512.png');
+        const savedPath = path.join(evidence || temp, 'messaging-0.30.0-' + appearance + '-' + id + '-512.png');
         await writeFile(savedPath, bytes, { flag: 'wx' });
         const saved = await readFile(savedPath); assert.deepEqual(saved, bytes);
         downloads.push({ ...await assertDownloadedIconPng(page, saved, id, appearance), savedPath });
@@ -2651,7 +2695,7 @@ test('individual PNG controls bind all 600 local drawings and keyboard acquisiti
         type: node.type, hidden: node.hidden, name: node.getAttribute('aria-label'), pageAppearance: node.hasAttribute('data-appearance') })));
       assert.equal(controls.length, 600);
       const expected = iconFunctions.flatMap(id => ['Clair', 'Obscur'].map(appearance => ({ id, appearance,
-        filename: `Clair-Obscur-0.29.0-${appearance}-${id}-512.png`, source: `icons/${appearance}/${id}.svg` })));
+        filename: `Clair-Obscur-0.30.0-${appearance}-${id}-512.png`, source: `icons/${appearance}/${id}.svg` })));
       assert.deepEqual(controls.map(({ id, appearance, filename, source }) => ({ id, appearance, filename, source })), expected);
       for (const control of controls) {
         assert.equal(control.type, 'button'); assert.equal(control.hidden, false); assert.equal(control.pageAppearance, false);
@@ -2743,7 +2787,7 @@ test('individual PNG capability and metadata admission preserve the static SVG f
     const { context, page, consoleErrors } = await pageFor({ setup: async (context, page) => {
       if (fault === 'wrong-filename') await page.route(origin + '/', async route => {
         const html = await readFile(path.join(site, 'index.html'), 'utf8');
-        const filename = 'Clair-Obscur-0.29.0-Clair-google-chrome-512.png';
+        const filename = 'Clair-Obscur-0.30.0-Clair-google-chrome-512.png';
         assert.equal(html.split(filename).length - 1, 1);
         await route.fulfill({ contentType: 'text/html', body: html.replace(filename, '../untrusted.png') });
       });
@@ -2824,7 +2868,7 @@ test('individual PNG shared busy state is exposed on other controls and restored
       const initial = await iconPngSurroundings(page);
       await first.focus(); await page.keyboard.press('Enter');
       await page.waitForFunction(() => window.pngBusyFixture.held);
-      assert.equal(await page.locator('#icon-png-status').innerText(), 'Preparing Clair-Obscur-0.29.0-Clair-phone-512.png...');
+      assert.equal(await page.locator('#icon-png-status').innerText(), 'Preparing Clair-Obscur-0.30.0-Clair-phone-512.png...');
       await tabToIconAction(page, 'phone', 'Obscur');
       await page.keyboard.press('Enter');
       assert.equal(await opposite.getAttribute('aria-disabled'), 'true',
@@ -2849,7 +2893,7 @@ test('individual PNG shared busy state is exposed on other controls and restored
       await page.keyboard.press('Enter');
       assert.equal(await other.getAttribute('aria-disabled'), 'true');
       assert.equal(await other.evaluate(node => node === document.activeElement), true);
-      assert.equal(await page.locator('#icon-png-status').innerText(), 'Preparing Clair-Obscur-0.29.0-Clair-phone-512.png...');
+      assert.equal(await page.locator('#icon-png-status').innerText(), 'Preparing Clair-Obscur-0.30.0-Clair-phone-512.png...');
       assert.equal(downloads.length, 0); assert.deepEqual(await iconPngSurroundings(page), filtered);
 
       let firstAcquisition;
@@ -2858,7 +2902,7 @@ test('individual PNG shared busy state is exposed on other controls and restored
         await page.evaluate(() => window.pngBusyFixture.release());
         const download = await completed;
         assert.equal(await download.failure(), null);
-        assert.equal(download.suggestedFilename(), 'Clair-Obscur-0.29.0-Clair-phone-512.png');
+        assert.equal(download.suggestedFilename(), 'Clair-Obscur-0.30.0-Clair-phone-512.png');
         const chunks = []; for await (const chunk of await download.createReadStream()) chunks.push(chunk);
         firstAcquisition = await assertDownloadedIconPng(page, Buffer.concat(chunks), 'phone', 'Clair');
         assert.equal(downloads.length, 1);
@@ -2915,7 +2959,7 @@ test('individual PNG duplicate activation is bounded and its object URL is retir
     assert.equal(await button.getAttribute('aria-disabled'), 'true'); assert.equal(downloads.length, 0);
     const completed = page.waitForEvent('download', { timeout: 5000 }); await page.evaluate(() => window.releasePngDecode());
     const download = await completed; assert.equal(await download.failure(), null);
-    assert.equal(download.suggestedFilename(), 'Clair-Obscur-0.29.0-Clair-phone-512.png');
+    assert.equal(download.suggestedFilename(), 'Clair-Obscur-0.30.0-Clair-phone-512.png');
     await page.waitForFunction(() => window.pngUrls.created.length === 1 && window.pngUrls.revoked.length === 1);
     assert.equal(downloads.length, 1);
     const urls = await page.evaluate(() => window.pngUrls); assert.deepEqual(urls.revoked, urls.created);
@@ -3251,7 +3295,7 @@ test('no-script keyboard navigation acquires current and all 28 preserved icon Z
       ' for name in expected|{"manifest.json","LICENSE.txt"}:',
       '  assert archive.read(name)==(site/"icons"/name).read_bytes()',
       ' manifest=json.loads(archive.read("manifest.json"))',
-      ' assert manifest["version"]=="0.29.0" and manifest["stroke_width"]==16',
+      ' assert manifest["version"]=="0.30.0" and manifest["stroke_width"]==16',
       ' assert manifest["functions"]==functions and len(manifest["files"])==600',
       ' assert [entry["id"] for entry in manifest["catalog"]]==functions',
       ' for record in manifest["files"]:',
@@ -3275,10 +3319,12 @@ test('no-script keyboard navigation acquires current and all 28 preserved icon Z
       ' "Obscur/google-earth.svg": ("43e7fb74d590b9dc23c40a65034dd65f8c51a1d22abf17df9738e74fdbe57d33","21dfd0fb5eea71dbb0d0bc7e227b897b87b440944020493da60a28212f5a9a44"),',
       '}',
       'assert len(expected_refinements)==16',
+      'with zipfile.ZipFile(site/"icons"/"Clair-Obscur-SVG-Icons-0.29.0.zip") as reviewed:',
+      ' reviewed_art_direction={name:reviewed.read(name) for name in reviewed.namelist()}',
       'def assert_preserved_refinements(historical, records):',
       ' changed=set()',
       ' for record in records:',
-      '  name=record["path"]; old=historical.read(name); current=(site/"icons"/name).read_bytes()',
+      '  name=record["path"]; old=historical.read(name); current=reviewed_art_direction[name]',
       '  assert hashlib.sha256(old).hexdigest()==record["sha256"]',
       '  if name in expected_refinements:',
       '   old_sha,new_sha=expected_refinements[name]',

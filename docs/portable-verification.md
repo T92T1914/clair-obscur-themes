@@ -70,19 +70,21 @@ Relative member paths have at most 240 ASCII characters and eight components.
 Windows device names, parent traversal and file/directory prefix conflicts are
 unsupported. These rules also apply to extra entries before any content is read.
 
-The artwork 0.29.0 preview retains the complete 0.28.0 SVG archive, the earlier
-collections, Keyboard Companion 0.1.0 and PR84's appearance/mechanism files. Its
-finite allowances are:
+The artwork 0.30.0 preview retains the complete 0.29.0 SVG archive, all earlier collections, Keyboard Companion 0.1.0 and the existing appearance/mechanism files. Its finite allowances are:
 
 | Limit | Value |
 | --- | --- |
 | Manifest | 72,704 bytes |
-| Declared hashes | 694 |
-| Expected or observed files and directories | 720, excluding the root |
+| Declared hashes | 695 |
+| Expected or observed files and directories | 721, excluding the root |
 | Each declared member | 8,388,608 bytes |
-| Total returned read bytes, including both manifest reads | 31,784,960 bytes |
+| Total returned read bytes, including both manifest reads | 33,423,360 bytes |
 | Read chunk | At most 65,536 bytes |
 | Complete stdout report, including LF newlines | 262,144 bytes |
+
+The measured pre-finalization 0.30.0 composition had 696 regular files, 21 directories and 717 entries. Its 695 declared hashes covered 33,217,447 payload bytes. The manifest was 71,899 bytes and the largest member was the 3,516,202-byte source archive. The retained 0.29 verifier refused the kit at its 694-declaration limit. A scalar-only capacity diagnostic returned 33,361,245 bytes, requiring 33,361,247 bytes including EOF/final-manifest admission. Rounding that measured minimum to the next read chunk gives 33,423,360 bytes. The entry cap retains four ordinary-extra diagnostic slots. This diagnostic does not replace a final ordinary comparison through the final included verifier. Manifest, member, chunk, report, path, link, depth and stability guards remain unchanged.
+
+The following 0.29.0 capacity record remains historical, with its earlier 694-declaration, 720-entry and 31,784,960-byte allowances.
 
 The actual source composition before this cap/test/guide update measured 695
 regular files, 21 directories and 716 entries. Its 694 declared hashes included

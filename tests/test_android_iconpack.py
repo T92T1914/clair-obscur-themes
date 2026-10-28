@@ -123,6 +123,19 @@ def added_communication_mappings():
     return rows
 
 
+class AndroidIconPackIdentityTests(unittest.TestCase):
+    def test_current_pack_configuration_and_qualified_export_pin(self):
+        self.assertEqual(pack.ARTWORK_VERSION, "0.30.0")
+        self.assertEqual(pack.PNG_MANIFEST_SHA256,
+                         "4ee13855c06da9b51a57b4559e79ac914b676300800099225aa2d77f9b7b5006")
+        for appearance, package, version, code in (
+                ("Clair", "io.github.t92t1914.clairicons", "0.1.3", 4),
+                ("Obscur", "io.github.t92t1914.obscuricons", "0.1.14", 15)):
+            selected = pack.configuration(appearance)
+            self.assertEqual((selected.appearance, selected.package, selected.version, selected.version_code),
+                             (appearance, package, version, code))
+
+
 class AndroidIconPackTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -150,7 +163,7 @@ class AndroidIconPackTests(unittest.TestCase):
                                     "source_svg_sha256": svg_hashes[f"{appearance}/{identifier}.svg"]})
         license_payload = (pack.ROOT / "LICENSE").read_bytes()
         (cls.export / "LICENSE").write_bytes(license_payload)
-        cls.document = {"schema_version": 1, "version": "0.29.0", "generator": "clair-obscur-png-export",
+        cls.document = {"schema_version": 1, "version": "0.30.0", "generator": "clair-obscur-png-export",
                         "exporter_version": "0.11.0", "token_version": "1.0.0", "palette_variant": "monochrome",
                         "tokens_file": "tokens-monochrome.json",
                         "source_manifest_sha256": digest(canonical_svg), "appearances": ["Clair", "Obscur"],
@@ -158,6 +171,7 @@ class AndroidIconPackTests(unittest.TestCase):
                         "license": {"path": "LICENSE", "bytes": len(license_payload), "sha256": digest(license_payload)}}
         cls.document.update({key: cls.svg[key] for key in ("catalog", "functions", "catalog_date", "catalog_scope")})
         for key, name in (("tokens_sha256", "tokens-monochrome.json"), ("svg_generator_sha256", "themeforge/icons.py"),
+                          ("svg_craft_sha256", "themeforge/icon_craft.py"),
                           ("svg_catalog_sha256", "themeforge/icon_apps.py"), ("exporter_sha256", "tools/export-icons.mjs")):
             cls.document[key] = digest((pack.ROOT / name).read_bytes())
         (cls.export / "manifest.json").write_bytes(encoded(cls.document))
@@ -205,8 +219,8 @@ class AndroidIconPackTests(unittest.TestCase):
 
     def test_exact_resource_bytes_full_components_and_public_catalog(self):
         manifest = pack.prepare_iconpack(self.export, self.components, self.output)
-        self.assertEqual(manifest["version"], "0.1.13")
-        self.assertEqual(manifest["version_code"], 14)
+        self.assertEqual(manifest["version"], "0.1.14")
+        self.assertEqual(manifest["version_code"], 15)
         self.assertEqual(manifest["counts"]["drawables"], 300)
         self.assertEqual(manifest["counts"]["component_mappings"], 3)
         self.assertEqual(manifest["counts"]["upstream_component_mappings"], 3)
@@ -229,8 +243,8 @@ class AndroidIconPackTests(unittest.TestCase):
                              (self.export / f"Obscur/512/{identifier}.png").read_bytes())
         catalog = json.loads((self.output / "assets/catalog.json").read_bytes())
         self.assertEqual(set(catalog), {"schema_version", "artwork_version", "pack_version", "packages"})
-        self.assertEqual(catalog["pack_version"], "0.1.13")
-        self.assertEqual(catalog["artwork_version"], "0.29.0")
+        self.assertEqual(catalog["pack_version"], "0.1.14")
+        self.assertEqual(catalog["artwork_version"], "0.30.0")
         self.assertEqual(next(row for row in catalog["packages"]
                               if row["package"] == "com.google.android.inputmethod.latin"),
                          {"package": "com.google.android.inputmethod.latin", "label": "Gboard", "id": "gboard"})
@@ -249,8 +263,8 @@ class AndroidIconPackTests(unittest.TestCase):
                                          appearance="Clair")
         self.assertEqual((manifest["appearance"], manifest["application_id"],
                           manifest["app_label"], manifest["version"], manifest["version_code"]),
-                         ("Clair", "io.github.t92t1914.clairicons", "Clair Icons", "0.1.2", 3))
-        self.assertEqual(manifest["artwork_version"], "0.29.0")
+                         ("Clair", "io.github.t92t1914.clairicons", "Clair Icons", "0.1.3", 4))
+        self.assertEqual(manifest["artwork_version"], "0.30.0")
         self.assertEqual(manifest["counts"]["drawables"], 300)
         self.assertEqual(manifest["counts"]["component_mappings"], 3)
         self.assertEqual(ET.parse(self.output / "res/xml/drawable.xml").find(
@@ -262,7 +276,7 @@ class AndroidIconPackTests(unittest.TestCase):
             self.assertNotEqual(target.read_bytes(), self.payloads[512])
         catalog = json.loads((self.output / "assets/catalog.json").read_bytes())
         self.assertEqual(set(catalog), {"schema_version", "artwork_version", "pack_version", "packages"})
-        self.assertEqual((catalog["pack_version"], catalog["artwork_version"]), ("0.1.2", "0.29.0"))
+        self.assertEqual((catalog["pack_version"], catalog["artwork_version"]), ("0.1.3", "0.30.0"))
         self.assertEqual((self.output / "assets/appfilter.xml").read_bytes(),
                          (self.output / "res/xml/appfilter.xml").read_bytes())
 
@@ -296,13 +310,14 @@ class AndroidIconPackTests(unittest.TestCase):
                              "40fe3a771b39d9e73adf583dd060f660ef85c88ff961f80a3e3b3635e0f11cb2",
                              "4c955dbac362d37ba35477b623ec79abcb2271ea32b75ed4bf78397f6ac3775a",
                              "a88655c9fa5f5d8e3709c1ef700b4139cb15477a4bbae09c0d46699deb9161e8",
-                             "c16df5b56cf8e1c3b9d23017c20250e008c0a2c8866a20a41e16afd5695068b0"):
+                             "c16df5b56cf8e1c3b9d23017c20250e008c0a2c8866a20a41e16afd5695068b0",
+                             "37f462e9d74707802c1b43f242f2604546f04e5b896f5eea7f77afe24c1de643"):
             with self.subTest(pin=previous_pin), patch.object(pack, "PNG_MANIFEST_SHA256", previous_pin):
                 self.refused(message="qualified current artwork manifest")
 
     def test_previous_artwork_is_not_admitted_by_a_matching_manifest_checksum(self):
         source = self.copy_export()
-        for previous_version in ("0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0", "0.24.0", "0.25.0", "0.26.0", "0.27.0", "0.28.0"):
+        for previous_version in ("0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0", "0.24.0", "0.25.0", "0.26.0", "0.27.0", "0.28.0", "0.29.0"):
             document = copy.deepcopy(self.document)
             document["version"] = previous_version
             with self.subTest(version=previous_version), self.changed_manifest(source, document):
@@ -357,6 +372,17 @@ class AndroidIconPackTests(unittest.TestCase):
                 document["files"][0] = copy.deepcopy(document["files"][1])
             with self.subTest(relative=relative), self.changed_manifest(source, document):
                 self.refused(source=source, message="unsafe PNG path")
+
+    def test_craft_source_identity_is_required_even_with_a_matching_export_pin(self):
+        source = self.copy_export()
+        for value in (None, "0" * 64):
+            document = copy.deepcopy(self.document)
+            if value is None:
+                document.pop("svg_craft_sha256")
+            else:
+                document["svg_craft_sha256"] = value
+            with self.subTest(value=value), self.changed_manifest(source, document):
+                self.refused(source=source, message="PNG export source identity differs")
 
     def test_RGBA_size_and_chunk_integrity_checks_are_not_hash_only(self):
         source = self.copy_export()
@@ -554,8 +580,8 @@ class AndroidIconPackTests(unittest.TestCase):
         canonical = pack.ROOT / "android/iconpack/components.json"
         with patch.object(pack, "COMPONENTS", canonical):
             manifest = pack.prepare_iconpack(self.export, canonical, self.output)
-        self.assertEqual(manifest["version"], "0.1.13")
-        self.assertEqual(manifest["artwork_version"], "0.29.0")
+        self.assertEqual(manifest["version"], "0.1.14")
+        self.assertEqual(manifest["artwork_version"], "0.30.0")
         self.assertEqual(manifest["counts"]["drawables"], 300)
         self.assertEqual(manifest["counts"]["component_mappings"], 1354)
         self.assertEqual(manifest["counts"]["upstream_component_mappings"], 1343)
@@ -686,6 +712,32 @@ class AndroidIconPackTests(unittest.TestCase):
         self.assertTrue((self.output / "res/drawable-nodpi/co_phone.png").is_file())
         with self.assertRaisesRegex(ValueError, "new output"):
             pack.prepare_iconpack(self.export, self.components, self.output)
+
+    def test_craft_only_drift_refuses_success_and_preserves_partial_resources(self):
+        # A comment leaves canonical drawings unchanged. Only the captured
+        # generator-source identity can reject this change during preparation.
+        fixture_root = self.base / "source-root"
+        for relative in ("tokens-monochrome.json", "themeforge/icons.py",
+                         "themeforge/icon_craft.py", "themeforge/icon_apps.py",
+                         "tools/export-icons.mjs", "LICENSE"):
+            target = fixture_root / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(pack.ROOT / relative, target)
+        original = Path.open
+        injected = []
+        def open_file(path, mode="r", *args, **kwargs):
+            if mode == "xb" and path.name == "co_phone.png" and not injected:
+                injected.append(True)
+                with original(fixture_root / "themeforge/icon_craft.py", "ab") as changed:
+                    changed.write(b"\n# Owned craft source drift fixture\n")
+            return original(path, mode, *args, **kwargs)
+        with patch.object(pack, "ROOT", fixture_root), patch.object(Path, "open", open_file), \
+                self.assertRaisesRegex(ValueError, "changed during preparation"):
+            pack.prepare_iconpack(self.export, self.components, self.output)
+        self.assertTrue(injected)
+        self.assertTrue((self.output / "res/drawable-nodpi/co_phone.png").is_file())
+        self.assertTrue((self.output / "iconpack-manifest.json").is_file(),
+                        "Refused preparation preserves its generated evidence; a manifest is not success")
 
 
 if __name__ == "__main__":

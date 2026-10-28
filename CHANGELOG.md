@@ -1,5 +1,12 @@
 # Changes
 
+## Artwork 0.30.0 and Android companions 0.1.3 / 0.1.14
+
+- Refine 184 existing drawings after individual five-size comparisons in both appearances and retain 116. Keep all 300 IDs, catalogue metadata and component mappings.
+- Preserve all 29 historical artwork archives and the accepted keyboard, watch and desktop assets.
+- Include the maintained drawing module in PNG export and Android build source identity checks. Clair Icons 0.1.3/code 4 and Obscur Icons 0.1.14/code 15 select the current artwork through the existing private signing route.
+- Keep native phone/watch installation, recognition, masking, persistence and restoration separate from artwork and package checks.
+
 ## Icon artwork 0.29.0 and keyboard reference hierarchy
 
 October 27, 2026.
