@@ -1477,9 +1477,9 @@ test('Clair and Obscur Android instructions retain keyboard source access and ho
         assert.equal(await details.evaluate(node => node.open), true);
         const companion = details.locator('p').filter({ hasText: 'The Android source offers Clair Android icon-pack' });
         assert.equal(await companion.count(), 1); assert.ok(await companion.isVisible());
-        assert.match(await companion.innerText(), /Clair Android icon-pack 0\.1\.2/);
-        assert.match(await companion.innerText(), /Obscur Android icon-pack 0\.1\.13/);
-        assert.match(await companion.innerText(), /Both select the 0\.29\.0 artwork/);
+        assert.match(await companion.innerText(), /Clair Android icon-pack 0\.1\.3/);
+        assert.match(await companion.innerText(), /Obscur Android icon-pack 0\.1\.14/);
+        assert.match(await companion.innerText(), /Both select the 0\.30\.0 artwork/);
         assert.match(await companion.innerText(), /Obscur remains the default build appearance/);
         assert.match(await companion.innerText(), /signed APK delivery stays private/);
         const limits = await details.locator('p').last().innerText();
@@ -1574,7 +1574,7 @@ async function checkIconGallery(page) {
   assert.equal(await page.locator('#icon-artwork-second-app-download').getAttribute('href'), secondAppIconArchive);
   assert.equal(await page.locator('#icon-artwork-first-app-download').getAttribute('href'), firstAppIconArchive);
   assert.match(await page.locator('#icon-artwork-first-app-download').textContent(), /preserved 0\.3\.0/);
-  assert.match(await page.locator('#icon-artwork-download').textContent(), /0\.29\.0/);
+  assert.match(await page.locator('#icon-artwork-download').textContent(), /0\.30\.0/);
   assert.match(await page.locator('#icon-artwork-running-training-download').textContent(), /preserved 0\.14\.0/);
   assert.match(await page.locator('#icon-artwork-weather-download').textContent(), /preserved 0\.13\.0/);
   assert.match(await page.locator('#icon-artwork-finance-download').textContent(), /preserved 0\.12\.0/);
@@ -1733,21 +1733,21 @@ async function setIconHistoryOpen(page, open, key = 'Enter') {
   }
 }
 
-async function tabThroughArtDirectionGuide(page) {
+async function tabThroughIconCraftGuide(page) {
   await page.keyboard.press('Tab');
   const guide = page.getByRole('link', { name: 'Read the design decisions and compromises', exact: true });
   assert.equal(await guide.isVisible(), true, 'The maintained design guide stays visible and keyboard reachable');
   assert.equal(await guide.evaluate(node => node === document.activeElement), true,
     'Tab must reach the actual design-guide anchor before the finder or history');
   assert.equal(await guide.getAttribute('href'),
-    'https://github.com/T92T1914/clair-obscur-themes/blob/main/docs/art-direction.md');
+    'https://github.com/T92T1914/clair-obscur-themes/blob/main/docs/icon-craft.md');
 }
 
 async function focusBeforeIconCards(page) {
   await setIconHistoryOpen(page, false);
   const finderVisible = await page.locator('#icon-finder').isVisible();
   await (finderVisible ? page.locator('#icon-clear') : page.locator('#icon-artwork-checksums')).focus();
-  if (!finderVisible) await tabThroughArtDirectionGuide(page);
+  if (!finderVisible) await tabThroughIconCraftGuide(page);
   await page.keyboard.press('Tab');
   assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-history-summary');
   assert.equal(await page.locator('#icon-history a:visible').count(), 0, 'Closed history must not add archive keyboard stops');
@@ -1777,7 +1777,7 @@ async function assertIconHistoryLayout(page, { spacing = false } = {}) {
       marginBlockEnd: style.marginBlockEnd, rects: [...range.getClientRects()].map(rect => ({ left: rect.left, right: rect.right,
         top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height })) };
   }));
-  assert.equal(metrics.length, 57, 'Admit the summary, all 28 archive paragraphs and their actual links');
+  assert.equal(metrics.length, 59, 'Admit the summary, all 29 archive paragraphs and their actual links');
   for (const node of metrics) {
     assert.ok(node.text && node.width > 0 && node.height > 0 && node.visibility === 'visible' && Number(node.opacity) > 0,
       'History text unavailable: ' + JSON.stringify(node));
@@ -1807,7 +1807,7 @@ test('current icon acquisition precedes preserved history with native keyboard d
         for (const id of ['icon-artwork-checksums', 'icon-query', 'icon-kind', 'icon-clear', 'icon-history-summary']) {
           await page.keyboard.press('Tab');
           assert.equal(await page.evaluate(() => document.activeElement.id), id, 'Current task keyboard order before preserved links');
-          if (id === 'icon-artwork-checksums') await tabThroughArtDirectionGuide(page);
+          if (id === 'icon-artwork-checksums') await tabThroughIconCraftGuide(page);
         }
         assert.equal(await page.locator('#icon-history a:visible').count(), 0);
         await page.locator('#icon-query').fill('weather-channel'); await assertFinderResults(page, ['weather-channel']);
@@ -2165,7 +2165,7 @@ test('icon finder leaves exact artwork downloads and the independent platform ch
     const chooserBefore = await page.locator('#package-choice-result').innerHTML();
     await page.locator('#icon-query').fill('this app does not exist 8675309'); await assertFinderResults(page, []);
     await setIconHistoryOpen(page, true);
-    for (const id of ['icon-artwork-download', 'icon-artwork-identity-download', 'icon-artwork-route-download', 'icon-artwork-communication-download', 'icon-artwork-messaging-download', 'icon-artwork-contact-spaced-download', 'icon-artwork-contained-download', 'icon-artwork-spaced-download', 'icon-artwork-polished-download', 'icon-artwork-video-editing-download', 'icon-artwork-gboard-download', 'icon-artwork-refined-download', 'icon-artwork-reading-download', 'icon-artwork-weather-download', 'icon-artwork-finance-download', 'icon-artwork-travel-download', 'icon-artwork-food-order-download', 'icon-artwork-everyday-download', 'icon-artwork-broad-download', 'icon-artwork-companion-download',
+    for (const id of ['icon-artwork-download', 'icon-artwork-art-direction-download', 'icon-artwork-identity-download', 'icon-artwork-route-download', 'icon-artwork-communication-download', 'icon-artwork-messaging-download', 'icon-artwork-contact-spaced-download', 'icon-artwork-contained-download', 'icon-artwork-spaced-download', 'icon-artwork-polished-download', 'icon-artwork-video-editing-download', 'icon-artwork-gboard-download', 'icon-artwork-refined-download', 'icon-artwork-reading-download', 'icon-artwork-weather-download', 'icon-artwork-finance-download', 'icon-artwork-travel-download', 'icon-artwork-food-order-download', 'icon-artwork-everyday-download', 'icon-artwork-broad-download', 'icon-artwork-companion-download',
       'icon-artwork-monochrome-download', 'icon-artwork-third-app-download', 'icon-artwork-second-app-download',
       'icon-artwork-first-app-download', 'icon-artwork-previous-download', 'icon-artwork-legacy-download', 'icon-artwork-checksums'])
       assert.ok(await page.locator('#' + id).isVisible(), 'Filtering hid a download: ' + id);
@@ -2269,7 +2269,7 @@ test('icon finder enhancement failure preserves every static choice and download
       assert.deepEqual(await page.locator('#icons article.icon-card p a').evaluateAll(nodes => nodes.map(node => ({
         id: node.closest('[data-icon-function]').dataset.iconFunction, href: node.getAttribute('href') }))),
       namedIconApps.map(([id, , packageId]) => ({ id, href: appStoreUrl(id, packageId) })));
-      for (const id of ['icon-artwork-download', 'icon-artwork-identity-download', 'icon-artwork-route-download', 'icon-artwork-communication-download', 'icon-artwork-messaging-download', 'icon-artwork-contact-spaced-download', 'icon-artwork-contained-download', 'icon-artwork-spaced-download', 'icon-artwork-polished-download', 'icon-artwork-video-editing-download', 'icon-artwork-gboard-download', 'icon-artwork-refined-download', 'icon-artwork-reading-download', 'icon-artwork-weather-download', 'icon-artwork-finance-download', 'icon-artwork-travel-download', 'icon-artwork-food-order-download', 'icon-artwork-everyday-download', 'icon-artwork-broad-download', 'icon-artwork-companion-download',
+      for (const id of ['icon-artwork-download', 'icon-artwork-art-direction-download', 'icon-artwork-identity-download', 'icon-artwork-route-download', 'icon-artwork-communication-download', 'icon-artwork-messaging-download', 'icon-artwork-contact-spaced-download', 'icon-artwork-contained-download', 'icon-artwork-spaced-download', 'icon-artwork-polished-download', 'icon-artwork-video-editing-download', 'icon-artwork-gboard-download', 'icon-artwork-refined-download', 'icon-artwork-reading-download', 'icon-artwork-weather-download', 'icon-artwork-finance-download', 'icon-artwork-travel-download', 'icon-artwork-food-order-download', 'icon-artwork-everyday-download', 'icon-artwork-broad-download', 'icon-artwork-companion-download',
         'icon-artwork-monochrome-download', 'icon-artwork-third-app-download', 'icon-artwork-second-app-download',
         'icon-artwork-first-app-download', 'icon-artwork-previous-download', 'icon-artwork-legacy-download']) assert.ok(await page.locator('#' + id).isVisible());
       if (failure === 'missing-control' || failure === 'invalid-record') {
@@ -3048,7 +3048,7 @@ test('icon gallery decodes every current appearance at phone widths and enlarged
   }
 });
 
-test('no-script keyboard navigation acquires current and all 28 preserved icon ZIPs with exact checksums', async () => {
+test('no-script keyboard navigation acquires current and all 29 preserved icon ZIPs with exact checksums', async () => {
   const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false, viewport: { width: 320, height: 844 },
     setup: async (context, page) => page.route('**/preview.css', async route => route.fulfill({ contentType: 'text/css',
       body: await readFile(path.join(site, 'preview.css'), 'utf8') + '\nhtml { font-size: 200%; }\n' + textSpacingOverride })) });
@@ -3082,13 +3082,16 @@ test('no-script keyboard navigation acquires current and all 28 preserved icon Z
     const chunks = []; for await (const chunk of await checksumDownload.createReadStream()) chunks.push(chunk);
     const digest = crypto.createHash('sha256').update(bytes).digest('hex');
     assert.equal(Buffer.concat(chunks).toString('utf8'), iconChecksums(digest));
-    await tabThroughArtDirectionGuide(page);
+    await tabThroughIconCraftGuide(page);
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-history-summary');
     assert.equal(await page.locator('#icon-history').evaluate(node => node.open), false);
     await page.keyboard.press('Enter');
     assert.equal(await page.locator('#icon-history').evaluate(node => node.open), true);
     await assertIconHistoryLayout(page, { spacing: true });
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-art-direction-download');
+    await acquirePreservedIconArchive(page, ['icon-artwork-art-direction-download', artDirectionIconArchive, artDirectionIconDigest]);
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-identity-download');
     await acquirePreservedIconArchive(page, ['icon-artwork-identity-download', identityIconArchive, identityIconDigest]);
@@ -3566,7 +3569,7 @@ test('no-script keyboard navigation acquires current and all 28 preserved icon Z
     assert.deepEqual(consoleErrors, []);
     results.scenarios.push({ name: 'no-script icon artwork keyboard acquisition', status: 'passed', tabs,
       sha256: digest, messagingSha256: messagingIconDigest, contactSpacedSha256: contactSpacedIconDigest, gboardSha256: gboardIconDigest, refinedSha256: refinedIconDigest, phoneServiceSha256: phoneServiceIconDigest, readingSha256: readingIconDigest, learningSha256: learningIconDigest, weatherSha256: weatherIconDigest, financeSha256: financeIconDigest, travelSha256: travelIconDigest, foodOrderSha256: foodOrderIconDigest, everydaySha256: everydayIconDigest, broadSha256: broadIconDigest, companionSha256: companionIconDigest, monochromeSha256: monochromeIconDigest, secondAppSha256: secondAppIconDigest, firstAppSha256: firstAppIconDigest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
-      currentArchiveFiles: 602, messagingArchiveFiles: 594, contactSpacedArchiveFiles: 586, preservedArchiveCount: 28, gboardArchiveFiles: 566, refinedArchiveFiles: 564, readingArchiveFiles: 484, learningArchiveFiles: 468, weatherArchiveFiles: 436, financeArchiveFiles: 416, travelArchiveFiles: 396, foodOrderArchiveFiles: 376, everydayArchiveFiles: 352, broadArchiveFiles: 256, companionArchiveFiles: 192, monochromeArchiveFiles: 180, secondAppArchiveFiles: 164, firstAppArchiveFiles: 116, preservedArchiveFiles: 50, nativePhoneVerified: false,
+      currentArchiveFiles: 602, messagingArchiveFiles: 594, contactSpacedArchiveFiles: 586, preservedArchiveCount: 29, gboardArchiveFiles: 566, refinedArchiveFiles: 564, readingArchiveFiles: 484, learningArchiveFiles: 468, weatherArchiveFiles: 436, financeArchiveFiles: 416, travelArchiveFiles: 396, foodOrderArchiveFiles: 376, everydayArchiveFiles: 352, broadArchiveFiles: 256, companionArchiveFiles: 192, monochromeArchiveFiles: 180, secondAppArchiveFiles: 164, firstAppArchiveFiles: 116, preservedArchiveFiles: 50, nativePhoneVerified: false,
       width: 320, rootFontSize: '32px', spacingAdmission, mappingKeyboard,
       scope: 'Combined no-script, narrow, enlarged and spacing stress; separate from spacing-only acceptance' });
   } finally { await context.close(); }
@@ -5001,6 +5004,10 @@ for (const { capability, javaScriptEnabled, testedWidth, expected } of portableC
       assert.equal(iconDigest, inner.files[iconArchive]);
       assert.equal(await readFile(path.join(relocated, 'icons', 'SVG-SHA256SUMS'), 'utf8'), iconChecksums(iconDigest));
       await setIconHistoryOpen(localPage, true);
+      await localPage.locator('#icon-artwork-art-direction-download').focus();
+      const artDirectionAcquisition = await acquirePreservedIconArchive(localPage,
+        ['icon-artwork-art-direction-download', artDirectionIconArchive, artDirectionIconDigest]);
+      assert.equal(inner.files[artDirectionIconArchive], artDirectionAcquisition.sha256);
       await localPage.locator('#icon-artwork-identity-download').focus();
       const identityAcquisition = await acquirePreservedIconArchive(localPage,
         ['icon-artwork-identity-download', identityIconArchive, identityIconDigest]);
