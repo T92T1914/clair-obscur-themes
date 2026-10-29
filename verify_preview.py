@@ -16,9 +16,9 @@ MAX_MANIFEST_BYTES = 72_704
 MAX_DECLARED_FILES = 697
 MAX_ENTRIES = 723
 MAX_FILE_BYTES = 8_388_608
-# Artwork 0.32 retains the complete 0.31 archive beside the earlier collections.
-# Round its measured 36,217,787-byte minimum to the next 64 KiB read chunk.
-MAX_READ_BYTES = 36_241_408
+# The combined artwork 0.32 / watch 0.8 source snapshot grows the same kit.
+# Round its measured 36,264,908-byte minimum to the next 64 KiB read chunk.
+MAX_READ_BYTES = 36_306_944
 READ_CHUNK = 65_536
 MAX_REPORT_BYTES = 262_144
 MANIFEST_NAME = 'site-manifest.json'
