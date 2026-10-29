@@ -1,5 +1,16 @@
 # Changes
 
+## Garmin watch face 0.8.0
+
+- Add an original Hybrid dial with analog and digital time together, localized day/date, fixed Weather and Steps fields, and watch charge/charger state. Use neutral facets and glyph-only halos while preserving the accepted outer dial margin.
+- Preserve Analog=0, Digital=1, appearance and legacy field properties. Add Hybrid=2 as the new-install fallback and a separate date-format option. Keep stored legacy fields recoverable and subscribe to Body Battery only when a displayed legacy field uses it.
+- Reuse the sparse shifted analog AOD path for Hybrid. Preserve true-black Off/AOD, the two-hour weather-staleness policy, existing unavailable states and the Inter Digital resource. Add no per-second timer, font binary or permission.
+- Compile the normal and test programs for the exact `fenix9pro47mm` target with SDK 9.2.0. Execute all 32 target test groups, preserving the initial nullable-assertion runtime errors before the corrected complete pass. Keep 52 host tests, two original-font regeneration skips, host design specimens and the initial normal-program memory sample distinct from physical-watch acceptance.
+- Exercise bounded normal-program appearance/date menus, 12/24-hour time, CHG 100%, native font scale 1.35 and representative hand crossings. Observe active/always-on/off/active transitions and independently count 2,519 nonblack pixels in one saved AOD frame, about 1.56% of the ideal round display.
+- Record a short 28.3 kB active / 32.7 kB reported-peak memory sample with peak detection unchecked. Keep long-duration memory, every scale/time, physical providers and battery use unqualified.
+- Observe one complete normal SDK exit/relaunch retaining Obscur Hybrid and its fields without app-property repair. Restore the recorded simulator preferences and exact original INI, then close the task-owned SDK windows. Keep the incomplete original app-property baseline and permanent/physical persistence limits explicit.
+- Copy the qualified normal 0.8.0 program once over MTP and verify the immediate and separate fresh readbacks, with opaque settings and device identity XML unchanged. Retain 0.7.0 and earlier history. Watch-side activation, fit, live providers and the earlier Garmin USB-mode restoration remain pending.
+
 ## Targeted icon refinement and artwork 0.32.0
 
 - Refine My Spectrum, Wallpaper Engine and Pinterest after original five-size alternatives and independent labeled/unlabeled mixed-context review. Change six SVGs and twelve PNGs, preserving the other 594 SVGs and 1,188 PNGs exactly from 0.31.0. Preserve all 31 historical artwork archives and the accepted Coinbase/Coursera shapes.

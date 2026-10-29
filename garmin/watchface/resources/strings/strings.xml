@@ -4,6 +4,11 @@
     <string id="LayoutTitle">Layout</string>
     <string id="AnalogLabel">Analog</string>
     <string id="DigitalLabel">Digital</string>
+    <string id="HybridLabel">Hybrid</string>
+    <string id="HybridDateTitle">Hybrid date format</string>
+    <string id="DayMonthLabel">Day Month</string>
+    <string id="MonthDayLabel">Month Day</string>
+    <string id="IsoDateLabel">ISO date</string>
     <string id="ClairLabel">Clair</string>
     <string id="ObscurLabel">Obscur</string>
     <string id="SelectedLabel">Selected</string>

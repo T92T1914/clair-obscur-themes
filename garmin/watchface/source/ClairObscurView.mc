@@ -52,6 +52,12 @@ class ClairObscurView extends WatchUi.WatchFace {
             _valueFonts = fonts("RobotoMedium", [30, 26, 22, 18, 16], Graphics.FONT_XTINY, scale);
             _labelFonts = fonts("RobotoCondensedRegular", [18, 16, 14], Graphics.FONT_XTINY, scale);
             _batteryFonts = fonts("RobotoMedium", [18, 16, 14], Graphics.FONT_XTINY, scale);
+        } else if (layout == FaceModel.LAYOUT_HYBRID) {
+            _clockFonts = fonts("BionicBold", [42, 38, 34, 30, 26], Graphics.FONT_SMALL, scale);
+            _calendarFonts = fonts("RobotoMedium", [22, 20, 18, 16], Graphics.FONT_XTINY, scale);
+            _valueFonts = fonts("RobotoMedium", [30, 26, 22, 18, 16], Graphics.FONT_XTINY, scale);
+            _labelFonts = fonts("RobotoCondensedRegular", [18, 16, 14], Graphics.FONT_XTINY, scale);
+            _batteryFonts = fonts("RobotoMedium", [20, 18, 16], Graphics.FONT_XTINY, scale);
         } else {
             _clockFonts = fonts("BionicBold", [108, 96, 84], Graphics.FONT_LARGE, scale);
             _calendarFonts = fonts("RobotoMedium", [23, 20, 18], Graphics.FONT_XTINY, scale);
@@ -120,7 +126,7 @@ class ClairObscurView extends WatchUi.WatchFace {
         var moment = Time.now();
         var local = Gregorian.info(moment, Time.FORMAT_SHORT);
         var layout = FaceSettings.readLayout();
-        if (mode == :aod && layout == FaceModel.LAYOUT_ANALOG) {
+        if (mode == :aod && layout != FaceModel.LAYOUT_DIGITAL) {
             drawAnalogAlwaysOn(dc, local.hour, local.min);
             return;
         }
@@ -134,6 +140,20 @@ class ClairObscurView extends WatchUi.WatchFace {
         var text = clair ? ThemePalette.CLAIR_TEXT : ThemePalette.OBSCUR_TEXT;
         var muted = clair ? ThemePalette.CLAIR_MUTED : ThemePalette.OBSCUR_MUTED;
         var accent = clair ? ThemePalette.CLAIR_ACCENT : ThemePalette.OBSCUR_ACCENT;
+        if (layout == FaceModel.LAYOUT_HYBRID) {
+            // Same Moment for the numeric clock and device-localized date.
+            var names = Gregorian.info(moment, Time.FORMAT_MEDIUM);
+            var hybridDate = FaceModel.hybridDate(local.day, local.month as Lang.Number, local.year,
+                names.month as Lang.Object, names.day_of_week as Lang.Object, FaceSettings.readDateFormat());
+            var weather = FaceData.readSlot(FaceData.WEATHER, moment.value());
+            var steps = FaceData.readSlot(FaceData.STEPS, moment.value());
+            var stats = System.getSystemStats();
+            var battery = FaceModel.hybridCharge(stats.battery as Lang.Object, stats.charging as Lang.Object);
+            var frame = clair ? ThemePalette.CLAIR_BORDER : ThemePalette.OBSCUR_BORDER;
+            drawHybrid(dc, local.hour, local.min, FaceModel.formatActiveTime(local.hour, local.min, is24Hour),
+                hybridDate, battery, weather, steps, text, muted, frame, canvas);
+            return;
+        }
         var left = FaceData.readSlot(FaceSettings.readSlot(0), moment.value());
         var right = FaceData.readSlot(FaceSettings.readSlot(1), moment.value());
         var charge = FaceModel.formatBattery(System.getSystemStats().battery);
@@ -273,6 +293,109 @@ class ClairObscurView extends WatchUi.WatchFace {
             var next = (point + 1) % points.size();
             dc.drawLine(points[point][0], points[point][1], points[next][0], points[next][1]);
         }
+    }
+
+    function haloText(dc as Graphics.Dc, center as Lang.Number, y as Lang.Numeric,
+            font as Graphics.FontDefinition or Graphics.VectorFont, text as Lang.String,
+            ink as Lang.Number, canvas as Lang.Number) as Void {
+        // Clear only a one-pixel glyph halo, not a rectangle across a hand.
+        dc.setColor(canvas, Graphics.COLOR_TRANSPARENT);
+        for (var dx = -1; dx <= 1; dx += 1) {
+            for (var dy = -1; dy <= 1; dy += 1) {
+                if (dx != 0 || dy != 0) {
+                    dc.drawText(center + dx, y + dy, font, text, Graphics.TEXT_JUSTIFY_CENTER);
+                }
+            }
+        }
+        dc.setColor(ink, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(center, y, font, text, Graphics.TEXT_JUSTIFY_CENTER);
+    }
+
+    function hybridLine(dc as Graphics.Dc, text as Lang.String,
+            candidates as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont>,
+            width as Lang.Number, top as Lang.Number, bottom as Lang.Number,
+            ink as Lang.Number, canvas as Lang.Number) as Void {
+        var font = pickFont(dc, text, candidates, width - 4, bottom - top - 4);
+        var shown = text;
+        if (font == null) {
+            shown = "--";
+            font = pickFont(dc, shown, candidates, width - 4, bottom - top - 4);
+        }
+        if (font == null) { return; }
+        var x = ((dc.getWidth() - width) / 2).toNumber();
+        dc.setClip(x, top, width, bottom - top);
+        haloText(dc, FaceModel.DIAL_CENTER, top + (bottom - top - dc.getFontHeight(font)) / 2,
+            font, shown, ink, canvas);
+        dc.clearClip();
+    }
+
+    function hybridSlot(dc as Graphics.Dc, data as Lang.Dictionary<Lang.String, Lang.String>,
+            x as Lang.Number, ink as Lang.Number, muted as Lang.Number, canvas as Lang.Number) as Void {
+        var top = FaceModel.HYBRID_DATA_TOP;
+        var height = FaceModel.HYBRID_DATA_BOTTOM - top;
+        var width = FaceModel.HYBRID_DATA_WIDTH;
+        var selected = analogSlotFonts(dc, data, width - 4, height - 4);
+        if (selected == null) {
+            // Never turn a failed-fit data field into an invented live value.
+            var fallback = pickFont(dc, "--", _valueFonts, width - 4, height - 4);
+            if (fallback != null) {
+                dc.setClip(x, top, width, height);
+                haloText(dc, x + width / 2, top + (height - dc.getFontHeight(fallback)) / 2,
+                    fallback, "--", ink, canvas);
+                dc.clearClip();
+            }
+            return;
+        }
+        var label = selected[0]; var value = selected[1]; var detail = selected[2];
+        var total = dc.getFontHeight(label) + dc.getFontHeight(value) + dc.getFontHeight(detail) + 6;
+        var y = top + (height - total) / 2;
+        var center = x + width / 2;
+        dc.setClip(x, top, width, height);
+        haloText(dc, center, y, label, data["label"], muted, canvas);
+        y += dc.getFontHeight(label) + 3;
+        haloText(dc, center, y, value, data["value"], ink, canvas);
+        y += dc.getFontHeight(value) + 3;
+        haloText(dc, center, y, detail, data["detail"], muted, canvas);
+        dc.clearClip();
+    }
+
+    function drawHybrid(dc as Graphics.Dc, hour as Lang.Number, minute as Lang.Number,
+            time as Lang.String, date as Lang.String, charge as Lang.String,
+            weather as Lang.Dictionary<Lang.String, Lang.String>,
+            steps as Lang.Dictionary<Lang.String, Lang.String>, ink as Lang.Number,
+            muted as Lang.Number, facet as Lang.Number, canvas as Lang.Number) as Void {
+        dc.setColor(facet, canvas); dc.setPenWidth(1);
+        for (var tick = 0; tick < 60; tick += 1) {
+            if (tick % 5 == 0) { continue; }
+            var ends = FaceModel.minuteTick(tick);
+            dc.drawLine(ends[0][0], ends[0][1], ends[1][0], ends[1][1]);
+        }
+        for (var index = 0; index < 12; index += 1) {
+            var parts = index == 0 ? 2 : 1;
+            for (var part = 0; part < parts; part += 1) {
+                var marker = FaceModel.hourMarker(index, part);
+                dc.setColor(ink, canvas); dc.fillPolygon(marker);
+                dc.setColor(facet, canvas);
+                dc.drawLine(marker[2][0], marker[2][1], marker[3][0], marker[3][1]);
+            }
+        }
+        // Both complete hand shapes are drawn first. Text is redrawn on top
+        // with glyph-only halos, preserving the date and exact digital reading.
+        drawHand(dc, FaceModel.handPoints(hour, minute, true), ink, canvas);
+        dc.setColor(facet, canvas); dc.fillPolygon(FaceModel.handFacetPoints(hour, minute, true));
+        drawHand(dc, FaceModel.handPoints(hour, minute, false), ink, canvas);
+        dc.setColor(facet, canvas); dc.fillPolygon(FaceModel.handFacetPoints(hour, minute, false));
+        dc.setColor(facet, canvas); dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, 8);
+        dc.setColor(ink, canvas); dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, 5);
+        dc.setColor(canvas, canvas); dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, 2);
+        hybridLine(dc, date, _calendarFonts, FaceModel.HYBRID_DATE_WIDTH,
+            FaceModel.HYBRID_DATE_TOP, FaceModel.HYBRID_DATE_BOTTOM, muted, canvas);
+        hybridLine(dc, time, _clockFonts, FaceModel.HYBRID_CLOCK_WIDTH,
+            FaceModel.HYBRID_CLOCK_TOP, FaceModel.HYBRID_CLOCK_BOTTOM, ink, canvas);
+        hybridSlot(dc, weather, FaceModel.HYBRID_LEFT_X, ink, muted, canvas);
+        hybridSlot(dc, steps, FaceModel.HYBRID_RIGHT_X, ink, muted, canvas);
+        hybridLine(dc, charge, _batteryFonts, FaceModel.HYBRID_CHARGE_WIDTH,
+            FaceModel.HYBRID_CHARGE_TOP, FaceModel.HYBRID_CHARGE_BOTTOM, muted, canvas);
     }
 
     function drawAnalogAlwaysOn(dc as Graphics.Dc, hour as Lang.Number, minute as Lang.Number) as Void {

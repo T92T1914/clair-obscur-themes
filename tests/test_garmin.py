@@ -152,9 +152,9 @@ class GarminPaletteTests(unittest.TestCase):
     def test_current_palette_has_exact_black_white_and_neutral_roles(self):
         current = json.loads((ROOT / "tokens-monochrome.json").read_text(encoding="utf-8"))
         source = render_palette(current)
-        self.assertEqual(VERSION, "0.7.0")
+        self.assertEqual(VERSION, "0.8.0")
         self.assertEqual(colors(source), EXPECTED_MONOCHROME_COLORS)
-        self.assertIn('const WATCHFACE_VERSION = "0.7.0";', source)
+        self.assertIn('const WATCHFACE_VERSION = "0.8.0";', source)
         self.assertIn('const TOKEN_VERSION = "1.0.0";', source)
         for color in colors(source).values():
             self.assertEqual((color >> 16) & 255, (color >> 8) & 255)
@@ -189,9 +189,10 @@ class GarminPaletteTests(unittest.TestCase):
                          ["fenix9pro47mm"])
         properties = ET.parse(face / "resources/settings/properties.xml").getroot()
         self.assertEqual([(node.get("id"), node.get("type"), node.text) for node in properties],
-                         [("appVersion", "string", "0.7.0"), ("appearance", "number", "1"),
-                          ("layout", "number", "0"),
-                          ("leftData", "number", "0"), ("rightData", "number", "1")])
+                         [("appVersion", "string", "0.8.0"), ("appearance", "number", "1"),
+                          ("layout", "number", "2"),
+                          ("leftData", "number", "0"), ("rightData", "number", "1"),
+                          ("hybridDateFormat", "number", "0")])
         view = (face / "source/ClairObscurView.mc").read_text(encoding="utf-8")
         self.assertIn('(clair ? ThemePalette.CLAIR_CANVAS : ThemePalette.OBSCUR_CANVAS) : 0x000000;', view)
         self.assertIn('dc.setColor(ThemePalette.OBSCUR_MUTED, 0x000000);', view)
@@ -366,7 +367,8 @@ class GarminActiveBandGeometryTests(unittest.TestCase):
 
     def test_scaled_data_font_requests_leave_room_for_all_three_rows(self):
         self.assertEqual(self.row_caps, {"label": 34, "detail": 28})
-        gaps = re.findall(r"y \+= dc\.getFontHeight\((label|value)\) \+ (\d+);", self.view)
+        legacy_slot = self.view.split("    function drawSlot(", 1)[1].split("    function drawHand(", 1)[0]
+        gaps = re.findall(r"y \+= dc\.getFontHeight\((label|value)\) \+ (\d+);", legacy_slot)
         self.assertEqual(gaps, [("label", "3"), ("value", "3")])
         total_gap = sum(int(gap) for _, gap in gaps)
         self.assertIn("var available = height - dc.getFontHeight(label) - dc.getFontHeight(detail) - 6;",
@@ -455,12 +457,12 @@ class GarminAnalogGeometryTests(unittest.TestCase):
             self.assertRegex(self.view, rf"FaceModel\.ANALOG_{side}_X,\s*FaceModel\.ANALOG_DATA_WIDTH,\s*"
                              r"FaceModel\.ANALOG_DATA_TOP,\s*FaceModel\.ANALOG_DATA_BOTTOM")
 
-    def test_layout_resource_is_numeric_analog_default_with_digital_alternative(self):
+    def test_hybrid_default_preserves_numeric_analog_and_digital_choices(self):
         resources = ROOT / "garmin/watchface/resources"
         properties = ET.parse(resources / "settings/properties.xml").getroot()
         layout = properties.findall("property[@id='layout']")
         self.assertEqual(len(layout), 1)
-        self.assertEqual((layout[0].get("type"), layout[0].text), ("number", "0"))
+        self.assertEqual((layout[0].get("type"), layout[0].text), ("number", "2"))
         settings = ET.parse(resources / "settings/settings.xml").getroot()
         selection = settings.findall("setting[@propertyKey='@Properties.layout']")
         self.assertEqual(len(selection), 1)
@@ -469,7 +471,7 @@ class GarminAnalogGeometryTests(unittest.TestCase):
         config = selection[0].find("settingConfig")
         self.assertEqual(config.get("type"), "list")
         self.assertEqual([(entry.get("value"), strings[entry.text.removeprefix("@Strings.")])
-                          for entry in config], [("0", "Analog"), ("1", "Digital")])
+                          for entry in config], [("0", "Analog"), ("1", "Digital"), ("2", "Hybrid")])
         self.assertEqual((self.constants["LAYOUT_ANALOG"], self.constants["LAYOUT_DIGITAL"]), (0, 1))
         namespace = {"iq": "http://www.garmin.com/xml/connectiq"}
         manifest = ET.parse(ROOT / "garmin/watchface/manifest.xml").getroot()
@@ -497,7 +499,7 @@ class GarminAnalogGeometryTests(unittest.TestCase):
                          "c6a3beb2f450153cf7ef1fb116c66d5dfd6f55ab8b66809eaf1ffc82ce0adbbd")
         self.assertEqual((self.constants["AOD_MAX_WIDTH"], self.constants["AOD_MAX_HEIGHT"]), (192, 64))
         on_update = self.view.split("function onUpdate(", 1)[1].split("function analogSlotFonts(", 1)[0]
-        analog = re.search(r"if \(mode == :aod && layout == FaceModel\.LAYOUT_ANALOG\) \{\s*"
+        analog = re.search(r"if \(mode == :aod && layout != FaceModel\.LAYOUT_DIGITAL\) \{\s*"
                           r"drawAnalogAlwaysOn\(dc, local\.hour, local\.min\);\s*return;\s*\}", on_update)
         digital = re.search(r"if \(mode == :aod\) \{ drawAlwaysOn\(dc, time, local\.min\); return; \}",
                             on_update)
@@ -761,7 +763,23 @@ class GarminSharedDialExpansionTests(unittest.TestCase):
         }
         for source, functions in ((self.model, model), (self.view, view)):
             for name, digest in functions.items():
-                self.assertEqual(hashlib.sha256(self.base.function(source, name).encode()).hexdigest(), digest, name)
+                retained = self.base.function(source, name)
+                # The new layout is an explicit additional branch. Remove only
+                # that branch to keep the independent accepted legacy-body pins.
+                if name == "refreshFonts":
+                    retained, count = re.subn(
+                        r"\} else if \(layout == FaceModel\.LAYOUT_HYBRID\) \{[^{}]+\} else \{",
+                        "} else {", retained)
+                    self.assertEqual(count, 1)
+                elif name == "onUpdate":
+                    retained, count = re.subn(
+                        r"        if \(layout == FaceModel\.LAYOUT_HYBRID\) \{[^{}]+\}\n",
+                        "", retained)
+                    self.assertEqual(count, 1)
+                    self.assertEqual(retained.count("mode == :aod && layout != FaceModel.LAYOUT_DIGITAL"), 1)
+                    retained = retained.replace("mode == :aod && layout != FaceModel.LAYOUT_DIGITAL",
+                                                "mode == :aod && layout == FaceModel.LAYOUT_ANALOG")
+                self.assertEqual(hashlib.sha256(retained.encode()).hexdigest(), digest, name)
 
     def test_visible_baton_extents_are_distinct_from_outer_minute_track(self):
         paths = self.base.outlines(3, 0, (0, 0))
@@ -881,6 +899,92 @@ class GarminSettingsResourcesTests(unittest.TestCase):
                 # Resource identity and defaults only, not native menu or phone
                 # activation, observed data availability or persistence.
                 self.assertEqual(dict(entries)[int(prop[0].text)], label)
+
+
+class GarminHybridContractsTests(unittest.TestCase):
+    """Hybrid contracts supplement the retained legacy geometry and source pins."""
+
+    @classmethod
+    def setUpClass(cls):
+        source = ROOT / "garmin/watchface/source"
+        cls.view = (source / "ClairObscurView.mc").read_text(encoding="utf-8")
+        cls.model = (source / "FaceModel.mc").read_text(encoding="utf-8")
+        cls.settings = (source / "FaceSettings.mc").read_text(encoding="utf-8")
+        cls.app = (source / "ClairObscurApp.mc").read_text(encoding="utf-8")
+        cls.values = {name: int(value) for name, value in re.findall(
+            r"^    const ([A-Z_]+) = (\d+);$", cls.model, re.MULTILINE)}
+
+    def test_hybrid_regions_have_round_clearance_and_separate_content_bands(self):
+        c = self.values
+        for name in ("DATE", "CLOCK", "CHARGE"):
+            left = (454 - c[f"HYBRID_{name}_WIDTH"]) / 2
+            right = 454 - left
+            for x in (left - 1, right + 1):
+                for y in (c[f"HYBRID_{name}_TOP"] - 1, c[f"HYBRID_{name}_BOTTOM"] + 1):
+                    self.assertLess((x - 227) ** 2 + (y - 227) ** 2, 227 ** 2)
+        self.assertLess(c["HYBRID_DATE_BOTTOM"], c["HYBRID_CLOCK_TOP"])
+        self.assertLess(c["HYBRID_CLOCK_BOTTOM"], c["HYBRID_DATA_TOP"])
+        self.assertLess(c["HYBRID_DATA_BOTTOM"], c["HYBRID_CHARGE_TOP"])
+        self.assertGreater(c["HYBRID_RIGHT_X"] - (c["HYBRID_LEFT_X"] + c["HYBRID_DATA_WIDTH"]), 0)
+        for side in ("LEFT", "RIGHT"):
+            for x in (c[f"HYBRID_{side}_X"] - 1, c[f"HYBRID_{side}_X"] + c["HYBRID_DATA_WIDTH"] + 1):
+                for y in (c["HYBRID_DATA_TOP"] - 1, c["HYBRID_DATA_BOTTOM"] + 1):
+                    self.assertLess((x - 227) ** 2 + (y - 227) ** 2, 227 ** 2)
+        self.assertEqual((c["LAYOUT_ANALOG"], c["LAYOUT_DIGITAL"], c["LAYOUT_HYBRID"]), (0, 1, 2))
+
+    def test_fixed_live_fields_and_localized_date_use_one_clock_snapshot(self):
+        update = GarminAnalogAodGeometryTests.function(self.view, "onUpdate")
+        branch = re.search(r"if \(layout == FaceModel\.LAYOUT_HYBRID\) \{([^{}]+)\}", update).group(1)
+        self.assertEqual(update.count("Time.now()"), 1)
+        self.assertIn("Gregorian.info(moment, Time.FORMAT_SHORT)", update)
+        self.assertIn("Gregorian.info(moment, Time.FORMAT_MEDIUM)", branch)
+        self.assertIn("FaceData.readSlot(FaceData.WEATHER, moment.value())", branch)
+        self.assertIn("FaceData.readSlot(FaceData.STEPS, moment.value())", branch)
+        self.assertNotIn("FaceSettings.readSlot", branch)
+        self.assertIn("stats.battery as Lang.Object, stats.charging as Lang.Object", branch)
+        self.assertIn("FaceModel.formatActiveTime(local.hour, local.min, is24Hour)", branch)
+        self.assertLess(update.index("if (mode == :off) { return; }"), update.index("Time.now()"))
+        self.assertLess(update.index("drawAlwaysOn(dc, time, local.min); return;"), update.index("FaceData.readSlot"))
+
+    def test_text_is_drawn_after_complete_hands_with_only_glyph_halos(self):
+        draw = GarminAnalogAodGeometryTests.function(self.view, "drawHybrid")
+        last_hand = draw.index("FaceModel.handFacetPoints(hour, minute, false)")
+        for call in ("hybridLine(dc, date", "hybridLine(dc, time", "hybridSlot(dc, weather", "hybridSlot(dc, steps", "hybridLine(dc, charge"):
+            self.assertGreater(draw.index(call), last_hand)
+        halo = GarminAnalogAodGeometryTests.function(self.view, "haloText")
+        self.assertIn("for (var dx = -1; dx <= 1; dx += 1)", halo)
+        self.assertIn("for (var dy = -1; dy <= 1; dy += 1)", halo)
+        self.assertLess(halo.index("dc.setColor(canvas, Graphics.COLOR_TRANSPARENT)"),
+                        halo.index("dc.setColor(ink, Graphics.COLOR_TRANSPARENT)"))
+        self.assertEqual(halo.count("Graphics.COLOR_TRANSPARENT"), 2)
+        self.assertNotIn("fillRectangle", halo + draw)
+        for method in ("hybridLine", "hybridSlot"):
+            body = GarminAnalogAodGeometryTests.function(self.view, method)
+            self.assertIn("dc.setClip(", body)
+            self.assertIn("dc.clearClip()", body)
+            self.assertIn('"--"', body)
+        self.assertNotIn("new Timer", draw + halo)
+
+    def test_hybrid_hides_legacy_choices_and_subscribes_only_to_displayed_fields(self):
+        subscription = GarminAnalogAodGeometryTests.function(self.settings, "refreshDataSubscriptions")
+        self.assertRegex(subscription, r"readLayout\(\) == FaceModel\.LAYOUT_HYBRID\) \{ FaceData\.shutdown\(\); \}")
+        self.assertIn("else { FaceData.refreshSubscriptions(readSlot(0), readSlot(1)); }", subscription)
+        self.assertNotIn("setValue", subscription)
+        self.assertIn("refreshDataSubscriptions();", GarminAnalogAodGeometryTests.function(self.settings, "saveLayout"))
+        self.assertIn("refreshDataSubscriptions();", GarminAnalogAodGeometryTests.function(self.settings, "saveSlot"))
+        self.assertIn("FaceSettings.refreshDataSubscriptions();", GarminAnalogAodGeometryTests.function(self.app, "onStart"))
+        self.assertIn("FaceSettings.refreshDataSubscriptions();", GarminAnalogAodGeometryTests.function(self.app, "onSettingsChanged"))
+        menu = GarminAnalogAodGeometryTests.function(self.settings, "makeSettingsMenu")
+        self.assertRegex(menu, r'LAYOUT_HYBRID\) \{\s*menu\.addItem\(new WatchUi\.MenuItem\(Rez.Strings.HybridDateTitle,')
+        self.assertRegex(menu, r'\} else \{\s*menu\.addItem\(new WatchUi\.MenuItem\(Rez.Strings.LeftDataTitle,')
+
+    def test_added_gregorian_tests_use_supplied_moments_without_device_clock_mutation(self):
+        tests = (ROOT / "garmin/watchface/tests/FaceModelTests.mc").read_text(encoding="utf-8")
+        self.assertIn("Gregorian.utcInfo(moment, Time.FORMAT_SHORT)", tests)
+        self.assertIn("Gregorian.localMoment(location, new Time.Moment(epochs[index]))", tests)
+        self.assertIn('"01:59", "03:00", "01:59", "01:00"', tests)
+        for forbidden in ("enableLocationEvents", "setClock", "setTimeZone", "Position.getInfo"):
+            self.assertNotIn(forbidden, tests)
 
 
 if __name__ == "__main__":

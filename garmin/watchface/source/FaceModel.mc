@@ -22,6 +22,21 @@ module FaceModel {
     const BATTERY_WIDTH = 172;
     const LAYOUT_ANALOG = 0;
     const LAYOUT_DIGITAL = 1;
+    const LAYOUT_HYBRID = 2;
+    const HYBRID_DATE_TOP = 66;
+    const HYBRID_DATE_BOTTOM = 96;
+    const HYBRID_DATE_WIDTH = 290;
+    const HYBRID_CLOCK_TOP = 122;
+    const HYBRID_CLOCK_BOTTOM = 174;
+    const HYBRID_CLOCK_WIDTH = 250;
+    const HYBRID_DATA_TOP = 274;
+    const HYBRID_DATA_BOTTOM = 354;
+    const HYBRID_DATA_WIDTH = 132;
+    const HYBRID_LEFT_X = 84;
+    const HYBRID_RIGHT_X = 238;
+    const HYBRID_CHARGE_TOP = 370;
+    const HYBRID_CHARGE_BOTTOM = 398;
+    const HYBRID_CHARGE_WIDTH = 180;
     const INTER_CLOCK_CHARACTERS = "0123456789:-";
     const DIAL_CENTER = 227;
     const TICK_OUTER = 221;
@@ -44,7 +59,7 @@ module FaceModel {
     function isLayout(value as Lang.Object or Null) as Lang.Boolean {
         if (!(value instanceof Lang.Number)) { return false; }
         var choice = value as Lang.Number;
-        return choice == LAYOUT_ANALOG || choice == LAYOUT_DIGITAL;
+        return choice == LAYOUT_ANALOG || choice == LAYOUT_DIGITAL || choice == LAYOUT_HYBRID;
     }
 
     function interClockEligible(layout as Lang.Number, scale as Lang.Float) as Lang.Boolean {
@@ -64,7 +79,48 @@ module FaceModel {
     }
 
     function sanitizeLayout(value as Lang.Object or Null) as Lang.Number {
-        return isLayout(value) ? (value as Lang.Number) : LAYOUT_ANALOG;
+        return isLayout(value) ? (value as Lang.Number) : LAYOUT_HYBRID;
+    }
+
+    function sanitizeDateFormat(value as Lang.Object or Null) as Lang.Number {
+        if (value instanceof Lang.Number && (value as Lang.Number) >= 0 &&
+                (value as Lang.Number) <= 2) { return value as Lang.Number; }
+        return 0;
+    }
+
+    function hybridDate(day as Lang.Number, month as Lang.Number, year as Lang.Number,
+            monthName as Lang.Object or Null, weekdayName as Lang.Object or Null,
+            order as Lang.Number) as Lang.String {
+        var iso = formatDate(day, month, year);
+        if (iso.equals("---- -- --")) { return "--- -- ---"; }
+        // Abbreviations are device/language dependent. The reviewed public
+        // DeviceSettings API does not expose a native date-order preference.
+        if (!(monthName instanceof Lang.String) || !(weekdayName instanceof Lang.String)) {
+            return iso;
+        }
+        var mon = monthName as Lang.String;
+        var week = weekdayName as Lang.String;
+        if (mon.length() == 0 || week.length() == 0) { return iso; }
+        if (order == 2) { return week + " " + iso; }
+        var date = order == 1 ? mon + " " + day.format("%d") : day.format("%d") + " " + mon;
+        return week + " " + date;
+    }
+
+    function hybridCharge(value as Lang.Object or Null,
+            charging as Lang.Object or Null) as Lang.String {
+        return (charging instanceof Lang.Boolean && (charging as Lang.Boolean) ? "CHG " : "BAT ") +
+            formatBattery(value);
+    }
+
+    function handFacetPoints(hour as Lang.Object or Null, minute as Lang.Object or Null,
+            hourHand as Lang.Boolean) as Lang.Array<Graphics.Point2D> {
+        if (!validClock(hour, minute)) { return []; }
+        var turn = hourHand ? hourTurns(hour, minute) : minuteTurns(minute);
+        if (turn == null) { return []; }
+        var length = hourHand ? HOUR_HAND_LENGTH : MINUTE_HAND_LENGTH;
+        return [radialPoint(turn, -18, 0), radialPoint(turn, length, 0),
+            radialPoint(turn, length - 18, hourHand ? 9 : 5),
+            radialPoint(turn, -18, hourHand ? 6 : 3)];
     }
 
     // Turns run clockwise from twelve. The lateral component follows the same

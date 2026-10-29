@@ -74,10 +74,10 @@ function analogAnglesAndCardinals(logger as Test.Logger) as Lang.Boolean {
     Test.assertEqual(FaceModel.minuteTurns(15), 0.25);
     Test.assertEqual(FaceModel.minuteTurns(30), 0.5);
     Test.assertEqual(FaceModel.minuteTurns(45), 0.75);
-    Test.assertEqual(FaceModel.hourTurns(24, 0), null);
-    Test.assertEqual(FaceModel.hourTurns(5.0, 0), null);
-    Test.assertEqual(FaceModel.minuteTurns(60), null);
-    Test.assertEqual(FaceModel.minuteTurns(false), null);
+    Test.assert(FaceModel.hourTurns(24, 0) == null);
+    Test.assert(FaceModel.hourTurns(5.0, 0) == null);
+    Test.assert(FaceModel.minuteTurns(60) == null);
+    Test.assert(FaceModel.minuteTurns(false) == null);
     var turns = [0.0, 0.25, 0.5, 0.75, 0.125, 0.375, 0.625, 0.875];
     var expected = [[227, 127], [327, 227], [227, 327], [127, 227],
         [298, 156], [298, 298], [156, 298], [156, 156]];
@@ -170,16 +170,17 @@ function layoutValidationPersistenceAndMenu(logger as Test.Logger) as Lang.Boole
         Test.assert(!FaceModel.isLayout(0.0));
         Test.assert(!FaceModel.isLayout("Analog"));
         Test.assert(!FaceModel.isLayout(-1));
-        Test.assert(!FaceModel.isLayout(2));
-        Test.assertEqual(FaceModel.sanitizeLayout(null), 0);
-        Test.assertEqual(FaceModel.sanitizeLayout("Digital"), 0);
+        Test.assert(FaceModel.isLayout(2));
+        Test.assert(!FaceModel.isLayout(3));
+        Test.assertEqual(FaceModel.sanitizeLayout(null), 2);
+        Test.assertEqual(FaceModel.sanitizeLayout("Digital"), 2);
         Test.assert(FaceSettings.saveLayout(0));
         Test.assertEqual(Application.Properties.getValue("layout"), 0);
         Test.assertEqual(FaceSettings.readLayout(), 0);
         Test.assert(FaceSettings.saveLayout(1));
         Test.assertEqual(Application.Properties.getValue("layout"), 1);
         Test.assertEqual(FaceSettings.readLayout(), 1);
-        Test.assert(!FaceSettings.saveLayout(2));
+        Test.assert(!FaceSettings.saveLayout(3));
         Test.assert(!FaceSettings.saveLayout(0.0));
         Test.assert(!FaceSettings.saveLayout("Analog"));
         Test.assertEqual(FaceSettings.readLayout(), 1);
@@ -189,14 +190,18 @@ function layoutValidationPersistenceAndMenu(logger as Test.Logger) as Lang.Boole
         Test.assert(analog != null && digital != null);
         Test.assertEqual((analog as WatchUi.MenuItem).getId(), 0);
         Test.assertEqual((digital as WatchUi.MenuItem).getId(), 1);
-        Test.assertEqual(menu.getItem(2), null);
+        var hybrid = menu.getItem(2);
+        Test.assert(hybrid != null);
+        Test.assertEqual((hybrid as WatchUi.MenuItem).getId(), 2);
+        Test.assert(menu.getItem(3) == null);
         Application.Properties.setValue("layout", "invalid");
-        Test.assertEqual(FaceSettings.readLayout(), 0);
+        Test.assertEqual(FaceSettings.readLayout(), 2);
         Test.assertEqual(Application.Properties.getValue("appearance"), appearance);
         Test.assertEqual(Application.Properties.getValue("leftData"), left);
         Test.assertEqual(Application.Properties.getValue("rightData"), right);
     } finally {
         Application.Properties.setValue("layout", before);
+        FaceSettings.refreshDataSubscriptions();
     }
     return true;
 }
@@ -397,6 +402,66 @@ function sharedDialAllMinutesAndEveryShiftStayRound(logger as Test.Logger) as La
     var center = [[227, 227], [227, 227]] as Lang.Array<Graphics.Point2D>;
     for (var phase = 0; phase < phases.size(); phase += 1) {
         assertSharedDialRoundGuard(center, phases[phase][0], phases[phase][1], 6);
+    }
+    return true;
+}
+
+(:test)
+function hybridSettingsPreserveLegacyFields(logger as Test.Logger) as Lang.Boolean {
+    var layout = Application.Properties.getValue("layout");
+    var left = Application.Properties.getValue("leftData");
+    var right = Application.Properties.getValue("rightData");
+    var date = Application.Properties.getValue("hybridDateFormat");
+    try {
+        Application.Properties.setValue("leftData", FaceData.BODY_BATTERY);
+        Application.Properties.setValue("rightData", FaceData.BODY_BATTERY);
+        Test.assert(FaceSettings.saveLayout(2));
+        Test.assertEqual(FaceSettings.readLayout(), 2);
+        Test.assertEqual(Application.Properties.getValue("leftData"), FaceData.BODY_BATTERY);
+        Test.assertEqual(Application.Properties.getValue("rightData"), FaceData.BODY_BATTERY);
+        var menu = FaceSettings.makeSettingsMenu();
+        var dateItem = menu.getItem(2);
+        Test.assert(dateItem != null);
+        Test.assertEqual((dateItem as WatchUi.MenuItem).getId(), "date");
+        Test.assert(menu.getItem(3) == null);
+        for (var order = 0; order <= 2; order += 1) {
+            Test.assert(FaceSettings.saveDateFormat(order));
+            Test.assertEqual(FaceSettings.readDateFormat(), order);
+        }
+        Test.assert(!FaceSettings.saveDateFormat(3));
+        Test.assert(!FaceSettings.saveDateFormat(1.0));
+        Test.assert(!FaceSettings.saveDateFormat("1"));
+        Test.assertEqual(FaceSettings.readDateFormat(), 2);
+        Test.assert(FaceSettings.saveLayout(0));
+        var legacy = FaceSettings.makeSettingsMenu();
+        Test.assertEqual((legacy.getItem(2) as WatchUi.MenuItem).getId(), "left");
+        Test.assertEqual((legacy.getItem(3) as WatchUi.MenuItem).getId(), "right");
+    } finally {
+        Application.Properties.setValue("layout", layout);
+        Application.Properties.setValue("leftData", left);
+        Application.Properties.setValue("rightData", right);
+        Application.Properties.setValue("hybridDateFormat", date);
+        FaceSettings.refreshDataSubscriptions();
+    }
+    return true;
+}
+
+(:test)
+function hybridFacetsPreserveSharedHandBounds(logger as Test.Logger) as Lang.Boolean {
+    Test.assertEqual(FaceModel.handFacetPoints(null, 0, true).size(), 0);
+    Test.assertEqual(FaceModel.handFacetPoints(0, 60, false).size(), 0);
+    Test.assert(!FaceModel.interClockEligible(FaceModel.LAYOUT_HYBRID, 1.0));
+    for (var hour = 0; hour < 12; hour += 1) {
+        for (var minute = 0; minute < 60; minute += 1) {
+            for (var which = 0; which < 2; which += 1) {
+                var facet = FaceModel.handFacetPoints(hour, minute, which == 0);
+                Test.assertEqual(facet.size(), 4);
+                assertSharedDialRoundGuard(facet, 0, 0, 3);
+                var whole = FaceModel.handPoints(hour, minute, which == 0);
+                Test.assertEqual(facet[1][0], whole[2][0]);
+                Test.assertEqual(facet[1][1], whole[2][1]);
+            }
+        }
     }
     return true;
 }

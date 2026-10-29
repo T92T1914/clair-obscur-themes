@@ -3,6 +3,14 @@
         <settingConfig type="list">
             <listEntry value="0">@Strings.AnalogLabel</listEntry>
             <listEntry value="1">@Strings.DigitalLabel</listEntry>
+            <listEntry value="2">@Strings.HybridLabel</listEntry>
+        </settingConfig>
+    </setting>
+    <setting propertyKey="@Properties.hybridDateFormat" title="@Strings.HybridDateTitle">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.DayMonthLabel</listEntry>
+            <listEntry value="1">@Strings.MonthDayLabel</listEntry>
+            <listEntry value="2">@Strings.IsoDateLabel</listEntry>
         </settingConfig>
     </setting>
     <setting propertyKey="@Properties.appearance" title="@Strings.AppearanceTitle">

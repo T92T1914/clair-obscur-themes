@@ -3,6 +3,84 @@ using Toybox.Lang;
 using Toybox.Math;
 using Toybox.System;
 using Toybox.Test;
+using Toybox.Time;
+using Toybox.Time.Gregorian;
+using Toybox.Position;
+
+(:test)
+function hybridLocalizedDateFormats(logger as Test.Logger) as Lang.Boolean {
+    Test.assertEqual(FaceModel.hybridDate(29, 2, 2024, "Feb", "Thu", 0), "Thu 29 Feb");
+    Test.assertEqual(FaceModel.hybridDate(29, 2, 2024, "Feb", "Thu", 1), "Thu Feb 29");
+    Test.assertEqual(FaceModel.hybridDate(29, 2, 2024, "Feb", "Thu", 2), "Thu 2024-02-29");
+    Test.assertEqual(FaceModel.hybridDate(1, 1, 2027, "Jan", "Fri", 0), "Fri 1 Jan");
+    Test.assertEqual(FaceModel.hybridDate(31, 12, 2026, "Dez", "Do", 0), "Do 31 Dez");
+    Test.assertEqual(FaceModel.hybridDate(29, 2, 2023, "Feb", "Wed", 0), "--- -- ---");
+    Test.assertEqual(FaceModel.hybridDate(29, 2, 2100, "Feb", "Mon", 0), "--- -- ---");
+    Test.assertEqual(FaceModel.hybridDate(31, 4, 2026, "Apr", "Thu", 0), "--- -- ---");
+    Test.assertEqual(FaceModel.hybridDate(1, 1, 2027, null, null, 0), "2027-01-01");
+    Test.assertEqual(FaceModel.hybridDate(1, 1, 2027, "", "Fri", 0), "2027-01-01");
+    Test.assertEqual(FaceModel.sanitizeDateFormat(0), 0);
+    Test.assertEqual(FaceModel.sanitizeDateFormat(1), 1);
+    Test.assertEqual(FaceModel.sanitizeDateFormat(2), 2);
+    Test.assertEqual(FaceModel.sanitizeDateFormat(3), 0);
+    Test.assertEqual(FaceModel.sanitizeDateFormat(1.0), 0);
+    return true;
+}
+
+(:test)
+function actualGregorianRolloverMoments(logger as Test.Logger) as Lang.Boolean {
+    // Independent UTC epoch fixtures, not a mutation of the simulator/device clock.
+    var epochs = [1709164740, 1709164800, 1709251140, 1709251200, 1798761540, 1798761600];
+    var dates = ["2024-02-28", "2024-02-29", "2024-02-29", "2024-03-01", "2026-12-31", "2027-01-01"];
+    var times = ["23:59", "00:00", "23:59", "00:00", "23:59", "00:00"];
+    for (var index = 0; index < epochs.size(); index += 1) {
+        var moment = new Time.Moment(epochs[index]);
+        var utc = Gregorian.utcInfo(moment, Time.FORMAT_SHORT);
+        Test.assertEqual(FaceModel.formatDate(utc.day, utc.month, utc.year), dates[index]);
+        Test.assertEqual(FaceModel.formatTime(utc.hour, utc.min, true), times[index]);
+        // Production uses these two native formats from the same Moment.
+        var local = Gregorian.info(moment, Time.FORMAT_SHORT);
+        var names = Gregorian.info(moment, Time.FORMAT_MEDIUM);
+        Test.assertEqual(names.day, local.day);
+        Test.assertEqual(names.year, local.year);
+        Test.assertEqual(names.hour, local.hour);
+        Test.assertEqual(names.min, local.min);
+        Test.assert(names.month instanceof Lang.String);
+        Test.assert(names.day_of_week instanceof Lang.String);
+    }
+    return true;
+}
+
+(:test)
+function actualTimezoneAndDstMoments(logger as Test.Logger) as Lang.Boolean {
+    // Synthetic New York coordinates. No location provider, position history,
+    // device clock, language or timezone setting is read or changed by this test.
+    var location = new Position.Location({:latitude => 40.7128, :longitude => -74.0060, :format => :degrees});
+    var epochs = [1772953140, 1772953200, 1793512740, 1793512800];
+    var times = ["01:59", "03:00", "01:59", "01:00"];
+    var dates = ["2026-03-08", "2026-03-08", "2026-11-01", "2026-11-01"];
+    for (var index = 0; index < epochs.size(); index += 1) {
+        var localMoment = Gregorian.localMoment(location, new Time.Moment(epochs[index]));
+        if (localMoment == null) { logger.error("Target did not supply the documented synthetic timezone conversion"); return false; }
+        var info = Gregorian.info(localMoment, Time.FORMAT_SHORT);
+        Test.assertEqual(FaceModel.formatTime(info.hour, info.min, true), times[index]);
+        Test.assertEqual(FaceModel.formatDate(info.day, info.month, info.year), dates[index]);
+        Test.assertEqual(FaceModel.period(info.hour, false), "AM");
+    }
+    return true;
+}
+
+(:test)
+function hybridWatchChargeStates(logger as Test.Logger) as Lang.Boolean {
+    Test.assertEqual(FaceModel.hybridCharge(80.9, false), "BAT 80%");
+    Test.assertEqual(FaceModel.hybridCharge(80.9, true), "CHG 80%");
+    Test.assertEqual(FaceModel.hybridCharge(100, true), "CHG 100%");
+    Test.assertEqual(FaceModel.hybridCharge(0, false), "BAT 0%");
+    Test.assertEqual(FaceModel.hybridCharge(null, false), "BAT --%");
+    Test.assertEqual(FaceModel.hybridCharge(Math.sqrt(-1), true), "CHG --%");
+    Test.assertEqual(FaceModel.hybridCharge(50, "true"), "BAT 50%");
+    return true;
+}
 
 (:test)
 function clockFormatting(logger as Test.Logger) as Lang.Boolean {
