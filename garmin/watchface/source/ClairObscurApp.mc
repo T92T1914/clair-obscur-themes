@@ -12,7 +12,7 @@ class ClairObscurApp extends Application.AppBase {
     }
 
     function onStart(state as Lang.Dictionary or Null) as Void {
-        FaceData.refreshSubscriptions(FaceSettings.readSlot(0), FaceSettings.readSlot(1));
+        FaceSettings.refreshDataSubscriptions();
     }
 
     function onStop(state as Lang.Dictionary or Null) as Void { FaceData.shutdown(); }
@@ -23,7 +23,7 @@ class ClairObscurApp extends Application.AppBase {
     }
 
     function onSettingsChanged() as Void {
-        FaceData.refreshSubscriptions(FaceSettings.readSlot(0), FaceSettings.readSlot(1));
+        FaceSettings.refreshDataSubscriptions();
         WatchUi.requestUpdate();
     }
 

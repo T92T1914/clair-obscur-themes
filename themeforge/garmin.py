@@ -9,7 +9,7 @@ from .legal import license_comment
 from .tokens import load, validate
 
 
-VERSION = "0.7.0"
+VERSION = "0.9.0"
 
 
 def render_palette(document: dict) -> str:

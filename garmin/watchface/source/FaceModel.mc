@@ -22,6 +22,49 @@ module FaceModel {
     const BATTERY_WIDTH = 172;
     const LAYOUT_ANALOG = 0;
     const LAYOUT_DIGITAL = 1;
+    const LAYOUT_HYBRID = 2;
+    const HYBRID_DATE_TOP = 100;
+    const HYBRID_DATE_BOTTOM = 126;
+    const HYBRID_DATE_WIDTH = 240;
+    const HYBRID_CLOCK_LEFT = 276;
+    const HYBRID_CLOCK_TOP = 204;
+    const HYBRID_CLOCK_BOTTOM = 250;
+    const HYBRID_CLOCK_WIDTH = 112;
+    const HYBRID_DATA_TOP = 270;
+    const HYBRID_DATA_BOTTOM = 340;
+    const HYBRID_DATA_WIDTH = 114;
+    const HYBRID_LEFT_X = 104;
+    const HYBRID_RIGHT_X = 236;
+    const HYBRID_CHARGE_TOP = 342;
+    const HYBRID_CHARGE_BOTTOM = 367;
+    const HYBRID_CHARGE_WIDTH = 140;
+    // The original Analog/Digital geometry below remains independent of Hybrid.
+    const HYBRID_MARKER_CENTER = 170;
+    const HYBRID_CIRCLE_RADIUS = 14;
+    const HYBRID_CIRCLE_INNER = 12;
+    const HYBRID_BATON_INNER = 142;
+    const HYBRID_BATON_OUTER = 182;
+    const HYBRID_BATON_HALF = 7;
+    const HYBRID_TRIANGLE_INNER = 136;
+    const HYBRID_TRIANGLE_OUTER = 182;
+    const HYBRID_TRIANGLE_HALF = 18;
+    const HYBRID_TICK_OUTER = 194;
+    const HYBRID_TICK_INNER = 188;
+    const HYBRID_HOUR_DISC_CENTER = 96;
+    const HYBRID_HOUR_DISC_RADIUS = 18;
+    const HYBRID_HOUR_DISC_INNER = 16;
+    const HYBRID_HOUR_STEM_INNER = -18;
+    const HYBRID_HOUR_STEM_OUTER = 80;
+    const HYBRID_HOUR_STEM_HALF = 5;
+    const HYBRID_HOUR_TIP_BASE = 110;
+    const HYBRID_HOUR_TIP_HALF = 7;
+    const HYBRID_HOUR_TIP_LENGTH = 130;
+    const HYBRID_MINUTE_LENGTH = 191;
+    const HYBRID_MINUTE_HALF = 6;
+    const HYBRID_MINUTE_TAIL_HALF = 4;
+    const HYBRID_BEZEL_OUTER = 223;
+    const HYBRID_BEZEL_INNER = 194;
+    const HYBRID_BEZEL_RADIUS = 206;
     const INTER_CLOCK_CHARACTERS = "0123456789:-";
     const DIAL_CENTER = 227;
     const TICK_OUTER = 221;
@@ -44,7 +87,7 @@ module FaceModel {
     function isLayout(value as Lang.Object or Null) as Lang.Boolean {
         if (!(value instanceof Lang.Number)) { return false; }
         var choice = value as Lang.Number;
-        return choice == LAYOUT_ANALOG || choice == LAYOUT_DIGITAL;
+        return choice == LAYOUT_ANALOG || choice == LAYOUT_DIGITAL || choice == LAYOUT_HYBRID;
     }
 
     function interClockEligible(layout as Lang.Number, scale as Lang.Float) as Lang.Boolean {
@@ -64,7 +107,163 @@ module FaceModel {
     }
 
     function sanitizeLayout(value as Lang.Object or Null) as Lang.Number {
-        return isLayout(value) ? (value as Lang.Number) : LAYOUT_ANALOG;
+        return isLayout(value) ? (value as Lang.Number) : LAYOUT_HYBRID;
+    }
+
+    function sanitizeDateFormat(value as Lang.Object or Null) as Lang.Number {
+        if (value instanceof Lang.Number && (value as Lang.Number) >= 0 &&
+                (value as Lang.Number) <= 2) { return value as Lang.Number; }
+        return 0;
+    }
+
+    function hybridDate(day as Lang.Number, month as Lang.Number, year as Lang.Number,
+            monthName as Lang.Object or Null, weekdayName as Lang.Object or Null,
+            order as Lang.Number) as Lang.String {
+        var iso = formatDate(day, month, year);
+        if (iso.equals("---- -- --")) { return "--- -- ---"; }
+        // Abbreviations are device/language dependent. The reviewed public
+        // DeviceSettings API does not expose a native date-order preference.
+        if (!(monthName instanceof Lang.String) || !(weekdayName instanceof Lang.String)) {
+            return iso;
+        }
+        var mon = monthName as Lang.String;
+        var week = weekdayName as Lang.String;
+        if (mon.length() == 0 || week.length() == 0) { return iso; }
+        if (order == 2) { return week + " " + iso; }
+        var date = order == 1 ? mon + " " + day.format("%d") : day.format("%d") + " " + mon;
+        return week + " " + date;
+    }
+
+    function hybridCharge(value as Lang.Object or Null,
+            charging as Lang.Object or Null) as Lang.String {
+        return (charging instanceof Lang.Boolean && (charging as Lang.Boolean) ? "CHG " : "BAT ") +
+            formatBattery(value);
+    }
+
+    function hybridMinuteTick(index as Lang.Object or Null)
+            as Lang.Array<Graphics.Point2D> {
+        var i = integerValue(index);
+        if (i == null || i < 0 || i >= 60) { return []; }
+        var turn = (i / 60.0).toFloat();
+        return [radialPoint(turn, HYBRID_TICK_OUTER, 0),
+            radialPoint(turn, HYBRID_TICK_INNER, 0)];
+    }
+
+    function hybridCircleCenter(index as Lang.Object or Null) as Lang.Array<Lang.Number> {
+        var i = integerValue(index);
+        if (i == null || i < 1 || i >= 12 || i % 3 == 0) { return []; }
+        return radialPoint((i / 12.0).toFloat(), HYBRID_MARKER_CENTER, 0);
+    }
+
+    function hybridBaton(index as Lang.Object or Null, inset as Lang.Boolean)
+            as Lang.Array<Graphics.Point2D> {
+        var i = integerValue(index);
+        if (i == null || (i != 3 && i != 6 && i != 9)) { return []; }
+        var turn = (i / 12.0).toFloat();
+        var amount = inset ? 2 : 0;
+        var inner = HYBRID_BATON_INNER + amount;
+        var outer = HYBRID_BATON_OUTER - amount;
+        var half = HYBRID_BATON_HALF - amount;
+        return [radialPoint(turn, inner, -half), radialPoint(turn, outer, -half),
+            radialPoint(turn, outer, half), radialPoint(turn, inner, half)];
+    }
+
+    function hybridActiveBaton(index as Lang.Object or Null, inset as Lang.Boolean)
+            as Lang.Array<Graphics.Point2D> {
+        // The active three-o'clock aperture replaces this baton. Sparse AOD
+        // omits the aperture and can retain the same original three batons.
+        var i = integerValue(index);
+        if (i == null || i == 3) { return []; }
+        return hybridBaton(i, inset);
+    }
+
+    function hybridTriangle(inset as Lang.Boolean) as Lang.Array<Graphics.Point2D> {
+        var amount = inset ? 2 : 0;
+        return [radialPoint(0.0, HYBRID_TRIANGLE_OUTER - amount, -HYBRID_TRIANGLE_HALF + amount),
+            radialPoint(0.0, HYBRID_TRIANGLE_OUTER - amount, HYBRID_TRIANGLE_HALF - amount),
+            radialPoint(0.0, HYBRID_TRIANGLE_INNER + amount, 0)];
+    }
+
+    function hybridHourStem(hour as Lang.Object or Null, minute as Lang.Object or Null,
+            inset as Lang.Boolean) as Lang.Array<Graphics.Point2D> {
+        var turn = hourTurns(hour, minute);
+        if (turn == null) { return []; }
+        var amount = inset ? 2 : 0;
+        var inner = HYBRID_HOUR_STEM_INNER + amount;
+        var outer = HYBRID_HOUR_STEM_OUTER - amount;
+        var half = HYBRID_HOUR_STEM_HALF - amount;
+        return [radialPoint(turn, inner, -half), radialPoint(turn, outer, -half),
+            radialPoint(turn, outer, half), radialPoint(turn, inner, half)];
+    }
+
+    function hybridHourTip(hour as Lang.Object or Null, minute as Lang.Object or Null,
+            inset as Lang.Boolean) as Lang.Array<Graphics.Point2D> {
+        var turn = hourTurns(hour, minute);
+        if (turn == null) { return []; }
+        var amount = inset ? 2 : 0;
+        var base = HYBRID_HOUR_TIP_BASE + amount;
+        var half = HYBRID_HOUR_TIP_HALF - amount;
+        return [radialPoint(turn, base, -half),
+            radialPoint(turn, HYBRID_HOUR_TIP_LENGTH - amount, 0),
+            radialPoint(turn, base, half)];
+    }
+
+    function hybridHourDiscCenter(hour as Lang.Object or Null, minute as Lang.Object or Null)
+            as Lang.Array<Lang.Number> {
+        var turn = hourTurns(hour, minute);
+        if (turn == null) { return []; }
+        return radialPoint(turn, HYBRID_HOUR_DISC_CENTER, 0);
+    }
+
+    function hybridHourSpoke(hour as Lang.Object or Null, minute as Lang.Object or Null,
+            part as Lang.Object or Null) as Lang.Array<Graphics.Point2D> {
+        var turn = hourTurns(hour, minute);
+        var p = integerValue(part);
+        if (turn == null || p == null || p < 0 || p >= 3) { return []; }
+        // Local radial/lateral endpoints give three clear sectors. The stem and
+        // arrow are separate, so sparse always-on never runs a line through it.
+        var radial = p == 0 ? 16 : -8;
+        var lateral = p == 0 ? 0 : (p == 1 ? -14 : 14);
+        return [radialPoint(turn, HYBRID_HOUR_DISC_CENTER, 0),
+            radialPoint(turn, HYBRID_HOUR_DISC_CENTER + radial, lateral)];
+    }
+
+    function hybridMinuteHand(hour as Lang.Object or Null, minute as Lang.Object or Null,
+            inset as Lang.Boolean) as Lang.Array<Graphics.Point2D> {
+        if (!validClock(hour, minute)) { return []; }
+        var turn = minuteTurns(minute);
+        if (turn == null) { return []; }
+        var amount = inset ? 2 : 0;
+        var tail = -18 + amount;
+        var half = HYBRID_MINUTE_HALF - amount;
+        var tailHalf = HYBRID_MINUTE_TAIL_HALF - amount;
+        return [radialPoint(turn, tail, -tailHalf),
+            radialPoint(turn, HYBRID_MINUTE_LENGTH - 18, -half),
+            radialPoint(turn, HYBRID_MINUTE_LENGTH - amount, 0),
+            radialPoint(turn, HYBRID_MINUTE_LENGTH - 18, half),
+            radialPoint(turn, tail, tailHalf)];
+    }
+
+    function hybridShiftPoints(points as Lang.Array<Graphics.Point2D>,
+            minute as Lang.Object or Null) as Lang.Array<Graphics.Point2D> {
+        var shift = aodAnalogOffset(minute);
+        if (shift.size() != 2) { return []; }
+        var result = [] as Lang.Array<Graphics.Point2D>;
+        for (var point = 0; point < points.size(); point += 1) {
+            result.add([points[point][0] + shift[0], points[point][1] + shift[1]]);
+        }
+        return result;
+    }
+
+    function handFacetPoints(hour as Lang.Object or Null, minute as Lang.Object or Null,
+            hourHand as Lang.Boolean) as Lang.Array<Graphics.Point2D> {
+        if (!validClock(hour, minute)) { return []; }
+        var turn = hourHand ? hourTurns(hour, minute) : minuteTurns(minute);
+        if (turn == null) { return []; }
+        var length = hourHand ? HOUR_HAND_LENGTH : MINUTE_HAND_LENGTH;
+        return [radialPoint(turn, -18, 0), radialPoint(turn, length, 0),
+            radialPoint(turn, length - 18, hourHand ? 9 : 5),
+            radialPoint(turn, -18, hourHand ? 6 : 3)];
     }
 
     // Turns run clockwise from twelve. The lateral component follows the same
