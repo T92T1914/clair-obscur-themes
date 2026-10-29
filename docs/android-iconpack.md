@@ -37,7 +37,7 @@ The retained 0.30.0 configurations require the qualified 0.30.0 PNG export with 
 
 The retained Clair 0.1.2/code 3 and Obscur 0.1.13/code 14 require the qualified 0.29.0 PNG export with manifest SHA-256 `37f462e9d74707802c1b43f242f2604546f04e5b896f5eea7f77afe24c1de643`. Its 600 SVG masters produce 1,200 PNGs across both appearances and export sizes. All 1,200 saved PNGs were independently decoded and checked for neutral RGBA pixels and exact identities. Twenty PNGs change for Delta, American, Southwest, Wikipedia and Earth, while the other 1,180 retain their exact 0.28.0 bytes. Ten SVGs change and the other 590 retain their exact bytes. This export records headless Chrome 156.0.8078.48 with Playwright 1.63.0 and Node v24.16.0. Qualify the resulting APK's compiled resources and signature separately. Export checks do not establish human recognition, launcher masking or phone acceptance.
 
-The retained Clair 0.1.1/code 2 and Obscur 0.1.12/code 13 require the qualified 0.28.0 export with manifest SHA-256 `c16df5b56cf8e1c3b9d23017c20250e008c0a2c8866a20a41e16afd5695068b0`. Its eight Claude/Perplexity PNGs changed from 0.27.0, preserving the other 1,192 PNGs and 596 SVGs under the same renderer. That historical pin is not an input identity for the current 0.30.0 configuration.
+The retained Clair 0.1.1/code 2 and Obscur 0.1.12/code 13 require the qualified 0.28.0 export with manifest SHA-256 `c16df5b56cf8e1c3b9d23017c20250e008c0a2c8866a20a41e16afd5695068b0`. Its eight Claude/Perplexity PNGs changed from 0.27.0, preserving the other 1,192 PNGs and 596 SVGs under the same renderer. That historical pin is not an input identity for the current 0.31.0 configuration.
 
 The retained Clair 0.1.0 and Obscur 0.1.11 use the qualified 0.27.0 export with manifest SHA-256 `0228d1325264b0414977587cbc39fe2557c0ba12f673f38790abdad67d817f1b`. Its four United Airlines PNGs changed from 0.26.0, preserving the other 1,196 PNGs and 598 SVGs.
 
@@ -97,7 +97,7 @@ The generated project contains exact artwork copies, both XML and asset forms of
 
 ## Apply through the actual consumer
 
-Both packs have minimum API 26 and target API 36 and declare no permissions. The identity table above distinguishes Clair Icons 0.1.2/code 3 from Obscur Icons 0.1.13/code 14. Installation still requires the device owner's approved Android installation path. Preserve the accepted Obscur app and working icon-theme selection when trying the separate Clair package. Do not change security settings or replace an unrelated application to force installation.
+Both packs have minimum API 26 and target API 36 and declare no permissions. The identity table above distinguishes Clair Icons 0.1.4/code 5 from Obscur Icons 0.1.15/code 16. Installation still requires the device owner's approved Android installation path. Preserve the accepted Obscur app and working icon-theme selection when trying the separate Clair package. Do not change security settings or replace an unrelated application to force installation.
 
 For later native acceptance, first record the installed Android, launcher and Theme Park/module versions, both display layouts, installed pack identities and current theme selection. Keep the working theme and home-screen arrangement. After an approved installation, open each installed pack and check its exact package/artwork label. Opening the app or pressing Check icon coverage does not apply a theme.
 

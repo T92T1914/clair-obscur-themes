@@ -1422,7 +1422,17 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
         assert.ok(rgba.some((value, index) => index % 4 === 3 && value > 0), 'Legacy drawing remains visible');
       }
     }
-    assert.equal(new Set(hashes).size, historicalFunctions.length, `${appearance}/${size} retains every historical drawing`);
+    if (version === '0.30.0') {
+      // The accepted monochrome Zillow family retains two IDs for one shared mark.
+      assert.equal(new Set(hashes).size, historicalFunctions.length - 1,
+        `${appearance}/${size} preserves the accepted Zillow-family shared mark`);
+      const groups = new Map();
+      historicalFunctions.forEach((name, index) => groups.set(hashes[index], [...(groups.get(hashes[index]) || []), name]));
+      assert.deepEqual([...groups.values()].filter(names => names.length > 1).map(names => names.sort()),
+        [['zillow', 'zillow-rentals']], 'Only the accepted 0.30 Zillow assignments share pixels');
+    } else {
+      assert.equal(new Set(hashes).size, historicalFunctions.length, `${appearance}/${size} retains every historical drawing`);
+    }
   }
   assert.deepEqual(Object.keys(await snapshot(output)).sort(), expected.sort());
   assert.deepEqual(await snapshot(historicalSource), historicalBefore);
