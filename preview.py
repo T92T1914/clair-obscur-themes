@@ -18,6 +18,7 @@ from themeforge.build import (
 from themeforge.equicord import FACES
 from themeforge.guides import guide_anchor, render_guides
 from themeforge.icons import render_icons
+from themeforge.icon_availability import mapping_availability
 from themeforge.keyboard import BACKGROUNDS as KEYBOARD_BACKGROUNDS, keyboard_section, render_keyboard
 from themeforge.terminal import ANSI_FIELDS, ARCHIVE as TERMINAL_ARCHIVE, FRAGMENT as TERMINAL_FRAGMENT, render_terminal
 from themeforge.legal import normalize_license
@@ -30,7 +31,8 @@ WEB_ASSETS = frozenset({'index.html', 'preview.css', 'preview.js', 'appearance.j
 REPOSITORY_URL = 'https://github.com/T92T1914/clair-obscur-themes'
 PORTABLE_ARCHIVE = 'Clair-Obscur-portable-preview.zip'
 PORTABLE_CHECKSUMS = 'portable-SHA256SUMS'
-ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.30.0.zip'
+ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.31.0.zip'
+CRAFT_ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.30.0.zip'
 ART_DIRECTION_ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.29.0.zip'
 IDENTITY_ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.28.0.zip'
 ROUTE_ICON_ARCHIVE = 'icons/Clair-Obscur-SVG-Icons-0.27.0.zip'
@@ -293,9 +295,9 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
     icon_files['LICENSE.txt'] = sources['LICENSE']
     files['icons/LICENSE.txt'] = sources['LICENSE']
     files[ICON_ARCHIVE] = _zip_bytes(icon_files)
-    for revision, archive in (('0.29.0', ART_DIRECTION_ICON_ARCHIVE), ('0.28.0', IDENTITY_ICON_ARCHIVE), ('0.27.0', ROUTE_ICON_ARCHIVE), ('0.26.0', COMMUNICATION_ICON_ARCHIVE), ('0.25.0', MESSAGING_ICON_ARCHIVE), ('0.24.0', CONTACT_SPACED_ICON_ARCHIVE), ('0.23.0', CONTAINED_ICON_ARCHIVE), ('0.22.0', SPACED_ICON_ARCHIVE), ('0.21.0', POLISHED_ICON_ARCHIVE), ('0.20.0', VIDEO_EDITING_ICON_ARCHIVE), ('0.19.0', GBOARD_ICON_ARCHIVE), ('0.18.0', REFINED_ICON_ARCHIVE), ('0.17.0', PHONE_SERVICE_ICON_ARCHIVE), ('0.16.0', READING_ICON_ARCHIVE), ('0.15.0', LEARNING_ICON_ARCHIVE), ('0.14.0', RUNNING_TRAINING_ICON_ARCHIVE), ('0.13.0', WEATHER_ICON_ARCHIVE), ('0.12.0', FINANCE_ICON_ARCHIVE), ('0.11.0', TRAVEL_ICON_ARCHIVE), ('0.10.0', FOOD_ORDER_ICON_ARCHIVE), ('0.9.0', EVERYDAY_ICON_ARCHIVE), ('0.8.0', BROAD_ICON_ARCHIVE), ('0.7.0', COMPANION_ICON_ARCHIVE), ('0.6.0', MONOCHROME_ICON_ARCHIVE), ('0.5.0', THIRD_APP_ICON_ARCHIVE), ('0.4.0', SECOND_APP_ICON_ARCHIVE), ('0.3.0', FIRST_APP_ICON_ARCHIVE),
+    for revision, archive in (('0.30.0', CRAFT_ICON_ARCHIVE), ('0.29.0', ART_DIRECTION_ICON_ARCHIVE), ('0.28.0', IDENTITY_ICON_ARCHIVE), ('0.27.0', ROUTE_ICON_ARCHIVE), ('0.26.0', COMMUNICATION_ICON_ARCHIVE), ('0.25.0', MESSAGING_ICON_ARCHIVE), ('0.24.0', CONTACT_SPACED_ICON_ARCHIVE), ('0.23.0', CONTAINED_ICON_ARCHIVE), ('0.22.0', SPACED_ICON_ARCHIVE), ('0.21.0', POLISHED_ICON_ARCHIVE), ('0.20.0', VIDEO_EDITING_ICON_ARCHIVE), ('0.19.0', GBOARD_ICON_ARCHIVE), ('0.18.0', REFINED_ICON_ARCHIVE), ('0.17.0', PHONE_SERVICE_ICON_ARCHIVE), ('0.16.0', READING_ICON_ARCHIVE), ('0.15.0', LEARNING_ICON_ARCHIVE), ('0.14.0', RUNNING_TRAINING_ICON_ARCHIVE), ('0.13.0', WEATHER_ICON_ARCHIVE), ('0.12.0', FINANCE_ICON_ARCHIVE), ('0.11.0', TRAVEL_ICON_ARCHIVE), ('0.10.0', FOOD_ORDER_ICON_ARCHIVE), ('0.9.0', EVERYDAY_ICON_ARCHIVE), ('0.8.0', BROAD_ICON_ARCHIVE), ('0.7.0', COMPANION_ICON_ARCHIVE), ('0.6.0', MONOCHROME_ICON_ARCHIVE), ('0.5.0', THIRD_APP_ICON_ARCHIVE), ('0.4.0', SECOND_APP_ICON_ARCHIVE), ('0.3.0', FIRST_APP_ICON_ARCHIVE),
                               ('0.2.0', PREVIOUS_ICON_ARCHIVE), ('0.1.0', LEGACY_ICON_ARCHIVE)):
-        retained_icons = render_icons(identity_document if revision in ('0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0', '0.15.0', '0.16.0', '0.17.0', '0.18.0', '0.19.0', '0.20.0', '0.21.0', '0.22.0', '0.23.0', '0.24.0', '0.25.0', '0.26.0', '0.27.0', '0.28.0', '0.29.0') else document, version=revision)
+        retained_icons = render_icons(identity_document if revision in ('0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0', '0.15.0', '0.16.0', '0.17.0', '0.18.0', '0.19.0', '0.20.0', '0.21.0', '0.22.0', '0.23.0', '0.24.0', '0.25.0', '0.26.0', '0.27.0', '0.28.0', '0.29.0', '0.30.0') else document, version=revision)
         for path, payload in retained_icons.items():
             if path.endswith('.svg') and icon_license_comment not in payload:
                 raise ValueError('Source license differs from the generated icon grant')
@@ -303,8 +305,19 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
         files[archive] = _zip_bytes(retained_icons)
     files[ICON_CHECKSUMS] = (
         ''.join(f'{_digest(files[path])}  {Path(path).name}\n'
-                for path in (ICON_ARCHIVE, ART_DIRECTION_ICON_ARCHIVE, IDENTITY_ICON_ARCHIVE, ROUTE_ICON_ARCHIVE, COMMUNICATION_ICON_ARCHIVE, MESSAGING_ICON_ARCHIVE, CONTACT_SPACED_ICON_ARCHIVE, CONTAINED_ICON_ARCHIVE, SPACED_ICON_ARCHIVE, POLISHED_ICON_ARCHIVE, VIDEO_EDITING_ICON_ARCHIVE, GBOARD_ICON_ARCHIVE, REFINED_ICON_ARCHIVE, PHONE_SERVICE_ICON_ARCHIVE, READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
+                for path in (ICON_ARCHIVE, CRAFT_ICON_ARCHIVE, ART_DIRECTION_ICON_ARCHIVE, IDENTITY_ICON_ARCHIVE, ROUTE_ICON_ARCHIVE, COMMUNICATION_ICON_ARCHIVE, MESSAGING_ICON_ARCHIVE, CONTACT_SPACED_ICON_ARCHIVE, CONTAINED_ICON_ARCHIVE, SPACED_ICON_ARCHIVE, POLISHED_ICON_ARCHIVE, VIDEO_EDITING_ICON_ARCHIVE, GBOARD_ICON_ARCHIVE, REFINED_ICON_ARCHIVE, PHONE_SERVICE_ICON_ARCHIVE, READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
                              PREVIOUS_ICON_ARCHIVE, LEGACY_ICON_ARCHIVE)).encode()
+    )
+    availability = mapping_availability(
+        catalog, root / 'android/iconpack/components.json',
+        sources['android/iconpack/components.json'])
+    named_count = sum(entry['kind'] == 'app' for entry in catalog)
+    mapped_named_count = sum(entry['kind'] == 'app' and availability[entry['id']].included
+                             for entry in catalog)
+    mapping_summary = (
+        f'Exact icon-pack mappings are recorded for {mapped_named_count} of {named_count} named app packages. '
+        f'The other {named_count - mapped_named_count} have artwork and a manual-selection route. '
+        'A declared mapping does not prove that an installed app, launcher or saved Theme Park theme uses it.'
     )
     icon_cards = {'app': [], 'function': []}
     for entry in catalog:
@@ -328,10 +341,20 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
             f'{store_label}</a><br><code translate="no">{html.escape(entry["android_package"])}</code></p>'
             if kind == 'app' else ''
         )
+        included = availability[function].included
+        mapping_state = 'included' if included else 'manual'
+        mapping_label = 'Mapping included' if included else 'No exact mapping recorded'
+        mapping_route = 'icon-pack-instructions' if included else 'icon-manual-instructions'
+        mapping_action = 'Use the icon pack' if included else 'Choose this artwork manually'
+        mapping_info = (
+            f'<p class="icon-mapping"><span>{mapping_label}</span> '
+            f'<a href="#{mapping_route}">{mapping_action}</a></p>'
+        )
         icon_cards[kind].append(
             f'<article class="icon-card" data-icon-function="{html.escape(function, quote=True)}" '
-            f'data-icon-kind="{kind}" data-icon-version="{icon_manifest["version"]}"><h4>{html.escape(label)}</h4>'
-            f'<div class="icon-pair">{figures}</div>{assignment}</article>'
+            f'data-icon-kind="{kind}" data-icon-mapping="{mapping_state}" '
+            f'data-icon-version="{icon_manifest["version"]}"><h4>{html.escape(label)}</h4>'
+            f'<div class="icon-pair">{figures}</div>{assignment}{mapping_info}</article>'
         )
     icon_gallery = ''.join(
         f'<section aria-labelledby="icons-{kind}-heading"><h3 id="icons-{kind}-heading">{heading}</h3>'
@@ -382,6 +405,7 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
             .replace('{{SOURCE_DESCRIPTION}}', source_description)
             .replace('{{ICON_GALLERY}}', icon_gallery)
             .replace('{{ICON_ARCHIVE}}', ICON_ARCHIVE)
+            .replace('{{CRAFT_ICON_ARCHIVE}}', CRAFT_ICON_ARCHIVE)
             .replace('{{ART_DIRECTION_ICON_ARCHIVE}}', ART_DIRECTION_ICON_ARCHIVE)
             .replace('{{IDENTITY_ICON_ARCHIVE}}', IDENTITY_ICON_ARCHIVE)
             .replace('{{ROUTE_ICON_ARCHIVE}}', ROUTE_ICON_ARCHIVE)
@@ -418,7 +442,8 @@ def preview_files(root: Path, artifacts: Path, expected_revision: str | None = N
             .replace('{{TARGET_OPTIONS}}', '\n'.join(
                 f'<option value="{html.escape(platform, quote=True)}">{html.escape(label)}</option>'
                 for platform, label in labels.items() if groups[platform]))
-            .replace('{{LOCAL_GUIDES}}', render_guides(sources['docs/installation.md'], manifest)))
+            .replace('{{LOCAL_GUIDES}}', render_guides(sources['docs/installation.md'], manifest))
+            .replace('{{ICON_MAPPING_SUMMARY}}', mapping_summary))
     for platform, cards in groups.items():
         text = text.replace('{{' + platform.upper().replace('-', '_') + '_CARDS}}', '\n'.join(cards))
     files['index.html'] = text.encode()

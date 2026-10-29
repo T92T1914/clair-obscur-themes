@@ -35,3 +35,17 @@ The current archive contains 600 SVG masters. Exactly 368 SVGs change from 0.29.
 Clair Icons 0.1.3/code 4 and Obscur Icons 0.1.14/code 15 select the 0.30.0 artwork through the existing separately identified packages. Signed packages remain private and require their own compiled-resource and signer checks. The source gallery, decoded exports, compiled packages and served download checks are distinct evidence layers.
 
 Phone installation and application are deferred. Current launcher identities, Theme Park refresh, masks, cover and inner displays, coexistence, switching, persistence and restoration need native qualification. This artwork change does not change the keyboard backgrounds, phone font, watch face or accepted desktop packages. The [0.29.0 art-direction record](art-direction.md) and [0.28.0 identity record](icon-identity.md) remain historical records of those revisions.
+
+## Focused continuation, artwork 0.31.0
+
+The everyday-use continuation revisits three documented C-shaped similarities, rather than reopening the complete 300-drawing review. Current official publisher images for Coinbase, Coursera and Chime match their retained reference bytes. There is no rebrand claim. The original alternatives were compared with the accepted 0.30.0 production PNGs at 24, 32, 48, 64 and 128 pixels in both appearances, individually and in labeled and unlabeled mixed groups. The final mixed group uses the selected pair, accepted Chime and five unchanged neighboring controls.
+
+| Choice | Selection and tradeoff |
+| --- | --- |
+| Coinbase | A fuller circular body, smaller counter and narrow horizontal slot make the publisher-linked construction more specific. The opening remains deliberately narrow, and the drawing still belongs to the C family. |
+| Coursera | A fuller circular form and diagonal wedge distinguish its terminal faces from Coinbase's horizontal opening. The bolder mass is a scoped choice, not a rule that heavier icons are better. |
+| Chime | Retain the accepted humanist outline, broad mouth and upright terminal faces. The alternative only thickened its inner bowl, without adding an identifying feature. |
+
+The exact selected composition received an independent visual challenge. Its inspected raster openings remain visible at 24 and 32 pixels in both appearances, without a new closure, projecting seam or clipping in the larger views. This is evidence for the particular drawing decisions, not a participant recognition study or a guarantee of preference. The five controls, including Patreon and Pandora, remain unchanged.
+
+Artwork 0.31.0 changes four SVGs and retains the other 596 exact 0.30.0 bytes. All 300 IDs, labels, app assignments, mappings and public package queries remain unchanged. The complete 0.30.0 archive joins the preserved history. Clair Icons 0.1.4/code 5 and Obscur Icons 0.1.15/code 16 are separately versioned private successors. Source shapes, exported pixels, compiled resources, served acquisition and native application remain distinct checks. The keyboard companion, Garmin watch face and accepted desktop themes are unchanged.

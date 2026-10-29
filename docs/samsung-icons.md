@@ -1,8 +1,12 @@
 # Clair and Obscur icon artwork
 
+The current 0.31.0 collection refines only Coinbase and Coursera after focused original-vector comparisons at 24, 32, 48, 64 and 128 pixels in both appearances. Their horizontal and diagonal openings distinguish the two C-based marks. Chime and the other 297 drawings retain their exact 0.30.0 bytes. Four SVGs change and 596 remain exact, with all 30 historical collections preserved. See the [focused continuation](icon-craft.md#focused-continuation-artwork-0310) for the selection and its limits.
+
+The gallery labels artwork separately from declared icon-pack mappings. Search by name, icon ID or package, optionally combine the app/function and Pack mapping filters, then follow the card's pack or manual route. The labels and instructions remain available without JavaScript. A mapping does not establish current phone assignment or turn a PNG into an installer.
+
 The [complete 0.30.0 refinement](icon-craft.md) reviews all 300 drawings individually in both appearances at five sizes, selects 184 original refinements and retains 116. It changes 368 SVGs and preserves the exact 0.29.0 bytes of the other 232. The full 0.29.0 archive remains historical. Existing labels and all Android component mappings are preserved.
 
-The current 0.30.0 black and white collection contains 276 named-app interpretations and the 24 general functional drawings in both Clair and Obscur. That gives 300 choices and 600 SVG masters. Named choices identify their intended Android app through a visible label, package ID and official store listing. General symbols remain useful for other apps with the same function.
+The retained 0.30.0 black and white collection contains 276 named-app interpretations and the 24 general functional drawings in both Clair and Obscur. That gives 300 choices and 600 SVG masters. Named choices identify their intended Android app through a visible label, package ID and official store listing. General symbols remain useful for other apps with the same function.
 
 The [0.29.0 art-direction comparison](art-direction.md) selects filled Delta facets, outlined American wing forms, a corrected outline Southwest heart, a selectively weighted Wikipedia W and a layered Earth sphere. These five drawings replace category metaphors with more specific app cues. Source comparison changes ten SVGs and retains the other 590 exact 0.28.0 bytes. Accepted, outline, solid and hybrid comparisons were inspected at 24, 32, 48, 64 and 128 pixels in both appearances, with mixed neighbors and separately labeled clipping illustrations. All 1,200 exported PNGs were independently decoded. Twenty change, while the other 1,180 retain their exact 0.28.0 bytes. Human recognition, preference and native masking remain unmeasured.
 

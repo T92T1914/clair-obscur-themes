@@ -38,19 +38,21 @@
   const finder = document.querySelector('#icon-finder');
   const query = document.querySelector('#icon-query');
   const kind = document.querySelector('#icon-kind');
+  const mapping = document.querySelector('#icon-mapping');
   const clear = document.querySelector('#icon-clear');
   const status = document.querySelector('#icon-filter-status');
   const empty = document.querySelector('#icon-filter-empty');
-  if (!finder || !query || !kind || !clear || !status || !empty) return;
+  if (!finder || !query || !kind || !mapping || !clear || !status || !empty) return;
   const normalize = value => value.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().replace(/['\u2019]/gu, '');
   const records = [...document.querySelectorAll('#icons .icon-card')].map(card => {
     const heading = card.querySelector('h4')?.textContent;
     const id = card.dataset.iconFunction;
     const type = card.dataset.iconKind;
+    const mappingState = card.dataset.iconMapping;
     const packageId = card.querySelector('code')?.textContent || '';
     const group = card.closest('section[aria-labelledby]');
-    if (!heading || !id || !['app', 'function'].includes(type) || !group || (type === 'app' && !packageId)) return null;
-    return { card, type, group, text: normalize([heading, id, packageId].join(' ')) };
+    if (!heading || !id || !['app', 'function'].includes(type) || !['included', 'manual'].includes(mappingState) || !group || (type === 'app' && !packageId)) return null;
+    return { card, type, mappingState, group, text: normalize([heading, id, packageId].join(' ')) };
   });
   if (!records.length || records.some(record => !record)) return;
   const groups = [...new Set(records.map(record => record.group))];
@@ -58,7 +60,9 @@
     const terms = normalize(query.value).trim().split(/\s+/u).filter(Boolean);
     let shown = 0;
     for (const record of records) {
-      const matches = (kind.value === 'all' || kind.value === record.type) && terms.every(term => record.text.includes(term));
+      const matches = (kind.value === 'all' || kind.value === record.type) &&
+        (mapping.value === 'all' || mapping.value === record.mappingState) &&
+        terms.every(term => record.text.includes(term));
       record.card.hidden = !matches;
       if (matches) shown++;
     }
@@ -68,10 +72,12 @@
   }
   query.addEventListener('input', updateIconFilter);
   kind.addEventListener('change', updateIconFilter);
+  mapping.addEventListener('change', updateIconFilter);
   finder.addEventListener('submit', event => event.preventDefault());
   clear.addEventListener('click', () => {
     query.value = '';
     kind.value = 'all';
+    mapping.value = 'all';
     updateIconFilter();
     query.focus();
   });
