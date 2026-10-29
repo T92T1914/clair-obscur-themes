@@ -16,6 +16,8 @@ class ClairObscurView extends WatchUi.WatchFace {
     var _labelFonts as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont> = [];
     var _detailFonts as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont> = [];
     var _batteryFonts as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont> = [];
+    var _bezelFonts as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont> = [];
+    var _periodFonts as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont> = [];
 
     function initialize() {
         WatchFace.initialize();
@@ -47,18 +49,24 @@ class ClairObscurView extends WatchUi.WatchFace {
         // Reference native target faces without copying or claiming Inter fonts.
         // Build only the selected active layout's candidates, not two font caches.
         if (layout == FaceModel.LAYOUT_ANALOG) {
+            _bezelFonts = [];
+            _periodFonts = [];
             _clockFonts = [];
             _calendarFonts = fonts("RobotoMedium", [20, 18, 16], Graphics.FONT_XTINY, scale);
             _valueFonts = fonts("RobotoMedium", [30, 26, 22, 18, 16], Graphics.FONT_XTINY, scale);
             _labelFonts = fonts("RobotoCondensedRegular", [18, 16, 14], Graphics.FONT_XTINY, scale);
             _batteryFonts = fonts("RobotoMedium", [18, 16, 14], Graphics.FONT_XTINY, scale);
         } else if (layout == FaceModel.LAYOUT_HYBRID) {
-            _clockFonts = fonts("BionicBold", [42, 38, 34, 30, 26], Graphics.FONT_SMALL, scale);
+            _clockFonts = fonts("RobotoMedium", [38, 34, 30, 26, 22, 18], Graphics.FONT_SMALL, scale);
             _calendarFonts = fonts("RobotoMedium", [22, 20, 18, 16], Graphics.FONT_XTINY, scale);
-            _valueFonts = fonts("RobotoMedium", [30, 26, 22, 18, 16], Graphics.FONT_XTINY, scale);
+            _valueFonts = fonts("RobotoMedium", [26, 22, 18, 16], Graphics.FONT_XTINY, scale);
             _labelFonts = fonts("RobotoCondensedRegular", [18, 16, 14], Graphics.FONT_XTINY, scale);
-            _batteryFonts = fonts("RobotoMedium", [20, 18, 16], Graphics.FONT_XTINY, scale);
+            _batteryFonts = fonts("RobotoMedium", [20, 18, 16, 14], Graphics.FONT_XTINY, scale);
+            _bezelFonts = fonts("RobotoMedium", [22, 20, 18, 16], Graphics.FONT_XTINY, scale);
+            _periodFonts = fonts("RobotoMedium", [16, 14, 12], Graphics.FONT_XTINY, scale);
         } else {
+            _bezelFonts = [];
+            _periodFonts = [];
             _clockFonts = fonts("BionicBold", [108, 96, 84], Graphics.FONT_LARGE, scale);
             _calendarFonts = fonts("RobotoMedium", [23, 20, 18], Graphics.FONT_XTINY, scale);
             _valueFonts = fonts("BionicBold", [42, 34, 24, 18], Graphics.FONT_XTINY, scale);
@@ -126,7 +134,11 @@ class ClairObscurView extends WatchUi.WatchFace {
         var moment = Time.now();
         var local = Gregorian.info(moment, Time.FORMAT_SHORT);
         var layout = FaceSettings.readLayout();
-        if (mode == :aod && layout != FaceModel.LAYOUT_DIGITAL) {
+        if (mode == :aod && layout == FaceModel.LAYOUT_HYBRID) {
+            drawHybridAlwaysOn(dc, local.hour, local.min);
+            return;
+        }
+        if (mode == :aod && layout == FaceModel.LAYOUT_ANALOG) {
             drawAnalogAlwaysOn(dc, local.hour, local.min);
             return;
         }
@@ -150,7 +162,7 @@ class ClairObscurView extends WatchUi.WatchFace {
             var stats = System.getSystemStats();
             var battery = FaceModel.hybridCharge(stats.battery as Lang.Object, stats.charging as Lang.Object);
             var frame = clair ? ThemePalette.CLAIR_BORDER : ThemePalette.OBSCUR_BORDER;
-            drawHybrid(dc, local.hour, local.min, FaceModel.formatActiveTime(local.hour, local.min, is24Hour),
+            drawHybrid(dc, local.hour, local.min, time, period,
                 hybridDate, battery, weather, steps, text, muted, frame, canvas);
             return;
         }
@@ -329,12 +341,34 @@ class ClairObscurView extends WatchUi.WatchFace {
         dc.clearClip();
     }
 
+    function hybridSlotFonts(dc as Graphics.Dc, data as Lang.Dictionary<Lang.String, Lang.String>,
+            width as Lang.Number, height as Lang.Number)
+            as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont> or Null {
+        // Preserve the freshness/goal row before trying a larger value. Legacy
+        // Analog keeps its original fitting order in analogSlotFonts.
+        for (var d = 0; d < _detailFonts.size(); d += 1) {
+            var detail = _detailFonts[d];
+            if (dc.getTextWidthInPixels(data["detail"], detail) > width) { continue; }
+            for (var l = 0; l < _labelFonts.size(); l += 1) {
+                var label = _labelFonts[l];
+                if (dc.getTextWidthInPixels(data["label"], label) > width) { continue; }
+                for (var v = 0; v < _valueFonts.size(); v += 1) {
+                    var value = _valueFonts[v];
+                    if (dc.getTextWidthInPixels(data["value"], value) > width) { continue; }
+                    if (dc.getFontHeight(label) + dc.getFontHeight(value) +
+                            dc.getFontHeight(detail) + 6 <= height) { return [label, value, detail]; }
+                }
+            }
+        }
+        return null;
+    }
+
     function hybridSlot(dc as Graphics.Dc, data as Lang.Dictionary<Lang.String, Lang.String>,
             x as Lang.Number, ink as Lang.Number, muted as Lang.Number, canvas as Lang.Number) as Void {
         var top = FaceModel.HYBRID_DATA_TOP;
         var height = FaceModel.HYBRID_DATA_BOTTOM - top;
         var width = FaceModel.HYBRID_DATA_WIDTH;
-        var selected = analogSlotFonts(dc, data, width - 4, height - 4);
+        var selected = hybridSlotFonts(dc, data, width - 4, height - 4);
         if (selected == null) {
             // Never turn a failed-fit data field into an invented live value.
             var fallback = pickFont(dc, "--", _valueFonts, width - 4, height - 4);
@@ -359,43 +393,191 @@ class ClairObscurView extends WatchUi.WatchFace {
         dc.clearClip();
     }
 
+    function hybridMetalPolygon(dc as Graphics.Dc, outer as Lang.Array<Graphics.Point2D>,
+            inset as Lang.Array<Graphics.Point2D>, ink as Lang.Number,
+            metal as Lang.Number, canvas as Lang.Number) as Void {
+        if (outer.size() < 3 || inset.size() != outer.size()) { return; }
+        dc.setColor(canvas, canvas); dc.setPenWidth(4);
+        drawAlwaysOnOutline(dc, outer);
+        dc.setColor(metal, canvas); dc.fillPolygon(outer);
+        dc.setColor(ink, canvas); dc.fillPolygon(inset);
+        dc.setPenWidth(1);
+    }
+
+    function drawHybridBezel(dc as Graphics.Dc, ink as Lang.Number,
+            metal as Lang.Number, canvas as Lang.Number) as Void {
+        // A printed sixty-minute reference scale, not an interactive dive timer.
+        dc.setColor(metal, canvas); dc.setPenWidth(1);
+        dc.drawCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, FaceModel.HYBRID_BEZEL_OUTER);
+        dc.drawCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, FaceModel.HYBRID_BEZEL_INNER);
+        for (var tick = 1; tick < 15; tick += 1) {
+            if (tick % 5 == 0) { continue; }
+            var turn = (tick / 60.0).toFloat();
+            var inner = FaceModel.radialPoint(turn, 210, 0);
+            var outer = FaceModel.radialPoint(turn, 219, 0);
+            dc.drawLine(inner[0], inner[1], outer[0], outer[1]);
+        }
+        for (var tick = 5; tick < 60; tick += 10) {
+            var turn = (tick / 60.0).toFloat();
+            dc.setColor(ink, canvas);
+            dc.fillPolygon([FaceModel.radialPoint(turn, 203, -2),
+                FaceModel.radialPoint(turn, 219, -2), FaceModel.radialPoint(turn, 219, 2),
+                FaceModel.radialPoint(turn, 203, 2)]);
+        }
+        for (var value = 10; value <= 50; value += 10) {
+            var text = value.format("%d");
+            var font = pickFont(dc, text, _bezelFonts, 28, 22);
+            if (font == null) { continue; }
+            var center = FaceModel.radialPoint((value / 60.0).toFloat(), FaceModel.HYBRID_BEZEL_RADIUS, 0);
+            dc.setClip(center[0] - 14, center[1] - 11, 28, 22);
+            dc.setColor(ink, canvas);
+            dc.drawText(center[0], center[1] - dc.getFontHeight(font) / 2,
+                font, text, Graphics.TEXT_JUSTIFY_CENTER);
+            dc.clearClip();
+        }
+        dc.setColor(metal, canvas); dc.fillPolygon([[217, 8], [237, 8], [227, 34]]);
+        dc.setColor(canvas, canvas); dc.fillPolygon([[220, 10], [234, 10], [227, 29]]);
+        dc.setColor(ink, canvas); dc.fillCircle(227, 16, 4);
+    }
+
+    function drawHybridHour(dc as Graphics.Dc, hour as Lang.Number, minute as Lang.Number,
+            ink as Lang.Number, metal as Lang.Number, canvas as Lang.Number) as Void {
+        var center = FaceModel.hybridHourDiscCenter(hour, minute);
+        if (center.size() != 2) { return; }
+        // Clear the head's opposing edge first. Draw its neck and arrow after
+        // that clear so the metal joins remain connected to the circular rim.
+        dc.setColor(canvas, canvas);
+        dc.fillCircle(center[0], center[1], FaceModel.HYBRID_HOUR_DISC_RADIUS + 2);
+        hybridMetalPolygon(dc, FaceModel.hybridHourStem(hour, minute, false),
+            FaceModel.hybridHourStem(hour, minute, true), ink, metal, canvas);
+        hybridMetalPolygon(dc, FaceModel.hybridHourTip(hour, minute, false),
+            FaceModel.hybridHourTip(hour, minute, true), ink, metal, canvas);
+        dc.setColor(metal, canvas);
+        dc.fillCircle(center[0], center[1], FaceModel.HYBRID_HOUR_DISC_RADIUS);
+        dc.setColor(ink, canvas);
+        dc.fillCircle(center[0], center[1], FaceModel.HYBRID_HOUR_DISC_INNER);
+        dc.setColor(canvas, canvas); dc.setPenWidth(2);
+        for (var part = 0; part < 3; part += 1) {
+            var spoke = FaceModel.hybridHourSpoke(hour, minute, part);
+            dc.drawLine(spoke[0][0], spoke[0][1], spoke[1][0], spoke[1][1]);
+        }
+        dc.setPenWidth(1);
+    }
+
+    function drawHybridClock(dc as Graphics.Dc, time as Lang.String, period as Lang.String,
+            ink as Lang.Number, metal as Lang.Number, canvas as Lang.Number) as Void {
+        var left = FaceModel.HYBRID_CLOCK_LEFT;
+        var top = FaceModel.HYBRID_CLOCK_TOP;
+        var width = FaceModel.HYBRID_CLOCK_WIDTH;
+        var height = FaceModel.HYBRID_CLOCK_BOTTOM - top;
+        // This deliberate opaque aperture sits above both moving hands. The
+        // digits therefore never share pixels with a hand or its edge halo.
+        dc.setColor(metal, canvas); dc.fillRectangle(left, top, width, height);
+        dc.setColor(ink, ink); dc.fillRectangle(left + 1, top + 1, width - 2, height - 2);
+        var hasPeriod = period.length() > 0;
+        var mainWidth = hasPeriod ? 84 : 108;
+        var font = pickFont(dc, time, _clockFonts, mainWidth, height - 4);
+        var shown = time;
+        if (font == null) {
+            shown = "--:--";
+            font = pickFont(dc, shown, _clockFonts, mainWidth, height - 4);
+        }
+        dc.setClip(left + 2, top + 2, mainWidth, height - 4);
+        if (font != null) {
+            dc.setColor(canvas, ink);
+            dc.drawText(left + 2 + mainWidth / 2, top + (height - dc.getFontHeight(font)) / 2,
+                font, shown, Graphics.TEXT_JUSTIFY_CENTER);
+        }
+        dc.clearClip();
+        if (hasPeriod) {
+            var small = pickFont(dc, period, _periodFonts, 22, height - 4);
+            if (small != null) {
+                dc.setClip(left + 88, top + 2, 22, height - 4);
+                dc.setColor(canvas, ink);
+                dc.drawText(left + 99, top + (height - dc.getFontHeight(small)) / 2,
+                    small, period, Graphics.TEXT_JUSTIFY_CENTER);
+                dc.clearClip();
+            }
+        }
+    }
+
     function drawHybrid(dc as Graphics.Dc, hour as Lang.Number, minute as Lang.Number,
-            time as Lang.String, date as Lang.String, charge as Lang.String,
+            time as Lang.String, period as Lang.String, date as Lang.String, charge as Lang.String,
             weather as Lang.Dictionary<Lang.String, Lang.String>,
             steps as Lang.Dictionary<Lang.String, Lang.String>, ink as Lang.Number,
             muted as Lang.Number, facet as Lang.Number, canvas as Lang.Number) as Void {
+        drawHybridBezel(dc, ink, facet, canvas);
         dc.setColor(facet, canvas); dc.setPenWidth(1);
         for (var tick = 0; tick < 60; tick += 1) {
-            if (tick % 5 == 0) { continue; }
-            var ends = FaceModel.minuteTick(tick);
+            var ends = FaceModel.hybridMinuteTick(tick);
             dc.drawLine(ends[0][0], ends[0][1], ends[1][0], ends[1][1]);
         }
+        dc.setColor(facet, canvas); dc.fillPolygon(FaceModel.hybridTriangle(false));
+        dc.setColor(ink, canvas); dc.fillPolygon(FaceModel.hybridTriangle(true));
         for (var index = 0; index < 12; index += 1) {
-            var parts = index == 0 ? 2 : 1;
-            for (var part = 0; part < parts; part += 1) {
-                var marker = FaceModel.hourMarker(index, part);
-                dc.setColor(ink, canvas); dc.fillPolygon(marker);
+            var center = FaceModel.hybridCircleCenter(index);
+            if (center.size() == 2) {
                 dc.setColor(facet, canvas);
-                dc.drawLine(marker[2][0], marker[2][1], marker[3][0], marker[3][1]);
+                dc.fillCircle(center[0], center[1], FaceModel.HYBRID_CIRCLE_RADIUS);
+                dc.setColor(ink, canvas);
+                dc.fillCircle(center[0], center[1], FaceModel.HYBRID_CIRCLE_INNER);
+            } else {
+                var baton = FaceModel.hybridActiveBaton(index, false);
+                if (baton.size() == 4) {
+                    dc.setColor(facet, canvas); dc.fillPolygon(baton);
+                    dc.setColor(ink, canvas); dc.fillPolygon(FaceModel.hybridActiveBaton(index, true));
+                }
             }
         }
-        // Both complete hand shapes are drawn first. Text is redrawn on top
-        // with glyph-only halos, preserving the date and exact digital reading.
-        drawHand(dc, FaceModel.handPoints(hour, minute, true), ink, canvas);
-        dc.setColor(facet, canvas); dc.fillPolygon(FaceModel.handFacetPoints(hour, minute, true));
-        drawHand(dc, FaceModel.handPoints(hour, minute, false), ink, canvas);
-        dc.setColor(facet, canvas); dc.fillPolygon(FaceModel.handFacetPoints(hour, minute, false));
+        // The divided circular hour head and longer sword minute hand remain
+        // distinct. The clock aperture paints above them, while other text
+        // receives only glyph halos.
+        drawHybridHour(dc, hour, minute, ink, facet, canvas);
+        hybridMetalPolygon(dc, FaceModel.hybridMinuteHand(hour, minute, false),
+            FaceModel.hybridMinuteHand(hour, minute, true), ink, facet, canvas);
         dc.setColor(facet, canvas); dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, 8);
         dc.setColor(ink, canvas); dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, 5);
         dc.setColor(canvas, canvas); dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, 2);
         hybridLine(dc, date, _calendarFonts, FaceModel.HYBRID_DATE_WIDTH,
             FaceModel.HYBRID_DATE_TOP, FaceModel.HYBRID_DATE_BOTTOM, muted, canvas);
-        hybridLine(dc, time, _clockFonts, FaceModel.HYBRID_CLOCK_WIDTH,
-            FaceModel.HYBRID_CLOCK_TOP, FaceModel.HYBRID_CLOCK_BOTTOM, ink, canvas);
+        hybridLine(dc, canvas == ThemePalette.CLAIR_CANVAS ? "CLAIR" : "OBSCUR",
+            _calendarFonts, 180, 132, 164, ink, canvas);
+        drawHybridClock(dc, time, period, ink, facet, canvas);
         hybridSlot(dc, weather, FaceModel.HYBRID_LEFT_X, ink, muted, canvas);
         hybridSlot(dc, steps, FaceModel.HYBRID_RIGHT_X, ink, muted, canvas);
         hybridLine(dc, charge, _batteryFonts, FaceModel.HYBRID_CHARGE_WIDTH,
             FaceModel.HYBRID_CHARGE_TOP, FaceModel.HYBRID_CHARGE_BOTTOM, muted, canvas);
+    }
+
+    function drawHybridAlwaysOn(dc as Graphics.Dc, hour as Lang.Number, minute as Lang.Number) as Void {
+        var shift = FaceModel.aodAnalogOffset(minute);
+        if (!FaceModel.validClock(hour, minute) || shift.size() != 2) { return; }
+        var dim = ThemePalette.OBSCUR_BORDER;
+        dc.setColor(dim, 0x000000); dc.setPenWidth(1);
+        drawAlwaysOnOutline(dc, FaceModel.hybridShiftPoints(FaceModel.hybridTriangle(false), minute));
+        for (var index = 0; index < 12; index += 1) {
+            var center = FaceModel.hybridCircleCenter(index);
+            if (center.size() == 2) {
+                dc.drawCircle(center[0] + shift[0], center[1] + shift[1], FaceModel.HYBRID_CIRCLE_RADIUS);
+            } else {
+                drawAlwaysOnOutline(dc, FaceModel.hybridShiftPoints(FaceModel.hybridBaton(index, false), minute));
+            }
+        }
+        drawAlwaysOnOutline(dc, FaceModel.hybridShiftPoints(FaceModel.hybridHourStem(hour, minute, false), minute));
+        drawAlwaysOnOutline(dc, FaceModel.hybridShiftPoints(FaceModel.hybridHourTip(hour, minute, false), minute));
+        var head = FaceModel.hybridHourDiscCenter(hour, minute);
+        // Black clears the two hidden join edges inside the otherwise hollow
+        // hour head. It adds no lit area and keeps the three spokes distinct.
+        dc.setColor(0x000000, 0x000000);
+        dc.fillCircle(head[0] + shift[0], head[1] + shift[1], FaceModel.HYBRID_HOUR_DISC_RADIUS - 1);
+        dc.setColor(dim, 0x000000);
+        dc.drawCircle(head[0] + shift[0], head[1] + shift[1], FaceModel.HYBRID_HOUR_DISC_RADIUS);
+        for (var part = 0; part < 3; part += 1) {
+            var spoke = FaceModel.hybridShiftPoints(FaceModel.hybridHourSpoke(hour, minute, part), minute);
+            dc.drawLine(spoke[0][0], spoke[0][1], spoke[1][0], spoke[1][1]);
+        }
+        drawAlwaysOnOutline(dc, FaceModel.hybridShiftPoints(FaceModel.hybridMinuteHand(hour, minute, false), minute));
+        dc.drawCircle(FaceModel.DIAL_CENTER + shift[0], FaceModel.DIAL_CENTER + shift[1], 3);
     }
 
     function drawAnalogAlwaysOn(dc as Graphics.Dc, hour as Lang.Number, minute as Lang.Number) as Void {

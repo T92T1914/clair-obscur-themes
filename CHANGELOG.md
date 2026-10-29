@@ -1,6 +1,18 @@
 # Changes
 
-## Garmin watch face 0.8.0
+## Garmin watch face 0.9.0
+
+- Replace Hybrid's shared baton dial with original geometry informed by the selected black Submariner date-window reference: eight circular indices, two active cardinal batons, a triangle at twelve, a divided circular hour-hand head and a longer minute hand. Add a printed 60-minute reference scale without an interactive timer or manufacturer artwork.
+- Put digital time and a separately measured AM/PM label in an opaque three-o'clock aperture above the hands. Omit the active three-o'clock baton and preserve it in sparse always-on mode. Record intentional hand occlusion rather than claiming every hand and text remains separate.
+- Keep localized date, Weather, Steps and watch charge. Use native Roboto Medium for Hybrid time and values, fit freshness or goal detail before enlarging a value, and retain the smaller battery-font candidate. Keep glyph halos on other text and show the program version in the existing Layout subtitle.
+- Give Hybrid its own sparse shifted always-on outlines, including its mixed indices and divided hour head. Preserve true-black Off/AOD and the earlier Analog/Digital drawing, Inter resource, data and saved-setting contracts. Add no permission, font binary or per-second timer.
+- Compile the current normal program at 39,788 bytes and test program at 196,636 bytes for the exact target. Run 59 focused Python host tests with two explicit original-font skips and no failures. Execute all 38 annotated target groups successfully. Preserve earlier 0.9.0 programs and their distinct test receipts.
+- Inspect bounded Obscur/Clair samples, native font scale 1.35, the separate AM/PM slot, always-on/off/active transitions and one normal SDK exit/relaunch without app-property repair. Count every nonblack pixel in one saved AOD frame: 3,456 of 161,892 ideal round pixels, about 2.13%, with none outside.
+- Record a final 34.1 kB active / 38.6 kB reported-peak memory sample with peak detection unchecked after restart. The intervening enabled phase has no recorded peak readback. Restore the exact fresh-phase simulator preference baseline and close owned SDK windows. Keep the unknown full app-state baseline, physical-device use, permanent persistence, power and earlier USB restoration unqualified. No 0.9.0 program was transferred to the physical watch in this phase.
+
+## Preserved Garmin watch face 0.8.0
+
+The engineering results below remain valid for that candidate. Its visual direction was subsequently rejected against the requested diver reference. They do not qualify the current 0.9.0 appearance or physical-watch use.
 
 - Add an original Hybrid dial with analog and digital time together, localized day/date, fixed Weather and Steps fields, and watch charge/charger state. Use neutral facets and glyph-only halos while preserving the accepted outer dial margin.
 - Preserve Analog=0, Digital=1, appearance and legacy field properties. Add Hybrid=2 as the new-install fallback and a separate date-format option. Keep stored legacy fields recoverable and subscribe to Body Battery only when a displayed legacy field uses it.

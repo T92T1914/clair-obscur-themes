@@ -110,7 +110,8 @@ module FaceSettings {
     function makeSettingsMenu() as WatchUi.Menu2 {
         var menu = new WatchUi.Menu2({:title => Rez.Strings.AppName});
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.AppearanceTitle, readAppearance(), "appearance", {}));
-        menu.addItem(new WatchUi.MenuItem(Rez.Strings.LayoutTitle, layoutName(readLayout()), "layout", {}));
+        menu.addItem(new WatchUi.MenuItem(Rez.Strings.LayoutTitle,
+            layoutName(readLayout()) + " / " + ThemePalette.WATCHFACE_VERSION, "layout", {}));
         if (readLayout() == FaceModel.LAYOUT_HYBRID) {
             menu.addItem(new WatchUi.MenuItem(Rez.Strings.HybridDateTitle, dateFormatName(readDateFormat()), "date", {}));
         } else {

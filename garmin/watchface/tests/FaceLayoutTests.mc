@@ -420,6 +420,9 @@ function hybridSettingsPreserveLegacyFields(logger as Test.Logger) as Lang.Boole
         Test.assertEqual(Application.Properties.getValue("leftData"), FaceData.BODY_BATTERY);
         Test.assertEqual(Application.Properties.getValue("rightData"), FaceData.BODY_BATTERY);
         var menu = FaceSettings.makeSettingsMenu();
+        var layoutItem = menu.getItem(1);
+        Test.assert(layoutItem != null);
+        Test.assertEqual((layoutItem as WatchUi.MenuItem).getSubLabel(), "Hybrid / 0.9.0");
         var dateItem = menu.getItem(2);
         Test.assert(dateItem != null);
         Test.assertEqual((dateItem as WatchUi.MenuItem).getId(), "date");
@@ -460,6 +463,268 @@ function hybridFacetsPreserveSharedHandBounds(logger as Test.Logger) as Lang.Boo
                 var whole = FaceModel.handPoints(hour, minute, which == 0);
                 Test.assertEqual(facet[1][0], whole[2][0]);
                 Test.assertEqual(facet[1][1], whole[2][1]);
+            }
+        }
+    }
+    return true;
+}
+
+function assertHybridPoint(point as Lang.Array<Lang.Number>,
+        x as Lang.Number, y as Lang.Number) as Void {
+    Test.assertEqual(point.size(), 2);
+    Test.assertEqual(point[0], x);
+    Test.assertEqual(point[1], y);
+}
+
+(:test)
+function hybridDiverLiteralGeometryAndCardinals(logger as Test.Logger) as Lang.Boolean {
+    // Literal source contracts are independent of the rendering implementation.
+    Test.assertEqual(FaceModel.HYBRID_CIRCLE_RADIUS, 14);
+    Test.assertEqual(FaceModel.HYBRID_CIRCLE_INNER, 12);
+    Test.assertEqual(FaceModel.HYBRID_HOUR_DISC_RADIUS, 18);
+    Test.assertEqual(FaceModel.HYBRID_HOUR_DISC_INNER, 16);
+    Test.assertEqual(FaceModel.HYBRID_BEZEL_OUTER, 223);
+    Test.assertEqual(FaceModel.HYBRID_BEZEL_INNER, 194);
+    Test.assertEqual(FaceModel.HYBRID_BEZEL_RADIUS, 206);
+    var indices = [1, 2, 4, 5, 7, 8, 10, 11];
+    var centers = [[312, 80], [374, 142], [374, 312], [312, 374],
+        [142, 374], [80, 312], [80, 142], [142, 80]];
+    for (var index = 0; index < indices.size(); index += 1) {
+        assertHybridPoint(FaceModel.hybridCircleCenter(indices[index]),
+            centers[index][0], centers[index][1]);
+    }
+    var tick = FaceModel.hybridMinuteTick(0);
+    assertHybridPoint(tick[0], 227, 33);
+    assertHybridPoint(tick[1], 227, 39);
+    tick = FaceModel.hybridMinuteTick(15);
+    assertHybridPoint(tick[0], 421, 227);
+    assertHybridPoint(tick[1], 415, 227);
+    var baton = FaceModel.hybridBaton(3, false);
+    assertHybridPoint(baton[0], 369, 220);
+    assertHybridPoint(baton[1], 409, 220);
+    assertHybridPoint(baton[2], 409, 234);
+    assertHybridPoint(baton[3], 369, 234);
+    baton = FaceModel.hybridBaton(3, true);
+    assertHybridPoint(baton[0], 371, 222);
+    assertHybridPoint(baton[2], 407, 232);
+    Test.assertEqual(FaceModel.hybridActiveBaton(3, false).size(), 0);
+    Test.assertEqual(FaceModel.hybridActiveBaton(3, true).size(), 0);
+    Test.assertEqual(FaceModel.hybridActiveBaton(6, false).size(), 4);
+    Test.assertEqual(FaceModel.hybridActiveBaton(9, true).size(), 4);
+    // The original3baton remains present for sparse AOD, not the active window.
+    Test.assertEqual(FaceModel.hybridBaton(3, false).size(), 4);
+    var triangle = FaceModel.hybridTriangle(false);
+    assertHybridPoint(triangle[0], 209, 45);
+    assertHybridPoint(triangle[1], 245, 45);
+    assertHybridPoint(triangle[2], 227, 91);
+    triangle = FaceModel.hybridTriangle(true);
+    assertHybridPoint(triangle[0], 211, 47);
+    assertHybridPoint(triangle[2], 227, 89);
+    return true;
+}
+
+(:test)
+function hybridDiverRejectsInvalidGeometry(logger as Test.Logger) as Lang.Boolean {
+    var invalid = [null, false, "1", 1.0, -1, 12];
+    for (var index = 0; index < invalid.size(); index += 1) {
+        Test.assertEqual(FaceModel.hybridCircleCenter(invalid[index]).size(), 0);
+        Test.assertEqual(FaceModel.hybridBaton(invalid[index], false).size(), 0);
+        Test.assertEqual(FaceModel.hybridActiveBaton(invalid[index], false).size(), 0);
+    }
+    for (var cardinal = 0; cardinal < 12; cardinal += 3) {
+        Test.assertEqual(FaceModel.hybridCircleCenter(cardinal).size(), 0);
+    }
+    Test.assertEqual(FaceModel.hybridBaton(0, true).size(), 0);
+    Test.assertEqual(FaceModel.hybridBaton(1, true).size(), 0);
+    Test.assertEqual(FaceModel.hybridMinuteTick(null).size(), 0);
+    Test.assertEqual(FaceModel.hybridMinuteTick(1.0).size(), 0);
+    Test.assertEqual(FaceModel.hybridMinuteTick(-1).size(), 0);
+    Test.assertEqual(FaceModel.hybridMinuteTick(60).size(), 0);
+    Test.assertEqual(FaceModel.hybridHourStem(24, 0, false).size(), 0);
+    Test.assertEqual(FaceModel.hybridHourTip(0, 60, true).size(), 0);
+    Test.assertEqual(FaceModel.hybridHourDiscCenter(null, 0).size(), 0);
+    Test.assertEqual(FaceModel.hybridHourSpoke(0, 0, null).size(), 0);
+    Test.assertEqual(FaceModel.hybridHourSpoke(0, 0, 1.0).size(), 0);
+    Test.assertEqual(FaceModel.hybridHourSpoke(0, 0, -1).size(), 0);
+    Test.assertEqual(FaceModel.hybridHourSpoke(0, 0, 3).size(), 0);
+    Test.assertEqual(FaceModel.hybridHourSpoke(1.0, 0, 0).size(), 0);
+    Test.assertEqual(FaceModel.hybridMinuteHand(24, 0, false).size(), 0);
+    Test.assertEqual(FaceModel.hybridMinuteHand(0, null, true).size(), 0);
+    return true;
+}
+
+(:test)
+function hybridSeparatedHourPartsAndMinuteHierarchy(logger as Test.Logger) as Lang.Boolean {
+    assertHybridPoint(FaceModel.hybridHourDiscCenter(0, 0), 227, 131);
+    assertHybridPoint(FaceModel.hybridHourDiscCenter(3, 0), 323, 227);
+    var stem = FaceModel.hybridHourStem(0, 0, false);
+    Test.assertEqual(stem.size(), 4);
+    assertHybridPoint(stem[0], 222, 245);
+    assertHybridPoint(stem[1], 222, 147);
+    assertHybridPoint(stem[2], 232, 147);
+    var tip = FaceModel.hybridHourTip(0, 0, false);
+    Test.assertEqual(tip.size(), 3);
+    assertHybridPoint(tip[0], 220, 117);
+    assertHybridPoint(tip[1], 227, 97);
+    assertHybridPoint(tip[2], 234, 117);
+    // Neither polygon spans through the head center at y131. It remains a
+    // separately rendered circular face, including in sparse always-on mode.
+    Test.assert(stem[1][1] > 131 && tip[0][1] < 131);
+    var first = FaceModel.hybridHourSpoke(3, 0, 0);
+    var second = FaceModel.hybridHourSpoke(3, 0, 1);
+    var third = FaceModel.hybridHourSpoke(3, 0, 2);
+    assertHybridPoint(first[0], 323, 227);
+    assertHybridPoint(first[1], 339, 227);
+    assertHybridPoint(second[1], 315, 213);
+    assertHybridPoint(third[1], 315, 241);
+    var minute = FaceModel.hybridMinuteHand(3, 15, false);
+    Test.assertEqual(minute.size(), 5);
+    assertHybridPoint(minute[0], 209, 223);
+    assertHybridPoint(minute[1], 400, 221);
+    assertHybridPoint(minute[2], 418, 227);
+    assertHybridPoint(minute[3], 400, 233);
+    Test.assertEqual(minute[3][1] - minute[1][1], 12);
+    minute = FaceModel.hybridMinuteHand(3, 15, true);
+    assertHybridPoint(minute[0], 211, 225);
+    assertHybridPoint(minute[2], 416, 227);
+    Test.assertEqual(minute[3][1] - minute[1][1], 8);
+    return true;
+}
+
+function assertHybridRectSeparate(left as Lang.Number, top as Lang.Number,
+        width as Lang.Number, bottom as Lang.Number,
+        markerLeft as Lang.Number, markerTop as Lang.Number,
+        markerRight as Lang.Number, markerBottom as Lang.Number) as Void {
+    Test.assert(left + width < markerLeft || left > markerRight ||
+        bottom < markerTop || top > markerBottom);
+}
+
+(:test)
+function hybridDiverTextBandsAndIndicesStaySeparate(logger as Test.Logger) as Lang.Boolean {
+    Test.assertEqual(FaceModel.HYBRID_DATE_TOP, 100);
+    Test.assertEqual(FaceModel.HYBRID_DATE_BOTTOM, 126);
+    Test.assertEqual(FaceModel.HYBRID_DATE_WIDTH, 240);
+    Test.assertEqual(FaceModel.HYBRID_CLOCK_LEFT, 276);
+    Test.assertEqual(FaceModel.HYBRID_CLOCK_TOP, 204);
+    Test.assertEqual(FaceModel.HYBRID_CLOCK_BOTTOM, 250);
+    Test.assertEqual(FaceModel.HYBRID_CLOCK_WIDTH, 112);
+    Test.assertEqual(FaceModel.HYBRID_DATA_TOP, 270);
+    Test.assertEqual(FaceModel.HYBRID_DATA_BOTTOM, 340);
+    Test.assertEqual(FaceModel.HYBRID_DATA_WIDTH, 114);
+    Test.assertEqual(FaceModel.HYBRID_LEFT_X, 104);
+    Test.assertEqual(FaceModel.HYBRID_RIGHT_X, 236);
+    Test.assertEqual(FaceModel.HYBRID_CHARGE_TOP, 342);
+    Test.assertEqual(FaceModel.HYBRID_CHARGE_BOTTOM, 367);
+    Test.assertEqual(FaceModel.HYBRID_CHARGE_WIDTH, 140);
+    // These fixed literal boxes test composition geometry, not glyph masks or
+    // universal hand visibility. The opaque clock can occlude moving hands.
+    var bands = [[107, 100, 240, 126], [276, 204, 112, 250],
+        [104, 270, 114, 340], [236, 270, 114, 340], [157, 342, 140, 367]];
+    var indices = [1, 2, 4, 5, 7, 8, 10, 11];
+    for (var index = 0; index < indices.size(); index += 1) {
+        var center = FaceModel.hybridCircleCenter(indices[index]);
+        for (var band = 0; band < bands.size(); band += 1) {
+            assertHybridRectSeparate(bands[band][0], bands[band][1], bands[band][2],
+                bands[band][3], center[0] - 14, center[1] - 14,
+                center[0] + 14, center[1] + 14);
+        }
+    }
+    var fixed = [[220, 369, 234, 409],
+        [45, 220, 85, 234], [209, 45, 245, 91]];
+    for (var marker = 0; marker < fixed.size(); marker += 1) {
+        for (var band = 0; band < bands.size(); band += 1) {
+            assertHybridRectSeparate(bands[band][0], bands[band][1], bands[band][2],
+                bands[band][3], fixed[marker][0], fixed[marker][1],
+                fixed[marker][2], fixed[marker][3]);
+        }
+    }
+    var window = [[276, 204], [388, 204], [388, 250], [276, 250]]
+        as Lang.Array<Graphics.Point2D>;
+    assertSharedDialRoundGuard(window, 0, 0, 2);
+    Test.assert(276 > 227 + 8 && 388 < 415);
+    // This literal intersection distinguishes the removed active3baton from
+    // an accidentally still-drawn marker beneath the new three-o'clock window.
+    Test.assert(276 < 369 && 388 > 369 && 204 < 220 && 250 > 234);
+    Test.assertEqual(FaceModel.hybridActiveBaton(3, false).size(), 0);
+    Test.assertEqual(FaceModel.hybridBaton(3, false).size(), 4);
+    // A deliberate tradeoff: at3:00 the18px hour head fits wholly beneath the
+    // opaque aperture. Clear digits are not a claim of unoccluded analog hands.
+    var head = FaceModel.hybridHourDiscCenter(3, 0);
+    Test.assert(head[0] - 18 > 276 && head[0] + 18 < 388);
+    Test.assert(head[1] - 18 > 204 && head[1] + 18 < 250);
+    return true;
+}
+
+(:test)
+function hybridTranslationIsPureAndInvalidMinuteStaysEmpty(logger as Test.Logger) as Lang.Boolean {
+    var source = [[227, 97], [220, 117], [234, 117]] as Lang.Array<Graphics.Point2D>;
+    var expected = [[225, 95], [218, 115], [232, 115]];
+    var shifted = FaceModel.hybridShiftPoints(source, 0);
+    for (var point = 0; point < source.size(); point += 1) {
+        assertHybridPoint(shifted[point], expected[point][0], expected[point][1]);
+    }
+    assertHybridPoint(source[0], 227, 97);
+    assertHybridPoint(source[1], 220, 117);
+    assertHybridPoint(source[2], 234, 117);
+    Test.assertEqual(FaceModel.hybridShiftPoints(source, null).size(), 0);
+    Test.assertEqual(FaceModel.hybridShiftPoints(source, 1.0).size(), 0);
+    Test.assertEqual(FaceModel.hybridShiftPoints(source, -1).size(), 0);
+    Test.assertEqual(FaceModel.hybridShiftPoints(source, 60).size(), 0);
+    return true;
+}
+
+(:test)
+function hybridAllMinuteShapesAndFourShiftsStayRound(logger as Test.Logger) as Lang.Boolean {
+    var phases = [[-2, -2], [2, -2], [2, 2], [-2, 2]];
+    for (var tick = 0; tick < 60; tick += 1) {
+        assertSharedDialRoundGuard(FaceModel.hybridMinuteTick(tick), 0, 0, 3);
+    }
+    var indices = [1, 2, 4, 5, 7, 8, 10, 11];
+    for (var index = 0; index < indices.size(); index += 1) {
+        var center = FaceModel.hybridCircleCenter(indices[index]);
+        var bounds = [[center[0] - 14, center[1] - 14],
+            [center[0] + 14, center[1] + 14]] as Lang.Array<Graphics.Point2D>;
+        for (var phase = 0; phase < phases.size(); phase += 1) {
+            assertSharedDialRoundGuard(bounds, phases[phase][0], phases[phase][1], 3);
+        }
+    }
+    for (var inset = 0; inset < 2; inset += 1) {
+        for (var cardinal = 3; cardinal < 12; cardinal += 3) {
+            for (var phase = 0; phase < phases.size(); phase += 1) {
+                assertSharedDialRoundGuard(FaceModel.hybridShiftPoints(
+                    FaceModel.hybridBaton(cardinal, inset == 1), phase), 0, 0, 3);
+            }
+        }
+        for (var phase = 0; phase < phases.size(); phase += 1) {
+            assertSharedDialRoundGuard(FaceModel.hybridShiftPoints(
+                FaceModel.hybridTriangle(inset == 1), phase), 0, 0, 3);
+        }
+        for (var hour = 0; hour < 12; hour += 1) {
+            for (var minute = 0; minute < 60; minute += 1) {
+                var polygons = [FaceModel.hybridHourStem(hour, minute, inset == 1),
+                    FaceModel.hybridHourTip(hour, minute, inset == 1),
+                    FaceModel.hybridMinuteHand(hour, minute, inset == 1)];
+                for (var polygon = 0; polygon < polygons.size(); polygon += 1) {
+                    assertSharedDialRoundGuard(polygons[polygon], 0, 0, 3);
+                    for (var phase = 0; phase < phases.size(); phase += 1) {
+                        assertSharedDialRoundGuard(polygons[polygon],
+                            phases[phase][0], phases[phase][1], 3);
+                    }
+                }
+                var head = FaceModel.hybridHourDiscCenter(hour, minute);
+                var headBounds = [[head[0] - 18, head[1] - 18],
+                    [head[0] + 18, head[1] + 18]] as Lang.Array<Graphics.Point2D>;
+                for (var phase = 0; phase < phases.size(); phase += 1) {
+                    assertSharedDialRoundGuard(headBounds,
+                        phases[phase][0], phases[phase][1], 3);
+                }
+                for (var spoke = 0; spoke < 3; spoke += 1) {
+                    var line = FaceModel.hybridHourSpoke(hour, minute, spoke);
+                    Test.assertEqual(line.size(), 2);
+                    for (var phase = 0; phase < phases.size(); phase += 1) {
+                        assertSharedDialRoundGuard(line, phases[phase][0], phases[phase][1], 3);
+                    }
+                }
             }
         }
     }

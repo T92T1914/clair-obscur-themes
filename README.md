@@ -83,46 +83,43 @@ See [development and verification](docs/development.md) for reproducible command
 ## Watch and phone candidates
 
 The shared palette also supports a [Garmin watch face candidate](docs/garmin-watchface.md)
-and [original phone icon artwork](docs/samsung-icons.md). Watch face 0.8.0 targets
-`fenix9pro47mm` and adds an original Hybrid dial with simultaneous analog/digital
-time, localized day/date, Weather, Steps and watch battery. Neutral facets give
-the hands and indices restrained depth. Glyph halos keep text above crossing
-hands without painting a broad panel across them. Existing Analog and Digital
-layouts, their saved field choices and the Inter clock resource remain intact.
-Hybrid and Analog share the sparse shifted analog always-on view; Digital keeps
-its small time-only view. A fully off display stays black.
+and [original phone icon artwork](docs/samsung-icons.md). The current 0.9.0 Hybrid
+for `fenix9pro47mm` uses an original diver dial informed by the selected black
+Submariner date-window reference. Eight circular indices, batons at six and nine,
+an inward triangle at twelve and a divided circular hour-hand head distinguish it
+from the preserved Analog layout. A contrasting digital-time window replaces the
+active three-o'clock baton and paints above the hands. It protects the digits and
+separate AM/PM label while deliberately hiding parts of a hand at some times.
+The printed 60-minute scale is not an interactive timer. Hybrid keeps localized
+date, Weather, Steps and watch battery. It requests native Roboto Medium with
+measured font fitting. Other text uses glyph halos and can still be crossed by the hands.
+Its separate sparse always-on view restores the three-o'clock baton and retains
+the mixed indices and divided hour head as shifted outlines on true black.
+Analog, Digital, saved field choices and the Inter Digital clock resource retain
+their earlier contracts. A fully off display stays black.
 
-Both 0.8.0 programs compiled for the exact target with SDK 9.2.0. All 32
-annotated groups then executed and passed in its simulator, including actual
-Gregorian rollover and synthetic DST conversions without changing the clock.
-The focused Python Garmin suite ran 52 host tests with two explicit original-font
-regeneration skips and no failures. Bounded normal-program checks switched Clair
-and Obscur, exercised 12/24-hour time and the Hybrid date menu, displayed ISO and
-CHG 100%, and returned through active, always-on, off and active states. Two
-saved native font-scale 1.35 samples at 3:18 AM and 06:32 retained readable fields
-and glyph halos at hand crossings. One saved always-on frame had 2,519 nonblack
-pixels, about 1.56% of the ideal round display. A short inspector sample showed
-28.3 kB active and a reported 32.7 kB peak against the displayed 123.9 kB budget,
-with peak detection unchecked. These samples do not establish every scale or
-time, a recorded long-duration peak or battery life. After restoring the recorded
-SDK preferences, one complete normal exit/relaunch retained Obscur Hybrid and
-its fields without app-property repair. The original simulator INI was restored
-and the task-owned SDK windows closed. A complete original app-property baseline
-was unavailable, so exact restoration of every persistent setting is unclaimed.
-One 0.8.0 watch-file transfer and two exact readbacks preserved the opaque settings
-and device identity XML. Watch-side activation, fit, live providers and the earlier
-Garmin USB-mode restoration remain pending. See the [current qualification](docs/garmin-watchface.md#current-080-qualification)
-for the exact scope and retained limits.
+The current normal program is 39,788 bytes and the test program is 196,636 bytes.
+Both compile for the exact target. The focused Python suite ran 59 host tests
+with two explicit original-font skips and no failures. All 38 annotated groups
+executed and passed in the target simulator. Bounded normal-program observations
+covered both appearances, the protected clock at font scale 1.35, always-on/off
+transitions and one complete normal SDK restart without app-property repair.
+One saved always-on frame contained 3,456 nonblack pixels, about 2.13% of the ideal
+round display. These are source and simulator results. Physical-watch fit, live
+providers, permanent persistence and power remain separate. The recorded simulator
+preferences were restored and the owned SDK windows closed, with the incomplete
+original app-state baseline retained as a restoration limit. The
+[current qualification](docs/garmin-watchface.md#current-090-qualification)
+records the exact programs, samples and remaining checks.
 
-The preserved 0.7.0 dial enlarged the shared markers and hands: opposite cardinal
-batons span 436 pixels, with 48 minute strokes on a nominal 442-pixel outer track.
-Its 26 target groups compiled but did not execute for that version. The older
-0.3.0 passed its 16 simulator groups, and 0.2.0 retains its separate observations.
-Normal 0.5.0, 0.6.0 and 0.7.0 programs have their version-specific transfers and
-independent watch-file readbacks. The 0.7.0 copy preserved the opaque settings and
-device identity file. Those file checks did not establish its recognition or fit
-after unplugging. Watch-side 0.8.0 activation and USB restoration remain unverified. See the guide for the retained
-failures, dated history and remaining native limits.
+The preserved 0.8.0 programs compiled for the exact target and passed all 32
+annotated simulator groups. Its bounded menu, font-scale, always-on, memory and
+normal-restart observations remain [recorded history](docs/garmin-watchface.md#preserved-080-qualification).
+The 0.8.0 visual direction was subsequently rejected against the requested diver
+reference. One transfer and two exact watch-file readbacks did not establish
+watch-side activation, fit or live providers. Earlier 0.7.0 and other programs
+retain their own source, test and transfer records. Physical acceptance and the
+earlier Garmin USB-mode restoration remain open.
 
 The phone gallery's 0.32.0 black and white collection pairs 276 named Android apps with 24 general symbols, giving 300 choices in both appearances. A [targeted refinement](docs/icon-craft.md#targeted-retained-icon-refinement-artwork-0320) gives My Spectrum an account cue, integrates Wallpaper Engine's frame and cog, and opens Pinterest's badge clearance. Six SVGs change and the other 594 retain their exact 0.31.0 bytes, including Coinbase and Coursera. All 31 earlier archives remain preserved, including the completed 184-drawing refinement in 0.30.0. A local finder searches names, icon IDs and Android package IDs, with separate app/function and mapping filters. Both appearances stay together, and the full catalogue remains available without JavaScript. Exact official store links and package hints distinguish similar products. Coverage is a selection, not a complete store catalogue or popularity chart. Human recognition, launcher masking and phone acceptance remain separate.
 
