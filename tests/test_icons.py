@@ -933,7 +933,7 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(set(files), expected | {"manifest.json"})
         manifest = json.loads(files["manifest.json"])
         self.assertEqual(manifest["functions"], NAMES)
-        self.assertEqual(manifest["version"], "0.30.0")
+        self.assertEqual(manifest["version"], "0.31.0")
         self.assertEqual(manifest["token_schema"], 1)
         self.assertEqual(manifest["token_version"], "1.0.0")
         self.assertEqual(manifest["palette_variant"], "monochrome")
@@ -1013,7 +1013,7 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(icons.token_path(), ROOT / "tokens-monochrome.json")
         for version in ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0"):
             self.assertEqual(icons.token_path(version), ROOT / "tokens.json")
-        for version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0", "0.24.0", "0.25.0", "0.26.0", "0.27.0", "0.28.0", "0.29.0", "0.30.0"):
+        for version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0", "0.24.0", "0.25.0", "0.26.0", "0.27.0", "0.28.0", "0.29.0", "0.30.0", "0.31.0"):
             self.assertEqual(icons.token_path(version), ROOT / "tokens-monochrome.json")
         for version, document in (("0.5.0", self.legacy_document), ("0.6.0", self.document),
                                   ("0.7.0", self.document), ("0.8.0", self.document),
@@ -1022,7 +1022,7 @@ class FunctionalIconTests(unittest.TestCase):
                                   ("0.13.0", self.document), ("0.14.0", self.document),
                                   ("0.15.0", self.document), ("0.16.0", self.document), ("0.17.0", self.document),
                                   ("0.18.0", self.document), ("0.19.0", self.document), ("0.20.0", self.document),
-                                  ("0.21.0", self.document), ("0.22.0", self.document), ("0.23.0", self.document), ("0.24.0", self.document), ("0.25.0", self.document), ("0.26.0", self.document), ("0.27.0", self.document), ("0.28.0", self.document), ("0.29.0", self.document), ("0.30.0", self.document)):
+                                  ("0.21.0", self.document), ("0.22.0", self.document), ("0.23.0", self.document), ("0.24.0", self.document), ("0.25.0", self.document), ("0.26.0", self.document), ("0.27.0", self.document), ("0.28.0", self.document), ("0.29.0", self.document), ("0.30.0", self.document), ("0.31.0", self.document)):
             with self.subTest(version=version), tempfile.TemporaryDirectory() as temporary:
                 base = Path(temporary)
                 explicit = base / "explicit.json"
@@ -1207,7 +1207,7 @@ class FunctionalIconTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "differs"):
                 icons.build_icons(self.document, output, check=True)
             self.assertEqual(tree_snapshot(output), before)
-        for unsupported in ("0.0.0", "0.31.0", None, [], {}):
+        for unsupported in ("0.0.0", "0.32.0", None, [], {}):
             with self.subTest(version=unsupported), self.assertRaisesRegex(ValueError, "Unsupported"):
                 icons.render_icons(self.document, version=unsupported)
 
@@ -2021,7 +2021,7 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(len(manifest["files"]), 584)
         self.assertEqual(len(manifest["catalog"]), 292)
         self.assertEqual(icons.VERSIONS,
-                         tuple(f"0.{number}.0" for number in range(1, 31)))
+                         tuple(f"0.{number}.0" for number in range(1, 32)))
 
     def test_messaging_apps_append_eight_svgs_and_preserve_every_accepted_drawing(self):
         previous = icons.render_icons(self.document, version="0.24.0")
@@ -2398,6 +2398,95 @@ class FunctionalIconTests(unittest.TestCase):
                 icons.main(["--output", str(missing), "--check"])
             self.assertEqual(check.exception.code, 1)
             self.assertFalse(missing.exists())
+
+
+class EverydayIconRefinementTests(unittest.TestCase):
+    # Frozen accepted renderer identities, captured before the 0.31 dispatch
+    # change. These include every generated SVG and manifest, not file counts.
+    HISTORICAL_IDENTITIES = {
+        "0.1.0": "8e6d448f9bc4169612e161dc29a837e93972754095960262e251a45dec2de435",
+        "0.2.0": "9b03061cc542861b357f67ac81631e2de0559c2940218b095bb1e045e282cd4a",
+        "0.3.0": "1543911cbb6b9f5dec3206ad4b07f6329173ac759a62c24fbeca49fbe1d0b082",
+        "0.4.0": "16d943d23d421b01b95dc0a37ca2b174eccdc813de07c73925dd6fdd64ba17d1",
+        "0.5.0": "05b8f554cf8aaae067a88cf151c01363ad501fdc9cb34e9f5f5ef7eca6f594e7",
+        "0.6.0": "a183327ec8ba3b4ef8b68479d350ba548cc89651d36631ca6546449593907e23",
+        "0.7.0": "19009b2f70a317d1cbd00dafa1e2af597d272ac7d168481bc2dc814d36e54fd6",
+        "0.8.0": "74c06eb958578e0d7136b91d7e09f9a3935ddead2e14f4c2174edaa61242f3c1",
+        "0.9.0": "6bb1e431e16c0b5130c0c49e718a788040a6f894f71cfbbaa50d7c3734cd6d0c",
+        "0.10.0": "e30c8eaff6ff3ae9bd663379fcfdca90d14627c827f149d1187953274d8d7a08",
+        "0.11.0": "503b1a3f57c5fcfa85d2d7e7a5e51f7a392f59c553a922652d95ba99396ecaa2",
+        "0.12.0": "0bc932b7d8cedd44a9328dd0f1c7ab08ecc51cb0251b7c2c0f0eb0cd4216a6a7",
+        "0.13.0": "051d063970d5b12cf35fe52c5384c2fb61c7c54787b5d453cce070bbc6665b8d",
+        "0.14.0": "43f4f6d3d6a36b4ee7b6bfd397ece142f6a962c04d152b080e57ca6d6b979c79",
+        "0.15.0": "ef8aa0ea54c7a67d554696a1086b999f0c779fbcd79a97cf5937c4041f15dbf5",
+        "0.16.0": "b68bec8dec4432db0ab7f58248a760e41a72cbd9489fc26e642d90ad82fc93e0",
+        "0.17.0": "59424469b3f153e46d5a289c5dc2438c1f10225f20c83b855b97a854e687333f",
+        "0.18.0": "57b0bb0e7e60e68103c64fc7439a7bb4f9800d010dc9507b2a7c97f727b0bb9b",
+        "0.19.0": "b069477714cba2a831b83cc0a7223d71a0bffb423799fd989e2644d136c00efe",
+        "0.20.0": "2d7f41b1f34c9fa275184703380ad69dfd99a5b677b8fb2d732e53bb05bb8ee6",
+        "0.21.0": "bb3e1734ef5096bb2d20dd8ff58cbf7bd85ed2414eae4bb1beafd52b1ea47d50",
+        "0.22.0": "3c46c4f17090d92774d3dbcfdc70c2f6a5c1eb73056f6f712d85e16131da4b0f",
+        "0.23.0": "09fc9be2220c619f5b435702da633043f913adb76594c4b4736888fc4f76dc64",
+        "0.24.0": "8dccb2d4ab20e4dea187b02a20c52a9556d06f667f5fdc99114e74ae33e80c6d",
+        "0.25.0": "8f86c63c6b542e2690543954124461bb2e89b772a3d7774890dabfea5c10f75b",
+        "0.26.0": "f0aa8b2e74d330a54cf2cb8b5e3deb548424e7dcb2e3a9e3cf04b4ba9b19a8b4",
+        "0.27.0": "7cc321c1519d35b420649d964ba401463f635a0e80650713fa8e066d733ef898",
+        "0.28.0": "562c410b26ea117eca62ed69c3c0df3800fb0b3338d790999c1e41d7d87ccc6d",
+        "0.29.0": "752c3abfaf64016184007e08b2b7d3c2ceb2c6ce4c8c4e32100de3217a65d2bf",
+        "0.30.0": "3c34c6fc426c5afd733ae31387b78375ac4c76f924e7e3eb5e544255366fa2ff",
+    }
+    REVIEWED_PAIRS = {
+        "Clair/coinbase.svg": "072f907e4a8493245e1f3e7a1609cb2419d702bb12708964625fcff60f0686ca",
+        "Obscur/coinbase.svg": "f9fd4b97bc3e6f0a850477c5ba1d370123c039de7041c7a01d6517003ba1b7fb",
+        "Clair/coursera.svg": "40449c56dab5f30660e82e9b7f526fa29ba6ea8cf47f67736ecd3597ba63630c",
+        "Obscur/coursera.svg": "2c98abde69a2d70f5a47a61415f8d5df7b433f72afe9d0731d7f0f8cbd378f81",
+    }
+
+    @classmethod
+    def setUpClass(cls):
+        cls.before = icons.render_icons(icons.load_icon_tokens("0.30.0"), version="0.30.0")
+        cls.after = icons.render_icons(icons.load_icon_tokens("0.31.0"), version="0.31.0")
+
+    def test_exact_reviewed_pair_changes_and_all_other_svg_bytes(self):
+        self.assertEqual(set(icons.EVERYDAY_GLYPHS), {"coinbase", "coursera"})
+        changed, retained = set(), set()
+        for name, payload in self.after.items():
+            if not name.endswith(".svg"):
+                continue
+            if name in self.REVIEWED_PAIRS:
+                self.assertEqual(hashlib.sha256(payload).hexdigest(), self.REVIEWED_PAIRS[name], name)
+                self.assertNotEqual(payload, self.before[name], name)
+                changed.add(name)
+            else:
+                self.assertEqual(payload, self.before[name], name)
+                retained.add(name)
+        self.assertEqual(changed, set(self.REVIEWED_PAIRS))
+        self.assertEqual(len(retained), 596)
+        for appearance in ("Clair", "Obscur"):
+            for identifier in ("chime", "pandora", "patreon", "canva", "garmin-connect", "proton-authenticator"):
+                self.assertIn(f"{appearance}/{identifier}.svg", retained)
+
+    def test_catalog_and_accepted_craft_are_preserved(self):
+        old, new = [json.loads(tree["manifest.json"]) for tree in (self.before, self.after)]
+        self.assertEqual(new["version"], "0.31.0")
+        self.assertEqual(new["catalog"], old["catalog"])
+        self.assertEqual(new["functions"], old["functions"])
+        self.assertEqual(len(new["catalog"]), 300)
+        self.assertEqual(sum(row["kind"] == "app" for row in new["catalog"]), 276)
+        self.assertEqual(hashlib.sha256(self.before["manifest.json"]).hexdigest(),
+                         "52b631d0dc1cc7168e47da740426ef5b08d544e754449e3d6ba56e6d4c36d61a")
+        craft = json.dumps(icons.CRAFT_GLYPHS, sort_keys=True, separators=(",", ":")).encode()
+        self.assertEqual(hashlib.sha256(craft).hexdigest(),
+                         "96b80c7686c7900b4c8c807beb2bddac77c9e5db89a2c446d8291f7ad73ae565")
+
+    def test_all_thirty_historical_generated_identities_remain_exact(self):
+        self.assertEqual(tuple(self.HISTORICAL_IDENTITIES), icons.VERSIONS[:-1])
+        for version, expected in self.HISTORICAL_IDENTITIES.items():
+            with self.subTest(version=version):
+                tree = icons.render_icons(icons.load_icon_tokens(version), version=version)
+                pairs = "".join(name + "\0" + hashlib.sha256(payload).hexdigest() + "\n"
+                                for name, payload in sorted(tree.items())).encode()
+                self.assertEqual(hashlib.sha256(pairs).hexdigest(), expected)
 
 
 if __name__ == "__main__":

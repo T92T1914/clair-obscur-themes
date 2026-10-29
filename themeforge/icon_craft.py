@@ -1,4 +1,4 @@
-"""Original app-linked refinements selected for artwork 0.30.0.
+"""Versioned original app-linked refinements through artwork 0.31.0.
 
 Earlier drawings remain available through the historical renderer. App names
 identify intended assignments, not publisher endorsement or imported assets.
@@ -2216,3 +2216,18 @@ CRAFT_GLYPHS = {'ace-hardware': [('path',
                       'stroke': 'none'})],
  'zwift-companion': [('path', {'d': 'M200 216 H360 L216 344 H360', 'stroke-width': '40'}),
                      ('path', {'d': 'M104 144 Q144 104 184 144 M128 168 Q144 144 160 168'})]}
+
+
+# Two separately reviewed original refinements for artwork 0.31.0. The complete
+# 0.30.0 CRAFT_GLYPHS above remains immutable for historical generation.
+EVERYDAY_GLYPHS = {
+    "coinbase": [
+        ("circle", {"cx": "256", "cy": "256", "r": "124", "fill": "text", "stroke": "none"}),
+        ("circle", {"cx": "256", "cy": "256", "r": "66", "fill": "panel", "stroke": "none"}),
+        ("rect", {"x": "312", "y": "240", "width": "88", "height": "32", "fill": "panel", "stroke": "none"}),
+    ],
+    "coursera": [
+        ("path", {"d": "M366 192 A128 128 0 1 0 366 320 L316 291 A70 70 0 1 1 316 221 Z",
+                  "fill": "text", "stroke": "none"}),
+    ],
+}

@@ -55,6 +55,38 @@ class PreviewTests(unittest.TestCase):
         self.artifacts = self.base / 'artifacts'
         build_release(ROOT / 'tokens.json', self.artifacts)
 
+    def test_mapping_labels_and_routes_survive_hosted_and_portable_static_output(self):
+        files = preview_files(ROOT, self.artifacts)
+        with zipfile.ZipFile(io.BytesIO(files[PORTABLE_ARCHIVE])) as archive:
+            pages = (files['index.html'], archive.read('index.html'))
+        for payload in pages:
+            page = payload.decode()
+            cards = dict(re.findall(
+                r'<article class="icon-card" data-icon-function="([^"]+)" (.*?)</article>',
+                page, re.DOTALL))
+            self.assertEqual(len(cards), 300)
+            self.assertEqual(sum('data-icon-mapping="included"' in card for card in cards.values()), 277)
+            self.assertEqual(sum('data-icon-mapping="manual"' in card for card in cards.values()), 23)
+            for identifier, included in (('google-chrome', True), ('us-bank', False),
+                                         ('phone', True), ('browser', False), ('calendar', False)):
+                card = cards[identifier]
+                self.assertIn('Mapping included' if included else 'No exact mapping recorded', card)
+                self.assertIn('href="#icon-pack-instructions"' if included else
+                              'href="#icon-manual-instructions"', card)
+                self.assertEqual(card.count('<img '), 2)
+            parsed = PageLinks(page)
+            self.assertEqual([item['value'] for item in parsed.select_options['icon-mapping']],
+                             ['all', 'included', 'manual'])
+            self.assertIn('264 of 276 named app packages', page)
+            self.assertIn('does not prove that an installed app', page)
+            self.assertIn('Signed APK delivery is private', page)
+            # Both short routes must be ordinary visible content, not depend on
+            # JavaScript opening a disclosure or on a PNG acting as an installer.
+            for anchor in ('icon-pack-instructions', 'icon-manual-instructions'):
+                before = page[:page.index('id="' + anchor + '"')]
+                self.assertEqual(before.count('<details'), before.count('</details>'))
+                self.assertEqual(parsed.ids.count(anchor), 1)
+
     def test_site_and_downloads_are_repeatable_and_all_hashes_match(self):
         first = preview_files(ROOT, self.artifacts)
         self.assertEqual(first, preview_files(ROOT, self.artifacts))
@@ -557,7 +589,7 @@ class PreviewTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
         exported = json.loads((self.base / 'extracted-icons/manifest.json').read_bytes())
-        self.assertEqual(exported['version'], '0.30.0')
+        self.assertEqual(exported['version'], '0.31.0')
         self.assertEqual(len(exported['functions']), 300)
         self.assertEqual(len(exported['files']), 600)
         self.assertEqual([entry['id'] for entry in exported['catalog']][233:241],
@@ -648,6 +680,22 @@ class PreviewTokenSnapshotTests(unittest.TestCase):
         self.artifacts = self.base / 'artifacts'
         self.output = self.base / 'preview'
         build_release(self.tokens, self.artifacts)
+
+    def test_mapping_bytes_changed_after_capture_cannot_publish_different_status_source(self):
+        path = self.root / 'android/iconpack/components.json'
+        captured = path.read_bytes()
+
+        def change_after_capture(root):
+            sources = source_files(root)
+            # Whitespace preserves the valid canonical declarations. The build
+            # must still bind labels to the exact bytes in its source archive.
+            path.write_bytes(captured + b'\n')
+            return sources
+
+        with patch('preview.source_files', side_effect=change_after_capture):
+            with self.assertRaisesRegex(ValueError, 'captured source snapshot'):
+                build_preview(self.root, self.artifacts, self.output)
+        self.assertFalse(self.output.exists())
 
     def test_changed_monochrome_tokens_cannot_replace_the_captured_identity(self):
         build_release(self.tokens, self.artifacts)

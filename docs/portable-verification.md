@@ -70,7 +70,11 @@ Relative member paths have at most 240 ASCII characters and eight components.
 Windows device names, parent traversal and file/directory prefix conflicts are
 unsupported. These rules also apply to extra entries before any content is read.
 
-The artwork 0.30.0 preview retains the complete 0.29.0 SVG archive, all earlier collections, Keyboard Companion 0.1.0 and the existing appearance/mechanism files. Its finite allowances are:
+The current artwork 0.31.0 preview preserves the complete 0.30.0 archive and all earlier collections. Its finite allowances are 696 declared hashes, 722 entries excluding the root, and 34,865,152 returned read bytes. The 72,704-byte manifest, 8,388,608-byte member, 65,536-byte chunk and 262,144-byte report limits remain unchanged, as do path, link, depth and stability checks.
+
+The pre-capacity-update composition measured 697 regular files, 21 directories and 718 entries, with 696 declared hashes covering 34,675,883 payload bytes. Its 72,014-byte manifest stayed within the existing cap. The old included verifier refused the actual kit at its 695-declaration limit. A separate scalar-only diagnostic returned 34,819,911 read bytes, requiring 34,819,913 bytes including EOF/final-manifest admission. Rounding that observed minimum to the next read chunk gives 34,865,152 bytes. The entry limit retains four ordinary-extra reporting slots. Final acceptance still requires an ordinary comparison through the final included verifier, without diagnostic overrides.
+
+The retained artwork 0.30.0 preview retains the complete 0.29.0 SVG archive, all earlier collections, Keyboard Companion 0.1.0 and the existing appearance/mechanism files. Its finite allowances are:
 
 | Limit | Value |
 | --- | --- |

@@ -1,5 +1,12 @@
 # Changes
 
+## Everyday icon selection and artwork 0.31.0
+
+- Show a source-derived mapping label and a relevant application route on every gallery card. Combine the new Pack mapping filter with existing name, icon ID, package and app/function search, preserving Clear, keyboard operation and static access. A declaration is separate from installation or launcher recognition.
+- Recheck the twelve named-package gaps without importing unqualified declarations. Retain all 1,354 ordered rows, provenance, 290 narrow queries and the twelve manual routes.
+- Refine only Coinbase and Coursera after original five-size comparisons in both appearances and independent review of their final mixed context. Retain Chime and the other 297 drawings, all 30 historical archives, keyboard, watch and desktop assets.
+- Prepare private Clair Icons 0.1.4/code 5 and Obscur Icons 0.1.15/code 16 successors through the existing signing route. Keep accepted binaries unchanged and qualify the new exports, compiled resources and signer separately. Native installation and human recognition remain deferred or unmeasured.
+
 ## Artwork 0.30.0 and Android companions 0.1.3 / 0.1.14
 
 - Refine 184 existing drawings after individual five-size comparisons in both appearances and retain 116. Keep all 300 IDs, catalogue metadata and component mappings.
