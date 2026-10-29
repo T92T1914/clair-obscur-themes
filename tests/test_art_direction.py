@@ -93,16 +93,19 @@ class ArtDirectionTests(unittest.TestCase):
     def test_catalogue_and_component_assignments_do_not_change(self):
         old, new = (json.loads(tree["manifest.json"]) for tree in (self.before, self.after))
         self.assertEqual(new["version"], "0.29.0")
-        self.assertEqual(icons.VERSIONS[-4:], ("0.28.0", "0.29.0", "0.30.0", "0.31.0"))
+        self.assertEqual(icons.VERSIONS[-5:], ("0.28.0", "0.29.0", "0.30.0", "0.31.0", "0.32.0"))
         for field in ("catalog", "catalog_date", "catalog_scope", "functions", "palette_variant",
                       "token_schema", "token_version", "tile", "stroke_width"):
             self.assertEqual(old[field], new[field], field)
         self.assertEqual(len(new["catalog"]), 300)
         self.assertEqual(sum(row["kind"] == "app" for row in new["catalog"]), 276)
         mapping_bytes = (icons.ROOT / "android/iconpack/components.json").read_bytes()
-        self.assertEqual(hashlib.sha256(mapping_bytes).hexdigest(),
+        # Pin the complete accepted table before the separately dated 0.32 alias.
+        historical = {**json.loads(mapping_bytes), "mappings": json.loads(mapping_bytes)["mappings"][:1354]}
+        historical_bytes = (json.dumps(historical, ensure_ascii=False, sort_keys=True, indent=2) + "\n").encode()
+        self.assertEqual(hashlib.sha256(historical_bytes).hexdigest(),
                          "f37fcd87858500b6e389143194fdf67c74eaea8c42f10b6d4098da37b508c8a2")
-        self.assertEqual(len(json.loads(mapping_bytes)["mappings"]), 1354)
+        self.assertEqual(len(json.loads(mapping_bytes)["mappings"]), 1355)
 
     def test_current_artwork_keeps_monochrome_admission_and_accepted_028_archive(self):
         wrong = copy.deepcopy(icons.load_icon_tokens("0.29.0"))

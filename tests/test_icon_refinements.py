@@ -618,7 +618,7 @@ class IconKeyContainmentTests(unittest.TestCase):
         cls.current = icons.render_icons(document, version="0.23.0")
 
     def test_only_reviewed_proton_pass_changes_and_other_291_drawings_remain_exact(self):
-        self.assertEqual(icons.VERSION, "0.31.0")
+        self.assertEqual(icons.VERSION, "0.32.0")
         self.assertEqual(set(icons.CONTAINED_GLYPHS), {"proton-pass"})
         self.assertEqual(set(self.current), set(self.old))
         expected_changes = set(REVIEWED_CONTAINED_SVG_DIGESTS["0.23.0"])
