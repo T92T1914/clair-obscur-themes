@@ -9,6 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
+const opticalFixture = JSON.parse(await readFile(path.join(root, 'tests/fixtures/icon-optical-0.32.json'), 'utf8'));
 const exporter = path.join(root, 'tools', 'export-icons.mjs');
 const python = process.platform === 'win32' ? ['py', '-3.11', '-X', 'utf8'] : ['python3'];
 const baseFunctions = ('phone messages contacts camera gallery settings calendar clock files notes mail browser maps ' +
@@ -580,7 +581,7 @@ const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 let temporary, source, sourceBefore, legacySource, legacyBefore, previousSource, previousBefore,
   firstSource, firstBefore, secondSource, secondBefore, thirdSource, thirdBefore,
   monochromeSource, monochromeBefore, companionSource, companionBefore, broadSource, broadBefore, everydaySource, everydayBefore,
-  foodSource, foodBefore, travelSource, travelBefore, financeSource, financeBefore, weatherSource, weatherBefore, runningSource, runningBefore, learningSource, learningBefore, readingSource, readingBefore, phoneServiceSource, phoneServiceBefore, refinedSource, refinedBefore, gboardSource, gboardBefore, videoEditingSource, videoEditingBefore, polishedSource, polishedBefore, spacedSource, spacedBefore, containedSource, containedBefore, clearanceSource, clearanceBefore, messagingSource, messagingBefore, communicationSource, communicationBefore, routeSource, routeBefore, identitySource, identityBefore, artDirectionSource, artDirectionBefore, craftSource, craftBefore;
+  foodSource, foodBefore, travelSource, travelBefore, financeSource, financeBefore, weatherSource, weatherBefore, runningSource, runningBefore, learningSource, learningBefore, readingSource, readingBefore, phoneServiceSource, phoneServiceBefore, refinedSource, refinedBefore, gboardSource, gboardBefore, videoEditingSource, videoEditingBefore, polishedSource, polishedBefore, spacedSource, spacedBefore, containedSource, containedBefore, clearanceSource, clearanceBefore, messagingSource, messagingBefore, communicationSource, communicationBefore, routeSource, routeBefore, identitySource, identityBefore, artDirectionSource, artDirectionBefore, craftSource, craftBefore, everydayUseSource, everydayUseBefore;
 
 function execute(command, args, options = {}) {
   return spawnSync(command, args, { cwd: root, encoding: 'utf8', windowsHide: true,
@@ -700,7 +701,13 @@ before(async () => {
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stdout + result.stderr);
   sourceBefore = await snapshot(source);
-  assert.equal(JSON.parse(await readFile(path.join(source, 'manifest.json'))).version, '0.31.0');
+  assert.equal(JSON.parse(await readFile(path.join(source, 'manifest.json'))).version, '0.32.0');
+  everydayUseSource = path.join(temporary, 'everyday-use-svg');
+  const everydayUseRevision = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', everydayUseSource, '--version', '0.31.0']);
+  assert.ifError(everydayUseRevision.error);
+  assert.equal(everydayUseRevision.status, 0, everydayUseRevision.stdout + everydayUseRevision.stderr);
+  everydayUseBefore = await snapshot(everydayUseSource);
+  assert.equal(everydayUseBefore['manifest.json'], opticalFixture.retained_031_manifest_sha256);
   craftSource = path.join(temporary, 'craft-svg');
   const craftRevision = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', craftSource, '--version', '0.30.0']);
   assert.ifError(craftRevision.error);
@@ -713,12 +720,24 @@ before(async () => {
     'Clair/coursera.svg': '40449c56dab5f30660e82e9b7f526fa29ba6ea8cf47f67736ecd3597ba63630c',
     'Obscur/coursera.svg': '2c98abde69a2d70f5a47a61415f8d5df7b433f72afe9d0731d7f0f8cbd378f81',
   };
-  assert.deepEqual(Object.keys(sourceBefore).sort(), Object.keys(craftBefore).sort());
-  assert.deepEqual(Object.keys(sourceBefore).filter(name => name.endsWith('.svg') && sourceBefore[name] !== craftBefore[name]).sort(),
+  assert.deepEqual(Object.keys(everydayUseBefore).sort(), Object.keys(craftBefore).sort());
+  assert.deepEqual(Object.keys(everydayUseBefore).filter(name => name.endsWith('.svg') && everydayUseBefore[name] !== craftBefore[name]).sort(),
     Object.keys(selectedEverydayPins).sort(), 'Only the independently selected Coinbase and Coursera pair changes');
   for (const name of Object.keys(craftBefore).filter(name => name.endsWith('.svg'))) {
-    assert.equal(sourceBefore[name], selectedEverydayPins[name] || craftBefore[name],
+    assert.equal(everydayUseBefore[name], selectedEverydayPins[name] || craftBefore[name],
       'Selected original vector or one of596 exact retained SVGs: ' + name);
+  }
+  assert.equal(opticalFixture.artwork_version, '0.32.0');
+  assert.deepEqual(opticalFixture.changed_ids, ['my-spectrum', 'wallpaper-engine', 'pinterest']);
+  assert.deepEqual(Object.keys(sourceBefore).sort(), Object.keys(everydayUseBefore).sort());
+  assert.deepEqual(Object.keys(sourceBefore).filter(name => name.endsWith('.svg') && sourceBefore[name] !== everydayUseBefore[name]).sort(),
+    Object.keys(opticalFixture.svg_sha256).sort(), 'Only the three independently reviewed optical pairs change from0.31');
+  for (const name of Object.keys(everydayUseBefore).filter(name => name.endsWith('.svg'))) {
+    assert.equal(sourceBefore[name], opticalFixture.svg_sha256[name] || everydayUseBefore[name],
+      'Selected original vector or one of594 exact retained SVGs: ' + name);
+  }
+  for (const [name, digest] of Object.entries(selectedEverydayPins)) {
+    assert.equal(sourceBefore[name], digest, 'Accepted Coinbase/Coursera selection remains unchanged: ' + name);
   }
   artDirectionSource = path.join(temporary, 'art-direction-svg');
   const artDirectionRevision = execute(python[0], [...python.slice(1), '-m', 'themeforge.icons', '--output', artDirectionSource, '--version', '0.29.0']);
@@ -1051,7 +1070,7 @@ test('PNG command exports 1200 monochrome icons with independent neutral-pixel d
   const manifestBytes = await readFile(path.join(output, 'manifest.json'));
   const manifest = JSON.parse(manifestBytes);
   const expected = ['manifest.json', 'LICENSE'];
-  assert.equal(manifest.version, '0.31.0');
+  assert.equal(manifest.version, '0.32.0');
   assert.equal(manifest.exporter_version, '0.11.0');
   assert.equal(manifest.palette_variant, 'monochrome');
   assert.equal(manifest.token_version, '1.0.0');
@@ -1304,7 +1323,7 @@ test('PNG command exports 1200 monochrome icons with independent neutral-pixel d
   assert.deepEqual(await snapshot(source), sourceBefore);
 });
 
-for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0', '0.15.0', '0.16.0', '0.17.0', '0.18.0', '0.19.0', '0.20.0', '0.21.0', '0.22.0', '0.23.0', '0.24.0', '0.25.0', '0.26.0', '0.27.0', '0.28.0', '0.29.0', '0.30.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
+for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.7.0', '0.8.0', '0.9.0', '0.10.0', '0.11.0', '0.12.0', '0.13.0', '0.14.0', '0.15.0', '0.16.0', '0.17.0', '0.18.0', '0.19.0', '0.20.0', '0.21.0', '0.22.0', '0.23.0', '0.24.0', '0.25.0', '0.26.0', '0.27.0', '0.28.0', '0.29.0', '0.30.0', '0.31.0']) test(`accepted ${version} SVG artwork exports its complete PNG set with its own version and source identities`, async () => {
   const historical = {
     '0.1.0': { input: legacySource, before: legacyBefore, functions: baseFunctions, images: 96 },
     '0.2.0': { input: previousSource, before: previousBefore, functions: baseFunctions, images: 96 },
@@ -1364,6 +1383,8 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
       apps, date: '2026-10-24', monochrome: true },
     '0.30.0': { input: craftSource, before: craftBefore, functions, images: 1200,
       apps, date: '2026-10-24', monochrome: true },
+    '0.31.0': { input: everydayUseSource, before: everydayUseBefore, functions, images: 1200,
+      apps, date: '2026-10-24', monochrome: true },
   }[version];
   const historicalSource = historical.input, historicalBefore = historical.before;
   const historicalFunctions = historical.functions, imageCount = historical.images;
@@ -1422,14 +1443,14 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
         assert.ok(rgba.some((value, index) => index % 4 === 3 && value > 0), 'Legacy drawing remains visible');
       }
     }
-    if (version === '0.30.0') {
+    if (version === '0.30.0' || version === '0.31.0') {
       // The accepted monochrome Zillow family retains two IDs for one shared mark.
       assert.equal(new Set(hashes).size, historicalFunctions.length - 1,
         `${appearance}/${size} preserves the accepted Zillow-family shared mark`);
       const groups = new Map();
       historicalFunctions.forEach((name, index) => groups.set(hashes[index], [...(groups.get(hashes[index]) || []), name]));
       assert.deepEqual([...groups.values()].filter(names => names.length > 1).map(names => names.sort()),
-        [['zillow', 'zillow-rentals']], 'Only the accepted 0.30 Zillow assignments share pixels');
+        [['zillow', 'zillow-rentals']], 'Only the accepted0.30/0.31 Zillow assignments share pixels');
     } else {
       assert.equal(new Set(hashes).size, historicalFunctions.length, `${appearance}/${size} retains every historical drawing`);
     }
@@ -1441,12 +1462,12 @@ for (const version of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.
 
 test('unknown and mismatched artwork versions are refused before output reservation or browser launch', async () => {
   const admitted = [['0.1.0', legacySource], ['0.2.0', previousSource], ['0.3.0', firstSource],
-    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', foodSource], ['0.11.0', travelSource], ['0.12.0', financeSource], ['0.13.0', weatherSource], ['0.14.0', runningSource], ['0.15.0', learningSource], ['0.16.0', readingSource], ['0.17.0', phoneServiceSource], ['0.18.0', refinedSource], ['0.19.0', gboardSource], ['0.20.0', videoEditingSource], ['0.21.0', polishedSource], ['0.22.0', spacedSource], ['0.23.0', containedSource], ['0.24.0', clearanceSource], ['0.25.0', messagingSource], ['0.26.0', communicationSource], ['0.27.0', routeSource], ['0.28.0', identitySource], ['0.29.0', artDirectionSource], ['0.30.0', craftSource], ['0.31.0', source]];
-  const cases = [['unknown', source, '0.32.0']];
+    ['0.4.0', secondSource], ['0.5.0', thirdSource], ['0.6.0', monochromeSource], ['0.7.0', companionSource], ['0.8.0', broadSource], ['0.9.0', everydaySource], ['0.10.0', foodSource], ['0.11.0', travelSource], ['0.12.0', financeSource], ['0.13.0', weatherSource], ['0.14.0', runningSource], ['0.15.0', learningSource], ['0.16.0', readingSource], ['0.17.0', phoneServiceSource], ['0.18.0', refinedSource], ['0.19.0', gboardSource], ['0.20.0', videoEditingSource], ['0.21.0', polishedSource], ['0.22.0', spacedSource], ['0.23.0', containedSource], ['0.24.0', clearanceSource], ['0.25.0', messagingSource], ['0.26.0', communicationSource], ['0.27.0', routeSource], ['0.28.0', identitySource], ['0.29.0', artDirectionSource], ['0.30.0', craftSource], ['0.31.0', everydayUseSource], ['0.32.0', source]];
+  const cases = [['unknown', source, '0.33.0']];
   for (const [actual, original] of admitted) for (const [claimed] of admitted) {
     if (actual !== claimed) cases.push([`${actual}-as-${claimed}`, original, claimed]);
   }
-  assert.equal(cases.length, 931, 'All 930 cross-version claims and one unsupported future version are exercised');
+  assert.equal(cases.length, 993, 'All 992 cross-version claims and one unsupported future version are exercised');
   for (const [name, original, version] of cases) {
     const input = path.join(temporary, name);
     await cp(original, input, { recursive: true });

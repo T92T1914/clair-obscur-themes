@@ -1,5 +1,11 @@
 # Changes
 
+## Targeted icon refinement and artwork 0.32.0
+
+- Refine My Spectrum, Wallpaper Engine and Pinterest after original five-size alternatives and independent labeled/unlabeled mixed-context review. Change six SVGs and twelve PNGs, preserving the other 594 SVGs and 1,188 PNGs exactly from 0.31.0. Preserve all 31 historical artwork archives and the accepted Coinbase/Coursera shapes.
+- Append one exact Domino's launcher activity from an October 29, 2026 local coverage observation after all 1,354 earlier mappings. Retain provenance, the 290 public package queries, 277 included choices and 23 manual choices. Updated package coverage and Theme Park assignment remain separate native checks.
+- Configure private Clair Icons 0.1.5/code 6 and Obscur Icons 0.1.16/code 17 for the qualified 0.32.0 export. Preserve accepted packages and require separate compiled-resource and signer checks before private delivery.
+
 ## Everyday icon selection and artwork 0.31.0
 
 - Show a source-derived mapping label and a relevant application route on every gallery card. Combine the new Pack mapping filter with existing name, icon ID, package and app/function search, preserving Clear, keyboard operation and static access. A declaration is separate from installation or launcher recognition.

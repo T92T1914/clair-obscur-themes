@@ -1,0 +1,14 @@
+{
+  "artwork_version": "0.32.0",
+  "changed_ids": ["my-spectrum", "wallpaper-engine", "pinterest"],
+  "svg_sha256": {
+    "Clair/my-spectrum.svg": "f003d7d5599bb8a504f0c7bafaf9d050a529655928c217329cc0146dc9880856",
+    "Obscur/my-spectrum.svg": "b15e0c6913cf587a2f9ac143c5da069acf47652aeceee42e6a6ae63923411c48",
+    "Clair/wallpaper-engine.svg": "8353f7b3120e855b748b27611824fcd76775a5a7bbdb53600a9690df028f3e96",
+    "Obscur/wallpaper-engine.svg": "58063e2207518391a9b4214cac0ba0d7776f55726f33ecec62c285daa278b83e",
+    "Clair/pinterest.svg": "0ad108cf98ec9fab70d0787d5bed561cff63f7ebf62480362d3e4423d833854c",
+    "Obscur/pinterest.svg": "aa4606b414798ee6071a55f460c4e7ed020620b7aa625fa7b16af03e59034d13"
+  },
+  "retained_031_manifest_sha256": "3e08438a114477351c2d181fe2ff17818c9f9d94b6c755c5161cc3c0bf46671f",
+  "retained_031_tree_sha256": "61e28bb80c1b09c1d011a65d345f3dac835132486826089010bb0aa3dacead9a"
+}

@@ -20324,6 +20324,14 @@
       "source_types": [
         "item"
       ]
+    },
+    {
+      "activity": "com.dominospizza.SplashScreenActivity",
+      "android_package": "com.dominospizza",
+      "component": "ComponentInfo{com.dominospizza/com.dominospizza.SplashScreenActivity}",
+      "icon_id": "dominos",
+      "observed_on": "2026-10-29",
+      "source_kind": "observed-launcher"
     }
   ],
   "schema_version": 1,

@@ -49,3 +49,20 @@ The everyday-use continuation revisits three documented C-shaped similarities, r
 The exact selected composition received an independent visual challenge. Its inspected raster openings remain visible at 24 and 32 pixels in both appearances, without a new closure, projecting seam or clipping in the larger views. This is evidence for the particular drawing decisions, not a participant recognition study or a guarantee of preference. The five controls, including Patreon and Pandora, remain unchanged.
 
 Artwork 0.31.0 changes four SVGs and retains the other 596 exact 0.30.0 bytes. All 300 IDs, labels, app assignments, mappings and public package queries remain unchanged. The complete 0.30.0 archive joins the preserved history. Clair Icons 0.1.4/code 5 and Obscur Icons 0.1.15/code 16 are separately versioned private successors. Source shapes, exported pixels, compiled resources, served acquisition and native application remain distinct checks. The keyboard companion, Garmin watch face and accepted desktop themes are unchanged.
+
+
+## Targeted retained-icon refinement, artwork 0.32.0
+
+This continuation revisits My Spectrum, Wallpaper Engine and Pinterest from the existing catalogue. Their selection comes from the supplied October 21 app screen, not a new complete phone inventory. Original alternatives were compared with accepted 0.31.0 PNGs at 24, 32, 48, 64 and 128 pixels in both appearances, including labeled and unlabeled mixed groups with unchanged controls. The retained publisher-reference images inform the app cues; their artwork is not imported into the package.
+
+| Choice | Selection and tradeoff |
+| --- | --- |
+| My Spectrum | Use an account/person cue below a compact name instead of the accepted router/service symbol. The small lettering is a supporting cue at larger sizes and is not reliably readable at 24 pixels. The visible app label remains necessary. |
+| Wallpaper Engine | Integrate a cog into the enclosing screen/frame, with controlled clearance between the hub, teeth and frame. This keeps the source-specific frame relationship instead of presenting an unrelated gear. Its deliberate weight differs from thin general utility symbols. |
+| Pinterest | Keep the familiar pin/P construction and increase the clearance within its circular badge. The selected alternative opens the small gaps without replacing the app cue with a generic initial. |
+
+The exact three selected A alternatives received independent visual review in both appearances and mixed contexts. The review supports their particular construction and spacing choices. It does not measure human recognition or prove current launcher masking. Artwork 0.32.0 changes six SVGs and retains 594 exact 0.31.0 SVG bytes, including the accepted Coinbase and Coursera refinements. All 300 IDs, labels and catalogue assignments remain unchanged. The complete 0.31.0 archive is preserved beside the thirty earlier collections.
+
+The maintained export produces twelve changed PNGs and 1,188 byte-identical retained PNGs. All 1,200 saved PNGs were independently decoded and checked against the qualified export identities, dimensions and neutral pixels. The six selected 512-pixel PNGs also match the reviewed private alternatives in compressed bytes and decoded pixels. These are source and asset checks. Clair Icons 0.1.5/code 6 and Obscur Icons 0.1.16/code 17 require separate compiled-resource, signer and native checks through the existing private delivery route.
+
+An independent compatibility change appends the exact `com.dominospizza/com.dominospizza.SplashScreenActivity` launcher component observed on October 29, 2026. All 1,354 earlier ordered rows and their provenance remain intact. This produces 1,355 declarations with the same 290 public package queries, 277 included choices and 23 manual choices. It does not establish that an updated package has been installed or that every visible app is assigned by Theme Park. Keyboard assets and accepted desktop packages are unchanged by this icon refinement.
