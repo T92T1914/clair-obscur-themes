@@ -13,12 +13,12 @@ import sys
 from typing import BinaryIO
 
 MAX_MANIFEST_BYTES = 72_704
-MAX_DECLARED_FILES = 697
-MAX_ENTRIES = 723
+MAX_DECLARED_FILES = 698
+MAX_ENTRIES = 724
 MAX_FILE_BYTES = 8_388_608
-# The artwork 0.32 / watch 0.9 source archive grows the same supported kit.
-# Round its measured 36,315,687-byte max-revision minimum to the next 64 KiB chunk.
-MAX_READ_BYTES = 36_372_480
+# The artwork 0.33 kit preserves the complete 0.32 archive and current sources.
+# Round its measured 37,749,895-byte max-revision minimum to the next 64 KiB chunk.
+MAX_READ_BYTES = 37_814_272
 READ_CHUNK = 65_536
 MAX_REPORT_BYTES = 262_144
 MANIFEST_NAME = 'site-manifest.json'

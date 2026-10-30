@@ -2315,3 +2315,14 @@ OPTICAL_GLYPHS = {'my-spectrum': [('path',
  'pinterest': [('path', {'d': 'M170.410 361.687 A136 136 0 1 1 272.574 390.986'}),
                ('path',
                 {'d': 'M224 376 L264 200 M240 280 C328 328 376 192 304 160 C232 128 168 176 184 248'})]}
+
+
+# The 0.33.0 fold clearance is independent of the accepted historical maps.
+FOLD_CLEARANCE_GLYPHS = {
+    "proton-vpn": [
+        ("path", {"d": "M144 160 H368 Q392 160 380 184 L276 376 Q256 408 236 376 L132 184 Q120 160 144 160 Z",
+                  "fill": "text", "stroke": "none"}),
+        ("path", {"d": "M196 208 H328 L256 328 Z", "fill": "panel", "stroke": "none"}),
+        ("path", {"d": "M144 160 L196 208 H328 L368 160", "stroke": "panel", "stroke-width": "20"}),
+    ],
+}

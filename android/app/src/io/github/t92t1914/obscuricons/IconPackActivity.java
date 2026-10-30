@@ -27,9 +27,12 @@ import org.xmlpull.v1.XmlPullParser;
 public final class IconPackActivity extends Activity {
     private TextView result;
     private Button check;
+    private String completedReport;
 
     @Override public void onCreate(Bundle savedState) {
         super.onCreate(savedState);
+        Object retainedReport = getLastNonConfigurationInstance();
+        if (retainedReport instanceof String) completedReport = (String) retainedReport;
         final int padding = dp(24);
         ScrollView scroll = new ScrollView(this);
         scroll.setFillViewport(true);
@@ -56,7 +59,8 @@ public final class IconPackActivity extends Activity {
         check.setText(R.string.check_coverage);
         check.setAllCaps(false);
         body.addView(check);
-        result = addText(body, getString(R.string.coverage_empty), 15, false);
+        result = addText(body, completedReport == null
+            ? getString(R.string.coverage_empty) : completedReport, 15, false);
         result.setTextIsSelectable(true);
         check.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) {
@@ -68,13 +72,14 @@ public final class IconPackActivity extends Activity {
                         try {
                             report = coverageReport();
                         } catch (Exception error) {
-                            report = getString(R.string.coverage_error);
+                            report = null;
                         }
                         final String text = report;
                         runOnUiThread(new Runnable() {
                             @Override public void run() {
                                 if (!isFinishing() && !isDestroyed()) {
-                                    result.setText(text);
+                                    completedReport = text;
+                                    result.setText(text == null ? getString(R.string.coverage_error) : text);
                                     check.setEnabled(true);
                                 }
                             }
@@ -86,6 +91,11 @@ public final class IconPackActivity extends Activity {
         scroll.addView(body);
         setContentView(scroll);
         body.requestApplyInsets();
+    }
+
+    @Override public Object onRetainNonConfigurationInstance() {
+        // Retain text only. No view, worker or serialized app inventory crosses recreation.
+        return completedReport;
     }
 
     private int dp(int value) {

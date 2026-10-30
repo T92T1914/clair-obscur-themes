@@ -65,4 +65,14 @@ The exact three selected A alternatives received independent visual review in bo
 
 The maintained export produces twelve changed PNGs and 1,188 byte-identical retained PNGs. All 1,200 saved PNGs were independently decoded and checked against the qualified export identities, dimensions and neutral pixels. The six selected 512-pixel PNGs also match the reviewed private alternatives in compressed bytes and decoded pixels. These are source and asset checks. Clair Icons 0.1.5/code 6 and Obscur Icons 0.1.16/code 17 require separate compiled-resource, signer and native checks through the existing private delivery route.
 
+## Fold clearance refinement, artwork 0.33.0
+
+Proton VPN's outer triangle and folded centre remain intact. The panel-colour separator increases from 12 to 20 master units. At a 24-pixel icon that changes its nominal width from 0.5625 to 0.9375 pixels, before rasterization. The aim is a clearer fold at small sizes while preserving the mark's overall weight.
+
+Private comparisons retained the accepted 12-unit drawing and tested separate 16- and 20-unit alternatives at 24, 32, 48, 64 and 128 pixels in both appearances. Labeled and unlabeled mixed contexts included Proton Pass, Proton Authenticator, Proton Mail, Samsung Browser and Spotify. The 20-unit alternative provided the stronger small-size separation without changing the outer triangle, counter, tile, centre or mapping. Those five controls and the other inspected drawings remain unchanged. This is a bounded visual judgment, not a measured recognition benefit or phone result.
+
+Artwork 0.33.0 changes exactly two SVGs and preserves the other 598 exact 0.32.0 bytes. All 300 IDs, labels and catalogue assignments remain unchanged. The complete 0.32.0 archive joins the 31 earlier preserved collections. Historical override maps remain unchanged; this version alone selects the wider separator. The current Android pair is Clair Icons 0.1.6/code 7 and Obscur Icons 0.1.17/code 18, with compiled resources, signer identity and native application checked separately.
+
 An independent compatibility change appends the exact `com.dominospizza/com.dominospizza.SplashScreenActivity` launcher component observed on October 29, 2026. All 1,354 earlier ordered rows and their provenance remain intact. This produces 1,355 declarations with the same 290 public package queries, 277 included choices and 23 manual choices. It does not establish that an updated package has been installed or that every visible app is assigned by Theme Park. Keyboard assets and accepted desktop packages are unchanged by this icon refinement.
+
+The qualified export changes four PNGs and retains the other 1,196 exact 0.32.0 bytes. Independent decoding checked all 1,200 saved images, their dimensions, transparent margins and neutral pixels. These export checks do not establish native masking, recognition or phone acceptance.
