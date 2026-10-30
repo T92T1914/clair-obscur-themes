@@ -1,5 +1,13 @@
 # Changes
 
+## Garmin black-dial candidate 0.10.0
+
+- Recompose Hybrid around a compact day aperture at three and a same-canvas digital clock below the pivot. Give the bezel a filled shallow annulus and original radial line numerals, tune marker/hand proportions, and reduce branding and lower-field repetition. Preserve all requested active information.
+- Draw ordinary information before the hands and protect only the clock/day afterward. Remove glyph halos. Keep protected fields clear of the circular hour head in source geometry, while retaining explicit minute-hand and secondary-data occlusion tradeoffs.
+- Fit Hybrid weather/steps as two rows with truthful cached/stale/unknown/unavailable states, full step counts and BAT/CHG meaning. Preserve provider behavior, localized date settings, Analog=0, Digital=1, Hybrid=2, app identity, signing route, existing fonts and desktop/icon bytes.
+- Keep a separately shifted sparse AOD path without active fields, numbered bezel or new timer. Add meaningful source and diagnostic geometry/presentation checks while preserving the earlier AOD allowance.
+- Compile normal and diagnostic programs for the exact fenix9pro47mm target. Run 60 focused host tests: 58 passed and two explicit original-font skips. All 42 native groups compiled; zero executed. Host SVG alternatives are not Garmin-rendered comparisons. Current SDK visual/runtime and physical-device qualification remain deferred-shared-pc.
+
 ## Coverage report recreation and artwork 0.33.0
 
 - Retain the last completed Android coverage report as an immutable in-memory string across an eligible configuration recreation. Preserve explicit scans, clear a failed live result, reject delayed callbacks from a destroyed Activity and keep cold/process-loss launches empty. Add no saved inventory, permission, dependency or automatic scan.

@@ -1,5 +1,5 @@
 <properties>
-    <property id="appVersion" type="string">0.9.0</property>
+    <property id="appVersion" type="string">0.10.0</property>
     <property id="appearance" type="number">1</property>
     <property id="layout" type="number">2</property>
     <property id="leftData" type="number">0</property>

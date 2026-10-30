@@ -83,34 +83,37 @@ See [development and verification](docs/development.md) for reproducible command
 ## Watch and phone candidates
 
 The shared palette also supports a [Garmin watch face candidate](docs/garmin-watchface.md)
-and [original phone icon artwork](docs/samsung-icons.md). The current 0.9.0 Hybrid
-for `fenix9pro47mm` uses an original diver dial informed by the selected black
-Submariner date-window reference. Eight circular indices, batons at six and nine,
-an inward triangle at twelve and a divided circular hour-hand head distinguish it
-from the preserved Analog layout. A contrasting digital-time window replaces the
-active three-o'clock baton and paints above the hands. It protects the digits and
-separate AM/PM label while deliberately hiding parts of a hand at some times.
-The printed 60-minute scale is not an interactive timer. Hybrid keeps localized
-date, Weather, Steps and watch battery. It requests native Roboto Medium with
-measured font fitting. Other text uses glyph halos and can still be crossed by the hands.
-Its separate sparse always-on view restores the three-o'clock baton and retains
-the mixed indices and divided hour head as shifted outlines on true black.
-Analog, Digital, saved field choices and the Inter Digital clock resource retain
-their earlier contracts. A fully off display stays black.
+and [original phone icon artwork](docs/samsung-icons.md). The 0.10.0 Hybrid
+candidate revises the black diver composition with a filled shallow bezel,
+original radial numerals, compact date at three and digital time below the pivot.
+Its circles, triangle, cardinal batons and divided hour hand form the analog
+dial. Weather, steps and watch charge occupy two-row secondary fields and a
+separate battery line. Native font fitting measures each requested value and its
+status together. The printed scale is a visual reference, not a dive timer.
 
-The current normal program is 39,788 bytes and the test program is 196,636 bytes.
-Both compile for the exact target. The focused Python suite ran 59 host tests
-with two explicit original-font skips and no failures. All 38 annotated groups
-executed and passed in the target simulator. Bounded normal-program observations
-covered both appearances, the protected clock at font scale 1.35, always-on/off
-transitions and one complete normal SDK restart without app-property repair.
-One saved always-on frame contained 3,456 nonblack pixels, about 2.13% of the ideal
-round display. These are source and simulator results. Physical-watch fit, live
-providers, permanent persistence and power remain separate. The recorded simulator
-preferences were restored and the owned SDK windows closed, with the incomplete
-original app-state baseline retained as a restoration limit. The
-[current qualification](docs/garmin-watchface.md#current-090-qualification)
-records the exact programs, samples and remaining checks.
+Ordinary information is drawn before the hands. Only the small date and black
+clock area clear a rectangle afterward. Those protected fields stay outside the
+circular hour head's guarded travel band in the source geometry. The minute hand
+can still cross the hour head, and other information can be obscured temporarily.
+A protected field can hide part of a stem or tip. The separate shifted always-on
+view keeps sparse hand and marker outlines on true black. Analog, Digital,
+saved choices, providers and the Digital Inter resource retain their contracts.
+
+The normal 0.10.0 program is 42,076 bytes and its diagnostic program is 204,636
+bytes. Both compile for the exact `fenix9pro47mm` target with SDK 9.2.0. The focused
+host suite ran 60 tests: 58 passed and two original-font checks skipped. All 42
+annotated target groups compiled; zero executed for this candidate. Private host
+SVG alternatives informed the layout choice, but do not establish Garmin-rendered
+appearance. Current target font fit, matched 0.9.0/candidate images, AOD pixels,
+memory, transitions and physical-watch use remain unqualified. See the
+[current qualification](docs/garmin-watchface.md#current-0100-qualification).
+
+The preserved 0.9.0 program passed 38 target simulator groups and has bounded
+appearance, enlarged-text, always-on and restart observations. Its 39,788-byte
+normal program was transferred and independently read back, without establishing
+physical activation or fit. Its visual direction was subsequently selected for
+redesign. The [version-specific history](docs/garmin-watchface.md#preserved-090-qualification)
+retains those results and restoration limits; they do not qualify 0.10.0.
 
 The preserved 0.8.0 programs compiled for the exact target and passed all 32
 annotated simulator groups. Its bounded menu, font-scale, always-on, memory and
@@ -139,4 +142,4 @@ A scoped Samsung Theme Park check saved and applied a local ObscurBW icon theme,
 
 Include the theme and application versions, native Light or Dark setting, the affected surface and the steps that reproduce it. For Equicord, mention relevant theme or font overrides without exporting your full settings. Crop private names and messages from any screenshots. A missing glyph, unreadable code block or ambiguous switch state is useful evidence even when the rest of the interface looks right.
 
-Original source, documentation and generated theme assets use the [MIT license](LICENSE). The Android component table carries its included [Apache 2.0 attribution](docs/android-iconpack-sources.md). Inter is installed separately from its [official distribution](https://rsms.me/inter/). No third party theme implementation or font binary is bundled.
+Original source, documentation and generated theme assets use the [MIT license](LICENSE). The Android component table carries its included [Apache 2.0 attribution](docs/android-iconpack-sources.md). Inter is installed separately from its [official distribution](https://rsms.me/inter/). No third party theme implementation or original TTF/OTF file is bundled. The Garmin Digital layout includes its documented, licensed derived bitmap clock resource.

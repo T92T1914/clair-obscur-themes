@@ -152,9 +152,9 @@ class GarminPaletteTests(unittest.TestCase):
     def test_current_palette_has_exact_black_white_and_neutral_roles(self):
         current = json.loads((ROOT / "tokens-monochrome.json").read_text(encoding="utf-8"))
         source = render_palette(current)
-        self.assertEqual(VERSION, "0.9.0")
+        self.assertEqual(VERSION, "0.10.0")
         self.assertEqual(colors(source), EXPECTED_MONOCHROME_COLORS)
-        self.assertIn('const WATCHFACE_VERSION = "0.9.0";', source)
+        self.assertIn('const WATCHFACE_VERSION = "0.10.0";', source)
         self.assertIn('const TOKEN_VERSION = "1.0.0";', source)
         for color in colors(source).values():
             self.assertEqual((color >> 16) & 255, (color >> 8) & 255)
@@ -189,7 +189,7 @@ class GarminPaletteTests(unittest.TestCase):
                          ["fenix9pro47mm"])
         properties = ET.parse(face / "resources/settings/properties.xml").getroot()
         self.assertEqual([(node.get("id"), node.get("type"), node.text) for node in properties],
-                         [("appVersion", "string", "0.9.0"), ("appearance", "number", "1"),
+                         [("appVersion", "string", "0.10.0"), ("appearance", "number", "1"),
                           ("layout", "number", "2"),
                           ("leftData", "number", "0"), ("rightData", "number", "1"),
                           ("hybridDateFormat", "number", "0")])
@@ -286,6 +286,15 @@ class GarminActiveBandGeometryTests(unittest.TestCase):
         # branch has its own, separately qualified candidates.
         refresh = cls.view.split("function refreshFonts(", 1)[1].split("    function pickFont(", 1)[0]
         analog, digital = refresh.split("        } else {", 1)
+        # Hybrid's compact detail candidates do not alter the retained Digital
+        # branch. Extract only that explicit legacy arm for the literal check.
+        detail_choice = ('_detailFonts = fonts("RobotoCondensedRegular",\n'
+                         '            layout == FaceModel.LAYOUT_HYBRID ? [14, 12, 10] : [16, 14, 12], '
+                         'Graphics.FONT_XTINY, scale);')
+        if digital.count(detail_choice) != 1:
+            raise AssertionError("Missing explicit Hybrid/legacy detail-font choice")
+        digital = digital.replace(detail_choice,
+            '_detailFonts = fonts("RobotoCondensedRegular", [16, 14, 12], Graphics.FONT_XTINY, scale);')
         cls.fonts = {}
         declarations = re.findall(
             r'_(\w+)Fonts\s*=\s*fonts\("([A-Za-z]+)",\s*\[([\d, ]+)\],\s*'
@@ -770,14 +779,22 @@ class GarminSharedDialExpansionTests(unittest.TestCase):
                 # The new layout is an explicit additional branch. Remove only
                 # that branch to keep the independent accepted legacy-body pins.
                 if name == "refreshFonts":
-                    self.assertEqual(retained.count("            _bezelFonts = [];\n"), 2)
-                    retained = retained.replace("            _bezelFonts = [];\n", "")
-                    self.assertEqual(retained.count("            _periodFonts = [];\n"), 2)
-                    retained = retained.replace("            _periodFonts = [];\n", "")
                     retained, count = re.subn(
                         r"\} else if \(layout == FaceModel\.LAYOUT_HYBRID\) \{[^{}]+\} else \{",
                         "} else {", retained)
                     self.assertEqual(count, 1)
+                    self.assertEqual(retained.count("            _dayFonts = [];\n"), 2)
+                    retained = retained.replace("            _dayFonts = [];\n", "")
+                    self.assertEqual(retained.count("            _bezelFonts = [];\n"), 2)
+                    retained = retained.replace("            _bezelFonts = [];\n", "")
+                    self.assertEqual(retained.count("            _periodFonts = [];\n"), 2)
+                    retained = retained.replace("            _periodFonts = [];\n", "")
+                    compact_detail = ('        _detailFonts = fonts("RobotoCondensedRegular",\n'
+                        '            layout == FaceModel.LAYOUT_HYBRID ? [14, 12, 10] : [16, 14, 12], '
+                        'Graphics.FONT_XTINY, scale);')
+                    self.assertEqual(retained.count(compact_detail), 1)
+                    retained = retained.replace(compact_detail,
+                        '        _detailFonts = fonts("RobotoCondensedRegular", [16, 14, 12], Graphics.FONT_XTINY, scale);')
                 elif name == "onUpdate":
                     retained, aod_count = re.subn(
                         r"        if \(mode == :aod && layout == FaceModel\.LAYOUT_HYBRID\) \{\s*"
@@ -926,8 +943,8 @@ class GarminHybridContractsTests(unittest.TestCase):
 
     def test_hybrid_regions_have_round_clearance_and_separate_content_bands(self):
         c = self.values
-        for name in ("DATE", "CLOCK", "CHARGE"):
-            left = c["HYBRID_CLOCK_LEFT"] if name == "CLOCK" else (454 - c[f"HYBRID_{name}_WIDTH"]) / 2
+        for name in ("DATE", "DAY", "CLOCK", "CHARGE"):
+            left = c[f"HYBRID_{name}_LEFT"] if name in ("DAY", "CLOCK") else (454 - c[f"HYBRID_{name}_WIDTH"]) / 2
             right = left + c[f"HYBRID_{name}_WIDTH"]
             for x in (left - 1, right + 1):
                 for y in (c[f"HYBRID_{name}_TOP"] - 1, c[f"HYBRID_{name}_BOTTOM"] + 1):
@@ -948,6 +965,7 @@ class GarminHybridContractsTests(unittest.TestCase):
         self.assertEqual(update.count("Time.now()"), 1)
         self.assertIn("Gregorian.info(moment, Time.FORMAT_SHORT)", update)
         self.assertIn("Gregorian.info(moment, Time.FORMAT_MEDIUM)", branch)
+        self.assertIn("FaceModel.hybridDay(local.day, local.month as Lang.Number, local.year)", branch)
         self.assertIn("FaceData.readSlot(FaceData.WEATHER, moment.value())", branch)
         self.assertIn("FaceData.readSlot(FaceData.STEPS, moment.value())", branch)
         self.assertNotIn("FaceSettings.readSlot", branch)
@@ -959,24 +977,22 @@ class GarminHybridContractsTests(unittest.TestCase):
         self.assertLess(update.index("if (mode == :off) { return; }"), update.index("Time.now()"))
         self.assertLess(update.index("drawAlwaysOn(dc, time, local.min); return;"), update.index("FaceData.readSlot"))
 
-    def test_inner_readings_follow_hands_and_clock_uses_its_protected_aperture(self):
+    def test_printed_readings_precede_hands_and_only_small_apertures_follow(self):
         draw = GarminAnalogAodGeometryTests.function(self.view, "drawHybrid")
+        first_hand = draw.index("drawHybridHour(dc, hour, minute, ink, facet, canvas)")
         last_hand = draw.index("FaceModel.hybridMinuteHand(hour, minute, true)")
-        for call in ("hybridLine(dc, date", "drawHybridClock(dc, time, period", "hybridSlot(dc, weather", "hybridSlot(dc, steps", "hybridLine(dc, charge"):
+        for call in ("hybridLine(dc, date", "hybridSlot(dc, weather", "hybridSlot(dc, steps", "hybridLine(dc, charge"):
+            self.assertLess(draw.index(call), first_hand)
+        for call in ("drawHybridClock(dc, time, period", "drawHybridDay(dc, day"):
             self.assertGreater(draw.index(call), last_hand)
-        halo = GarminAnalogAodGeometryTests.function(self.view, "haloText")
-        self.assertIn("for (var dx = -1; dx <= 1; dx += 1)", halo)
-        self.assertIn("for (var dy = -1; dy <= 1; dy += 1)", halo)
-        self.assertLess(halo.index("dc.setColor(canvas, Graphics.COLOR_TRANSPARENT)"),
-                        halo.index("dc.setColor(ink, Graphics.COLOR_TRANSPARENT)"))
-        self.assertEqual(halo.count("Graphics.COLOR_TRANSPARENT"), 2)
-        self.assertNotIn("fillRectangle", halo + draw)
+        self.assertNotIn("fillRectangle", draw)
         for method in ("hybridLine", "hybridSlot"):
             body = GarminAnalogAodGeometryTests.function(self.view, method)
             self.assertIn("dc.setClip(", body)
             self.assertIn("dc.clearClip()", body)
             self.assertIn('"--"', body)
-        self.assertNotIn("new Timer", draw + halo)
+            self.assertNotIn("haloText(", body)
+        self.assertNotRegex(draw, r"haloText\(|new Timer")
 
     def test_hybrid_hides_legacy_choices_and_subscribes_only_to_displayed_fields(self):
         subscription = GarminAnalogAodGeometryTests.function(self.settings, "refreshDataSubscriptions")
@@ -1013,16 +1029,16 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
         cls.function = staticmethod(GarminAnalogAodGeometryTests.function)
 
     def test_selected_shape_mass_and_actual_active_consumers(self):
-        expected = {"HYBRID_MARKER_CENTER": 170, "HYBRID_CIRCLE_RADIUS": 14,
-                    "HYBRID_CIRCLE_INNER": 12, "HYBRID_BATON_INNER": 142,
-                    "HYBRID_BATON_OUTER": 182, "HYBRID_BATON_HALF": 7,
-                    "HYBRID_TRIANGLE_INNER": 136, "HYBRID_TRIANGLE_OUTER": 182,
-                    "HYBRID_TRIANGLE_HALF": 18, "HYBRID_HOUR_DISC_CENTER": 96,
-                    "HYBRID_HOUR_DISC_RADIUS": 18, "HYBRID_HOUR_DISC_INNER": 16,
-                    "HYBRID_HOUR_STEM_INNER": -18, "HYBRID_HOUR_STEM_OUTER": 80,
-                    "HYBRID_HOUR_STEM_HALF": 5, "HYBRID_HOUR_TIP_BASE": 110,
-                    "HYBRID_HOUR_TIP_HALF": 7, "HYBRID_HOUR_TIP_LENGTH": 130,
-                    "HYBRID_MINUTE_LENGTH": 191, "HYBRID_MINUTE_HALF": 6,
+        expected = {"HYBRID_MARKER_CENTER": 164, "HYBRID_CIRCLE_RADIUS": 12,
+                    "HYBRID_CIRCLE_INNER": 10, "HYBRID_BATON_INNER": 150,
+                    "HYBRID_BATON_OUTER": 176, "HYBRID_BATON_HALF": 6,
+                    "HYBRID_TRIANGLE_INNER": 136, "HYBRID_TRIANGLE_OUTER": 176,
+                    "HYBRID_TRIANGLE_HALF": 16, "HYBRID_HOUR_DISC_CENTER": 110,
+                    "HYBRID_HOUR_DISC_RADIUS": 15, "HYBRID_HOUR_DISC_INNER": 13,
+                    "HYBRID_HOUR_STEM_INNER": -18, "HYBRID_HOUR_STEM_OUTER": 96,
+                    "HYBRID_HOUR_STEM_HALF": 5, "HYBRID_HOUR_TIP_BASE": 122,
+                    "HYBRID_HOUR_TIP_HALF": 7, "HYBRID_HOUR_TIP_LENGTH": 144,
+                    "HYBRID_MINUTE_LENGTH": 172, "HYBRID_MINUTE_HALF": 6,
                     "HYBRID_MINUTE_TAIL_HALF": 4}
         self.assertEqual({key: self.constants[key] for key in expected}, expected)
         active = self.function(self.view, "drawHybrid")
@@ -1039,38 +1055,65 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
                         hour.index("FaceModel.hybridHourStem(hour, minute, false)"))
         self.assertNotRegex(active + hour, r"FaceModel\.(?:hourMarker|handPoints|handFacetPoints)\(")
 
-    def test_bezel_label_clip_rectangles_stay_in_the_visible_circle(self):
+    def test_filled_bezel_and_radial_glyphs_stay_in_the_visible_circle(self):
+        import ast
         self.assertEqual(tuple(self.constants[key] for key in
                          ("HYBRID_BEZEL_OUTER", "HYBRID_BEZEL_INNER", "HYBRID_BEZEL_RADIUS")),
-                         (223, 194, 206))
+                         (224, 184, 206))
         bezel = self.function(self.view, "drawHybridBezel")
-        self.assertIn("pickFont(dc, text, _bezelFonts, 28, 22)", bezel)
-        self.assertIn("dc.setClip(center[0] - 14, center[1] - 11, 28, 22)", bezel)
+        outer = "dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, FaceModel.HYBRID_BEZEL_OUTER);"
+        inner = "dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, FaceModel.HYBRID_BEZEL_INNER);"
+        self.assertIn("ThemePalette.CLAIR_CODE : ThemePalette.OBSCUR_CODE", bezel)
+        self.assertIn("dc.setColor(body, canvas);", bezel)
+        self.assertLess(bezel.index(outer), bezel.index(inner))
+        self.assertLess(bezel.index(inner), bezel.index("for (var tick"))
         self.assertIn("value <= 50; value += 10", bezel)
-        self.assertIn("FaceModel.HYBRID_BEZEL_RADIUS, 0)", bezel)
-        # Independent five label centers and every corner, with one extra pixel
-        # beyond each clip for a conservative antialiasing allowance.
+        self.assertIn("drawHybridBezelDigit(dc, (value / 10).toNumber(), turn, -12, ink, canvas);", bezel)
+        self.assertIn("drawHybridBezelDigit(dc, 0, turn, 2, ink, canvas);", bezel)
+        self.assertNotRegex(bezel, r"pickFont|drawText|_bezelFonts")
+        painter = self.function(self.view, "drawHybridBezelDigit")
+        self.assertIn("FaceModel.hybridBezelDigit(digit)", painter)
+        self.assertIn("FaceModel.HYBRID_BEZEL_RADIUS + 12 - a[1], a[0] + offset", painter)
+        self.assertIn("FaceModel.HYBRID_BEZEL_RADIUS + 12 - b[1], b[0] + offset", painter)
+        glyph = self.function(self.model, "hybridBezelDigit")
+        paths = {int(d): ast.literal_eval(path) for d, path in re.findall(
+            r"if \(digit == (\d)\) \{ return (\[[^;]+\]); \}", glyph)}
+        self.assertEqual(set(paths), set(range(6)))
+        self.assertEqual(paths[0][0][0:3], [[2, 0], [8, 0], [10, 2]])
+        self.assertEqual(len(paths[1]), 2)
+        # Project actual editable paths using independently specified radial
+        # dimensions. A three-pixel stroke/rounding allowance stays inside the
+        # filled bezel and the round display; this is not an SDK raster check.
         for value in (10, 20, 30, 40, 50):
             angle = value / 60 * math.tau
-            x = math.floor(227 + 206 * math.sin(angle) + 0.5)
-            y = math.floor(227 - 206 * math.cos(angle) + 0.5)
-            for dx in (-15, 15):
-                for dy in (-12, 12):
-                    self.assertLess((x + dx - 227) ** 2 + (y + dy - 227) ** 2, 227 ** 2)
+            for digit, offset in ((value // 10, -12), (0, 2)):
+                for path in paths[digit]:
+                    self.assertGreaterEqual(len(path), 2)
+                    for gx, gy in path:
+                        self.assertTrue(0 <= gx <= 10 and 0 <= gy <= 24)
+                        radial, lateral = 218 - gy, gx + offset
+                        self.assertGreater(math.hypot(radial, lateral) - 3, 184)
+                        self.assertLess(math.hypot(radial, lateral) + 3, 224)
+                        x = math.floor(227 + radial * math.sin(angle) + lateral * math.cos(angle) + 0.5)
+                        y = math.floor(227 - radial * math.cos(angle) + lateral * math.sin(angle) + 0.5)
+                        self.assertLess(math.hypot(x - 227, y - 227) + 3, 227)
 
     def test_hybrid_fit_preserves_detail_before_larger_values(self):
         fit = self.function(self.view, "hybridSlotFonts")
-        self.assertLess(fit.index("d < _detailFonts.size()"), fit.index("l < _labelFonts.size()"))
-        self.assertLess(fit.index("l < _labelFonts.size()"), fit.index("v < _valueFonts.size()"))
-        self.assertIn('dc.getTextWidthInPixels(data["detail"], detail) > width', fit)
-        self.assertIn("dc.getFontHeight(detail) + 6 <= height", fit)
+        self.assertLess(fit.index("d < _detailFonts.size()"), fit.index("v < _valueFonts.size()"))
+        self.assertIn('dc.getTextWidthInPixels(shownDetail, detail) > width', fit)
+        self.assertIn('dc.getTextWidthInPixels(data["value"], value) > width', fit)
+        self.assertIn("dc.getFontHeight(value) + dc.getFontHeight(detail) + 2 <= height", fit)
+        self.assertIn("return [value, detail]", fit)
+        self.assertNotIn("_labelFonts", fit)
         slot = self.function(self.view, "hybridSlot")
-        self.assertIn("hybridSlotFonts(dc, data, width - 4, height - 4)", slot)
+        self.assertIn("hybridSlotFonts(dc, data, width - 2, height - 2)", slot)
+        self.assertIn("FaceModel.hybridDetail(data)", slot)
         self.assertNotIn("analogSlotFonts(", slot)
         fonts = self.function(self.view, "refreshFonts")
         branch = fonts.split("layout == FaceModel.LAYOUT_HYBRID) {", 1)[1].split("} else {", 1)[0]
-        self.assertIn('fonts("RobotoMedium", [26, 22, 18, 16]', branch)
-        self.assertIn('fonts("RobotoMedium", [20, 18, 16, 14]', branch)
+        self.assertIn('fonts("RobotoMedium", [24, 22, 20, 18, 16, 14]', branch)
+        self.assertIn('fonts("RobotoMedium", [18, 16, 14, 12]', branch)
 
     def assert_protected_clock(self, view):
         clock = self.function(view, "drawHybridClock")
@@ -1079,18 +1122,17 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
         self.assertIn("var top = FaceModel.HYBRID_CLOCK_TOP;", clock)
         self.assertIn("var width = FaceModel.HYBRID_CLOCK_WIDTH;", clock)
         self.assertIn("var height = FaceModel.HYBRID_CLOCK_BOTTOM - top;", clock)
-        frame = "dc.setColor(metal, canvas); dc.fillRectangle(left, top, width, height);"
-        interior = "dc.setColor(ink, ink); dc.fillRectangle(left + 1, top + 1, width - 2, height - 2);"
-        self.assertIn(frame, clock)
-        self.assertIn(interior, clock)
-        self.assertLess(clock.index(frame), clock.index(interior))
-        self.assertLess(clock.index(interior), clock.index("dc.drawText("))
-        self.assertIn("var mainWidth = hasPeriod ? 84 : 108;", clock)
+        clearing = "dc.setColor(canvas, canvas); dc.fillRectangle(left, top, width, height);"
+        self.assertIn(clearing, clock)
+        self.assertEqual(clock.count("fillRectangle("), 1)
+        self.assertLess(clock.index(clearing), clock.index("dc.drawText("))
+        self.assertNotIn("dc.setColor(ink, ink)", clock)
+        self.assertIn("var mainWidth = hasPeriod ? 92 : 120;", clock)
         self.assertIn("pickFont(dc, time, _clockFonts, mainWidth, height - 4)", clock)
         self.assertIn("dc.setClip(left + 2, top + 2, mainWidth, height - 4);", clock)
         self.assertIn("pickFont(dc, period, _periodFonts, 22, height - 4)", clock)
-        self.assertIn("dc.setClip(left + 88, top + 2, 22, height - 4);", clock)
-        self.assertEqual(clock.count("dc.setColor(canvas, ink);"), 2)
+        self.assertIn("dc.setClip(left + 98, top + 2, 22, height - 4);", clock)
+        self.assertEqual(clock.count("dc.setColor(ink, canvas);"), 2)
         self.assertEqual(clock.count("dc.clearClip();"), 2)
         self.assertNotIn("haloText", clock)
         self.assertNotIn("COLOR_TRANSPARENT", clock)
@@ -1100,37 +1142,69 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
         self.assertGreater(draw.index(call), draw.index("FaceModel.hybridMinuteHand(hour, minute, true)"))
         self.assertGreater(draw.index(call), draw.index("dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, 2);"))
 
-    def test_clock_aperture_is_opaque_after_hands_with_disjoint_period_clip(self):
+    def test_small_canvas_clock_and_light_day_have_disjoint_period_clip(self):
         self.assert_protected_clock(self.view)
         self.assertEqual(tuple(self.constants[key] for key in ("HYBRID_CLOCK_LEFT",
                          "HYBRID_CLOCK_TOP", "HYBRID_CLOCK_BOTTOM", "HYBRID_CLOCK_WIDTH")),
-                         (276, 204, 250, 112))
+                         (165, 258, 292, 124))
         # Independent literal interior rectangles, not coordinates calculated
-        # from the same rendering code. Their two-pixel gap stays inside the
-        # opposite-color opaque aperture at the actual three-o'clock position.
-        frame = (276, 204, 388, 250)
-        twelve_digits = (278, 206, 362, 248)
-        period = (364, 206, 386, 248)
-        twenty_four_digits = (278, 206, 386, 248)
+        # from the same rendering code. The clock clears only dial color; the
+        # three-o'clock light panel is reserved for the day of the month.
+        frame = (165, 258, 289, 292)
+        twelve_digits = (167, 260, 259, 290)
+        period = (263, 260, 285, 290)
+        twenty_four_digits = (167, 260, 287, 290)
         for rectangle in (twelve_digits, period, twenty_four_digits):
             self.assertGreater(rectangle[0], frame[0])
             self.assertGreater(rectangle[1], frame[1])
             self.assertLess(rectangle[2], frame[2])
             self.assertLess(rectangle[3], frame[3])
-        self.assertEqual(period[0] - twelve_digits[2], 2)
-        self.assertEqual(twelve_digits[2] - twelve_digits[0], 84)
+        self.assertEqual(period[0] - twelve_digits[2], 4)
+        self.assertEqual(twelve_digits[2] - twelve_digits[0], 92)
         self.assertEqual(period[2] - period[0], 22)
-        self.assertEqual(twenty_four_digits[2] - twenty_four_digits[0], 108)
+        self.assertEqual(twenty_four_digits[2] - twenty_four_digits[0], 120)
         font_branch = self.function(self.view, "refreshFonts").split(
             "layout == FaceModel.LAYOUT_HYBRID) {", 1)[1].split("} else {", 1)[0]
-        self.assertIn('fonts("RobotoMedium", [38, 34, 30, 26, 22, 18]', font_branch)
-        self.assertIn('fonts("RobotoMedium", [16, 14, 12]', font_branch)
+        self.assertIn('fonts("RobotoMedium", [30, 28, 26, 24, 22, 20, 18, 16]', font_branch)
+        self.assertIn('fonts("RobotoMedium", [14, 12, 10]', font_branch)
+        day = self.function(self.view, "drawHybridDay")
+        self.assertIn("FaceModel.HYBRID_DAY_LEFT", day)
+        self.assertIn("FaceModel.HYBRID_DAY_WIDTH", day)
+        self.assertIn("dc.setColor(ink, ink); dc.fillRectangle(left + 1, top + 1, width - 2, height - 2);", day)
+        self.assertIn("pickFont(dc, day, _dayFonts, width - 4, height - 4)", day)
+        self.assertNotRegex(day, r"haloText|COLOR_TRANSPARENT")
+        self.assertEqual(tuple(self.constants[key] for key in ("HYBRID_DAY_LEFT",
+                         "HYBRID_DAY_TOP", "HYBRID_DAY_BOTTOM", "HYBRID_DAY_WIDTH")),
+                         (356, 211, 243, 40))
+        self.assertLess(40 * 32, 112 * 46 / 4)
         active = self.function(self.model, "hybridActiveBaton")
         self.assertIn("if (i == null || i == 3) { return []; }", active)
         aod = self.function(self.view, "drawHybridAlwaysOn")
         self.assertIn("FaceModel.hybridBaton(index, false)", aod)
         self.assertNotIn("drawHybridClock", aod)
         self.assertNotIn("hybridActiveBaton", aod)
+
+    def test_both_protected_fields_clear_the_hour_head_at_all_720_positions(self):
+        # Independent literal circles and rectangle-distance math qualify this
+        # geometric claim. They do not establish target pixels or font fit.
+        rectangles = ((165, 258, 289, 292), (356, 211, 396, 243))
+        cardinals = {0: (227, 117), 180: (337, 227),
+                     360: (227, 337), 540: (117, 227)}
+        for total in range(720):
+            angle = total / 720 * math.tau
+            x = math.floor(227 + 110 * math.sin(angle) + 0.5)
+            y = math.floor(227 - 110 * math.cos(angle) + 0.5)
+            if total in cardinals:
+                self.assertEqual((x, y), cardinals[total])
+            for left, top, right, bottom in rectangles:
+                dx = max(left - x, 0, x - right)
+                dy = max(top - y, 0, y - bottom)
+                self.assertGreater(dx * dx + dy * dy, 17 ** 2)
+        # Preserve the rejected predecessor's documented counterexample: its
+        # whole circular head at3:00 lay under the broad clock rectangle.
+        old_window = (276, 204, 388, 250)
+        self.assertTrue(old_window[0] < 323 - 18 and 323 + 18 < old_window[2])
+        self.assertTrue(old_window[1] < 227 - 18 and 227 + 18 < old_window[3])
 
     def test_clock_aperture_guard_rejects_missing_paint_and_wrong_caller_order(self):
         clock = self.function(self.view, "drawHybridClock")
@@ -1181,26 +1255,26 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
                        for x in range(-radius - 4, radius + 4)
                        for y in range(-radius - 4, radius + 4))
 
-        circle_coverage = 8 * circle_guard(14) + circle_guard(18) + circle_guard(3)
-        self.assertEqual(circle_coverage, 5872)
+        circle_coverage = 8 * circle_guard(12) + circle_guard(15) + circle_guard(3)
+        self.assertLess(circle_coverage, 5872)
         maxima = 0
         cases = 0
         for total in range(720):
             hour, minute = divmod(total, 60)
             turn, long_turn = hour / 12 + minute / 720, minute / 60
-            paths = [[(209, 45), (245, 45), (227, 91)]]
+            paths = [[(211, 51), (243, 51), (227, 91)]]
             for index in (3, 6, 9):
                 paths.append([point(index / 12, radius, side) for radius, side in
-                              ((142, -7), (182, -7), (182, 7), (142, 7))])
+                              ((150, -6), (176, -6), (176, 6), (150, 6))])
             paths.append([point(turn, radius, side) for radius, side in
-                          ((-18, -5), (80, -5), (80, 5), (-18, 5))])
+                          ((-18, -5), (96, -5), (96, 5), (-18, 5))])
             paths.append([point(turn, radius, side) for radius, side in
-                          ((110, -7), (130, 0), (110, 7))])
+                          ((122, -7), (144, 0), (122, 7))])
             paths.append([point(long_turn, radius, side) for radius, side in
-                          ((-18, -4), (173, -6), (191, 0), (173, 6), (-18, 4))])
-            head = point(turn, 96, 0)
-            for radial, side in ((16, 0), (-8, -14), (-8, 14)):
-                paths.append([head, point(turn, 96 + radial, side)])
+                          ((-18, -4), (154, -6), (172, 0), (154, 6), (-18, 4))])
+            head = point(turn, 110, 0)
+            for radial, side in ((13, 0), (-6, -11), (-6, 11)):
+                paths.append([head, point(turn, 110 + radial, side)])
             bound = circle_coverage + sum(
                 5 * (abs(b[0] - a[0]) + abs(b[1] - a[1]) + 5)
                 for polygon in paths for a, b in zip(polygon, polygon[1:] + polygon[:1]))
@@ -1211,12 +1285,15 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
                         for gx, gy in ((-3, -3), (-3, 3), (3, -3), (3, 3)):
                             self.assertLess((x + dx + gx - 227) ** 2 +
                                             (y + dy + gy - 227) ** 2, 227 ** 2)
-                circles = [(point(index / 12, 170, 0), 14)
-                           for index in (1, 2, 4, 5, 7, 8, 10, 11)] + [(head, 18), ((227, 227), 3)]
+                circles = [(point(index / 12, 164, 0), 12)
+                           for index in (1, 2, 4, 5, 7, 8, 10, 11)] + [(head, 15), ((227, 227), 3)]
                 for (x, y), radius in circles:
                     self.assertLess(math.hypot(x + dx - 227, y + dy - 227) + radius + 3.5, 227)
                 cases += 1
-        self.assertEqual((maxima, cases), (14687, 2880))
+        # Retain the already qualified conservative bound instead of raising
+        # it to admit the redesign. Native lit pixels remain a separate check.
+        self.assertLessEqual(maxima, 14687)
+        self.assertEqual(cases, 2880)
         round_pixels = sum((2 * x + 1 - 454) ** 2 + (2 * y + 1 - 454) ** 2 <= 454 ** 2
                            for x in range(454) for y in range(454))
         self.assertEqual(round_pixels, 161892)
