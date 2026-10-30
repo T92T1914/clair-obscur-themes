@@ -356,7 +356,7 @@ class TerminalPreviewTests(unittest.TestCase):
                         self.assertEqual(context, f"on {partner}" if partner else "on default")
 
     def test_terminal_preview_preserves_desktop_downloads_and_all_icon_revisions(self):
-        from preview import (EVERYDAY_USE_ICON_ARCHIVE, CRAFT_ICON_ARCHIVE, ART_DIRECTION_ICON_ARCHIVE, IDENTITY_ICON_ARCHIVE, ROUTE_ICON_ARCHIVE, COMMUNICATION_ICON_ARCHIVE, MESSAGING_ICON_ARCHIVE, CONTACT_SPACED_ICON_ARCHIVE, CONTAINED_ICON_ARCHIVE, SPACED_ICON_ARCHIVE, POLISHED_ICON_ARCHIVE, VIDEO_EDITING_ICON_ARCHIVE, GBOARD_ICON_ARCHIVE, REFINED_ICON_ARCHIVE, PHONE_SERVICE_ICON_ARCHIVE, READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE, ICON_ARCHIVE, ICON_CHECKSUMS,
+        from preview import (OPTICAL_ICON_ARCHIVE, EVERYDAY_USE_ICON_ARCHIVE, CRAFT_ICON_ARCHIVE, ART_DIRECTION_ICON_ARCHIVE, IDENTITY_ICON_ARCHIVE, ROUTE_ICON_ARCHIVE, COMMUNICATION_ICON_ARCHIVE, MESSAGING_ICON_ARCHIVE, CONTACT_SPACED_ICON_ARCHIVE, CONTAINED_ICON_ARCHIVE, SPACED_ICON_ARCHIVE, POLISHED_ICON_ARCHIVE, VIDEO_EDITING_ICON_ARCHIVE, GBOARD_ICON_ARCHIVE, REFINED_ICON_ARCHIVE, PHONE_SERVICE_ICON_ARCHIVE, READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE, ICON_ARCHIVE, ICON_CHECKSUMS,
                              LEGACY_ICON_ARCHIVE, PREVIOUS_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE,
                              MONOCHROME_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE,
                              PORTABLE_ARCHIVE, preview_files)
@@ -376,8 +376,8 @@ class TerminalPreviewTests(unittest.TestCase):
         art_direction = render_icons(json.loads((ROOT / 'tokens-monochrome.json').read_bytes()), version='0.29.0')
         art_direction_svg = {name: data for name, data in art_direction.items() if name.endswith('.svg')}
         selected = json.loads((ROOT / 'tests/fixtures/icon-craft-0.30.json').read_bytes())['selected']
-        # Current 0.32 includes three later refinements outside the accepted
-        # 184-drawing 0.30 set; their exact current/0.31 boundary is pinned too.
+        # Current 0.33 retains the three later 0.32 refinements outside the
+        # accepted 184-drawing 0.30 set. Proton VPN is already in that earlier set.
         selected = set(selected) | {'my-spectrum', 'wallpaper-engine', 'pinterest'}
         self.assertEqual({name for name in current_svg if current_svg[name] != art_direction_svg[name]},
                          {f'{appearance}/{identifier}.svg' for appearance in ('Clair', 'Obscur') for identifier in selected})
@@ -627,7 +627,11 @@ class TerminalPreviewTests(unittest.TestCase):
                 self.assertEqual(set(current_svg) - set(messaging_svg), {f"{appearance}/{identifier}.svg"
                     for appearance in ("Clair", "Obscur") for identifier in ("imo", "zalo", "bip", "google-chat")})
             with zipfile.ZipFile(io.BytesIO(delivery[ICON_ARCHIVE])) as current:
-                self.assertEqual(json.loads(current.read("manifest.json"))["version"], "0.32.0")
+                self.assertEqual(json.loads(current.read("manifest.json"))["version"], "0.33.0")
+            with zipfile.ZipFile(io.BytesIO(delivery[OPTICAL_ICON_ARCHIVE])) as optical:
+                self.assertEqual(json.loads(optical.read("manifest.json"))["version"], "0.32.0")
+                self.assertEqual(hashlib.sha256(delivery[OPTICAL_ICON_ARCHIVE]).hexdigest(),
+                                 "474fe4bcf1228fc48b0c275ec1e1db6f467c8dcb2799963c66d126d4b8672598")
             with zipfile.ZipFile(io.BytesIO(delivery[EVERYDAY_USE_ICON_ARCHIVE])) as everyday:
                 self.assertEqual(json.loads(everyday.read("manifest.json"))["version"], "0.31.0")
                 self.assertEqual(hashlib.sha256(delivery[EVERYDAY_USE_ICON_ARCHIVE]).hexdigest(),
@@ -659,7 +663,7 @@ class TerminalPreviewTests(unittest.TestCase):
                                  communication_svg)
             self.assertEqual(delivery[ICON_CHECKSUMS],
                              ''.join(f'{hashlib.sha256(delivery[path]).hexdigest()}  {Path(path).name}\n'
-                                      for path in (ICON_ARCHIVE, EVERYDAY_USE_ICON_ARCHIVE, CRAFT_ICON_ARCHIVE, ART_DIRECTION_ICON_ARCHIVE, IDENTITY_ICON_ARCHIVE, ROUTE_ICON_ARCHIVE, COMMUNICATION_ICON_ARCHIVE, MESSAGING_ICON_ARCHIVE, CONTACT_SPACED_ICON_ARCHIVE, CONTAINED_ICON_ARCHIVE, SPACED_ICON_ARCHIVE, POLISHED_ICON_ARCHIVE, VIDEO_EDITING_ICON_ARCHIVE, GBOARD_ICON_ARCHIVE, REFINED_ICON_ARCHIVE, PHONE_SERVICE_ICON_ARCHIVE, READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
+                                      for path in (ICON_ARCHIVE, OPTICAL_ICON_ARCHIVE, EVERYDAY_USE_ICON_ARCHIVE, CRAFT_ICON_ARCHIVE, ART_DIRECTION_ICON_ARCHIVE, IDENTITY_ICON_ARCHIVE, ROUTE_ICON_ARCHIVE, COMMUNICATION_ICON_ARCHIVE, MESSAGING_ICON_ARCHIVE, CONTACT_SPACED_ICON_ARCHIVE, CONTAINED_ICON_ARCHIVE, SPACED_ICON_ARCHIVE, POLISHED_ICON_ARCHIVE, VIDEO_EDITING_ICON_ARCHIVE, GBOARD_ICON_ARCHIVE, REFINED_ICON_ARCHIVE, PHONE_SERVICE_ICON_ARCHIVE, READING_ICON_ARCHIVE, LEARNING_ICON_ARCHIVE, RUNNING_TRAINING_ICON_ARCHIVE, WEATHER_ICON_ARCHIVE, FINANCE_ICON_ARCHIVE, TRAVEL_ICON_ARCHIVE, FOOD_ORDER_ICON_ARCHIVE, EVERYDAY_ICON_ARCHIVE, BROAD_ICON_ARCHIVE, COMPANION_ICON_ARCHIVE, MONOCHROME_ICON_ARCHIVE, THIRD_APP_ICON_ARCHIVE, SECOND_APP_ICON_ARCHIVE, FIRST_APP_ICON_ARCHIVE,
                                                   PREVIOUS_ICON_ARCHIVE, LEGACY_ICON_ARCHIVE)).encode())
         self.assertEqual(snapshot(self.artifacts), desktop)
         self.assertEqual((ROOT / "tokens.json").read_bytes(), token_bytes)

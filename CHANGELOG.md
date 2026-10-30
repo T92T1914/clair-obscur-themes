@@ -1,5 +1,13 @@
 # Changes
 
+## Coverage report recreation and artwork 0.33.0
+
+- Retain the last completed Android coverage report as an immutable in-memory string across an eligible configuration recreation. Preserve explicit scans, clear a failed live result, reject delayed callbacks from a destroyed Activity and keep cold/process-loss launches empty. Add no saved inventory, permission, dependency or automatic scan.
+- Add a focused JVM regression compiling the actual Activity against synthetic Android APIs. Its 29 checks reproduce the earlier report loss and exercise the corrected lifecycle logic. Actual Android lifecycle delivery and physical fold behavior remain separate native checks.
+- Widen only Proton VPN's fold separator from 12 to 20 master units after original 12/16/20 comparisons in both appearances and mixed contexts. Preserve the triangle, tile and catalogue identities, all 598 other current SVGs and the 32 earlier artwork archives.
+- Configure private Clair Icons 0.1.6/code 7 and Obscur Icons 0.1.17/code 18 for artwork 0.33.0. Keep signed APK delivery private and phone installation/application deferred.
+- Admit the measured complete 0.33 portable composition with 698 declarations, 724 entries and 37,814,272 aggregate read bytes. Preserve four ordinary-extra reporting slots and all other input, path, link, stability and discrepancy checks.
+
 ## Garmin watch face 0.9.0
 
 - Replace Hybrid's shared baton dial with original geometry informed by the selected black Submariner date-window reference: eight circular indices, two active cardinal batons, a triangle at twelve, a divided circular hour-hand head and a longer minute hand. Add a printed 60-minute reference scale without an interactive timer or manufacturer artwork.

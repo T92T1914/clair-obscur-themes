@@ -933,7 +933,7 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(set(files), expected | {"manifest.json"})
         manifest = json.loads(files["manifest.json"])
         self.assertEqual(manifest["functions"], NAMES)
-        self.assertEqual(manifest["version"], "0.32.0")
+        self.assertEqual(manifest["version"], "0.33.0")
         self.assertEqual(manifest["token_schema"], 1)
         self.assertEqual(manifest["token_version"], "1.0.0")
         self.assertEqual(manifest["palette_variant"], "monochrome")
@@ -1013,7 +1013,7 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(icons.token_path(), ROOT / "tokens-monochrome.json")
         for version in ("0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0"):
             self.assertEqual(icons.token_path(version), ROOT / "tokens.json")
-        for version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0", "0.24.0", "0.25.0", "0.26.0", "0.27.0", "0.28.0", "0.29.0", "0.30.0", "0.31.0", "0.32.0"):
+        for version in ("0.6.0", "0.7.0", "0.8.0", "0.9.0", "0.10.0", "0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0", "0.24.0", "0.25.0", "0.26.0", "0.27.0", "0.28.0", "0.29.0", "0.30.0", "0.31.0", "0.32.0", "0.33.0"):
             self.assertEqual(icons.token_path(version), ROOT / "tokens-monochrome.json")
         for version, document in (("0.5.0", self.legacy_document), ("0.6.0", self.document),
                                   ("0.7.0", self.document), ("0.8.0", self.document),
@@ -1022,7 +1022,7 @@ class FunctionalIconTests(unittest.TestCase):
                                   ("0.13.0", self.document), ("0.14.0", self.document),
                                   ("0.15.0", self.document), ("0.16.0", self.document), ("0.17.0", self.document),
                                   ("0.18.0", self.document), ("0.19.0", self.document), ("0.20.0", self.document),
-                                  ("0.21.0", self.document), ("0.22.0", self.document), ("0.23.0", self.document), ("0.24.0", self.document), ("0.25.0", self.document), ("0.26.0", self.document), ("0.27.0", self.document), ("0.28.0", self.document), ("0.29.0", self.document), ("0.30.0", self.document), ("0.31.0", self.document), ("0.32.0", self.document)):
+                                  ("0.21.0", self.document), ("0.22.0", self.document), ("0.23.0", self.document), ("0.24.0", self.document), ("0.25.0", self.document), ("0.26.0", self.document), ("0.27.0", self.document), ("0.28.0", self.document), ("0.29.0", self.document), ("0.30.0", self.document), ("0.31.0", self.document), ("0.32.0", self.document), ("0.33.0", self.document)):
             with self.subTest(version=version), tempfile.TemporaryDirectory() as temporary:
                 base = Path(temporary)
                 explicit = base / "explicit.json"
@@ -1209,7 +1209,7 @@ class FunctionalIconTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "differs"):
                 icons.build_icons(self.document, output, check=True)
             self.assertEqual(tree_snapshot(output), before)
-        for unsupported in ("0.0.0", "0.33.0", None, [], {}):
+        for unsupported in ("0.0.0", "0.34.0", None, [], {}):
             with self.subTest(version=unsupported), self.assertRaisesRegex(ValueError, "Unsupported"):
                 icons.render_icons(self.document, version=unsupported)
 
@@ -2023,7 +2023,7 @@ class FunctionalIconTests(unittest.TestCase):
         self.assertEqual(len(manifest["files"]), 584)
         self.assertEqual(len(manifest["catalog"]), 292)
         self.assertEqual(icons.VERSIONS,
-                         tuple(f"0.{number}.0" for number in range(1, 33)))
+                         tuple(f"0.{number}.0" for number in range(1, 34)))
 
     def test_messaging_apps_append_eight_svgs_and_preserve_every_accepted_drawing(self):
         previous = icons.render_icons(self.document, version="0.24.0")
@@ -2483,6 +2483,78 @@ class EverydayIconRefinementTests(unittest.TestCase):
 
     def test_all_thirty_historical_generated_identities_remain_exact(self):
         self.assertEqual(tuple(self.HISTORICAL_IDENTITIES), icons.VERSIONS[:30])
+        for version, expected in self.HISTORICAL_IDENTITIES.items():
+            with self.subTest(version=version):
+                tree = icons.render_icons(icons.load_icon_tokens(version), version=version)
+                pairs = "".join(name + "\0" + hashlib.sha256(payload).hexdigest() + "\n"
+                                for name, payload in sorted(tree.items())).encode()
+                self.assertEqual(hashlib.sha256(pairs).hexdigest(), expected)
+
+
+class FoldClearanceRefinementTests(unittest.TestCase):
+    REVIEWED_PAIRS = {
+        "Clair/proton-vpn.svg": "3fe6e5aa7f574e6846ca2fbbaf08f86b0b0fcec173398340d7aaa4574dda556f",
+        "Obscur/proton-vpn.svg": "5a41ec65424e17c4cfd5de71b46a1895a21acc78e3933b2294a927e25b98e21f",
+    }
+    # Captured from the accepted renderer before the 0.33 dispatch change.
+    HISTORICAL_IDENTITIES = {
+        "0.31.0": "61e28bb80c1b09c1d011a65d345f3dac835132486826089010bb0aa3dacead9a",
+        "0.32.0": "c8c30158352cce22bec93002fa12464d6083e74cbaccf50e8a516cc5ca1f867f",
+    }
+
+    @classmethod
+    def setUpClass(cls):
+        cls.before = icons.render_icons(icons.load_icon_tokens("0.32.0"), version="0.32.0")
+        cls.after = icons.render_icons(icons.load_icon_tokens("0.33.0"), version="0.33.0")
+
+    def test_exact_reviewed_fold_pair_and_all_other_svg_bytes(self):
+        self.assertEqual(set(icons.FOLD_CLEARANCE_GLYPHS), {"proton-vpn"})
+        changed = {name for name in self.after
+                   if name.endswith(".svg") and self.after[name] != self.before[name]}
+        self.assertEqual(changed, set(self.REVIEWED_PAIRS))
+        for name, expected in self.REVIEWED_PAIRS.items():
+            self.assertEqual(hashlib.sha256(self.after[name]).hexdigest(), expected, name)
+        self.assertEqual(sum(name.endswith(".svg") for name in self.after) - len(changed), 598)
+        old, new = (json.loads(tree["manifest.json"]) for tree in (self.before, self.after))
+        self.assertEqual(new["version"], "0.33.0")
+        self.assertEqual(new["catalog"], old["catalog"])
+        self.assertEqual(new["functions"], old["functions"])
+        self.assertEqual(len(new["catalog"]), 300)
+        self.assertEqual(sum(row["kind"] == "app" for row in new["catalog"]), 276)
+        for appearance in ("Clair", "Obscur"):
+            for identifier in ("proton-authenticator", "proton-pass", "proton-mail",
+                               "samsung-browser", "spotify", "coinbase", "coursera",
+                               "my-spectrum", "wallpaper-engine", "pinterest"):
+                name = f"{appearance}/{identifier}.svg"
+                self.assertEqual(self.after[name], self.before[name], name)
+
+    def test_fold_clearance_changes_only_the_separator_width(self):
+        expected_paths = [
+            "M144 160 H368 Q392 160 380 184 L276 376 Q256 408 236 376 L132 184 Q120 160 144 160 Z",
+            "M196 208 H328 L256 328 Z",
+            "M144 160 L196 208 H328 L368 160",
+        ]
+        for appearance, panel in (("Clair", "#ffffff"), ("Obscur", "#000000")):
+            name = f"{appearance}/proton-vpn.svg"
+            old, new = [ET.fromstring(tree[name]).find(NS + "g")
+                        for tree in (self.before, self.after)]
+            self.assertEqual([element.tag for element in new], [NS + "path"] * 3)
+            self.assertEqual([element.get("d") for element in new], expected_paths)
+            self.assertEqual(len(old), len(new))
+            for index, (previous, current) in enumerate(zip(old, new)):
+                expected = dict(previous.attrib)
+                if index == 2:
+                    self.assertEqual(previous.get("stroke-width"), "12")
+                    expected["stroke-width"] = "20"
+                self.assertEqual(current.attrib, expected)
+            self.assertEqual(new[2].get("stroke"), panel)
+            self.assertIsNone(new[2].get("fill"))
+            # Nominal pre-antialias width at the smallest reviewed sizes.
+            # These geometric widths are not a phone-pixel legibility claim.
+            self.assertEqual(float(new[2].get("stroke-width")) * 24 / 512, 0.9375)
+            self.assertEqual(float(new[2].get("stroke-width")) * 32 / 512, 1.25)
+
+    def test_031_and_032_complete_generated_identities_are_retained(self):
         for version, expected in self.HISTORICAL_IDENTITIES.items():
             with self.subTest(version=version):
                 tree = icons.render_icons(icons.load_icon_tokens(version), version=version)

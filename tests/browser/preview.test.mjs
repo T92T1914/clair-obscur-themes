@@ -692,8 +692,10 @@ const iconFunctions = [...namedIconApps.map(row => row[0]), ...generalIconFuncti
 const iconManifestFunctions = [...generalIconFunctions, ...namedIconApps.map(row => row[0])];
 const iconLabels = new Map([...generalIconFunctions.map(name => [name, name.replaceAll('-', ' ').replace(/\b[a-z]/g, letter => letter.toUpperCase())]),
   ...namedIconApps.map(([id, label]) => [id, label])]);
-const iconArchive = 'icons/Clair-Obscur-SVG-Icons-0.32.0.zip';
-const iconArchiveDigest = '474fe4bcf1228fc48b0c275ec1e1db6f467c8dcb2799963c66d126d4b8672598';
+const iconArchive = 'icons/Clair-Obscur-SVG-Icons-0.33.0.zip';
+const opticalIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.32.0.zip';
+const opticalIconDigest = '474fe4bcf1228fc48b0c275ec1e1db6f467c8dcb2799963c66d126d4b8672598';
+const iconArchiveDigest = '1d72f54230fe84887f1329624b3f10c98cf9e8a3696ad184dd198860814a2f79';
 const everydayUseIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.31.0.zip';
 const everydayUseIconDigest = '18f2277f08843327673cf2ea26fd2ceae5d27477527922937c8aec1d90cae71c';
 const craftIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.30.0.zip';
@@ -761,7 +763,7 @@ const previousIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.2.0.zip';
 const previousIconDigest = '6ae67a5aab7f4e0a50537bb6dcf3b383c5fc6e9e001d68db12a7413aaa376312';
 const legacyIconArchive = 'icons/Clair-Obscur-SVG-Icons-0.1.0.zip';
 const legacyIconDigest = '040d7f472ca12d6cf115daaf2631b83477183dee42f0b91c6133e62322014e34';
-const iconChecksums = digest => `${digest}  ${path.basename(iconArchive)}\n${everydayUseIconDigest}  ${path.basename(everydayUseIconArchive)}\n${craftIconDigest}  ${path.basename(craftIconArchive)}\n${artDirectionIconDigest}  ${path.basename(artDirectionIconArchive)}\n${identityIconDigest}  ${path.basename(identityIconArchive)}\n${routeIconDigest}  ${path.basename(routeIconArchive)}\n${communicationIconDigest}  ${path.basename(communicationIconArchive)}\n${messagingIconDigest}  ${path.basename(messagingIconArchive)}\n${contactSpacedIconDigest}  ${path.basename(contactSpacedIconArchive)}\n${containedIconDigest}  ${path.basename(containedIconArchive)}\n${spacedIconDigest}  ${path.basename(spacedIconArchive)}\n${polishedIconDigest}  ${path.basename(polishedIconArchive)}\n${videoEditingIconDigest}  ${path.basename(videoEditingIconArchive)}\n${gboardIconDigest}  ${path.basename(gboardIconArchive)}\n${refinedIconDigest}  ${path.basename(refinedIconArchive)}\n${phoneServiceIconDigest}  ${path.basename(phoneServiceIconArchive)}\n${readingIconDigest}  ${path.basename(readingIconArchive)}\n${learningIconDigest}  ${path.basename(learningIconArchive)}\n${runningTrainingIconDigest}  ${path.basename(runningTrainingIconArchive)}\n${weatherIconDigest}  ${path.basename(weatherIconArchive)}\n${financeIconDigest}  ${path.basename(financeIconArchive)}\n${travelIconDigest}  ${path.basename(travelIconArchive)}\n${foodOrderIconDigest}  ${path.basename(foodOrderIconArchive)}\n${everydayIconDigest}  ${path.basename(everydayIconArchive)}\n${broadIconDigest}  ${path.basename(broadIconArchive)}\n${companionIconDigest}  ${path.basename(companionIconArchive)}\n${monochromeIconDigest}  ${path.basename(monochromeIconArchive)}\n${thirdAppIconDigest}  ${path.basename(thirdAppIconArchive)}\n${secondAppIconDigest}  ${path.basename(secondAppIconArchive)}\n${firstAppIconDigest}  ${path.basename(firstAppIconArchive)}\n${previousIconDigest}  ${path.basename(previousIconArchive)}\n${legacyIconDigest}  ${path.basename(legacyIconArchive)}\n`;
+const iconChecksums = digest => `${digest}  ${path.basename(iconArchive)}\n${opticalIconDigest}  ${path.basename(opticalIconArchive)}\n${everydayUseIconDigest}  ${path.basename(everydayUseIconArchive)}\n${craftIconDigest}  ${path.basename(craftIconArchive)}\n${artDirectionIconDigest}  ${path.basename(artDirectionIconArchive)}\n${identityIconDigest}  ${path.basename(identityIconArchive)}\n${routeIconDigest}  ${path.basename(routeIconArchive)}\n${communicationIconDigest}  ${path.basename(communicationIconArchive)}\n${messagingIconDigest}  ${path.basename(messagingIconArchive)}\n${contactSpacedIconDigest}  ${path.basename(contactSpacedIconArchive)}\n${containedIconDigest}  ${path.basename(containedIconArchive)}\n${spacedIconDigest}  ${path.basename(spacedIconArchive)}\n${polishedIconDigest}  ${path.basename(polishedIconArchive)}\n${videoEditingIconDigest}  ${path.basename(videoEditingIconArchive)}\n${gboardIconDigest}  ${path.basename(gboardIconArchive)}\n${refinedIconDigest}  ${path.basename(refinedIconArchive)}\n${phoneServiceIconDigest}  ${path.basename(phoneServiceIconArchive)}\n${readingIconDigest}  ${path.basename(readingIconArchive)}\n${learningIconDigest}  ${path.basename(learningIconArchive)}\n${runningTrainingIconDigest}  ${path.basename(runningTrainingIconArchive)}\n${weatherIconDigest}  ${path.basename(weatherIconArchive)}\n${financeIconDigest}  ${path.basename(financeIconArchive)}\n${travelIconDigest}  ${path.basename(travelIconArchive)}\n${foodOrderIconDigest}  ${path.basename(foodOrderIconArchive)}\n${everydayIconDigest}  ${path.basename(everydayIconArchive)}\n${broadIconDigest}  ${path.basename(broadIconArchive)}\n${companionIconDigest}  ${path.basename(companionIconArchive)}\n${monochromeIconDigest}  ${path.basename(monochromeIconArchive)}\n${thirdAppIconDigest}  ${path.basename(thirdAppIconArchive)}\n${secondAppIconDigest}  ${path.basename(secondAppIconArchive)}\n${firstAppIconDigest}  ${path.basename(firstAppIconArchive)}\n${previousIconDigest}  ${path.basename(previousIconArchive)}\n${legacyIconDigest}  ${path.basename(legacyIconArchive)}\n`;
 const iconPaths = iconFunctions.flatMap(functionName => ['Clair', 'Obscur'].map(appearance => `icons/${appearance}/${functionName}.svg`));
 const terminalFragment = 'Clair-Obscur-Windows-Terminal-0.1.0.json';
 const terminalArchive = 'Clair-Obscur-Windows-Terminal-0.1.0.zip';
@@ -1493,9 +1495,9 @@ test('Clair and Obscur Android instructions retain keyboard source access and ho
         assert.equal(await details.evaluate(node => node.open), true);
         const companion = details.locator('p').filter({ hasText: 'The Android source offers Clair Android icon-pack' });
         assert.equal(await companion.count(), 1); assert.ok(await companion.isVisible());
-        assert.match(await companion.innerText(), /Clair Android icon-pack 0\.1\.5/);
-        assert.match(await companion.innerText(), /Obscur Android icon-pack 0\.1\.16/);
-        assert.match(await companion.innerText(), /Both select the 0\.32\.0 artwork/);
+        assert.match(await companion.innerText(), /Clair Android icon-pack 0\.1\.6 \(code 7\)/);
+        assert.match(await companion.innerText(), /Obscur Android icon-pack 0\.1\.17 \(code 18\)/);
+        assert.match(await companion.innerText(), /Both select the 0\.33\.0 artwork/);
         assert.match(await companion.innerText(), /Obscur remains the default build appearance/);
         assert.match(await companion.innerText(), /signed APK delivery stays private/);
         const limits = await details.locator('p').last().innerText();
@@ -1594,7 +1596,7 @@ async function checkIconGallery(page) {
   assert.equal(await page.locator('#icon-artwork-second-app-download').getAttribute('href'), secondAppIconArchive);
   assert.equal(await page.locator('#icon-artwork-first-app-download').getAttribute('href'), firstAppIconArchive);
   assert.match(await page.locator('#icon-artwork-first-app-download').textContent(), /preserved 0\.3\.0/);
-  assert.match(await page.locator('#icon-artwork-download').textContent(), /0\.32\.0/);
+  assert.match(await page.locator('#icon-artwork-download').textContent(), /0\.33\.0/);
   assert.match(await page.locator('#icon-artwork-running-training-download').textContent(), /preserved 0\.14\.0/);
   assert.match(await page.locator('#icon-artwork-weather-download').textContent(), /preserved 0\.13\.0/);
   assert.match(await page.locator('#icon-artwork-finance-download').textContent(), /preserved 0\.12\.0/);
@@ -1690,6 +1692,7 @@ async function checkIconGallery(page) {
 }
 
 const iconHistoryArchives = [
+  ['icon-artwork-optical-download', opticalIconArchive, opticalIconDigest],
   ['icon-artwork-everyday-use-download', everydayUseIconArchive, everydayUseIconDigest],
   ['icon-artwork-craft-download', craftIconArchive, craftIconDigest],
   ['icon-artwork-art-direction-download', artDirectionIconArchive, artDirectionIconDigest],
@@ -1762,9 +1765,9 @@ async function tabThroughIconCraftGuide(page) {
   assert.equal(await guide.evaluate(node => node === document.activeElement), true,
     'Tab must reach the actual design-guide anchor before the finder or history');
   assert.equal(await guide.getAttribute('href'),
-    'https://github.com/T92T1914/clair-obscur-themes/blob/main/docs/icon-craft.md#targeted-retained-icon-refinement-artwork-0320');
+    'https://github.com/T92T1914/clair-obscur-themes/blob/main/docs/icon-craft.md#fold-clearance-refinement-artwork-0330');
   assert.match(await readFile(path.join(root, 'docs/icon-craft.md'), 'utf8'),
-    /^## Targeted retained-icon refinement, artwork 0\.32\.0$/m);
+    /^## Fold clearance refinement, artwork 0\.33\.0$/m);
 }
 
 async function tabThroughIconInstructionLinks(page) {
@@ -1815,7 +1818,7 @@ async function assertIconHistoryLayout(page, { spacing = false } = {}) {
       marginBlockEnd: style.marginBlockEnd, rects: [...range.getClientRects()].map(rect => ({ left: rect.left, right: rect.right,
         top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height })) };
   }));
-  assert.equal(metrics.length, 63, 'Admit the summary, all 31 archive paragraphs and their actual links');
+  assert.equal(metrics.length, 65, 'Admit the summary, all 32 archive paragraphs and their actual links');
   for (const node of metrics) {
     assert.ok(node.text && node.width > 0 && node.height > 0 && node.visibility === 'visible' && Number(node.opacity) > 0,
       'History text unavailable: ' + JSON.stringify(node));
@@ -1897,7 +1900,7 @@ test('current icon acquisition keeps opened history spacing-only and additional 
         const bytes = await acquireIconPng(page, 'weather-channel', appearance);
         const png = await assertDownloadedIconPng(page, bytes, 'weather-channel', appearance);
         assert.equal(await page.locator('#icon-png-status').innerText(),
-          `Prepared Clair-Obscur-0.32.0-${appearance}-weather-channel-512.png. Your browser handles the download.`);
+          `Prepared Clair-Obscur-0.33.0-${appearance}-weather-channel-512.png. Your browser handles the download.`);
         assert.deepEqual(await iconPngSurroundings(page), before); assert.equal(await page.locator('#icon-history').evaluate(node => node.open), true);
         await page.locator('#icon-clear').focus(); await page.keyboard.press('Enter'); await assertFinderResults(page, iconFunctions);
         await assertTextSpacing(page, baseline); await assertIconHistoryLayout(page, { spacing: true });
@@ -1976,7 +1979,7 @@ async function tabToIconAction(page, id, action, packageId) {
   } else {
     assert.equal(active.tag, 'BUTTON'); assert.equal(active.png, true);
     assert.equal(active.appearance, action);
-    assert.equal(active.filename, `Clair-Obscur-0.32.0-${action}-${id}-512.png`);
+    assert.equal(active.filename, `Clair-Obscur-0.33.0-${action}-${id}-512.png`);
   }
   assert.ok(active.left >= -1 && active.right <= active.width + 1 && active.bottom > 0 && active.top < active.height,
     JSON.stringify(active));
@@ -2597,7 +2600,7 @@ async function acquireIconPng(page, id, appearance, { timeout = 15000 } = {}) {
     throw new Error(`PNG acquisition failed for ${id}/${appearance} within ${timeout}ms: ${error.message}` +
       '\nPNG acquisition state: ' + JSON.stringify(observation), { cause: error });
   }
-  assert.equal(download.suggestedFilename(), `Clair-Obscur-0.32.0-${appearance}-${id}-512.png`);
+  assert.equal(download.suggestedFilename(), `Clair-Obscur-0.33.0-${appearance}-${id}-512.png`);
   assert.equal(await download.failure(), null);
   const chunks = []; for await (const chunk of await download.createReadStream()) chunks.push(chunk);
   await page.waitForFunction(({ id, appearance }) => document.querySelector(
@@ -2700,7 +2703,7 @@ test('assistant identity selections and retained controls keep literal package k
         assert.equal(crypto.createHash('sha256').update(source).digest('hex'), svgPins[relative]);
         const before = await iconPngSurroundings(page), requestsBefore = network.length;
         const bytes = await acquireIconPng(page, id, appearance);
-        const savedPath = path.join(evidence || temp, 'identity-0.32.0-' + appearance + '-' + id + '-512.png');
+        const savedPath = path.join(evidence || temp, 'identity-0.33.0-' + appearance + '-' + id + '-512.png');
         await writeFile(savedPath, bytes, { flag: 'wx' });
         const saved = await readFile(savedPath); assert.deepEqual(saved, bytes);
         downloads.push({ ...await assertDownloadedIconPng(page, saved, id, appearance), savedPath });
@@ -2763,7 +2766,7 @@ test('optical refinements and retained everyday controls keep literal package an
         assert.equal(crypto.createHash('sha256').update(source).digest('hex'), svgPins[relative]);
         const before = await iconPngSurroundings(page), requestsBefore = network.length;
         const bytes = await acquireIconPng(page, id, appearance);
-        const savedPath = path.join(evidence || temp, 'optical-0.32.0-' + appearance + '-' + id + '-512.png');
+        const savedPath = path.join(evidence || temp, 'optical-0.33.0-' + appearance + '-' + id + '-512.png');
         await writeFile(savedPath, bytes, { flag: 'wx' });
         const saved = await readFile(savedPath); assert.deepEqual(saved, bytes);
         downloads.push({ ...await assertDownloadedIconPng(page, saved, id, appearance), savedPath });
@@ -2784,11 +2787,12 @@ test('optical refinements and retained everyday controls keep literal package an
 });
 
 
-test('current optical and retained everyday ZIP routes acquire exact distinct artwork identities', async () => {
+test('retained optical and everyday ZIP routes acquire exact distinct artwork identities', async () => {
   const { context, page, consoleErrors } = await pageFor({ viewport: { width: 390, height: 900 } });
   try {
-    await page.locator('#icon-artwork-download').focus();
-    const current = await acquirePreservedIconArchive(page, ['icon-artwork-download', iconArchive, iconArchiveDigest]);
+    await setIconHistoryOpen(page, true);
+    await page.locator('#icon-artwork-optical-download').focus();
+    const current = await acquirePreservedIconArchive(page, ['icon-artwork-optical-download', opticalIconArchive, opticalIconDigest]);
     await setIconHistoryOpen(page, true);
     await page.locator('#icon-artwork-everyday-use-download').focus();
     const retained = await acquirePreservedIconArchive(page,
@@ -2811,11 +2815,80 @@ test('current optical and retained everyday ZIP routes acquire exact distinct ar
       '   n=f"{appearance}/{identifier}.svg"; assert current.read(n)==old.read(n)',
     ].join('\n'), site, path.join(root, 'tests/fixtures/icon-optical-0.32.json')]);
     assert.deepEqual(consoleErrors, []);
-    results.scenarios.push({ name: 'current optical and retained everyday ZIP identity', status: 'passed', current, retained,
+    results.scenarios.push({ name: 'retained optical and everyday ZIP identity', status: 'passed', current, retained,
       changedSVGs: 6, retainedSVGs: 594, nativePhoneVerified: false });
   } finally { await context.close(); }
 });
 
+
+test('current fold and retained optical ZIP routes preserve the exact two-SVG change', async () => {
+  const { context, page, consoleErrors } = await pageFor({ viewport: { width: 390, height: 900 } });
+  try {
+    await page.locator('#icon-artwork-download').focus();
+    const current = await acquirePreservedIconArchive(page, ['icon-artwork-download', iconArchive, iconArchiveDigest]);
+    await setIconHistoryOpen(page, true);
+    await page.locator('#icon-artwork-optical-download').focus();
+    const retained = await acquirePreservedIconArchive(page,
+      ['icon-artwork-optical-download', opticalIconArchive, opticalIconDigest]);
+    assert.notEqual(current.sha256, retained.sha256);
+    run(['-c', [
+      'import hashlib,json,pathlib,sys,zipfile',
+      'site=pathlib.Path(sys.argv[1])',
+      'pins={"Clair/proton-vpn.svg":"3fe6e5aa7f574e6846ca2fbbaf08f86b0b0fcec173398340d7aaa4574dda556f","Obscur/proton-vpn.svg":"5a41ec65424e17c4cfd5de71b46a1895a21acc78e3933b2294a927e25b98e21f"}',
+      'with zipfile.ZipFile(site/"icons/Clair-Obscur-SVG-Icons-0.33.0.zip") as current, zipfile.ZipFile(site/"icons/Clair-Obscur-SVG-Icons-0.32.0.zip") as old:',
+      ' assert current.testzip() is None and old.testzip() is None',
+      ' assert set(current.namelist())==set(old.namelist()) and len(old.namelist())==602',
+      ' cm=json.loads(current.read("manifest.json")); om=json.loads(old.read("manifest.json"))',
+      ' assert cm["version"]=="0.33.0" and om["version"]=="0.32.0"',
+      ' assert cm["catalog"]==om["catalog"] and cm["functions"]==om["functions"] and len(cm["catalog"])==300',
+      ' assert hashlib.sha256(old.read("manifest.json")).hexdigest()=="a92a91468ad9992c6253ec49997f4fe3d9d4da1146c8e96f6ea69330ce1c3ef9"',
+      ' changed={n for n in current.namelist() if n.endswith(".svg") and current.read(n)!=old.read(n)}',
+      ' assert changed==set(pins) and len(changed)==2',
+      ' assert sum(n.endswith(".svg") and current.read(n)==old.read(n) for n in old.namelist())==598',
+      ' for n,pin in pins.items(): assert hashlib.sha256(current.read(n)).hexdigest()==pin',
+    ].join('\n'), site]);
+    assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: 'current fold and retained optical ZIP identity', status: 'passed', current, retained,
+      changedSVGs: 2, retainedSVGs: 598, nativePhoneVerified: false });
+  } finally { await context.close(); }
+});
+
+test('Proton VPN fold selection keeps literal package search and keyboard PNG acquisition', async () => {
+  const id = 'proton-vpn', packageId = 'ch.protonvpn.android';
+  const pins = {
+    Clair: '3fe6e5aa7f574e6846ca2fbbaf08f86b0b0fcec173398340d7aaa4574dda556f',
+    Obscur: '5a41ec65424e17c4cfd5de71b46a1895a21acc78e3933b2294a927e25b98e21f',
+  };
+  const { context, page, consoleErrors, network } = await pageFor({ viewport: { width: 390, height: 900 } });
+  try {
+    await snapshotFinderCatalog(page);
+    await page.locator('#icon-query').fill(packageId);
+    await page.locator('#icon-kind').selectOption('app');
+    await assertFinderResults(page, [id]);
+    const card = page.locator('[data-icon-function="' + id + '"]');
+    assert.equal(await card.locator('h4').innerText(), 'Proton VPN');
+    assert.equal(await card.locator('p.muted a').getAttribute('href'),
+      'https://play.google.com/store/apps/details?id=' + packageId);
+    const downloads = [];
+    for (const appearance of ['Clair', 'Obscur']) {
+      const opposite = appearance === 'Clair' ? 'Obscur' : 'Clair';
+      await page.getByRole('button', { name: opposite, exact: true }).click();
+      assert.equal(await page.locator('html').getAttribute('data-theme'), opposite);
+      const source = await readFile(path.join(site, 'icons', appearance, id + '.svg'));
+      assert.equal(crypto.createHash('sha256').update(source).digest('hex'), pins[appearance]);
+      const surroundings = await iconPngSurroundings(page), requests = network.length;
+      const bytes = await acquireIconPng(page, id, appearance);
+      downloads.push(await assertDownloadedIconPng(page, bytes, id, appearance));
+      assert.deepEqual(await iconPngSurroundings(page), surroundings);
+      assert.equal(network.length, requests);
+      assert.equal(await iconPngButton(page, id, appearance).evaluate(node => node === document.activeElement), true);
+    }
+    assert.equal(downloads.length, 2);
+    assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: '0.33 Proton VPN fold package and keyboard PNG acquisition', status: 'passed',
+      downloads, width: 390, nativePhoneVerified: false });
+  } finally { await context.close(); }
+});
 
 test('current icon craft selections retain package search and keyboard PNG acquisition', async () => {
   const targets = [
@@ -2905,7 +2978,7 @@ test('selected travel and reference art direction keeps literal package keyboard
           assert.equal(crypto.createHash('sha256').update(source).digest('hex'), svgPins[relative]);
           const before = await iconPngSurroundings(page), requestsBefore = network.length;
           const bytes = await acquireIconPng(page, id, appearance);
-          const savedPath = path.join(evidence || temp, 'art-direction-0.32.0-' + width + '-' + appearance + '-' + id + '-512.png');
+          const savedPath = path.join(evidence || temp, 'art-direction-0.33.0-' + width + '-' + appearance + '-' + id + '-512.png');
           await writeFile(savedPath, bytes, { flag: 'wx' });
           const saved = await readFile(savedPath); assert.deepEqual(saved, bytes);
           downloads.push({ ...await assertDownloadedIconPng(page, saved, id, appearance), savedPath });
@@ -2952,7 +3025,7 @@ test('common messaging icons support literal package search and keyboard PNG acq
         await assertFinderResults(page, [id]);
         const before = await iconPngSurroundings(page), requestsBefore = network.length;
         const bytes = await acquireIconPng(page, id, appearance);
-        const savedPath = path.join(evidence || temp, 'messaging-0.32.0-' + appearance + '-' + id + '-512.png');
+        const savedPath = path.join(evidence || temp, 'messaging-0.33.0-' + appearance + '-' + id + '-512.png');
         await writeFile(savedPath, bytes, { flag: 'wx' });
         const saved = await readFile(savedPath); assert.deepEqual(saved, bytes);
         downloads.push({ ...await assertDownloadedIconPng(page, saved, id, appearance), savedPath });
@@ -2986,7 +3059,7 @@ test('individual PNG controls bind all 600 local drawings and keyboard acquisiti
         type: node.type, hidden: node.hidden, name: node.getAttribute('aria-label'), pageAppearance: node.hasAttribute('data-appearance') })));
       assert.equal(controls.length, 600);
       const expected = iconFunctions.flatMap(id => ['Clair', 'Obscur'].map(appearance => ({ id, appearance,
-        filename: `Clair-Obscur-0.32.0-${appearance}-${id}-512.png`, source: `icons/${appearance}/${id}.svg` })));
+        filename: `Clair-Obscur-0.33.0-${appearance}-${id}-512.png`, source: `icons/${appearance}/${id}.svg` })));
       assert.deepEqual(controls.map(({ id, appearance, filename, source }) => ({ id, appearance, filename, source })), expected);
       for (const control of controls) {
         assert.equal(control.type, 'button'); assert.equal(control.hidden, false); assert.equal(control.pageAppearance, false);
@@ -3078,7 +3151,7 @@ test('individual PNG capability and metadata admission preserve the static SVG f
     const { context, page, consoleErrors } = await pageFor({ setup: async (context, page) => {
       if (fault === 'wrong-filename') await page.route(origin + '/', async route => {
         const html = await readFile(path.join(site, 'index.html'), 'utf8');
-        const filename = 'Clair-Obscur-0.32.0-Clair-google-chrome-512.png';
+        const filename = 'Clair-Obscur-0.33.0-Clair-google-chrome-512.png';
         assert.equal(html.split(filename).length - 1, 1);
         await route.fulfill({ contentType: 'text/html', body: html.replace(filename, '../untrusted.png') });
       });
@@ -3159,7 +3232,7 @@ test('individual PNG shared busy state is exposed on other controls and restored
       const initial = await iconPngSurroundings(page);
       await first.focus(); await page.keyboard.press('Enter');
       await page.waitForFunction(() => window.pngBusyFixture.held);
-      assert.equal(await page.locator('#icon-png-status').innerText(), 'Preparing Clair-Obscur-0.32.0-Clair-phone-512.png...');
+      assert.equal(await page.locator('#icon-png-status').innerText(), 'Preparing Clair-Obscur-0.33.0-Clair-phone-512.png...');
       await tabToIconAction(page, 'phone', 'Obscur');
       await page.keyboard.press('Enter');
       assert.equal(await opposite.getAttribute('aria-disabled'), 'true',
@@ -3186,7 +3259,7 @@ test('individual PNG shared busy state is exposed on other controls and restored
       await page.keyboard.press('Enter');
       assert.equal(await other.getAttribute('aria-disabled'), 'true');
       assert.equal(await other.evaluate(node => node === document.activeElement), true);
-      assert.equal(await page.locator('#icon-png-status').innerText(), 'Preparing Clair-Obscur-0.32.0-Clair-phone-512.png...');
+      assert.equal(await page.locator('#icon-png-status').innerText(), 'Preparing Clair-Obscur-0.33.0-Clair-phone-512.png...');
       assert.equal(downloads.length, 0); assert.deepEqual(await iconPngSurroundings(page), filtered);
 
       let firstAcquisition;
@@ -3195,7 +3268,7 @@ test('individual PNG shared busy state is exposed on other controls and restored
         await page.evaluate(() => window.pngBusyFixture.release());
         const download = await completed;
         assert.equal(await download.failure(), null);
-        assert.equal(download.suggestedFilename(), 'Clair-Obscur-0.32.0-Clair-phone-512.png');
+        assert.equal(download.suggestedFilename(), 'Clair-Obscur-0.33.0-Clair-phone-512.png');
         const chunks = []; for await (const chunk of await download.createReadStream()) chunks.push(chunk);
         firstAcquisition = await assertDownloadedIconPng(page, Buffer.concat(chunks), 'phone', 'Clair');
         assert.equal(downloads.length, 1);
@@ -3252,7 +3325,7 @@ test('individual PNG duplicate activation is bounded and its object URL is retir
     assert.equal(await button.getAttribute('aria-disabled'), 'true'); assert.equal(downloads.length, 0);
     const completed = page.waitForEvent('download', { timeout: 5000 }); await page.evaluate(() => window.releasePngDecode());
     const download = await completed; assert.equal(await download.failure(), null);
-    assert.equal(download.suggestedFilename(), 'Clair-Obscur-0.32.0-Clair-phone-512.png');
+    assert.equal(download.suggestedFilename(), 'Clair-Obscur-0.33.0-Clair-phone-512.png');
     await page.waitForFunction(() => window.pngUrls.created.length === 1 && window.pngUrls.revoked.length === 1);
     assert.equal(downloads.length, 1);
     const urls = await page.evaluate(() => window.pngUrls); assert.deepEqual(urls.revoked, urls.created);
@@ -3341,7 +3414,7 @@ test('icon gallery decodes every current appearance at phone widths and enlarged
   }
 });
 
-test('no-script keyboard navigation acquires current and all 31 preserved icon ZIPs with exact checksums', async () => {
+test('no-script keyboard navigation acquires current and all 32 preserved icon ZIPs with exact checksums', async () => {
   const { context, page, consoleErrors } = await pageFor({ javaScriptEnabled: false, viewport: { width: 320, height: 844 },
     setup: async (context, page) => page.route('**/preview.css', async route => route.fulfill({ contentType: 'text/css',
       body: await readFile(path.join(site, 'preview.css'), 'utf8') + '\nhtml { font-size: 200%; }\n' + textSpacingOverride })) });
@@ -3385,6 +3458,9 @@ test('no-script keyboard navigation acquires current and all 31 preserved icon Z
     assert.equal(await page.locator('#icon-history').evaluate(node => node.open), true);
     await assertIconHistoryLayout(page, { spacing: true });
     await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-optical-download');
+    await acquirePreservedIconArchive(page, ['icon-artwork-optical-download', opticalIconArchive, opticalIconDigest]);
+    await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-everyday-use-download');
     await acquirePreservedIconArchive(page, ['icon-artwork-everyday-use-download', everydayUseIconArchive, everydayUseIconDigest]);
     await page.keyboard.press('Tab');
@@ -3405,11 +3481,11 @@ test('no-script keyboard navigation acquires current and all 31 preserved icon Z
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-messaging-download');
     await acquirePreservedIconArchive(page, ['icon-artwork-messaging-download', messagingIconArchive, messagingIconDigest]);
+    // Current ZIP, checksums and eight preserved ZIPs fill the first ten-download batch.
+    await new Promise(resolve => setTimeout(resolve, 1100));
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-contact-spaced-download');
     await acquirePreservedIconArchive(page, ['icon-artwork-contact-spaced-download', contactSpacedIconArchive, contactSpacedIconDigest]);
-    // Current ZIP, checksums and eight preserved ZIPs fill the first ten-download batch.
-    await new Promise(resolve => setTimeout(resolve, 1100));
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'icon-artwork-contained-download');
     await acquirePreservedIconArchive(page, ['icon-artwork-contained-download', containedIconArchive, containedIconDigest]);
@@ -3599,7 +3675,7 @@ test('no-script keyboard navigation acquires current and all 31 preserved icon Z
       ' for name in expected|{"manifest.json","LICENSE.txt"}:',
       '  assert archive.read(name)==(site/"icons"/name).read_bytes()',
       ' manifest=json.loads(archive.read("manifest.json"))',
-      ' assert manifest["version"]=="0.32.0" and manifest["stroke_width"]==16',
+      ' assert manifest["version"]=="0.33.0" and manifest["stroke_width"]==16',
       ' assert manifest["functions"]==functions and len(manifest["files"])==600',
       ' assert [entry["id"] for entry in manifest["catalog"]]==functions',
       ' for record in manifest["files"]:',
@@ -3870,7 +3946,7 @@ test('no-script keyboard navigation acquires current and all 31 preserved icon Z
     assert.deepEqual(consoleErrors, []);
     results.scenarios.push({ name: 'no-script icon artwork keyboard acquisition', status: 'passed', tabs,
       sha256: digest, messagingSha256: messagingIconDigest, contactSpacedSha256: contactSpacedIconDigest, gboardSha256: gboardIconDigest, refinedSha256: refinedIconDigest, phoneServiceSha256: phoneServiceIconDigest, readingSha256: readingIconDigest, learningSha256: learningIconDigest, weatherSha256: weatherIconDigest, financeSha256: financeIconDigest, travelSha256: travelIconDigest, foodOrderSha256: foodOrderIconDigest, everydaySha256: everydayIconDigest, broadSha256: broadIconDigest, companionSha256: companionIconDigest, monochromeSha256: monochromeIconDigest, secondAppSha256: secondAppIconDigest, firstAppSha256: firstAppIconDigest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
-      currentArchiveFiles: 602, messagingArchiveFiles: 594, contactSpacedArchiveFiles: 586, preservedArchiveCount: 31, gboardArchiveFiles: 566, refinedArchiveFiles: 564, readingArchiveFiles: 484, learningArchiveFiles: 468, weatherArchiveFiles: 436, financeArchiveFiles: 416, travelArchiveFiles: 396, foodOrderArchiveFiles: 376, everydayArchiveFiles: 352, broadArchiveFiles: 256, companionArchiveFiles: 192, monochromeArchiveFiles: 180, secondAppArchiveFiles: 164, firstAppArchiveFiles: 116, preservedArchiveFiles: 50, nativePhoneVerified: false,
+      currentArchiveFiles: 602, messagingArchiveFiles: 594, contactSpacedArchiveFiles: 586, preservedArchiveCount: 32, gboardArchiveFiles: 566, refinedArchiveFiles: 564, readingArchiveFiles: 484, learningArchiveFiles: 468, weatherArchiveFiles: 436, financeArchiveFiles: 416, travelArchiveFiles: 396, foodOrderArchiveFiles: 376, everydayArchiveFiles: 352, broadArchiveFiles: 256, companionArchiveFiles: 192, monochromeArchiveFiles: 180, secondAppArchiveFiles: 164, firstAppArchiveFiles: 116, preservedArchiveFiles: 50, nativePhoneVerified: false,
       width: 320, rootFontSize: '32px', spacingAdmission, mappingKeyboard,
       scope: 'Combined no-script, narrow, enlarged and spacing stress; separate from spacing-only acceptance' });
   } finally { await context.close(); }
@@ -5305,9 +5381,17 @@ for (const { capability, javaScriptEnabled, testedWidth, expected } of portableC
       assert.equal(iconDigest, inner.files[iconArchive]);
       assert.equal(await readFile(path.join(relocated, 'icons', 'SVG-SHA256SUMS'), 'utf8'), iconChecksums(iconDigest));
       await setIconHistoryOpen(localPage, true);
+      await localPage.locator('#icon-artwork-optical-download').focus();
+      const opticalAcquisition = await acquirePreservedIconArchive(localPage,
+        ['icon-artwork-optical-download', opticalIconArchive, opticalIconDigest]);
+      assert.equal(inner.files[opticalIconArchive], opticalAcquisition.sha256);
       await localPage.locator('#icon-artwork-everyday-use-download').focus();
       await acquirePreservedIconArchive(localPage,
         ['icon-artwork-everyday-use-download', everydayUseIconArchive, everydayUseIconDigest]);
+      await localPage.locator('#icon-artwork-craft-download').focus();
+      const craftAcquisition = await acquirePreservedIconArchive(localPage,
+        ['icon-artwork-craft-download', craftIconArchive, craftIconDigest]);
+      assert.equal(inner.files[craftIconArchive], craftAcquisition.sha256);
       await localPage.locator('#icon-artwork-art-direction-download').focus();
       const artDirectionAcquisition = await acquirePreservedIconArchive(localPage,
         ['icon-artwork-art-direction-download', artDirectionIconArchive, artDirectionIconDigest]);
@@ -5332,6 +5416,8 @@ for (const { capability, javaScriptEnabled, testedWidth, expected } of portableC
       const contactSpacedAcquisition = await acquirePreservedIconArchive(localPage,
         ['icon-artwork-contact-spaced-download', contactSpacedIconArchive, contactSpacedIconDigest]);
       assert.equal(inner.files[contactSpacedIconArchive], contactSpacedAcquisition.sha256);
+      // Current ZIP and nine preserved ZIPs fill the first ten-download batch.
+      await new Promise(resolve => setTimeout(resolve, 1100));
       await localPage.locator('#icon-artwork-contained-download').focus();
       const containedAcquisition = await acquirePreservedIconArchive(localPage,
         ['icon-artwork-contained-download', containedIconArchive, containedIconDigest]);
@@ -5340,8 +5426,6 @@ for (const { capability, javaScriptEnabled, testedWidth, expected } of portableC
       const spacedAcquisition = await acquirePreservedIconArchive(localPage,
         ['icon-artwork-spaced-download', spacedIconArchive, spacedIconDigest]);
       assert.equal(inner.files[spacedIconArchive], spacedAcquisition.sha256);
-      // Current ZIP and nine preserved ZIPs fill the first ten-download batch.
-      await new Promise(resolve => setTimeout(resolve, 1100));
       await localPage.locator('#icon-artwork-polished-download').focus();
       const polishedAcquisition = await acquirePreservedIconArchive(localPage,
         ['icon-artwork-polished-download', polishedIconArchive, polishedIconDigest]);
@@ -5514,7 +5598,7 @@ for (const { capability, javaScriptEnabled, testedWidth, expected } of portableC
       assert.equal(inner.files[legacyIconArchive], legacyIconDigest);
       iconJourneys.push({ javaScriptEnabled, width, decoded: decodedIcons.length, sha256: iconDigest,
         messagingSha256: messagingIconDigest, contactSpacedSha256: contactSpacedIconDigest, containedSha256: containedIconDigest, spacedSha256: spacedIconDigest, polishedSha256: polishedIconDigest, videoEditingSha256: videoEditingIconDigest, gboardSha256: gboardIconDigest, refinedSha256: refinedIconDigest, phoneServiceSha256: phoneServiceIconDigest, readingSha256: readingIconDigest, learningSha256: learningIconDigest, weatherSha256: weatherIconDigest, financeSha256: financeIconDigest, travelSha256: travelIconDigest, foodOrderSha256: foodOrderIconDigest, everydaySha256: everydayIconDigest, broadSha256: broadIconDigest, companionSha256: companionIconDigest, monochromeSha256: monochromeIconDigest, secondAppSha256: secondAppIconDigest, firstAppSha256: firstAppIconDigest, previousSha256: previousIconDigest, legacySha256: legacyIconDigest,
-        method: 'saved included current and all twenty-nine preserved SVG archives' });
+        method: 'saved included current and all thirty-two preserved SVG archives' });
       const terminalSpecimens = await checkTerminalSpecimens(localPage, terminalDocument);
       // Keep each deliberate local archive batch at most ten acquisitions.
       await new Promise(resolve => setTimeout(resolve, 1100));
