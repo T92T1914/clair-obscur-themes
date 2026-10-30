@@ -23,47 +23,51 @@ module FaceModel {
     const LAYOUT_ANALOG = 0;
     const LAYOUT_DIGITAL = 1;
     const LAYOUT_HYBRID = 2;
-    const HYBRID_DATE_TOP = 100;
-    const HYBRID_DATE_BOTTOM = 126;
-    const HYBRID_DATE_WIDTH = 240;
-    const HYBRID_CLOCK_LEFT = 276;
-    const HYBRID_CLOCK_TOP = 204;
-    const HYBRID_CLOCK_BOTTOM = 250;
-    const HYBRID_CLOCK_WIDTH = 112;
-    const HYBRID_DATA_TOP = 270;
-    const HYBRID_DATA_BOTTOM = 340;
-    const HYBRID_DATA_WIDTH = 114;
-    const HYBRID_LEFT_X = 104;
-    const HYBRID_RIGHT_X = 236;
-    const HYBRID_CHARGE_TOP = 342;
-    const HYBRID_CHARGE_BOTTOM = 367;
-    const HYBRID_CHARGE_WIDTH = 140;
+    const HYBRID_DATE_TOP = 140;
+    const HYBRID_DATE_BOTTOM = 164;
+    const HYBRID_DATE_WIDTH = 180;
+    const HYBRID_DAY_LEFT = 356;
+    const HYBRID_DAY_TOP = 211;
+    const HYBRID_DAY_BOTTOM = 243;
+    const HYBRID_DAY_WIDTH = 40;
+    const HYBRID_CLOCK_LEFT = 165;
+    const HYBRID_CLOCK_TOP = 258;
+    const HYBRID_CLOCK_BOTTOM = 292;
+    const HYBRID_CLOCK_WIDTH = 124;
+    const HYBRID_DATA_TOP = 298;
+    const HYBRID_DATA_BOTTOM = 342;
+    const HYBRID_DATA_WIDTH = 112;
+    const HYBRID_LEFT_X = 109;
+    const HYBRID_RIGHT_X = 233;
+    const HYBRID_CHARGE_TOP = 345;
+    const HYBRID_CHARGE_BOTTOM = 369;
+    const HYBRID_CHARGE_WIDTH = 126;
     // The original Analog/Digital geometry below remains independent of Hybrid.
-    const HYBRID_MARKER_CENTER = 170;
-    const HYBRID_CIRCLE_RADIUS = 14;
-    const HYBRID_CIRCLE_INNER = 12;
-    const HYBRID_BATON_INNER = 142;
-    const HYBRID_BATON_OUTER = 182;
-    const HYBRID_BATON_HALF = 7;
+    const HYBRID_MARKER_CENTER = 164;
+    const HYBRID_CIRCLE_RADIUS = 12;
+    const HYBRID_CIRCLE_INNER = 10;
+    const HYBRID_BATON_INNER = 150;
+    const HYBRID_BATON_OUTER = 176;
+    const HYBRID_BATON_HALF = 6;
     const HYBRID_TRIANGLE_INNER = 136;
-    const HYBRID_TRIANGLE_OUTER = 182;
-    const HYBRID_TRIANGLE_HALF = 18;
-    const HYBRID_TICK_OUTER = 194;
-    const HYBRID_TICK_INNER = 188;
-    const HYBRID_HOUR_DISC_CENTER = 96;
-    const HYBRID_HOUR_DISC_RADIUS = 18;
-    const HYBRID_HOUR_DISC_INNER = 16;
+    const HYBRID_TRIANGLE_OUTER = 176;
+    const HYBRID_TRIANGLE_HALF = 16;
+    const HYBRID_TICK_OUTER = 181;
+    const HYBRID_TICK_INNER = 177;
+    const HYBRID_HOUR_DISC_CENTER = 110;
+    const HYBRID_HOUR_DISC_RADIUS = 15;
+    const HYBRID_HOUR_DISC_INNER = 13;
     const HYBRID_HOUR_STEM_INNER = -18;
-    const HYBRID_HOUR_STEM_OUTER = 80;
+    const HYBRID_HOUR_STEM_OUTER = 96;
     const HYBRID_HOUR_STEM_HALF = 5;
-    const HYBRID_HOUR_TIP_BASE = 110;
+    const HYBRID_HOUR_TIP_BASE = 122;
     const HYBRID_HOUR_TIP_HALF = 7;
-    const HYBRID_HOUR_TIP_LENGTH = 130;
-    const HYBRID_MINUTE_LENGTH = 191;
+    const HYBRID_HOUR_TIP_LENGTH = 144;
+    const HYBRID_MINUTE_LENGTH = 172;
     const HYBRID_MINUTE_HALF = 6;
     const HYBRID_MINUTE_TAIL_HALF = 4;
-    const HYBRID_BEZEL_OUTER = 223;
-    const HYBRID_BEZEL_INNER = 194;
+    const HYBRID_BEZEL_OUTER = 224;
+    const HYBRID_BEZEL_INNER = 184;
     const HYBRID_BEZEL_RADIUS = 206;
     const INTER_CLOCK_CHARACTERS = "0123456789:-";
     const DIAL_CENTER = 227;
@@ -138,6 +142,34 @@ module FaceModel {
             charging as Lang.Object or Null) as Lang.String {
         return (charging instanceof Lang.Boolean && (charging as Lang.Boolean) ? "CHG " : "BAT ") +
             formatBattery(value);
+    }
+
+    function hybridDay(day as Lang.Number, month as Lang.Number, year as Lang.Number) as Lang.String {
+        return formatDate(day, month, year).equals("---- -- --") ? "--" : day.format("%d");
+    }
+
+    function hybridDetail(data as Lang.Dictionary<Lang.String, Lang.String>) as Lang.String {
+        // Only Hybrid compresses its presentation. Provider values, freshness
+        // boundaries and the legacy layouts retain their original contracts.
+        if (data["label"].equals("Steps")) { return "STEPS"; }
+        var detail = data["detail"];
+        if (detail.equals("Unavailable")) { return "NO WEATHER"; }
+        if (detail.equals("Cached <1h")) { return "CACHE <1h"; }
+        if (detail.find("Cached ") == 0) { return "CACHE " + detail.substring(7, detail.length()); }
+        if (detail.find("Stale ") == 0) { return "STALE " + detail.substring(6, detail.length()); }
+        return "AGE UNKNOWN";
+    }
+
+    function hybridBezelDigit(digit as Lang.Number) as Lang.Array<Lang.Array<Graphics.Point2D>> {
+        // Original chamfered line glyphs, 10 by 24 units. Dynamic data never
+        // uses these fixed bezel shapes or depends on a decorative font.
+        if (digit == 0) { return [[[2,0],[8,0],[10,2],[10,22],[8,24],[2,24],[0,22],[0,2],[2,0]]]; }
+        if (digit == 1) { return [[[1,4],[5,0],[5,24]], [[1,24],[9,24]]]; }
+        if (digit == 2) { return [[[0,2],[2,0],[8,0],[10,2],[10,9],[0,24],[10,24]]]; }
+        if (digit == 3) { return [[[0,0],[8,0],[10,2],[10,10],[7,12],[10,14],[10,22],[8,24],[0,24]], [[3,12],[7,12]]]; }
+        if (digit == 4) { return [[[7,24],[7,0],[0,16],[10,16]]]; }
+        if (digit == 5) { return [[[10,0],[0,0],[0,11],[8,11],[10,13],[10,22],[8,24],[0,24]]]; }
+        return [];
     }
 
     function hybridMinuteTick(index as Lang.Object or Null)
@@ -222,8 +254,8 @@ module FaceModel {
         if (turn == null || p == null || p < 0 || p >= 3) { return []; }
         // Local radial/lateral endpoints give three clear sectors. The stem and
         // arrow are separate, so sparse always-on never runs a line through it.
-        var radial = p == 0 ? 16 : -8;
-        var lateral = p == 0 ? 0 : (p == 1 ? -14 : 14);
+        var radial = p == 0 ? 13 : -6;
+        var lateral = p == 0 ? 0 : (p == 1 ? -11 : 11);
         return [radialPoint(turn, HYBRID_HOUR_DISC_CENTER, 0),
             radialPoint(turn, HYBRID_HOUR_DISC_CENTER + radial, lateral)];
     }

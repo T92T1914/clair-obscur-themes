@@ -18,6 +18,7 @@ class ClairObscurView extends WatchUi.WatchFace {
     var _batteryFonts as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont> = [];
     var _bezelFonts as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont> = [];
     var _periodFonts as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont> = [];
+    var _dayFonts as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont> = [];
 
     function initialize() {
         WatchFace.initialize();
@@ -49,6 +50,7 @@ class ClairObscurView extends WatchUi.WatchFace {
         // Reference native target faces without copying or claiming Inter fonts.
         // Build only the selected active layout's candidates, not two font caches.
         if (layout == FaceModel.LAYOUT_ANALOG) {
+            _dayFonts = [];
             _bezelFonts = [];
             _periodFonts = [];
             _clockFonts = [];
@@ -57,14 +59,16 @@ class ClairObscurView extends WatchUi.WatchFace {
             _labelFonts = fonts("RobotoCondensedRegular", [18, 16, 14], Graphics.FONT_XTINY, scale);
             _batteryFonts = fonts("RobotoMedium", [18, 16, 14], Graphics.FONT_XTINY, scale);
         } else if (layout == FaceModel.LAYOUT_HYBRID) {
-            _clockFonts = fonts("RobotoMedium", [38, 34, 30, 26, 22, 18], Graphics.FONT_SMALL, scale);
-            _calendarFonts = fonts("RobotoMedium", [22, 20, 18, 16], Graphics.FONT_XTINY, scale);
-            _valueFonts = fonts("RobotoMedium", [26, 22, 18, 16], Graphics.FONT_XTINY, scale);
-            _labelFonts = fonts("RobotoCondensedRegular", [18, 16, 14], Graphics.FONT_XTINY, scale);
-            _batteryFonts = fonts("RobotoMedium", [20, 18, 16, 14], Graphics.FONT_XTINY, scale);
-            _bezelFonts = fonts("RobotoMedium", [22, 20, 18, 16], Graphics.FONT_XTINY, scale);
-            _periodFonts = fonts("RobotoMedium", [16, 14, 12], Graphics.FONT_XTINY, scale);
+            _clockFonts = fonts("RobotoMedium", [30, 28, 26, 24, 22, 20, 18, 16], Graphics.FONT_SMALL, scale);
+            _calendarFonts = fonts("RobotoMedium", [18, 16, 14, 12], Graphics.FONT_XTINY, scale);
+            _dayFonts = fonts("RobotoMedium", [28, 26, 24, 22, 20, 18, 16], Graphics.FONT_XTINY, scale);
+            _valueFonts = fonts("RobotoMedium", [24, 22, 20, 18, 16, 14], Graphics.FONT_XTINY, scale);
+            _labelFonts = fonts("RobotoCondensedRegular", [14, 12], Graphics.FONT_XTINY, scale);
+            _batteryFonts = fonts("RobotoMedium", [18, 16, 14, 12], Graphics.FONT_XTINY, scale);
+            _bezelFonts = [];
+            _periodFonts = fonts("RobotoMedium", [14, 12, 10], Graphics.FONT_XTINY, scale);
         } else {
+            _dayFonts = [];
             _bezelFonts = [];
             _periodFonts = [];
             _clockFonts = fonts("BionicBold", [108, 96, 84], Graphics.FONT_LARGE, scale);
@@ -73,7 +77,8 @@ class ClairObscurView extends WatchUi.WatchFace {
             _labelFonts = fonts("RobotoCondensedRegular", [20, 18, 16], Graphics.FONT_XTINY, scale);
             _batteryFonts = fonts("RobotoMedium", [20, 18, 16], Graphics.FONT_XTINY, scale);
         }
-        _detailFonts = fonts("RobotoCondensedRegular", [16, 14, 12], Graphics.FONT_XTINY, scale);
+        _detailFonts = fonts("RobotoCondensedRegular",
+            layout == FaceModel.LAYOUT_HYBRID ? [14, 12, 10] : [16, 14, 12], Graphics.FONT_XTINY, scale);
     }
 
     function pickFont(dc as Graphics.Dc, text as Lang.String,
@@ -157,13 +162,14 @@ class ClairObscurView extends WatchUi.WatchFace {
             var names = Gregorian.info(moment, Time.FORMAT_MEDIUM);
             var hybridDate = FaceModel.hybridDate(local.day, local.month as Lang.Number, local.year,
                 names.month as Lang.Object, names.day_of_week as Lang.Object, FaceSettings.readDateFormat());
+            var day = FaceModel.hybridDay(local.day, local.month as Lang.Number, local.year);
             var weather = FaceData.readSlot(FaceData.WEATHER, moment.value());
             var steps = FaceData.readSlot(FaceData.STEPS, moment.value());
             var stats = System.getSystemStats();
             var battery = FaceModel.hybridCharge(stats.battery as Lang.Object, stats.charging as Lang.Object);
             var frame = clair ? ThemePalette.CLAIR_BORDER : ThemePalette.OBSCUR_BORDER;
             drawHybrid(dc, local.hour, local.min, time, period,
-                hybridDate, battery, weather, steps, text, muted, frame, canvas);
+                hybridDate, day, battery, weather, steps, text, muted, frame, canvas);
             return;
         }
         var left = FaceData.readSlot(FaceSettings.readSlot(0), moment.value());
@@ -307,22 +313,6 @@ class ClairObscurView extends WatchUi.WatchFace {
         }
     }
 
-    function haloText(dc as Graphics.Dc, center as Lang.Number, y as Lang.Numeric,
-            font as Graphics.FontDefinition or Graphics.VectorFont, text as Lang.String,
-            ink as Lang.Number, canvas as Lang.Number) as Void {
-        // Clear only a one-pixel glyph halo, not a rectangle across a hand.
-        dc.setColor(canvas, Graphics.COLOR_TRANSPARENT);
-        for (var dx = -1; dx <= 1; dx += 1) {
-            for (var dy = -1; dy <= 1; dy += 1) {
-                if (dx != 0 || dy != 0) {
-                    dc.drawText(center + dx, y + dy, font, text, Graphics.TEXT_JUSTIFY_CENTER);
-                }
-            }
-        }
-        dc.setColor(ink, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(center, y, font, text, Graphics.TEXT_JUSTIFY_CENTER);
-    }
-
     function hybridLine(dc as Graphics.Dc, text as Lang.String,
             candidates as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont>,
             width as Lang.Number, top as Lang.Number, bottom as Lang.Number,
@@ -336,27 +326,26 @@ class ClairObscurView extends WatchUi.WatchFace {
         if (font == null) { return; }
         var x = ((dc.getWidth() - width) / 2).toNumber();
         dc.setClip(x, top, width, bottom - top);
-        haloText(dc, FaceModel.DIAL_CENTER, top + (bottom - top - dc.getFontHeight(font)) / 2,
-            font, shown, ink, canvas);
+        dc.setColor(ink, canvas);
+        dc.drawText(FaceModel.DIAL_CENTER, top + (bottom - top - dc.getFontHeight(font)) / 2,
+            font, shown, Graphics.TEXT_JUSTIFY_CENTER);
         dc.clearClip();
     }
 
     function hybridSlotFonts(dc as Graphics.Dc, data as Lang.Dictionary<Lang.String, Lang.String>,
             width as Lang.Number, height as Lang.Number)
             as Lang.Array<Graphics.FontDefinition or Graphics.VectorFont> or Null {
-        // Preserve the freshness/goal row before trying a larger value. Legacy
-        // Analog keeps its original fitting order in analogSlotFonts.
+        // Hybrid uses two rows. Fit its truthful status and value together;
+        // shrinking a three-row legacy field into this band would hide data.
+        var shownDetail = FaceModel.hybridDetail(data);
         for (var d = 0; d < _detailFonts.size(); d += 1) {
             var detail = _detailFonts[d];
-            if (dc.getTextWidthInPixels(data["detail"], detail) > width) { continue; }
-            for (var l = 0; l < _labelFonts.size(); l += 1) {
-                var label = _labelFonts[l];
-                if (dc.getTextWidthInPixels(data["label"], label) > width) { continue; }
-                for (var v = 0; v < _valueFonts.size(); v += 1) {
-                    var value = _valueFonts[v];
-                    if (dc.getTextWidthInPixels(data["value"], value) > width) { continue; }
-                    if (dc.getFontHeight(label) + dc.getFontHeight(value) +
-                            dc.getFontHeight(detail) + 6 <= height) { return [label, value, detail]; }
+            if (dc.getTextWidthInPixels(shownDetail, detail) > width) { continue; }
+            for (var v = 0; v < _valueFonts.size(); v += 1) {
+                var value = _valueFonts[v];
+                if (dc.getTextWidthInPixels(data["value"], value) > width) { continue; }
+                if (dc.getFontHeight(value) + dc.getFontHeight(detail) + 2 <= height) {
+                    return [value, detail];
                 }
             }
         }
@@ -368,28 +357,29 @@ class ClairObscurView extends WatchUi.WatchFace {
         var top = FaceModel.HYBRID_DATA_TOP;
         var height = FaceModel.HYBRID_DATA_BOTTOM - top;
         var width = FaceModel.HYBRID_DATA_WIDTH;
-        var selected = hybridSlotFonts(dc, data, width - 4, height - 4);
+        var selected = hybridSlotFonts(dc, data, width - 2, height - 2);
         if (selected == null) {
             // Never turn a failed-fit data field into an invented live value.
             var fallback = pickFont(dc, "--", _valueFonts, width - 4, height - 4);
             if (fallback != null) {
                 dc.setClip(x, top, width, height);
-                haloText(dc, x + width / 2, top + (height - dc.getFontHeight(fallback)) / 2,
-                    fallback, "--", ink, canvas);
+                dc.setColor(ink, canvas);
+                dc.drawText(x + width / 2, top + (height - dc.getFontHeight(fallback)) / 2,
+                    fallback, "--", Graphics.TEXT_JUSTIFY_CENTER);
                 dc.clearClip();
             }
             return;
         }
-        var label = selected[0]; var value = selected[1]; var detail = selected[2];
-        var total = dc.getFontHeight(label) + dc.getFontHeight(value) + dc.getFontHeight(detail) + 6;
+        var value = selected[0]; var detail = selected[1];
+        var total = dc.getFontHeight(value) + dc.getFontHeight(detail) + 2;
         var y = top + (height - total) / 2;
         var center = x + width / 2;
         dc.setClip(x, top, width, height);
-        haloText(dc, center, y, label, data["label"], muted, canvas);
-        y += dc.getFontHeight(label) + 3;
-        haloText(dc, center, y, value, data["value"], ink, canvas);
-        y += dc.getFontHeight(value) + 3;
-        haloText(dc, center, y, detail, data["detail"], muted, canvas);
+        dc.setColor(ink, canvas);
+        dc.drawText(center, y, value, data["value"], Graphics.TEXT_JUSTIFY_CENTER);
+        y += dc.getFontHeight(value) + 2;
+        dc.setColor(muted, canvas);
+        dc.drawText(center, y, detail, FaceModel.hybridDetail(data), Graphics.TEXT_JUSTIFY_CENTER);
         dc.clearClip();
     }
 
@@ -406,38 +396,59 @@ class ClairObscurView extends WatchUi.WatchFace {
 
     function drawHybridBezel(dc as Graphics.Dc, ink as Lang.Number,
             metal as Lang.Number, canvas as Lang.Number) as Void {
-        // A printed sixty-minute reference scale, not an interactive dive timer.
+        // A shallow dark annulus and two controlled edges, not a photographed
+        // case or an interactive dive timer. Keep the dial's black area intact.
+        var clair = canvas == ThemePalette.CLAIR_CANVAS;
+        var body = clair ? ThemePalette.CLAIR_CODE : ThemePalette.OBSCUR_CODE;
+        var edge = clair ? ThemePalette.CLAIR_DIVIDER : ThemePalette.OBSCUR_DIVIDER;
+        dc.setColor(body, canvas);
+        dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, FaceModel.HYBRID_BEZEL_OUTER);
+        dc.setColor(canvas, canvas);
+        dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, FaceModel.HYBRID_BEZEL_INNER);
         dc.setColor(metal, canvas); dc.setPenWidth(1);
         dc.drawCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, FaceModel.HYBRID_BEZEL_OUTER);
+        dc.setColor(edge, canvas);
         dc.drawCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, FaceModel.HYBRID_BEZEL_INNER);
+        dc.setColor(ink, canvas); dc.setPenWidth(2);
         for (var tick = 1; tick < 15; tick += 1) {
             if (tick % 5 == 0) { continue; }
             var turn = (tick / 60.0).toFloat();
-            var inner = FaceModel.radialPoint(turn, 210, 0);
-            var outer = FaceModel.radialPoint(turn, 219, 0);
+            var inner = FaceModel.radialPoint(turn, 207, 0);
+            var outer = FaceModel.radialPoint(turn, 218, 0);
             dc.drawLine(inner[0], inner[1], outer[0], outer[1]);
         }
         for (var tick = 5; tick < 60; tick += 10) {
             var turn = (tick / 60.0).toFloat();
             dc.setColor(ink, canvas);
-            dc.fillPolygon([FaceModel.radialPoint(turn, 203, -2),
+            dc.fillPolygon([FaceModel.radialPoint(turn, 197, -2),
                 FaceModel.radialPoint(turn, 219, -2), FaceModel.radialPoint(turn, 219, 2),
-                FaceModel.radialPoint(turn, 203, 2)]);
+                FaceModel.radialPoint(turn, 197, 2)]);
         }
         for (var value = 10; value <= 50; value += 10) {
-            var text = value.format("%d");
-            var font = pickFont(dc, text, _bezelFonts, 28, 22);
-            if (font == null) { continue; }
-            var center = FaceModel.radialPoint((value / 60.0).toFloat(), FaceModel.HYBRID_BEZEL_RADIUS, 0);
-            dc.setClip(center[0] - 14, center[1] - 11, 28, 22);
-            dc.setColor(ink, canvas);
-            dc.drawText(center[0], center[1] - dc.getFontHeight(font) / 2,
-                font, text, Graphics.TEXT_JUSTIFY_CENTER);
-            dc.clearClip();
+            var turn = (value / 60.0).toFloat();
+            drawHybridBezelDigit(dc, (value / 10).toNumber(), turn, -12, ink, canvas);
+            drawHybridBezelDigit(dc, 0, turn, 2, ink, canvas);
         }
-        dc.setColor(metal, canvas); dc.fillPolygon([[217, 8], [237, 8], [227, 34]]);
-        dc.setColor(canvas, canvas); dc.fillPolygon([[220, 10], [234, 10], [227, 29]]);
-        dc.setColor(ink, canvas); dc.fillCircle(227, 16, 4);
+        dc.setPenWidth(1);
+        dc.setColor(metal, canvas); dc.fillPolygon([[215, 8], [239, 8], [227, 36]]);
+        dc.setColor(body, canvas); dc.fillPolygon([[218, 10], [236, 10], [227, 31]]);
+        dc.setColor(ink, canvas); dc.fillCircle(227, 17, 4);
+    }
+
+    function drawHybridBezelDigit(dc as Graphics.Dc, digit as Lang.Number,
+            turn as Lang.Float, offset as Lang.Number, ink as Lang.Number,
+            canvas as Lang.Number) as Void {
+        var paths = FaceModel.hybridBezelDigit(digit);
+        dc.setColor(ink, canvas); dc.setPenWidth(2);
+        for (var path = 0; path < paths.size(); path += 1) {
+            for (var point = 1; point < paths[path].size(); point += 1) {
+                var a = paths[path][point - 1]; var b = paths[path][point];
+                var first = FaceModel.radialPoint(turn, FaceModel.HYBRID_BEZEL_RADIUS + 12 - a[1], a[0] + offset);
+                var next = FaceModel.radialPoint(turn, FaceModel.HYBRID_BEZEL_RADIUS + 12 - b[1], b[0] + offset);
+                dc.drawLine(first[0], first[1], next[0], next[1]);
+            }
+        }
+        dc.setPenWidth(1);
     }
 
     function drawHybridHour(dc as Graphics.Dc, hour as Lang.Number, minute as Lang.Number,
@@ -470,12 +481,11 @@ class ClairObscurView extends WatchUi.WatchFace {
         var top = FaceModel.HYBRID_CLOCK_TOP;
         var width = FaceModel.HYBRID_CLOCK_WIDTH;
         var height = FaceModel.HYBRID_CLOCK_BOTTOM - top;
-        // This deliberate opaque aperture sits above both moving hands. The
-        // digits therefore never share pixels with a hand or its edge halo.
-        dc.setColor(metal, canvas); dc.fillRectangle(left, top, width, height);
-        dc.setColor(ink, ink); dc.fillRectangle(left + 1, top + 1, width - 2, height - 2);
+        // A small same-canvas clearing protects the secondary clock below the
+        // pivot. Its entire box is inside the circular hour head's inner sweep.
+        dc.setColor(canvas, canvas); dc.fillRectangle(left, top, width, height);
         var hasPeriod = period.length() > 0;
-        var mainWidth = hasPeriod ? 84 : 108;
+        var mainWidth = hasPeriod ? 92 : 120;
         var font = pickFont(dc, time, _clockFonts, mainWidth, height - 4);
         var shown = time;
         if (font == null) {
@@ -484,7 +494,7 @@ class ClairObscurView extends WatchUi.WatchFace {
         }
         dc.setClip(left + 2, top + 2, mainWidth, height - 4);
         if (font != null) {
-            dc.setColor(canvas, ink);
+            dc.setColor(ink, canvas);
             dc.drawText(left + 2 + mainWidth / 2, top + (height - dc.getFontHeight(font)) / 2,
                 font, shown, Graphics.TEXT_JUSTIFY_CENTER);
         }
@@ -492,17 +502,40 @@ class ClairObscurView extends WatchUi.WatchFace {
         if (hasPeriod) {
             var small = pickFont(dc, period, _periodFonts, 22, height - 4);
             if (small != null) {
-                dc.setClip(left + 88, top + 2, 22, height - 4);
-                dc.setColor(canvas, ink);
-                dc.drawText(left + 99, top + (height - dc.getFontHeight(small)) / 2,
+                dc.setClip(left + 98, top + 2, 22, height - 4);
+                dc.setColor(ink, canvas);
+                dc.drawText(left + 109, top + (height - dc.getFontHeight(small)) / 2,
                     small, period, Graphics.TEXT_JUSTIFY_CENTER);
                 dc.clearClip();
             }
         }
     }
 
+    function drawHybridDay(dc as Graphics.Dc, day as Lang.String,
+            ink as Lang.Number, metal as Lang.Number, canvas as Lang.Number) as Void {
+        var left = FaceModel.HYBRID_DAY_LEFT;
+        var top = FaceModel.HYBRID_DAY_TOP;
+        var width = FaceModel.HYBRID_DAY_WIDTH;
+        var height = FaceModel.HYBRID_DAY_BOTTOM - top;
+        dc.setColor(metal, canvas); dc.fillRectangle(left, top, width, height);
+        dc.setColor(ink, ink); dc.fillRectangle(left + 1, top + 1, width - 2, height - 2);
+        var font = pickFont(dc, day, _dayFonts, width - 4, height - 4);
+        var shown = day;
+        if (font == null) {
+            shown = "--";
+            font = pickFont(dc, shown, _dayFonts, width - 4, height - 4);
+        }
+        if (font == null) { return; }
+        dc.setClip(left + 2, top + 2, width - 4, height - 4);
+        dc.setColor(canvas, ink);
+        dc.drawText(left + width / 2, top + (height - dc.getFontHeight(font)) / 2,
+            font, shown, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.clearClip();
+    }
+
     function drawHybrid(dc as Graphics.Dc, hour as Lang.Number, minute as Lang.Number,
-            time as Lang.String, period as Lang.String, date as Lang.String, charge as Lang.String,
+            time as Lang.String, period as Lang.String, date as Lang.String,
+            day as Lang.String, charge as Lang.String,
             weather as Lang.Dictionary<Lang.String, Lang.String>,
             steps as Lang.Dictionary<Lang.String, Lang.String>, ink as Lang.Number,
             muted as Lang.Number, facet as Lang.Number, canvas as Lang.Number) as Void {
@@ -529,24 +562,25 @@ class ClairObscurView extends WatchUi.WatchFace {
                 }
             }
         }
-        // The divided circular hour head and longer sword minute hand remain
-        // distinct. The clock aperture paints above them, while other text
-        // receives only glyph halos.
+        // Quiet dial printing sits behind the hands. Only the compact date and
+        // digital clock clear a rectangle afterward; no glyph halos cut hands
+        // into fragments. Hands can cross the other information temporarily.
+        hybridLine(dc, date, _calendarFonts, FaceModel.HYBRID_DATE_WIDTH,
+            FaceModel.HYBRID_DATE_TOP, FaceModel.HYBRID_DATE_BOTTOM, muted, canvas);
+        hybridLine(dc, canvas == ThemePalette.CLAIR_CANVAS ? "CLAIR" : "OBSCUR",
+            _labelFonts, 130, 112, 134, ink, canvas);
+        hybridSlot(dc, weather, FaceModel.HYBRID_LEFT_X, ink, muted, canvas);
+        hybridSlot(dc, steps, FaceModel.HYBRID_RIGHT_X, ink, muted, canvas);
+        hybridLine(dc, charge, _batteryFonts, FaceModel.HYBRID_CHARGE_WIDTH,
+            FaceModel.HYBRID_CHARGE_TOP, FaceModel.HYBRID_CHARGE_BOTTOM, muted, canvas);
         drawHybridHour(dc, hour, minute, ink, facet, canvas);
         hybridMetalPolygon(dc, FaceModel.hybridMinuteHand(hour, minute, false),
             FaceModel.hybridMinuteHand(hour, minute, true), ink, facet, canvas);
         dc.setColor(facet, canvas); dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, 8);
         dc.setColor(ink, canvas); dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, 5);
         dc.setColor(canvas, canvas); dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, 2);
-        hybridLine(dc, date, _calendarFonts, FaceModel.HYBRID_DATE_WIDTH,
-            FaceModel.HYBRID_DATE_TOP, FaceModel.HYBRID_DATE_BOTTOM, muted, canvas);
-        hybridLine(dc, canvas == ThemePalette.CLAIR_CANVAS ? "CLAIR" : "OBSCUR",
-            _calendarFonts, 180, 132, 164, ink, canvas);
         drawHybridClock(dc, time, period, ink, facet, canvas);
-        hybridSlot(dc, weather, FaceModel.HYBRID_LEFT_X, ink, muted, canvas);
-        hybridSlot(dc, steps, FaceModel.HYBRID_RIGHT_X, ink, muted, canvas);
-        hybridLine(dc, charge, _batteryFonts, FaceModel.HYBRID_CHARGE_WIDTH,
-            FaceModel.HYBRID_CHARGE_TOP, FaceModel.HYBRID_CHARGE_BOTTOM, muted, canvas);
+        drawHybridDay(dc, day, ink, facet, canvas);
     }
 
     function drawHybridAlwaysOn(dc as Graphics.Dc, hour as Lang.Number, minute as Lang.Number) as Void {

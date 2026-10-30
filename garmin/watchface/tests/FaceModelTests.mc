@@ -83,6 +83,52 @@ function hybridWatchChargeStates(logger as Test.Logger) as Lang.Boolean {
 }
 
 (:test)
+function hybridDayApertureCalendarValidation(logger as Test.Logger) as Lang.Boolean {
+    Test.assertEqual(FaceModel.hybridDay(29, 2, 2024), "29");
+    Test.assertEqual(FaceModel.hybridDay(1, 3, 2024), "1");
+    Test.assertEqual(FaceModel.hybridDay(31, 12, 2026), "31");
+    Test.assertEqual(FaceModel.hybridDay(1, 1, 2027), "1");
+    Test.assertEqual(FaceModel.hybridDay(29, 2, 2023), "--");
+    Test.assertEqual(FaceModel.hybridDay(29, 2, 2100), "--");
+    Test.assertEqual(FaceModel.hybridDay(31, 4, 2026), "--");
+    Test.assertEqual(FaceModel.hybridDay(0, 1, 2027), "--");
+    Test.assertEqual(FaceModel.hybridDay(1, 13, 2027), "--");
+    return true;
+}
+
+(:test)
+function hybridCompactWeatherAndStepMeaning(logger as Test.Logger) as Lang.Boolean {
+    // Exercise the real pure provider-formatting and compact presentation
+    // functions together. No location, weather request or activity data read.
+    var fresh = FaceData.weatherPayload(20.0, 99999, 100000, false);
+    Test.assertEqual(fresh["value"], "20 C");
+    Test.assertEqual(FaceModel.hybridDetail(fresh), "CACHE <1h");
+    Test.assertEqual(fresh["detail"], "Cached <1h");
+    var cached = FaceData.weatherPayload(20.0, 92800, 100000, true);
+    Test.assertEqual(cached["value"], "68 F");
+    Test.assertEqual(FaceModel.hybridDetail(cached), "CACHE 2h");
+    var stale = FaceData.weatherPayload(20.0, 92799, 100000, false);
+    Test.assertEqual(FaceModel.hybridDetail(stale), "STALE 2h");
+    Test.assertEqual(stale["detail"], "Stale 2h");
+    Test.assertEqual(FaceModel.hybridDetail(FaceData.weatherPayload(20.0, null, 100000, false)), "AGE UNKNOWN");
+    Test.assertEqual(FaceModel.hybridDetail(FaceData.weatherPayload(20.0, 100001, 100000, false)), "AGE UNKNOWN");
+    var missingWeather = FaceData.weatherPayload(null, null, 100000, false);
+    Test.assertEqual(missingWeather["value"], "--");
+    Test.assertEqual(FaceModel.hybridDetail(missingWeather), "NO WEATHER");
+    var zero = FaceData.stepsPayload(0, 10000);
+    var missingSteps = FaceData.stepsPayload(null, 10000);
+    Test.assertEqual(zero["value"], "0");
+    Test.assertEqual(missingSteps["value"], "--");
+    Test.assertEqual(FaceModel.hybridDetail(zero), "STEPS");
+    Test.assertEqual(FaceModel.hybridDetail(missingSteps), "STEPS");
+    Test.assertEqual(zero["detail"], "Goal 10000");
+    var large = FaceData.stepsPayload(2147483647, null);
+    Test.assertEqual(large["value"], "2147483647");
+    Test.assertEqual(FaceModel.hybridDetail(large), "STEPS");
+    return true;
+}
+
+(:test)
 function clockFormatting(logger as Test.Logger) as Lang.Boolean {
     var hours24 = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
         "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"];
