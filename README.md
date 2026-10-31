@@ -101,11 +101,15 @@ saved choices, providers and the Digital Inter resource retain their contracts.
 
 The normal 0.10.0 program is 42,076 bytes and its diagnostic program is 204,636
 bytes. Both compile for the exact `fenix9pro47mm` target with SDK 9.2.0. The focused
-host suite ran 60 tests: 58 passed and two original-font checks skipped. All 42
-annotated target groups compiled; zero executed for this candidate. Private host
-SVG alternatives informed the layout choice, but do not establish Garmin-rendered
-appearance. Current target font fit, matched 0.9.0/candidate images, AOD pixels,
-memory, transitions and physical-watch use remain unqualified. See the
+host suite ran 60 tests: 58 passed and two original-font checks skipped. The exact
+diagnostic subsequently reported all 42 target groups passed, with zero failures
+or errors, although its Java runner returned exit code 1. Three qualification
+runs of the unchanged normal program completed with exit code 0. Native captures
+cover both appearances, ordinary and enlarged text, and a controlled 03:15
+comparison with 0.9.0. Current always-on rasters, a memory sample and one normal
+restart provide bounded simulator evidence. Physical-watch use, complete locale
+and stress coverage, sustained runtime and earlier USB restoration remain open.
+The observed Vietnamese SDK date limitation and runner anomaly are retained in the
 [current qualification](docs/garmin-watchface.md#current-0100-qualification).
 
 The preserved 0.9.0 program passed 38 target simulator groups and has bounded
