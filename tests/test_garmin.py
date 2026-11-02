@@ -1,13 +1,16 @@
 """Palette and source-derived geometry checks, not Monkey C runtime acceptance."""
 
 import copy
+import hashlib
 import json
 import math
 from pathlib import Path
 import re
+import struct
 import tempfile
 import unittest
 import xml.etree.ElementTree as ET
+import zlib
 
 from themeforge.garmin import VERSION, main, render_palette
 
@@ -152,9 +155,19 @@ class GarminPaletteTests(unittest.TestCase):
     def test_current_palette_has_exact_black_white_and_neutral_roles(self):
         current = json.loads((ROOT / "tokens-monochrome.json").read_text(encoding="utf-8"))
         source = render_palette(current)
-        self.assertEqual(VERSION, "0.11.0")
+        self.assertEqual(VERSION, "0.12.0")
         self.assertEqual(colors(source), EXPECTED_MONOCHROME_COLORS)
-        self.assertIn('const WATCHFACE_VERSION = "0.11.0";', source)
+        self.assertIn('const WATCHFACE_VERSION = "0.12.0";', source)
+        # Keep the native assertion literal and independent of the menu's
+        # implementation, while catching a forgotten test-version bump here.
+        native = (ROOT / "garmin/watchface/tests/FaceLayoutTests.mc").read_text(encoding="utf-8")
+        menu_tests = re.findall(
+            r"(?ms)^function hybridSettingsPreserveLegacyFields\([^\n]*\{(.*?)^\}", native)
+        self.assertEqual(len(menu_tests), 1)
+        expected_labels = re.findall(
+            r'Test\.assertEqual\(\(layoutItem as WatchUi\.MenuItem\)\.getSubLabel\(\),\s*"([^"]+)"\);',
+            menu_tests[0])
+        self.assertEqual(expected_labels, [f"Hybrid / {VERSION}"])
         self.assertIn('const TOKEN_VERSION = "1.0.0";', source)
         for color in colors(source).values():
             self.assertEqual((color >> 16) & 255, (color >> 8) & 255)
@@ -189,7 +202,7 @@ class GarminPaletteTests(unittest.TestCase):
                          ["fenix9pro47mm"])
         properties = ET.parse(face / "resources/settings/properties.xml").getroot()
         self.assertEqual([(node.get("id"), node.get("type"), node.text) for node in properties],
-                         [("appVersion", "string", "0.11.0"), ("appearance", "number", "1"),
+                         [("appVersion", "string", "0.12.0"), ("appearance", "number", "1"),
                           ("layout", "number", "2"),
                           ("leftData", "number", "0"), ("rightData", "number", "1"),
                           ("hybridDateFormat", "number", "0")])
@@ -286,15 +299,13 @@ class GarminActiveBandGeometryTests(unittest.TestCase):
         # branch has its own, separately qualified candidates.
         refresh = cls.view.split("function refreshFonts(", 1)[1].split("    function pickFont(", 1)[0]
         analog, digital = refresh.split("        } else {", 1)
-        # Hybrid's compact detail candidates do not alter the retained Digital
-        # branch. Extract only that explicit legacy arm for the literal check.
-        detail_choice = ('_detailFonts = fonts("RobotoCondensedRegular",\n'
-                         '            layout == FaceModel.LAYOUT_HYBRID ? [14, 12, 10] : [16, 14, 12], '
-                         'Graphics.FONT_XTINY, scale);')
-        if digital.count(detail_choice) != 1:
-            raise AssertionError("Missing explicit Hybrid/legacy detail-font choice")
-        digital = digital.replace(detail_choice,
-            '_detailFonts = fonts("RobotoCondensedRegular", [16, 14, 12], Graphics.FONT_XTINY, scale);')
+        # The shared detail declaration follows the layout branches and retains
+        # Digital's accepted sizes. Reject an absent, duplicated or conditional
+        # substitute instead of normalizing a former Hybrid-only choice.
+        detail = ('_detailFonts = fonts("RobotoCondensedRegular", [16, 14, 12], '
+                  'Graphics.FONT_XTINY, scale);')
+        if digital.count(detail) != 1 or refresh.count("_detailFonts =") != 1:
+            raise AssertionError("Missing unique shared detail-font declaration")
         cls.fonts = {}
         declarations = re.findall(
             r'_(\w+)Fonts\s*=\s*fonts\("([A-Za-z]+)",\s*\[([\d, ]+)\],\s*'
@@ -509,8 +520,10 @@ class GarminAnalogGeometryTests(unittest.TestCase):
         self.assertEqual((self.constants["AOD_MAX_WIDTH"], self.constants["AOD_MAX_HEIGHT"]), (192, 64))
         on_update = self.view.split("function onUpdate(", 1)[1].split("function analogSlotFonts(", 1)[0]
         analog = re.search(r"if \(mode == :aod && layout == FaceModel\.LAYOUT_ANALOG\) \{\s*"
-                          r"drawAnalogAlwaysOn\(dc, local\.hour, local\.min\);\s*return;\s*\}", on_update)
-        digital = re.search(r"if \(mode == :aod\) \{ drawAlwaysOn\(dc, time, local\.min\); return; \}",
+                          r"drawAnalogAlwaysOn\(dc, local\.hour, local\.min\);\s*"
+                          r"clearAlwaysOnPhase\(dc, local\.min\);\s*return;\s*\}", on_update)
+        digital = re.search(r"if \(mode == :aod\) \{ drawAlwaysOn\(dc, time, local\.min\); "
+                            r"clearAlwaysOnPhase\(dc, local\.min\); return; \}",
                             on_update)
         self.assertIsNotNone(analog)
         self.assertIsNotNone(digital)
@@ -789,13 +802,19 @@ class GarminSharedDialExpansionTests(unittest.TestCase):
                     retained = retained.replace("            _bezelFonts = [];\n", "")
                     self.assertEqual(retained.count("            _periodFonts = [];\n"), 2)
                     retained = retained.replace("            _periodFonts = [];\n", "")
-                    compact_detail = ('        _detailFonts = fonts("RobotoCondensedRegular",\n'
-                        '            layout == FaceModel.LAYOUT_HYBRID ? [14, 12, 10] : [16, 14, 12], '
-                        'Graphics.FONT_XTINY, scale);')
-                    self.assertEqual(retained.count(compact_detail), 1)
-                    retained = retained.replace(compact_detail,
-                        '        _detailFonts = fonts("RobotoCondensedRegular", [16, 14, 12], Graphics.FONT_XTINY, scale);')
+                    # Hybrid now uses the same detail sizes as the retained
+                    # legacy branch. No legacy source substitution is needed.
+                    self.assertIn('        _detailFonts = fonts("RobotoCondensedRegular", [16, 14, 12], '
+                                  'Graphics.FONT_XTINY, scale);', retained)
                 elif name == "onUpdate":
+                    # The common final AOD clearing pass is qualified separately.
+                    # Remove only its exact three call sites before comparing
+                    # the independently retained active/legacy dispatch body.
+                    self.assertEqual(retained.count("clearAlwaysOnPhase(dc, local.min);"), 3)
+                    self.assertEqual(retained.count("            clearAlwaysOnPhase(dc, local.min);\n"), 2)
+                    retained = retained.replace("            clearAlwaysOnPhase(dc, local.min);\n", "")
+                    self.assertEqual(retained.count(" clearAlwaysOnPhase(dc, local.min);"), 1)
+                    retained = retained.replace(" clearAlwaysOnPhase(dc, local.min);", "")
                     retained, aod_count = re.subn(
                         r"        if \(mode == :aod && layout == FaceModel\.LAYOUT_HYBRID\) \{\s*"
                         r"drawHybridAlwaysOn\(dc, local\.hour, local\.min\);\s*return;\s*\}\n",
@@ -951,7 +970,11 @@ class GarminHybridContractsTests(unittest.TestCase):
                     self.assertLess((x - 227) ** 2 + (y - 227) ** 2, 227 ** 2)
         self.assertLess(c["HYBRID_DATE_BOTTOM"], c["HYBRID_CLOCK_TOP"])
         self.assertLess(c["HYBRID_CLOCK_BOTTOM"], c["HYBRID_DATA_TOP"])
-        self.assertLess(c["HYBRID_DATA_BOTTOM"], c["HYBRID_CHARGE_TOP"])
+        self.assertLess(c["HYBRID_DATE_BOTTOM"], c["HYBRID_CHARGE_TOP"])
+        self.assertLess(c["HYBRID_CHARGE_BOTTOM"], c["HYBRID_CLOCK_TOP"])
+        self.assertEqual(tuple(c[key] for key in ("HYBRID_CHARGE_TOP", "HYBRID_CHARGE_BOTTOM",
+                         "HYBRID_CHARGE_WIDTH", "HYBRID_DATA_TOP", "HYBRID_DATA_BOTTOM")),
+                         (176, 206, 118, 282, 338))
         self.assertGreater(c["HYBRID_RIGHT_X"] - (c["HYBRID_LEFT_X"] + c["HYBRID_DATA_WIDTH"]), 0)
         for side in ("LEFT", "RIGHT"):
             for x in (c[f"HYBRID_{side}_X"] - 1, c[f"HYBRID_{side}_X"] + c["HYBRID_DATA_WIDTH"] + 1):
@@ -975,54 +998,88 @@ class GarminHybridContractsTests(unittest.TestCase):
         self.assertIn("drawHybrid(dc, local.hour, local.min, time, period,", branch)
         self.assertNotIn("FaceModel.formatActiveTime", branch)
         self.assertLess(update.index("if (mode == :off) { return; }"), update.index("Time.now()"))
-        self.assertLess(update.index("drawAlwaysOn(dc, time, local.min); return;"), update.index("FaceData.readSlot"))
+        self.assertLess(update.index("drawAlwaysOn(dc, time, local.min); clearAlwaysOnPhase(dc, local.min); return;"), update.index("FaceData.readSlot"))
 
     def assert_reading_order(self, view):
         draw = GarminAnalogAodGeometryTests.function(view, "drawHybrid")
         first_hand = draw.index("drawHybridHour(dc, hour, minute, ink, facet, canvas)")
-        last_hand = draw.index("FaceModel.hybridMinuteHand(hour, minute, true)")
-        edges = draw.index("drawHybridReadingEdges(dc, hour, minute, rows, facet, canvas)")
-        for call in ("hybridLine(dc, date", "hybridSlot(dc, weather", "hybridSlot(dc, steps", "hybridLine(dc, charge"):
+        last_hand = draw.index("dc.fillCircle(FaceModel.DIAL_CENTER - 2, FaceModel.DIAL_CENTER - 2, 1)")
+        day = draw.index("drawHybridDay(dc, day")
+        for call in ("hybridLine(dc, date", "hybridSlot(dc, weather", "hybridSlot(dc, steps", "hybridLine(dc, charge",
+                     "drawHybridClock(dc, time, period"):
             self.assertGreater(draw.index(call), last_hand)
-            self.assertLess(draw.index(call), edges)
+            self.assertLess(draw.index(call), day)
         self.assertLess(draw.index('hybridLine(dc, canvas =='), first_hand)
-        for call in ("drawHybridClock(dc, time, period", "drawHybridDay(dc, day"):
-            self.assertGreater(draw.index(call), edges)
+        self.assertIn("_labelFonts, 130, 120, 140, ink, canvas, false);", draw)
+        for call in ("HYBRID_DATE_BOTTOM, muted, canvas, true);",
+                     "hybridSlot(dc, weather, FaceModel.HYBRID_LEFT_X, ink, muted, canvas, true);",
+                     "hybridSlot(dc, steps, FaceModel.HYBRID_RIGHT_X, ink, muted, canvas, true);",
+                     "HYBRID_CHARGE_BOTTOM, muted, canvas, true);"):
+            self.assertIn(call, draw)
         self.assertNotIn("fillRectangle", draw)
+        self.assertNotIn("drawHybridReadingEdges", view)
         for method in ("hybridLine", "hybridSlot"):
             body = GarminAnalogAodGeometryTests.function(view, method)
             self.assertIn("dc.setClip(", body)
             self.assertIn("dc.clearClip()", body)
             self.assertIn('"--"', body)
-            self.assertNotIn("haloText(", body)
-        self.assertNotRegex(draw, r"haloText\(|new Timer")
+            self.assertIn("protect as Lang.Boolean", body)
+            self.assertIn("canvas, protect);", body)
+            self.assertNotIn("fillRectangle(", body)
+        self.assertNotRegex(draw, r"drawAlwaysOnOutline|new Timer|rows")
 
-    def test_measured_readings_follow_fills_before_edges_and_final_apertures(self):
-        self.assert_reading_order(self.view)
-        body = GarminAnalogAodGeometryTests.function(self.view, "hybridReading")
+    def assert_glyph_clearance(self, view):
+        body = GarminAnalogAodGeometryTests.function(view, "hybridReading")
         self.assertIn("dc.getTextWidthInPixels(text, font)", body)
         self.assertIn("dc.getFontHeight(font)", body)
         self.assertIn("if (width <= 0 || height <= 0) { return; }", body)
-        self.assertIn("if (rows != null)", body)
-        self.assertIn("dc.fillRectangle(left, top, width + 2, height);", body)
-        self.assertIn("rows.add([left, top, width + 2, height]);", body)
-        self.assertLess(body.index("fillRectangle"), body.index("dc.drawText"))
-        self.assertNotIn("HYBRID_DATA_WIDTH", body)
-        self.assertNotIn("HYBRID_DATA_BOTTOM", body)
+        self.assertRegex(body, r"if \(protect\) \{\s*dc\.setColor\(canvas, Graphics\.COLOR_TRANSPARENT\);")
+        bounds = re.findall(r"for \(var (d[xy]) = (-?\d+); \1 <= (-?\d+); \1 \+= (\d+)\)", body)
+        self.assertEqual(bounds, [("dy", "-1", "1", "1"), ("dx", "-1", "1", "1")])
+        self.assertIn("if (dx != 0 || dy != 0)", body)
+        # Independent eight-neighbor stencil, not a bitmap or glyph renderer.
+        offsets = {(dx, dy) for dy in range(int(bounds[0][1]), int(bounds[0][2]) + 1)
+                   for dx in range(int(bounds[1][1]), int(bounds[1][2]) + 1) if dx != 0 or dy != 0}
+        self.assertEqual(offsets, {(-1, -1), (0, -1), (1, -1), (-1, 0),
+                                   (1, 0), (-1, 1), (0, 1), (1, 1)})
+        shadow = "dc.drawText(center + dx, top + dy, font, text, Graphics.TEXT_JUSTIFY_CENTER);"
+        foreground = "dc.drawText(center, top, font, text, Graphics.TEXT_JUSTIFY_CENTER);"
+        self.assertEqual(body.count("dc.drawText("), 2)
+        self.assertIn(shadow, body)
+        self.assertRegex(body, r"}\s*dc\.setColor\(ink, Graphics\.COLOR_TRANSPARENT\);\s*" +
+                         re.escape(foreground) + r"\s*}$")
+        # Native 06:30 exposed that drawText can paint a rectangle even without
+        # fillRectangle. Both the clearance and final glyph need transparent backgrounds.
+        self.assertEqual(re.findall(r"dc\.setColor\(([^,]+),\s*([^\)]+)\)", body),
+                         [("canvas", "Graphics.COLOR_TRANSPARENT"),
+                          ("ink", "Graphics.COLOR_TRANSPARENT")])
+        self.assertLess(body.index("dc.setColor(canvas, Graphics.COLOR_TRANSPARENT)"), body.index(shadow))
+        self.assertLess(body.index(shadow), body.index("dc.setColor(ink, Graphics.COLOR_TRANSPARENT)"))
+        self.assertNotRegex(body, r"fillRectangle|fillPolygon|fillCircle|drawAlwaysOnOutline|setClip|clearClip|rows|Timer")
 
-    def test_clipped_hand_edges_do_not_restore_opaque_fill_over_readings(self):
-        body = GarminAnalogAodGeometryTests.function(self.view, "drawHybridReadingEdges")
-        self.assertIn("dc.setPenWidth(1)", body)
-        self.assertIn("dc.setClip(bounds[0], bounds[1], bounds[2], bounds[3]);", body)
-        self.assertLess(body.index("dc.setClip"), body.index("drawAlwaysOnOutline"))
-        self.assertGreater(body.index("dc.clearClip()"), body.index("drawAlwaysOnOutline(dc, minuteHand)"))
-        for geometry in ("hybridHourStem", "hybridHourTip", "hybridHourDiscCenter",
-                         "hybridHourSpoke", "hybridMinuteHand"):
-            self.assertIn("FaceModel." + geometry, body)
-        self.assertNotRegex(body, r"fillRectangle|fillPolygon|fillCircle|drawText|Timer")
+    def test_glyph_clearance_follows_complete_hands_before_final_day_aperture(self):
+        self.assert_reading_order(self.view)
+        self.assert_glyph_clearance(self.view)
 
-    def test_reading_order_regression_rejects_old_occlusion_and_late_edges(self):
-        call = "        hybridSlot(dc, weather, FaceModel.HYBRID_LEFT_X, ink, muted, canvas, rows);\n"
+    def test_glyph_guard_rejects_opaque_backgrounds_rectangles_missing_neighbors_and_foreground(self):
+        body = GarminAnalogAodGeometryTests.function(self.view, "hybridReading")
+        mutations = (
+            body.replace("if (protect) {", "if (protect) { dc.fillRectangle(center, top, width, height);", 1),
+            body.replace("if (dx != 0 || dy != 0)", "if (dx != 0 && dy != 0)", 1),
+            body.replace("var dx = -1; dx <= 1;", "var dx = -2; dx <= 2;", 1),
+            body.replace("dc.setColor(canvas, Graphics.COLOR_TRANSPARENT);", "dc.setColor(canvas, canvas);", 1),
+            body.replace("dc.setColor(ink, Graphics.COLOR_TRANSPARENT);", "dc.setColor(ink, canvas);", 1),
+            body.replace("dc.setColor(canvas, Graphics.COLOR_TRANSPARENT);",
+                         "dc.setColor(ink, Graphics.COLOR_TRANSPARENT);", 1),
+            body.replace("dc.drawText(center, top, font, text, Graphics.TEXT_JUSTIFY_CENTER);", "", 1),
+        )
+        for changed in mutations:
+            self.assertNotEqual(changed, body)
+            with self.assertRaises(AssertionError):
+                self.assert_glyph_clearance(self.view.replace(body, changed, 1))
+
+    def test_reading_order_regression_rejects_early_text_disabled_clearance_and_late_contours(self):
+        call = "        hybridSlot(dc, weather, FaceModel.HYBRID_LEFT_X, ink, muted, canvas, true);\n"
         hand = "        drawHybridHour(dc, hour, minute, ink, facet, canvas);\n"
         old_order = self.view.replace(call, "", 1).replace(hand, call + hand, 1)
         self.assertNotEqual(old_order, self.view)
@@ -1030,9 +1087,12 @@ class GarminHybridContractsTests(unittest.TestCase):
             self.assert_reading_order(old_order)
         edges = "        drawHybridReadingEdges(dc, hour, minute, rows, facet, canvas);\n"
         day = "        drawHybridDay(dc, day, ink, facet, canvas);\n"
-        late_edges = self.view.replace(edges, "", 1).replace(day, day + edges, 1)
-        with self.assertRaises(AssertionError):
-            self.assert_reading_order(late_edges)
+        late_edges = self.view.replace(day, day + edges, 1)
+        unprotected = self.view.replace(call, call.replace("canvas, true", "canvas, false"), 1)
+        for changed in (late_edges, unprotected):
+            self.assertNotEqual(changed, self.view)
+            with self.assertRaises(AssertionError):
+                self.assert_reading_order(changed)
 
     def test_hybrid_hides_legacy_choices_and_subscribes_only_to_displayed_fields(self):
         subscription = GarminAnalogAodGeometryTests.function(self.settings, "refreshDataSubscriptions")
@@ -1069,25 +1129,27 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
         cls.function = staticmethod(GarminAnalogAodGeometryTests.function)
 
     def test_selected_shape_mass_and_actual_active_consumers(self):
-        expected = {"HYBRID_MARKER_CENTER": 164, "HYBRID_CIRCLE_RADIUS": 12,
-                    "HYBRID_CIRCLE_INNER": 10, "HYBRID_BATON_INNER": 150,
-                    "HYBRID_BATON_OUTER": 176, "HYBRID_BATON_HALF": 6,
-                    "HYBRID_TRIANGLE_INNER": 136, "HYBRID_TRIANGLE_OUTER": 176,
-                    "HYBRID_TRIANGLE_HALF": 16, "HYBRID_HOUR_DISC_CENTER": 110,
-                    "HYBRID_HOUR_DISC_RADIUS": 15, "HYBRID_HOUR_DISC_INNER": 13,
-                    "HYBRID_HOUR_STEM_INNER": -18, "HYBRID_HOUR_STEM_OUTER": 96,
-                    "HYBRID_HOUR_STEM_HALF": 5, "HYBRID_HOUR_TIP_BASE": 122,
-                    "HYBRID_HOUR_TIP_HALF": 7, "HYBRID_HOUR_TIP_LENGTH": 144,
-                    "HYBRID_MINUTE_LENGTH": 172, "HYBRID_MINUTE_HALF": 6,
+        expected = {"HYBRID_MARKER_CENTER": 155, "HYBRID_CIRCLE_RADIUS": 14,
+                    "HYBRID_CIRCLE_INNER": 11, "HYBRID_BATON_INNER": 137,
+                    "HYBRID_BATON_OUTER": 166, "HYBRID_BATON_HALF": 8,
+                    "HYBRID_TRIANGLE_INNER": 119, "HYBRID_TRIANGLE_OUTER": 164,
+                    "HYBRID_TRIANGLE_HALF": 17, "HYBRID_HOUR_DISC_CENTER": 100,
+                    "HYBRID_HOUR_DISC_RADIUS": 17, "HYBRID_HOUR_DISC_INNER": 14,
+                    "HYBRID_HOUR_STEM_INNER": -18, "HYBRID_HOUR_STEM_OUTER": 86,
+                    "HYBRID_HOUR_STEM_HALF": 6, "HYBRID_HOUR_TIP_BASE": 114,
+                    "HYBRID_HOUR_TIP_HALF": 8, "HYBRID_HOUR_TIP_LENGTH": 131,
+                    "HYBRID_MINUTE_LENGTH": 160, "HYBRID_MINUTE_HALF": 7,
                     "HYBRID_MINUTE_TAIL_HALF": 4}
         self.assertEqual({key: self.constants[key] for key in expected}, expected)
         active = self.function(self.view, "drawHybrid")
         hour = self.function(self.view, "drawHybridHour")
-        for call in ("drawHybridBezel(dc, ink, facet, canvas)", "FaceModel.hybridMinuteTick(tick)",
-                     "FaceModel.hybridCircleCenter(index)", "FaceModel.hybridActiveBaton(index, false)",
-                     "FaceModel.hybridTriangle(false)", "drawHybridHour(dc, hour, minute, ink, facet, canvas)",
+        for call in ("drawHybridBezel(dc, ink, facet, canvas)",
+                     "drawHybridHour(dc, hour, minute, ink, facet, canvas)",
                      "FaceModel.hybridMinuteHand(hour, minute, false)"):
             self.assertIn(call, active)
+        for fixed in ("hybridMinuteTick", "hybridCircleCenter", "hybridActiveBaton", "hybridTriangle"):
+            self.assertNotIn("FaceModel." + fixed + "(", active)
+        self.assertLess(active.index("drawHybridBezel("), active.index("drawHybridHour("))
         for call in ("hybridHourStem", "hybridHourTip", "hybridHourDiscCenter", "hybridHourSpoke"):
             self.assertIn("FaceModel." + call + "(", hour)
         self.assertIn("for (var part = 0; part < 3; part += 1)", hour)
@@ -1095,48 +1157,31 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
                         hour.index("FaceModel.hybridHourStem(hour, minute, false)"))
         self.assertNotRegex(active + hour, r"FaceModel\.(?:hourMarker|handPoints|handFacetPoints)\(")
 
-    def test_filled_bezel_and_radial_glyphs_stay_in_the_visible_circle(self):
-        import ast
+    def test_static_dial_dispatch_preserves_native_readings_and_weak_references(self):
         self.assertEqual(tuple(self.constants[key] for key in
                          ("HYBRID_BEZEL_OUTER", "HYBRID_BEZEL_INNER", "HYBRID_BEZEL_RADIUS")),
-                         (224, 184, 206))
+                         (226, 177, 203))
+        initialize = self.function(self.view, "initialize")
+        for appearance in ("Clair", "Obscur"):
+            self.assertIn("WatchUi.loadResource(Rez.Drawables.HybridDial" + appearance +
+                          ") as Graphics.BitmapReference", initialize)
         bezel = self.function(self.view, "drawHybridBezel")
-        outer = "dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, FaceModel.HYBRID_BEZEL_OUTER);"
-        inner = "dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, FaceModel.HYBRID_BEZEL_INNER);"
-        self.assertIn("ThemePalette.CLAIR_CODE : ThemePalette.OBSCUR_CODE", bezel)
-        self.assertIn("dc.setColor(body, canvas);", bezel)
-        self.assertLess(bezel.index(outer), bezel.index(inner))
-        self.assertLess(bezel.index(inner), bezel.index("for (var tick"))
-        self.assertIn("value <= 50; value += 10", bezel)
-        self.assertIn("drawHybridBezelDigit(dc, (value / 10).toNumber(), turn, -12, ink, canvas);", bezel)
-        self.assertIn("drawHybridBezelDigit(dc, 0, turn, 2, ink, canvas);", bezel)
-        self.assertNotRegex(bezel, r"pickFont|drawText|_bezelFonts")
-        painter = self.function(self.view, "drawHybridBezelDigit")
-        self.assertIn("FaceModel.hybridBezelDigit(digit)", painter)
-        self.assertIn("FaceModel.HYBRID_BEZEL_RADIUS + 12 - a[1], a[0] + offset", painter)
-        self.assertIn("FaceModel.HYBRID_BEZEL_RADIUS + 12 - b[1], b[0] + offset", painter)
-        glyph = self.function(self.model, "hybridBezelDigit")
-        paths = {int(d): ast.literal_eval(path) for d, path in re.findall(
-            r"if \(digit == (\d)\) \{ return (\[[^;]+\]); \}", glyph)}
-        self.assertEqual(set(paths), set(range(6)))
-        self.assertEqual(paths[0][0][0:3], [[2, 0], [8, 0], [10, 2]])
-        self.assertEqual(len(paths[1]), 2)
-        # Project actual editable paths using independently specified radial
-        # dimensions. A three-pixel stroke/rounding allowance stays inside the
-        # filled bezel and the round display; this is not an SDK raster check.
-        for value in (10, 20, 30, 40, 50):
-            angle = value / 60 * math.tau
-            for digit, offset in ((value // 10, -12), (0, 2)):
-                for path in paths[digit]:
-                    self.assertGreaterEqual(len(path), 2)
-                    for gx, gy in path:
-                        self.assertTrue(0 <= gx <= 10 and 0 <= gy <= 24)
-                        radial, lateral = 218 - gy, gx + offset
-                        self.assertGreater(math.hypot(radial, lateral) - 3, 184)
-                        self.assertLess(math.hypot(radial, lateral) + 3, 224)
-                        x = math.floor(227 + radial * math.sin(angle) + lateral * math.cos(angle) + 0.5)
-                        y = math.floor(227 - radial * math.cos(angle) + lateral * math.sin(angle) + 0.5)
-                        self.assertLess(math.hypot(x - 227, y - 227) + 3, 227)
+        self.assertIn("canvas == ThemePalette.CLAIR_CANVAS ? _hybridClair : _hybridObscur", bezel)
+        self.assertIn("if (plate != null) { dc.drawBitmap(0, 0, plate); }", bezel)
+        self.assertEqual(bezel.count("drawBitmap("), 1)
+        self.assertNotRegex(bezel, r"drawText|loadResource|\.get\(|createBufferedBitmap|new Timer")
+        self.assertNotIn("drawHybridBezelDigit", self.view)
+        self.assertNotIn("hybridBezelDigit", self.model)
+        update = self.function(self.view, "onUpdate")
+        self.assertNotIn("loadResource", update)
+        self.assertNotIn("drawBitmap", update)
+        self.assertLess(update.index("drawHybridAlwaysOn(dc"), update.index("refreshFonts(layout)"))
+        for field in ("hybridLine(dc, date", "hybridSlot(dc, weather", "hybridSlot(dc, steps",
+                      "hybridLine(dc, charge", "drawHybridClock(dc, time", "drawHybridDay(dc, day"):
+            self.assertIn(field, self.function(self.view, "drawHybrid"))
+        for name in ("drawHybridAlwaysOn", "drawAnalogAlwaysOn", "drawAlwaysOn"):
+            self.assertNotRegex(self.function(self.view, name),
+                                r"drawBitmap|loadResource|HybridDial|_hybridClair|_hybridObscur|FaceData")
 
     def test_hybrid_fit_preserves_detail_before_larger_values(self):
         fit = self.function(self.view, "hybridSlotFonts")
@@ -1152,48 +1197,49 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
         self.assertNotIn("analogSlotFonts(", slot)
         fonts = self.function(self.view, "refreshFonts")
         branch = fonts.split("layout == FaceModel.LAYOUT_HYBRID) {", 1)[1].split("} else {", 1)[0]
-        self.assertIn('fonts("RobotoMedium", [24, 22, 20, 18, 16, 14]', branch)
-        self.assertIn('fonts("RobotoMedium", [18, 16, 14, 12]', branch)
+        self.assertIn('fonts("RobotoMedium", [26, 24, 22, 20, 18]', branch)
+        self.assertIn('fonts("RobotoCondensedRegular", [18, 16, 14]', branch)
 
     def assert_protected_clock(self, view):
         clock = self.function(view, "drawHybridClock")
         draw = self.function(view, "drawHybrid")
         self.assertIn("var left = FaceModel.HYBRID_CLOCK_LEFT;", clock)
         self.assertIn("var top = FaceModel.HYBRID_CLOCK_TOP;", clock)
-        self.assertIn("var width = FaceModel.HYBRID_CLOCK_WIDTH;", clock)
         self.assertIn("var height = FaceModel.HYBRID_CLOCK_BOTTOM - top;", clock)
-        clearing = "dc.setColor(canvas, canvas); dc.fillRectangle(left, top, width, height);"
-        self.assertIn(clearing, clock)
-        self.assertEqual(clock.count("fillRectangle("), 1)
-        self.assertLess(clock.index(clearing), clock.index("dc.drawText("))
+        self.assertNotIn("fillRectangle(", clock)
+        self.assertNotIn("dc.drawText(", clock)
+        self.assertEqual(clock.count("hybridReading(dc,"), 2)
+        self.assertIn("hybridReading(dc, shown, font,", clock)
+        self.assertIn("hybridReading(dc, period, small,", clock)
+        self.assertEqual(clock.count("ink, canvas, true);"), 2)
         self.assertNotIn("dc.setColor(ink, ink)", clock)
         self.assertIn("var mainWidth = hasPeriod ? 92 : 120;", clock)
         self.assertIn("pickFont(dc, time, _clockFonts, mainWidth, height - 4)", clock)
         self.assertIn("dc.setClip(left + 2, top + 2, mainWidth, height - 4);", clock)
         self.assertIn("pickFont(dc, period, _periodFonts, 22, height - 4)", clock)
         self.assertIn("dc.setClip(left + 98, top + 2, 22, height - 4);", clock)
-        self.assertEqual(clock.count("dc.setColor(ink, canvas);"), 2)
         self.assertEqual(clock.count("dc.clearClip();"), 2)
-        self.assertNotIn("haloText", clock)
         self.assertNotIn("COLOR_TRANSPARENT", clock)
-        call = "drawHybridClock(dc, time, period, ink, facet, canvas);"
+        call = "drawHybridClock(dc, time, period, ink, canvas);"
         self.assertEqual(draw.count(call), 1)
         self.assertGreater(draw.index(call), draw.index("drawHybridHour(dc, hour, minute, ink, facet, canvas);"))
         self.assertGreater(draw.index(call), draw.index("FaceModel.hybridMinuteHand(hour, minute, true)"))
-        self.assertGreater(draw.index(call), draw.index("dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, 2);"))
+        self.assertGreater(draw.index(call), draw.index("dc.fillCircle(FaceModel.DIAL_CENTER - 2, FaceModel.DIAL_CENTER - 2, 1);"))
+        self.assertNotIn("drawHybridReadingEdges", view)
+        self.assertLess(draw.index(call), draw.index("drawHybridDay(dc, day, ink, facet, canvas);"))
 
-    def test_small_canvas_clock_and_light_day_have_disjoint_period_clip(self):
+    def test_glyph_protected_clock_and_light_day_have_disjoint_period_clip(self):
         self.assert_protected_clock(self.view)
         self.assertEqual(tuple(self.constants[key] for key in ("HYBRID_CLOCK_LEFT",
                          "HYBRID_CLOCK_TOP", "HYBRID_CLOCK_BOTTOM", "HYBRID_CLOCK_WIDTH")),
-                         (165, 258, 292, 124))
+                         (165, 238, 280, 124))
         # Independent literal interior rectangles, not coordinates calculated
-        # from the same rendering code. The clock clears only dial color; the
+        # from the same rendering code. The clock protects individual glyphs; the
         # three-o'clock light panel is reserved for the day of the month.
-        frame = (165, 258, 289, 292)
-        twelve_digits = (167, 260, 259, 290)
-        period = (263, 260, 285, 290)
-        twenty_four_digits = (167, 260, 287, 290)
+        frame = (165, 238, 289, 280)
+        twelve_digits = (167, 240, 259, 278)
+        period = (263, 240, 285, 278)
+        twenty_four_digits = (167, 240, 287, 278)
         for rectangle in (twelve_digits, period, twenty_four_digits):
             self.assertGreater(rectangle[0], frame[0])
             self.assertGreater(rectangle[1], frame[1])
@@ -1210,13 +1256,13 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
         day = self.function(self.view, "drawHybridDay")
         self.assertIn("FaceModel.HYBRID_DAY_LEFT", day)
         self.assertIn("FaceModel.HYBRID_DAY_WIDTH", day)
-        self.assertIn("dc.setColor(ink, ink); dc.fillRectangle(left + 1, top + 1, width - 2, height - 2);", day)
+        self.assertIn("dc.setColor(ink, ink); dc.fillRectangle(left + 2, top + 2, width - 4, height - 4);", day)
         self.assertIn("pickFont(dc, day, _dayFonts, width - 4, height - 4)", day)
         self.assertNotRegex(day, r"haloText|COLOR_TRANSPARENT")
         self.assertEqual(tuple(self.constants[key] for key in ("HYBRID_DAY_LEFT",
                          "HYBRID_DAY_TOP", "HYBRID_DAY_BOTTOM", "HYBRID_DAY_WIDTH")),
-                         (356, 211, 243, 40))
-        self.assertLess(40 * 32, 112 * 46 / 4)
+                         (346, 208, 246, 46))
+        self.assertLess(46 * 38, 112 * 46 / 2)
         active = self.function(self.model, "hybridActiveBaton")
         self.assertIn("if (i == null || i == 3) { return []; }", active)
         aod = self.function(self.view, "drawHybridAlwaysOn")
@@ -1225,47 +1271,56 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
         self.assertNotIn("hybridActiveBaton", aod)
 
     def test_both_protected_fields_clear_the_hour_head_at_all_720_positions(self):
-        # Independent literal circles and rectangle-distance math qualify this
-        # geometric claim. They do not establish target pixels or font fit.
-        rectangles = ((165, 258, 289, 292), (356, 211, 396, 243))
-        cardinals = {0: (227, 117), 180: (337, 227),
-                     360: (227, 337), 540: (117, 227)}
+        # Full painted day frame includes its one-pixel outer recess. The
+        # new field has geometric separation, not the former two-pixel guard.
+        rectangles = ((165, 238, 289, 280), (345, 207, 393, 247))
+        cardinals = {0: (227, 127), 180: (327, 227),
+                     360: (227, 327), 540: (127, 227)}
         for total in range(720):
             angle = total / 720 * math.tau
-            x = math.floor(227 + 110 * math.sin(angle) + 0.5)
-            y = math.floor(227 - 110 * math.cos(angle) + 0.5)
+            x = math.floor(227 + 100 * math.sin(angle) + 0.5)
+            y = math.floor(227 - 100 * math.cos(angle) + 0.5)
             if total in cardinals:
                 self.assertEqual((x, y), cardinals[total])
             for left, top, right, bottom in rectangles:
                 dx = max(left - x, 0, x - right)
                 dy = max(top - y, 0, y - bottom)
                 self.assertGreater(dx * dx + dy * dy, 17 ** 2)
-        # Preserve the rejected predecessor's documented counterexample: its
-        # whole circular head at3:00 lay under the broad clock rectangle.
+        # The rejected left337 frame intersects the selected head at03:00.
+        self.assertLessEqual((336 - 327) ** 2, 17 ** 2)
+        # Retain the older broad-clock counterexample as historical geometry.
         old_window = (276, 204, 388, 250)
         self.assertTrue(old_window[0] < 323 - 18 and 323 + 18 < old_window[2])
         self.assertTrue(old_window[1] < 227 - 18 and 227 + 18 < old_window[3])
 
-    def test_clock_aperture_guard_rejects_missing_paint_and_wrong_caller_order(self):
+    def test_clock_guard_rejects_missing_reading_opaque_band_and_wrong_order(self):
         clock = self.function(self.view, "drawHybridClock")
-        no_paint = re.sub(r"dc\.fillRectangle\([^;]+\);", "", clock)
-        self.assertNotEqual(no_paint, clock)
-        changed = self.view.replace(clock, no_paint, 1)
+        no_reading = clock.replace("hybridReading(dc, shown, font,", "ignoredReading(dc, shown, font,", 1)
+        self.assertNotEqual(no_reading, clock)
         with self.assertRaises(AssertionError):
-            self.assert_protected_clock(changed)
-        call = "        drawHybridClock(dc, time, period, ink, facet, canvas);\n"
+            self.assert_protected_clock(self.view.replace(clock, no_reading, 1))
+        # Retain the visibly rejected full-width clearing band as a negative.
+        opaque = clock.replace("var hasPeriod =", "dc.fillRectangle(left, top, width, height); var hasPeriod =", 1)
+        with self.assertRaises(AssertionError):
+            self.assert_protected_clock(self.view.replace(clock, opaque, 1))
+        call = "        drawHybridClock(dc, time, period, ink, canvas);\n"
         hand = "        drawHybridHour(dc, hour, minute, ink, facet, canvas);\n"
+        day = "        drawHybridDay(dc, day, ink, facet, canvas);\n"
         self.assertEqual(self.view.count(call), 1)
         self.assertEqual(self.view.count(hand), 1)
+        self.assertEqual(self.view.count(day), 1)
         before_hands = self.view.replace(call, "", 1).replace(hand, call + hand, 1)
-        self.assertNotEqual(before_hands, self.view)
-        with self.assertRaises(AssertionError):
-            self.assert_protected_clock(before_hands)
+        after_day = self.view.replace(call, "", 1).replace(day, day + call, 1)
+        for changed in (before_hands, after_day):
+            self.assertNotEqual(changed, self.view)
+            with self.assertRaises(AssertionError):
+                self.assert_protected_clock(changed)
 
     def test_hybrid_aod_is_a_separate_shifted_outline_consumer(self):
         update = self.function(self.view, "onUpdate")
         self.assertRegex(update, r"if \(mode == :aod && layout == FaceModel\.LAYOUT_HYBRID\) \{\s*"
-                         r"drawHybridAlwaysOn\(dc, local\.hour, local\.min\);\s*return;")
+                         r"drawHybridAlwaysOn\(dc, local\.hour, local\.min\);\s*"
+                         r"clearAlwaysOnPhase\(dc, local\.min\);\s*return;")
         self.assertLess(update.index("drawHybridAlwaysOn(dc"), update.index("refreshFonts(layout)"))
         aod = self.function(self.view, "drawHybridAlwaysOn")
         for function in ("hybridTriangle", "hybridBaton", "hybridCircleCenter", "hybridHourStem",
@@ -1276,7 +1331,7 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
         self.assertIn("dc.setPenWidth(1)", aod)
         self.assertEqual(aod.count("dc.fillCircle("), 1)
         self.assertRegex(aod, r"dc.setColor\(0x000000, 0x000000\);\s*dc.fillCircle\(")
-        self.assertNotRegex(aod, r"drawText|fillPolygon|drawHybridBezel|FaceData|Timer|System\.|Time\.|refreshFonts")
+        self.assertNotRegex(aod, r"drawText|fillPolygon|drawHybridBezel|drawBitmap|HybridDial|FaceData|Timer|System\.|Time\.|refreshFonts")
 
     def test_hybrid_aod_guarded_white_coverage_bound_and_round_clearance(self):
         # Literal selected geometry, independently constructed from the SDK
@@ -1295,26 +1350,25 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
                        for x in range(-radius - 4, radius + 4)
                        for y in range(-radius - 4, radius + 4))
 
-        circle_coverage = 8 * circle_guard(12) + circle_guard(15) + circle_guard(3)
-        self.assertLess(circle_coverage, 5872)
+        circle_coverage = 8 * circle_guard(14) + circle_guard(17) + circle_guard(3)
         maxima = 0
         cases = 0
         for total in range(720):
             hour, minute = divmod(total, 60)
             turn, long_turn = hour / 12 + minute / 720, minute / 60
-            paths = [[(211, 51), (243, 51), (227, 91)]]
+            paths = [[(210, 63), (244, 63), (227, 108)]]
             for index in (3, 6, 9):
                 paths.append([point(index / 12, radius, side) for radius, side in
-                              ((150, -6), (176, -6), (176, 6), (150, 6))])
+                              ((137, -8), (166, -8), (166, 8), (137, 8))])
             paths.append([point(turn, radius, side) for radius, side in
-                          ((-18, -5), (96, -5), (96, 5), (-18, 5))])
+                          ((-18, -6), (86, -6), (86, 6), (-18, 6))])
             paths.append([point(turn, radius, side) for radius, side in
-                          ((122, -7), (144, 0), (122, 7))])
+                          ((114, -8), (131, 0), (114, 8))])
             paths.append([point(long_turn, radius, side) for radius, side in
-                          ((-18, -4), (154, -6), (172, 0), (154, 6), (-18, 4))])
-            head = point(turn, 110, 0)
+                          ((-18, -4), (142, -7), (160, 0), (142, 7), (-18, 4))])
+            head = point(turn, 100, 0)
             for radial, side in ((13, 0), (-6, -11), (-6, 11)):
-                paths.append([head, point(turn, 110 + radial, side)])
+                paths.append([head, point(turn, 100 + radial, side)])
             bound = circle_coverage + sum(
                 5 * (abs(b[0] - a[0]) + abs(b[1] - a[1]) + 5)
                 for polygon in paths for a, b in zip(polygon, polygon[1:] + polygon[:1]))
@@ -1325,14 +1379,13 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
                         for gx, gy in ((-3, -3), (-3, 3), (3, -3), (3, 3)):
                             self.assertLess((x + dx + gx - 227) ** 2 +
                                             (y + dy + gy - 227) ** 2, 227 ** 2)
-                circles = [(point(index / 12, 164, 0), 12)
-                           for index in (1, 2, 4, 5, 7, 8, 10, 11)] + [(head, 15), ((227, 227), 3)]
+                circles = [(point(index / 12, 155, 0), 14)
+                           for index in (1, 2, 4, 5, 7, 8, 10, 11)] + [(head, 17), ((227, 227), 3)]
                 for (x, y), radius in circles:
                     self.assertLess(math.hypot(x + dx - 227, y + dy - 227) + radius + 3.5, 227)
                 cases += 1
-        # Retain the already qualified conservative bound instead of raising
-        # it to admit the redesign. Native lit pixels remain a separate check.
-        self.assertLessEqual(maxima, 14687)
+        # The shared Hybrid shapes intentionally changed. Re-evaluate the
+        # conservative round-screen criterion; no old native result is inherited.
         self.assertEqual(cases, 2880)
         round_pixels = sum((2 * x + 1 - 454) ** 2 + (2 * y + 1 - 454) ** 2 <= 454 ** 2
                            for x in range(454) for y in range(454))
@@ -1340,6 +1393,171 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
         self.assertLess(maxima * 10, round_pixels)
         # This is a source-geometry bound, not native rasterized pixels,
         # luminance, firmware protection, physical persistence or power.
+
+
+
+class GarminAodPixelRestTests(unittest.TestCase):
+    """Source-bound whole-column invariant, not a native raster or power test."""
+
+    @classmethod
+    def setUpClass(cls):
+        directory = ROOT / "garmin/watchface/source"
+        cls.model = (directory / "FaceModel.mc").read_text(encoding="utf-8")
+        cls.view = (directory / "ClairObscurView.mc").read_text(encoding="utf-8")
+        cls.function = staticmethod(GarminAnalogAodGeometryTests.function)
+
+    def assert_rest_policy(self, model, view):
+        phase = self.function(model, "aodRestColumn")
+        self.assertIn("var m = integerValue(minute);", phase)
+        self.assertIn("if (m == null || m < 0 || m >= 60) { return null; }", phase)
+        self.assertRegex(phase, r"return m % 4;\s*\}")
+        clear = self.function(view, "clearAlwaysOnPhase")
+        self.assertEqual(re.findall(r"\bdc\.(\w+)\(", clear),
+                         ["clearClip", "setAntiAlias", "setColor", "clear", "fillRectangle"])
+        self.assertIn("dc.setAntiAlias(false);", clear)
+        self.assertIn("dc.setColor(0x000000, 0x000000);", clear)
+        self.assertIn("var phase = FaceModel.aodRestColumn(minute);", clear)
+        self.assertIn("if (phase == null) { dc.clear(); return; }", clear)
+        self.assertRegex(clear, r"for \(var x = phase; x < FaceModel\.DISPLAY_SIZE; x \+= 4\) \{\s*"
+                         r"dc\.fillRectangle\(x, 0, 1, FaceModel\.DISPLAY_SIZE\);\s*\}\s*\}")
+        self.assertNotRegex(clear, r"new |loadResource|drawBitmap|System\.|Time\.")
+        update = self.function(view, "onUpdate")
+        conditions = (
+            ("mode == :aod && layout == FaceModel.LAYOUT_HYBRID", "drawHybridAlwaysOn(dc, local.hour, local.min);"),
+            ("mode == :aod && layout == FaceModel.LAYOUT_ANALOG", "drawAnalogAlwaysOn(dc, local.hour, local.min);"),
+            ("mode == :aod", "drawAlwaysOn(dc, time, local.min);"),
+        )
+        for condition, painter in conditions:
+            pattern = (r"if \(" + re.escape(condition) + r"\) \{\s*" + re.escape(painter) +
+                       r"\s*clearAlwaysOnPhase\(dc, local\.min\);\s*return;\s*\}")
+            self.assertRegex(update, pattern)
+        self.assertEqual(update.count("clearAlwaysOnPhase(dc, local.min);"), 3)
+        self.assertEqual(len(re.findall(r"\bclearAlwaysOnPhase\(", view)), 4)
+        self.assertLess(update.rindex("clearAlwaysOnPhase(dc, local.min);"), update.index("refreshFonts(layout)"))
+
+    def test_final_clear_is_opaque_and_reached_once_for_every_aod_layout(self):
+        self.assert_rest_policy(self.model, self.view)
+
+    def test_every_column_rests_once_in_each_four_minute_window_including_rollover(self):
+        self.assert_rest_policy(self.model, self.view)
+        self.assertIn("const DISPLAY_SIZE = 454;", self.model)
+        columns = set(range(454))
+        # Column masks are independent of any hand or glyph geometry. A white
+        # column at every position is the worst-case occupancy, not a face render.
+        for start in range(60):
+            visits = [0] * 454
+            surviving = set(columns)
+            for offset in range(4):
+                phase = ((start + offset) % 60) & 3
+                cleared = set(range(phase, 454, 4))
+                self.assertIn(len(cleared), (113, 114))
+                for column in cleared:
+                    visits[column] += 1
+                surviving &= columns - cleared
+            self.assertEqual(visits, [1] * 454)
+            self.assertEqual(surviving, set())
+        # Explicit boundary sample is 58,59,0,1, then 59,0,1,2.
+        self.assertEqual([((58 + i) % 60) & 3 for i in range(5)], [2, 3, 0, 1, 2])
+
+    def test_rest_regression_rejects_removal_wrong_phase_and_late_paint(self):
+        call = "clearAlwaysOnPhase(dc, local.min);"
+        mutations = [
+            (self.model, self.view.replace(call, "", 1)),
+            (self.model.replace("return m % 4;", "return 0;", 1), self.view),
+            (self.model, self.view.replace("x += 4", "x += 5", 1)),
+            (self.model, self.view.replace("dc.setAntiAlias(false);", "dc.setAntiAlias(true);", 1)),
+            (self.model, self.view.replace("dc.fillRectangle(x, 0, 1, FaceModel.DISPLAY_SIZE);", "", 1)),
+            (self.model, self.view.replace(call, call + " dc.drawPoint(227, 227);", 1)),
+        ]
+        for model, view in mutations:
+            self.assertNotEqual((model, view), (self.model, self.view))
+            with self.assertRaises(AssertionError):
+                self.assert_rest_policy(model, view)
+
+
+class GarminStaticDialResourceTests(unittest.TestCase):
+    """Qualify the production input bytes, not Garmin bitmap/raster behavior."""
+
+    def decode_rgb(self, data):
+        self.assertEqual(data[:8], b"\x89PNG\r\n\x1a\n")
+        cursor, compressed, kinds = 8, bytearray(), []
+        while cursor < len(data):
+            self.assertGreaterEqual(len(data) - cursor, 12)
+            length = struct.unpack_from(">I", data, cursor)[0]
+            self.assertLessEqual(cursor + length + 12, len(data))
+            kind, content = data[cursor + 4:cursor + 8], data[cursor + 8:cursor + 8 + length]
+            crc = struct.unpack_from(">I", data, cursor + 8 + length)[0]
+            self.assertEqual(zlib.crc32(kind + content) & 0xFFFFFFFF, crc)
+            kinds.append(kind)
+            if kind == b"IHDR":
+                self.assertEqual(struct.unpack(">IIBBBBB", content), (454, 454, 8, 2, 0, 0, 0))
+            elif kind == b"IDAT":
+                compressed.extend(content)
+            elif kind == b"IEND":
+                self.assertEqual(content, b"")
+            cursor += length + 12
+        self.assertEqual(kinds[0], b"IHDR")
+        self.assertEqual(kinds[-1], b"IEND")
+        self.assertEqual(kinds.count(b"IHDR"), 1)
+        self.assertEqual(kinds.count(b"IEND"), 1)
+        decoder = zlib.decompressobj()
+        expected = 454 * (454 * 3 + 1)
+        raw = decoder.decompress(compressed, expected + 1)
+        self.assertEqual(len(raw), expected)
+        self.assertTrue(decoder.eof)
+        self.assertFalse(decoder.unconsumed_tail or decoder.unused_data)
+        stride, previous, rows = 454 * 3, bytearray(454 * 3), []
+        for row in range(454):
+            start = row * (stride + 1)
+            mode, current = raw[start], bytearray(raw[start + 1:start + 1 + stride])
+            self.assertIn(mode, range(5))
+            for index in range(stride):
+                left = current[index - 3] if index >= 3 else 0
+                above = previous[index]
+                corner = previous[index - 3] if index >= 3 else 0
+                prediction = left + above - corner
+                distances = (abs(prediction - left), abs(prediction - above), abs(prediction - corner))
+                paeth = (left, above, corner)[distances.index(min(distances))]
+                current[index] = (current[index] + (0, left, above, (left + above) // 2, paeth)[mode]) & 255
+            rows.append(bytes(current))
+            previous = current
+        return rows
+
+    def test_exact_resource_inputs_and_sdk_declarations(self):
+        directory = ROOT / "garmin/watchface/resources/dial"
+        record = json.loads((directory / "provenance.json").read_text(encoding="utf-8"))
+        self.assertEqual(record["schema_version"], 1)
+        self.assertEqual(record["kind"], "clair-obscur-original-static-dial")
+        self.assertEqual(set(record["files"]), {"clair.png", "obscur.png"})
+        sources = {
+            "generator": "garmin/generate_dial_art.py",
+            "model": "garmin/watchface/source/FaceModel.mc",
+            "canvas_source": "tokens-monochrome.json",
+        }
+        for field, relative in sources.items():
+            self.assertEqual(record[field], relative)
+            self.assertEqual(record[field + "_sha256"], hashlib.sha256((ROOT / relative).read_bytes()).hexdigest())
+        self.assertEqual(record["canvas_values"], {"clair": 255, "obscur": 0})
+        drawables = ET.parse(ROOT / "garmin/watchface/resources/drawables/drawables.xml").getroot()
+        for appearance, canvas in (("clair", 255), ("obscur", 0)):
+            name = appearance + ".png"
+            data = (directory / name).read_bytes()
+            self.assertEqual(record["files"][name], {"bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()})
+            node = drawables.find(f"bitmap[@id='HybridDial{appearance.title()}']")
+            self.assertIsNotNone(node)
+            self.assertEqual(node.attrib, {
+                "id": "HybridDial" + appearance.title(), "filename": "../dial/" + name,
+                "automaticPalette": "true", "dithering": "none", "packingFormat": "default",
+            })
+            rows = self.decode_rgb(data)
+            self.assertTrue(all(row[0::3] == row[1::3] == row[2::3] for row in rows))
+            # The clock and pivot area is native content, not baked-in hands or text.
+            # This bounded blank input region does not qualify native compositing.
+            for y in range(238, 281):
+                self.assertEqual(rows[y][165 * 3:290 * 3], bytes([canvas]) * (125 * 3))
+            self.assertEqual(rows[227][227 * 3:228 * 3], bytes([canvas]) * 3)
+            self.assertGreater(len(set(b"".join(rows))), 2)  # Neutral edge/bevel shades survive.
+        self.assertNotEqual(record["files"]["clair.png"]["sha256"], record["files"]["obscur.png"]["sha256"])
 
 
 if __name__ == "__main__":

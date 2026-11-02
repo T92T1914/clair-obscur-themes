@@ -82,25 +82,43 @@ See [development and verification](docs/development.md) for reproducible command
 
 ## Watch and phone candidates
 
-The shared palette also supports a [Garmin watch face candidate](docs/garmin-watchface.md)
-and [original phone icon artwork](docs/samsung-icons.md). The 0.11.0 Hybrid
-source candidate retains the black diver composition with a filled shallow bezel,
-original radial numerals, compact date at three and digital time below the pivot.
-Its circles, triangle, cardinal batons and divided hour hand form the analog
-dial. Weather, steps and watch charge occupy two-row secondary fields and a
-separate battery line. Native font fitting measures each requested value and its
-status together. The printed scale is a visual reference, not a dive timer.
+The current watch source is the [0.12.0 black-dial redesign candidate](docs/garmin-redesign.md).
+It changes Hybrid's ceramic bezel, filled numerals, applied markers, moving hand
+proportions, typography and data placement. Original production dial artwork stays
+separate from native moving hands and readings. Digital time sits below the pivot,
+the day aperture stays at three, and battery sits above the pivot. Weather and
+steps retain their exact values and status. The printed scale is a visual reference,
+not a dive timer.
 
-Calendar, weather/status, steps and battery now clear only their measured text
-rows after the solid hands. One-pixel hand contours return within those rows to
-preserve direction and the divided hour-head cue. Branding stays behind the hands.
-This trades broad solid occlusion for thin strokes that can still cross letters;
-new simulator images and wrist-level readability remain unverified. The compact
-clock and day aperture are protected last. Their boxes stay outside the circular
-hour head's guarded travel band, although they can hide part of a stem or tip.
-The separate shifted always-on
-view keeps sparse hand and marker outlines on true black. Analog, Digital,
-saved choices, providers and the Digital Inter resource retain their contracts.
+The shared palette also supports a [Garmin watch face candidate](docs/garmin-watchface.md)
+and [original phone icon artwork](docs/samsung-icons.md). The [matched native 10:10 comparison](docs/garmin-redesign.md#matched-native-comparison)
+shows the retained 0.11.0 baseline beside the final 0.12.0 normal program on the
+exact 454-pixel SDK target. Both face-only images use the same synthetic values.
+They show the change in bezel, markers, hands and information placement without
+claiming physical-watch appearance or universal readability.
+
+Retained 0.12.0 active samples cover both appearances, enlarged text, long step
+counts, unavailable weather and charging. The exact 03:02 clock ink grows from
+50 by 19 to 60 by 23 pixels at scale 1.35. The enlarged 06:30 pose retains readable
+time and recognizable hands, with weather-status text crossing the divided head.
+The [retained failures and correction](docs/garmin-redesign.md#native-findings-and-current-limits)
+explain the one-pixel glyph separator and transparent text backgrounds. The earlier
+measured-row/hand-contour policy remains historical.
+
+The final matching diagnostic reports 42 passes, zero failures and zero errors,
+while its Java process exits 1. The unexplained exit remains part of the result.
+An earlier diagnostic's null-assertion API error was corrected without dropping
+its seven invalid-input cases. Analog/Digital active rendering, saved choices,
+providers and the Digital Inter resource preserve their contracts.
+
+The first complete Hybrid AOD sequence met its sampled area bound but retained
+34 and 36 lit pixels across consecutive four-frame windows. The exact simulator
+target reports that this temporal protection rule applies. All three sparse AOD
+paths now finish with a rotating black-column pass. Five corrected native frames
+show zero four-frame intersections and recognizable sparse hands, with some outline
+segments intentionally absent during a phase. The [current matrix](docs/garmin-watchface.md#0120-native-qualification-in-progress)
+keeps that failure, French SDK locale limits, bounded memory/persistence observations,
+scoped restoration and physical-watch use separate.
 
 The retained normal 0.10.0 program is 42,076 bytes and its diagnostic program is 204,636
 bytes. Both compile for the exact `fenix9pro47mm` target with SDK 9.2.0. The focused
