@@ -83,23 +83,26 @@ See [development and verification](docs/development.md) for reproducible command
 ## Watch and phone candidates
 
 The shared palette also supports a [Garmin watch face candidate](docs/garmin-watchface.md)
-and [original phone icon artwork](docs/samsung-icons.md). The 0.10.0 Hybrid
-candidate revises the black diver composition with a filled shallow bezel,
+and [original phone icon artwork](docs/samsung-icons.md). The 0.11.0 Hybrid
+source candidate retains the black diver composition with a filled shallow bezel,
 original radial numerals, compact date at three and digital time below the pivot.
 Its circles, triangle, cardinal batons and divided hour hand form the analog
 dial. Weather, steps and watch charge occupy two-row secondary fields and a
 separate battery line. Native font fitting measures each requested value and its
 status together. The printed scale is a visual reference, not a dive timer.
 
-Ordinary information is drawn before the hands. Only the small date and black
-clock area clear a rectangle afterward. Those protected fields stay outside the
-circular hour head's guarded travel band in the source geometry. The minute hand
-can still cross the hour head, and other information can be obscured temporarily.
-A protected field can hide part of a stem or tip. The separate shifted always-on
+Calendar, weather/status, steps and battery now clear only their measured text
+rows after the solid hands. One-pixel hand contours return within those rows to
+preserve direction and the divided hour-head cue. Branding stays behind the hands.
+This trades broad solid occlusion for thin strokes that can still cross letters;
+new simulator images and wrist-level readability remain unverified. The compact
+clock and day aperture are protected last. Their boxes stay outside the circular
+hour head's guarded travel band, although they can hide part of a stem or tip.
+The separate shifted always-on
 view keeps sparse hand and marker outlines on true black. Analog, Digital,
 saved choices, providers and the Digital Inter resource retain their contracts.
 
-The normal 0.10.0 program is 42,076 bytes and its diagnostic program is 204,636
+The retained normal 0.10.0 program is 42,076 bytes and its diagnostic program is 204,636
 bytes. Both compile for the exact `fenix9pro47mm` target with SDK 9.2.0. The focused
 host suite ran 60 tests: 58 passed and two original-font checks skipped. The exact
 diagnostic subsequently reported all 42 target groups passed, with zero failures
@@ -110,7 +113,10 @@ comparison with 0.9.0. Current always-on rasters, a memory sample and one normal
 restart provide bounded simulator evidence. Physical-watch use, complete locale
 and stress coverage, sustained runtime and earlier USB restoration remain open.
 The observed Vietnamese SDK date limitation and runner anomaly are retained in the
-[current qualification](docs/garmin-watchface.md#current-0100-qualification).
+[0.10.0 qualification](docs/garmin-watchface.md#current-0100-qualification).
+Those results do not qualify the changed 0.11.0 renderer. Its [candidate scope and
+pending checks](docs/garmin-watchface.md#0110-readability-candidate) keep source,
+compiler, simulator and physical evidence separate.
 
 The preserved 0.9.0 program passed 38 target simulator groups and has bounded
 appearance, enlarged-text, always-on and restart observations. Its 39,788-byte
