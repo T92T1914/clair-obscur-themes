@@ -152,9 +152,9 @@ class GarminPaletteTests(unittest.TestCase):
     def test_current_palette_has_exact_black_white_and_neutral_roles(self):
         current = json.loads((ROOT / "tokens-monochrome.json").read_text(encoding="utf-8"))
         source = render_palette(current)
-        self.assertEqual(VERSION, "0.10.0")
+        self.assertEqual(VERSION, "0.11.0")
         self.assertEqual(colors(source), EXPECTED_MONOCHROME_COLORS)
-        self.assertIn('const WATCHFACE_VERSION = "0.10.0";', source)
+        self.assertIn('const WATCHFACE_VERSION = "0.11.0";', source)
         self.assertIn('const TOKEN_VERSION = "1.0.0";', source)
         for color in colors(source).values():
             self.assertEqual((color >> 16) & 255, (color >> 8) & 255)
@@ -189,7 +189,7 @@ class GarminPaletteTests(unittest.TestCase):
                          ["fenix9pro47mm"])
         properties = ET.parse(face / "resources/settings/properties.xml").getroot()
         self.assertEqual([(node.get("id"), node.get("type"), node.text) for node in properties],
-                         [("appVersion", "string", "0.10.0"), ("appearance", "number", "1"),
+                         [("appVersion", "string", "0.11.0"), ("appearance", "number", "1"),
                           ("layout", "number", "2"),
                           ("leftData", "number", "0"), ("rightData", "number", "1"),
                           ("hybridDateFormat", "number", "0")])
@@ -977,22 +977,62 @@ class GarminHybridContractsTests(unittest.TestCase):
         self.assertLess(update.index("if (mode == :off) { return; }"), update.index("Time.now()"))
         self.assertLess(update.index("drawAlwaysOn(dc, time, local.min); return;"), update.index("FaceData.readSlot"))
 
-    def test_printed_readings_precede_hands_and_only_small_apertures_follow(self):
-        draw = GarminAnalogAodGeometryTests.function(self.view, "drawHybrid")
+    def assert_reading_order(self, view):
+        draw = GarminAnalogAodGeometryTests.function(view, "drawHybrid")
         first_hand = draw.index("drawHybridHour(dc, hour, minute, ink, facet, canvas)")
         last_hand = draw.index("FaceModel.hybridMinuteHand(hour, minute, true)")
+        edges = draw.index("drawHybridReadingEdges(dc, hour, minute, rows, facet, canvas)")
         for call in ("hybridLine(dc, date", "hybridSlot(dc, weather", "hybridSlot(dc, steps", "hybridLine(dc, charge"):
-            self.assertLess(draw.index(call), first_hand)
-        for call in ("drawHybridClock(dc, time, period", "drawHybridDay(dc, day"):
             self.assertGreater(draw.index(call), last_hand)
+            self.assertLess(draw.index(call), edges)
+        self.assertLess(draw.index('hybridLine(dc, canvas =='), first_hand)
+        for call in ("drawHybridClock(dc, time, period", "drawHybridDay(dc, day"):
+            self.assertGreater(draw.index(call), edges)
         self.assertNotIn("fillRectangle", draw)
         for method in ("hybridLine", "hybridSlot"):
-            body = GarminAnalogAodGeometryTests.function(self.view, method)
+            body = GarminAnalogAodGeometryTests.function(view, method)
             self.assertIn("dc.setClip(", body)
             self.assertIn("dc.clearClip()", body)
             self.assertIn('"--"', body)
             self.assertNotIn("haloText(", body)
         self.assertNotRegex(draw, r"haloText\(|new Timer")
+
+    def test_measured_readings_follow_fills_before_edges_and_final_apertures(self):
+        self.assert_reading_order(self.view)
+        body = GarminAnalogAodGeometryTests.function(self.view, "hybridReading")
+        self.assertIn("dc.getTextWidthInPixels(text, font)", body)
+        self.assertIn("dc.getFontHeight(font)", body)
+        self.assertIn("if (width <= 0 || height <= 0) { return; }", body)
+        self.assertIn("if (rows != null)", body)
+        self.assertIn("dc.fillRectangle(left, top, width + 2, height);", body)
+        self.assertIn("rows.add([left, top, width + 2, height]);", body)
+        self.assertLess(body.index("fillRectangle"), body.index("dc.drawText"))
+        self.assertNotIn("HYBRID_DATA_WIDTH", body)
+        self.assertNotIn("HYBRID_DATA_BOTTOM", body)
+
+    def test_clipped_hand_edges_do_not_restore_opaque_fill_over_readings(self):
+        body = GarminAnalogAodGeometryTests.function(self.view, "drawHybridReadingEdges")
+        self.assertIn("dc.setPenWidth(1)", body)
+        self.assertIn("dc.setClip(bounds[0], bounds[1], bounds[2], bounds[3]);", body)
+        self.assertLess(body.index("dc.setClip"), body.index("drawAlwaysOnOutline"))
+        self.assertGreater(body.index("dc.clearClip()"), body.index("drawAlwaysOnOutline(dc, minuteHand)"))
+        for geometry in ("hybridHourStem", "hybridHourTip", "hybridHourDiscCenter",
+                         "hybridHourSpoke", "hybridMinuteHand"):
+            self.assertIn("FaceModel." + geometry, body)
+        self.assertNotRegex(body, r"fillRectangle|fillPolygon|fillCircle|drawText|Timer")
+
+    def test_reading_order_regression_rejects_old_occlusion_and_late_edges(self):
+        call = "        hybridSlot(dc, weather, FaceModel.HYBRID_LEFT_X, ink, muted, canvas, rows);\n"
+        hand = "        drawHybridHour(dc, hour, minute, ink, facet, canvas);\n"
+        old_order = self.view.replace(call, "", 1).replace(hand, call + hand, 1)
+        self.assertNotEqual(old_order, self.view)
+        with self.assertRaises(AssertionError):
+            self.assert_reading_order(old_order)
+        edges = "        drawHybridReadingEdges(dc, hour, minute, rows, facet, canvas);\n"
+        day = "        drawHybridDay(dc, day, ink, facet, canvas);\n"
+        late_edges = self.view.replace(edges, "", 1).replace(day, day + edges, 1)
+        with self.assertRaises(AssertionError):
+            self.assert_reading_order(late_edges)
 
     def test_hybrid_hides_legacy_choices_and_subscribes_only_to_displayed_fields(self):
         subscription = GarminAnalogAodGeometryTests.function(self.settings, "refreshDataSubscriptions")

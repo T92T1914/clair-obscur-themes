@@ -1,5 +1,12 @@
 # Changes
 
+## Garmin Hybrid readability candidate 0.11.0
+
+- Protect calendar, weather/status, steps and battery with measured text rows after solid hand fills. Retain one-pixel hand contours only inside those rows, branding behind the hands and the final compact clock/day protection. Thin strokes can still cross glyphs; new native visual acceptance remains pending.
+- Preserve fixed positions, font candidates, precise values and unavailable/stale/unknown distinctions. Keep Analog, Digital, shared hand geometry, AOD, settings and providers unchanged.
+- Correct the Samsung guide's current artwork/archive and private Android companion identities to artwork 0.33.0, Obscur 0.1.17/code 18 and Clair 0.1.6/code 7. Preserve historical versions and existing artwork/package bytes.
+- Keep new simulator and physical-watch checks deferred under SHARED_PC. The retained 0.10.0 diagnostic reported 42 passes but exited 1; its normal runs and captures do not qualify the changed renderer.
+
 ## Garmin black-dial candidate 0.10.0
 
 - Recompose Hybrid around a compact day aperture at three and a same-canvas digital clock below the pivot. Give the bezel a filled shallow annulus and original radial line numerals, tune marker/hand proportions, and reduce branding and lower-field repetition. Preserve all requested active information.
