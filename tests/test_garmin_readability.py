@@ -18,8 +18,9 @@ ROOT = Path(__file__).resolve().parents[1]
 FUNCTION = garmin_contracts.GarminAnalogAodGeometryTests.function
 
 # Whitespace-normalized function identities acquired from accepted PR93,
-# 0ed5d6f1aad25894d8e608b3b6f1969d0b30e09b. A changed shared geometry or
-# sparse painter requires new AOD qualification rather than inherited results.
+# 0ed5d6f1aad25894d8e608b3b6f1969d0b30e09b. These preserve algorithms only.
+# The 0.12 dimensions below intentionally change shared Hybrid AOD geometry;
+# old native AOD evidence does not qualify these new shapes.
 MODEL_PINS = {
     "integerValue": "2631abbe874d94ae4c256a3b4c6c3b0b867b301f801d681e541cccca52f95f6a",
     "validClock": "8253b2de5a4f08bbe83686762d7cf8a6aa6151a3b2e40bd4939686d869d947f4",
@@ -57,7 +58,7 @@ def point(c, turn, radius, lateral=0):
 
 
 def hand_geometry(c, total):
-    """Independent rotated polygons/circle using the pinned model dimensions."""
+    """Independent rotated polygons/circle using the independently selected dimensions."""
     hour_turn, minute_turn = total / 720, (total % 60) / 60
     inner, outer, half = (c["HYBRID_HOUR_STEM_" + key] for key in ("INNER", "OUTER", "HALF"))
     stem = [point(c, hour_turn, radius, side) for radius, side in
@@ -124,15 +125,33 @@ class GarminReadingGeometryTests(unittest.TestCase):
         cls.constants = {key: int(value) for key, value in re.findall(
             r"^    const ([A-Z_]+) = (-?\d+);$", cls.model, re.MULTILINE)}
 
-    def test_shared_shapes_dimensions_and_aod_painters_retain_pr93_identity(self):
+    def test_shared_algorithms_retain_identity_and_selected_geometry_is_explicit(self):
         for source, pins in ((self.model, MODEL_PINS), (self.view, VIEW_PINS)):
             for name, expected in pins.items():
                 with self.subTest(function=name):
                     self.assertEqual(digest(" ".join(FUNCTION(source, name).split())), expected)
-        geometry = {k: v for k, v in self.constants.items()
-                    if k.startswith("HYBRID_") or k in ("DISPLAY_SIZE", "DIAL_CENTER")}
-        self.assertEqual(digest(json.dumps(geometry, sort_keys=True, separators=(",", ":"))),
-                         "b8e479c3ea4c80c7c7a8f12330d04d2eeb2858401d25d28fc12476e5317aaf9b")
+        # Explicit design dimensions replace the old aggregate geometry hash.
+        # These literals make an unintended change reviewable by its meaning.
+        selected = {
+            "DISPLAY_SIZE": 454, "DIAL_CENTER": 227,
+            "HYBRID_DATE_TOP": 145, "HYBRID_DATE_BOTTOM": 170, "HYBRID_DATE_WIDTH": 222,
+            "HYBRID_DAY_LEFT": 346, "HYBRID_DAY_TOP": 208, "HYBRID_DAY_BOTTOM": 246,
+            "HYBRID_DAY_WIDTH": 46, "HYBRID_CLOCK_LEFT": 165, "HYBRID_CLOCK_TOP": 238,
+            "HYBRID_CLOCK_BOTTOM": 280, "HYBRID_CLOCK_WIDTH": 124,
+            "HYBRID_DATA_TOP": 282, "HYBRID_DATA_BOTTOM": 338, "HYBRID_DATA_WIDTH": 110,
+            "HYBRID_LEFT_X": 109, "HYBRID_RIGHT_X": 235,
+            "HYBRID_CHARGE_TOP": 176, "HYBRID_CHARGE_BOTTOM": 206, "HYBRID_CHARGE_WIDTH": 118,
+            "HYBRID_MARKER_CENTER": 155, "HYBRID_CIRCLE_RADIUS": 14, "HYBRID_CIRCLE_INNER": 11,
+            "HYBRID_BATON_INNER": 137, "HYBRID_BATON_OUTER": 166, "HYBRID_BATON_HALF": 8,
+            "HYBRID_TRIANGLE_INNER": 119, "HYBRID_TRIANGLE_OUTER": 164, "HYBRID_TRIANGLE_HALF": 17,
+            "HYBRID_TICK_OUTER": 174, "HYBRID_TICK_INNER": 169,
+            "HYBRID_HOUR_DISC_CENTER": 100, "HYBRID_HOUR_DISC_RADIUS": 17, "HYBRID_HOUR_DISC_INNER": 14,
+            "HYBRID_HOUR_STEM_INNER": -18, "HYBRID_HOUR_STEM_OUTER": 86, "HYBRID_HOUR_STEM_HALF": 6,
+            "HYBRID_HOUR_TIP_BASE": 114, "HYBRID_HOUR_TIP_HALF": 8, "HYBRID_HOUR_TIP_LENGTH": 131,
+            "HYBRID_MINUTE_LENGTH": 160, "HYBRID_MINUTE_HALF": 7, "HYBRID_MINUTE_TAIL_HALF": 4,
+            "HYBRID_BEZEL_OUTER": 226, "HYBRID_BEZEL_INNER": 177, "HYBRID_BEZEL_RADIUS": 203,
+        }
+        self.assertEqual({key: self.constants[key] for key in selected}, selected)
         colors = dict(re.findall(r"^    const ([A-Z_]+) = (0x[0-9A-Fa-f]+);$", self.palette, re.MULTILINE))
         self.assertEqual(digest(json.dumps(colors, sort_keys=True, separators=(",", ":"))),
                          "5d5057109c8ee4a19631011619e2606eb099ebcd6cf796da5c00335a9dd9f19e")
@@ -146,14 +165,15 @@ class GarminReadingGeometryTests(unittest.TestCase):
         self.assertTrue(circle_intersects_box((0, 0), 5, (3, 4, 6, 8)))
         self.assertFalse(circle_intersects_box((0, 0), 5, (4, 4, 6, 8)))
         # Cardinal targets independently guard rotation, time units and rounding.
-        for total, expected in ((0, (227, 55)), (15, (399, 227)), (30, (227, 399)), (45, (55, 227))):
+        for total, expected in ((0, (227, 67)), (15, (387, 227)), (30, (227, 387)), (45, (67, 227))):
             self.assertEqual(hand_geometry(self.constants, total)[0]["minute"][2], expected)
 
-    def test_full_cycle_locates_observed_crossings_and_preserves_an_unobstructed_control(self):
+    def test_new_full_cycle_locates_crossing_cases_and_an_unobstructed_control(self):
         crossings = crossing_report(self.constants)
-        self.assertIn(0, crossings["calendar"])       # 12:00
+        self.assertIn(0, crossings["calendar"])       # 12:00, a geometric inspection case, not a new observation
         self.assertIn(390, crossings["weather"])    # 06:30
-        self.assertIn(390, crossings["battery"])
+        self.assertNotIn(390, crossings["battery"])  # Battery moved above the pivot.
+        self.assertIn(0, crossings["battery"])
         self.assertIn(415, crossings["calendar"])   # 18:55 is 06:55 on the analog dial
         self.assertIn(415, crossings["weather"])
         for name, totals in crossings.items():
@@ -162,10 +182,11 @@ class GarminReadingGeometryTests(unittest.TestCase):
                 self.assertLess(len(totals), 720)
                 self.assertNotIn(195, totals)        # 03:15 control
                 self.assertEqual(totals, sorted(set(totals)))
-        # Intersections explain why repositioning within the sweep alone is not
-        # enough. They do not count hidden glyph pixels or prove the new order.
+        # This re-evaluates the new bands across every minute. Historical
+        # screenshots do not become new observations, and band intersections
+        # do not count hidden glyph pixels or prove the new painter order.
 
-    def test_measured_single_row_envelope_stays_inside_its_fitted_band(self):
+    def test_single_row_with_one_pixel_separator_stays_inside_its_fitted_band(self):
         c = self.constants
         for name in ("DATE", "CHARGE"):
             width, top, bottom = (c[f"HYBRID_{name}_{key}"] for key in ("WIDTH", "TOP", "BOTTOM"))
@@ -176,10 +197,10 @@ class GarminReadingGeometryTests(unittest.TestCase):
                 self.assertLessEqual(left + glyph_width + 2, x + width)
                 for glyph_height in range(1, bottom - top - 3):
                     y = int(top + (bottom - top - glyph_height) / 2)
-                    self.assertGreaterEqual(y, top)
-                    self.assertLessEqual(y + glyph_height, bottom)
+                    self.assertGreaterEqual(y - 1, top)
+                    self.assertLessEqual(y + glyph_height + 1, bottom)
 
-    def test_measured_two_row_envelopes_stay_in_the_slot_with_the_truthful_status_gap(self):
+    def test_two_rows_with_one_pixel_separators_fit_with_truthful_status_gap(self):
         c = self.constants
         top, bottom, width = (c["HYBRID_DATA_" + key] for key in ("TOP", "BOTTOM", "WIDTH"))
         for side in ("LEFT", "RIGHT"):
@@ -194,9 +215,9 @@ class GarminReadingGeometryTests(unittest.TestCase):
                     total = value_height + detail_height + 2
                     y = int(top + (bottom - top - total) / 2)
                     detail_top = y + value_height + 2
-                    self.assertGreaterEqual(y, top)
+                    self.assertGreaterEqual(y - 1, top)
                     self.assertEqual(detail_top - (y + value_height), 2)
-                    self.assertLessEqual(detail_top + detail_height, bottom)
+                    self.assertLessEqual(detail_top + detail_height + 1, bottom)
         # This checks all positive integer sizes admitted by the width/height
         # inequalities. Actual target font availability and effective enlargement
         # still require SDK metrics and visual inspection.

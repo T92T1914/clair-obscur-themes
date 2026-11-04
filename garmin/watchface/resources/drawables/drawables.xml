@@ -1,3 +1,5 @@
 <drawables>
     <bitmap id="LauncherIcon" filename="launcher.svg" />
+    <bitmap id="HybridDialObscur" filename="../dial/obscur.png" automaticPalette="true" dithering="none" packingFormat="default" />
+    <bitmap id="HybridDialClair" filename="../dial/clair.png" automaticPalette="true" dithering="none" packingFormat="default" />
 </drawables>

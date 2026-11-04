@@ -3,12 +3,13 @@
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
 
-from garmin.build import main
+from garmin.build import ROOT, main, verify_dial_resources
 
 
 class GarminBuildFailureTests(unittest.TestCase):
@@ -34,7 +35,7 @@ class GarminBuildFailureTests(unittest.TestCase):
             self.assertEqual(main(self.arguments), 1)
         self.assertEqual((self.output / "compiler.log").read_bytes(), b"resource error before timeout\n")
         report = json.loads((self.output / "build.json").read_text())
-        self.assertEqual(report["version"], "0.11.0")
+        self.assertEqual(report["version"], "0.12.0")
         self.assertEqual(report["status"], "failed")
         self.assertIn("timeout", report["error"])
         self.assertNotIn("program", report)
@@ -84,3 +85,40 @@ class GarminBuildFailureTests(unittest.TestCase):
         execute.assert_not_called()
         self.assertEqual(list(self.output.iterdir()), [retained])
         self.assertEqual(retained.read_bytes(), b"retain exactly")
+
+    def copied_dial_fixture(self):
+        root = self.root / "source"
+        for name in ("garmin/generate_dial_art.py", "garmin/watchface/source/FaceModel.mc",
+                     "tokens-monochrome.json", "garmin/watchface/resources/dial/provenance.json",
+                     "garmin/watchface/resources/dial/clair.png",
+                     "garmin/watchface/resources/dial/obscur.png"):
+            target = root / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(ROOT / name, target)
+        # A valid copied fixture must pass before a deliberate fault is added.
+        verify_dial_resources(root)
+        return root
+
+    def test_changed_dial_png_is_rejected_before_output_or_compiler(self):
+        root = self.copied_dial_fixture()
+        resource = root / "garmin/watchface/resources/dial/obscur.png"
+        changed = resource.read_bytes() + b"changed fixture"
+        resource.write_bytes(changed)
+        with patch("garmin.build.ROOT", root), patch("garmin.build.subprocess.run") as execute:
+            with self.assertRaisesRegex(ValueError, "Static dial resource changed: obscur.png"):
+                main(self.arguments)
+        execute.assert_not_called()
+        self.assertFalse(self.output.exists())
+        self.assertEqual(resource.read_bytes(), changed)
+
+    def test_changed_dial_source_is_rejected_before_output_or_compiler(self):
+        root = self.copied_dial_fixture()
+        source = root / "garmin/watchface/source/FaceModel.mc"
+        changed = source.read_bytes() + b"\n// stale dial source fixture\n"
+        source.write_bytes(changed)
+        with patch("garmin.build.ROOT", root), patch("garmin.build.subprocess.run") as execute:
+            with self.assertRaisesRegex(ValueError, "Static dial source changed: FaceModel.mc"):
+                main(self.arguments)
+        execute.assert_not_called()
+        self.assertFalse(self.output.exists())
+        self.assertEqual(source.read_bytes(), changed)

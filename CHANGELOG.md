@@ -1,5 +1,14 @@
 # Changes
 
+## Garmin black-dial redesign candidate 0.12.0
+
+- Replace the fixed Hybrid dial with original production artwork: a substantial ceramic bezel, filled radial numeral contours, larger applied markers and restrained directional steel edges. Keep live hands, date and every data value in the Monkey C renderer.
+- Shorten and broaden the divided hour hand, refine the minute hand and center pin, and give digital time a taller band below the pivot. Move battery above the pivot while retaining precise values, saved selections and provider states.
+- Replace row clearing and later hand-contour repaint with a one-pixel glyph separator and transparent text backgrounds after complete hands. Retain the failed native poses and exact 03:02 enlargement measurements. Add the matched 0.11.0/current 10:10 SDK comparison with image/program provenance.
+- Correct a demonstrated protected-target AOD pixel-reuse failure with a final rotating black-column pass in all three sparse branches. Five inspected corrected Hybrid frames have zero four-frame intersections and bounded lit area, while retaining the visible phase-specific outline gaps and physical-device limits.
+- Run the final matching diagnostic: 42 semantic passes with Java exit 1 retained. Correct seven unsupported null-first test assertions without dropping their cases, preserving the preceding 41-pass/one-error result.
+- Preserve earlier programs, desktop downloads, phone artwork and private signed packages. Distinguish actual SDK captures from original resource images, retain the French SDK locale limitation, and keep physical-watch qualification separate.
+
 ## Garmin Hybrid readability candidate 0.11.0
 
 - Protect calendar, weather/status, steps and battery with measured text rows after solid hand fills. Retain one-pixel hand contours only inside those rows, branding behind the hands and the final compact clock/day protection. Thin strokes can still cross glyphs; new native visual acceptance remains pending.

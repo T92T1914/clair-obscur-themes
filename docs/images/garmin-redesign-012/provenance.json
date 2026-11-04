@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "recorded_date": "2026-11-02",
+  "target": "fenix9pro47mm",
+  "sdk_version": "9.2.0",
+  "display": {
+    "width": 454,
+    "height": 454,
+    "shape": "round",
+    "technology": "AMOLED"
+  },
+  "scene": {
+    "classification": "operator-controlled synthetic simulator fixture",
+    "layout": "Hybrid",
+    "appearance": "Obscur",
+    "date": "2026-11-02",
+    "time": "10:10 AM",
+    "clock_format": "12-hour",
+    "language": "English",
+    "font_scale": 1.0,
+    "weather_display": "63 F",
+    "weather_age_display": "AGE UNKNOWN",
+    "steps": 0,
+    "battery_percent": 50,
+    "charging": false
+  },
+  "images": [
+    {
+      "file": "baseline-011-obscur-1010.png",
+      "bytes": 36336,
+      "sha256": "cd260b8780abbaf4390b15012926bdd45812c19aa7a93cfad99060057b79306f",
+      "program_version": "0.11.0",
+      "normal_program_bytes": 42796,
+      "normal_program_sha256": "860f7ac69d06a883a80d05ad69c8762e7dfbca8921248b269c2e9cb043c709d7",
+      "width": 454,
+      "height": 454,
+      "capture_kind": "actual SDK face-only PNG",
+      "transformation": "none; byte-identical to the retained native capture"
+    },
+    {
+      "file": "candidate-012-obscur-1010.png",
+      "bytes": 78363,
+      "sha256": "5fd80958b05468ab1e88bd9cfdd741e0f7945b24bbe5c8b9e526b094ba3cde9b",
+      "program_version": "0.12.0",
+      "normal_program_bytes": 462044,
+      "normal_program_sha256": "d54e907708252b45b7ffbdaa017f04530b87a31f53b3f52900034e20b54c8a40",
+      "width": 454,
+      "height": 454,
+      "capture_kind": "actual SDK face-only PNG",
+      "transformation": "none; byte-identical to the retained native capture"
+    }
+  ],
+  "review_scope": "Independent inspection of matched 454-pixel native captures. Complete visible readings and original dial/hand composition at this pose.",
+  "limits": [
+    "Simulator evidence, not physical-watch or wrist appearance.",
+    "One matched pose does not qualify all crossings, data states, languages or always-on behavior.",
+    "Original project artwork; no manufacturer image, device case, desktop window or private identifier.",
+    "No resampling, color adjustment, compositing or metadata alteration."
+  ]
+}

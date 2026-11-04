@@ -468,6 +468,10 @@ class PreviewTests(unittest.TestCase):
         required = {
             'garmin/build.py', 'garmin/watchface/manifest.xml', 'garmin/watchface/monkey.jungle',
             'garmin/generate_clock_font.py',
+            'garmin/generate_dial_art.py',
+            'garmin/watchface/resources/dial/clair.png',
+            'garmin/watchface/resources/dial/obscur.png',
+            'garmin/watchface/resources/dial/provenance.json',
             'garmin/watchface/resources/fonts/clair-obscur-clock-108.fnt',
             'garmin/watchface/resources/fonts/clair-obscur-clock-108.png',
             'garmin/watchface/resources/fonts/fonts.xml',
@@ -503,6 +507,10 @@ class PreviewTests(unittest.TestCase):
             archive.extractall(extracted)
             for name in required:
                 self.assertEqual(archive.read(name), (ROOT / name).read_bytes())
+        # The acquired source must satisfy the same ordinary-build preflight
+        # without a private SDK, signing key or Pillow installation.
+        from garmin.build import verify_dial_resources
+        verify_dial_resources(extracted)
         for name in ('garmin/developer_key.der', 'garmin/watchface/bin/watch.prg',
                      'garmin/watchface/bin/watch.prg.debug.xml', 'garmin/sdk/private.xml'):
             path = extracted / name
@@ -515,6 +523,49 @@ class PreviewTests(unittest.TestCase):
             cwd=extracted, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=60,
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_watch_comparison_source_export_preserves_reviewed_images_and_local_links(self):
+        captured = source_files(ROOT)
+        directory = 'docs/images/garmin-redesign-012/'
+        required = {directory + name for name in (
+            'baseline-011-obscur-1010.png', 'candidate-012-obscur-1010.png', 'provenance.json')}
+        self.assertEqual({name for name in captured if name.startswith('docs/images/')}, required)
+        extracted = self.base / 'watch-comparison-source'
+        with zipfile.ZipFile(io.BytesIO(preview_files(ROOT, self.artifacts)['source.zip'])) as archive:
+            archive.extractall(extracted)
+            for name in required:
+                self.assertEqual(archive.read(name), (ROOT / name).read_bytes())
+        record = json.loads(captured[directory + 'provenance.json'])
+        self.assertEqual({directory + image['file'] for image in record['images']},
+                         required - {directory + 'provenance.json'})
+        for image in record['images']:
+            data = captured[directory + image['file']]
+            self.assertEqual(len(data), image['bytes'])
+            self.assertEqual(hashlib.sha256(data).hexdigest(), image['sha256'])
+        guide = (extracted / 'docs/garmin-redesign.md').read_text(encoding='utf-8')
+        links = set(re.findall(r'!?\[[^\]]*\]\(([^)]+)\)', guide))
+        self.assertTrue({name.removeprefix('docs/') for name in required} <= links)
+        for link in links:
+            if link.startswith(('https://', '#')):
+                continue
+            target = (extracted / 'docs' / link.split('#', 1)[0]).resolve()
+            self.assertTrue(target.is_relative_to(extracted.resolve()), link)
+            self.assertTrue(target.is_file(), link)
+        # Exact reviewed evidence must not broaden docs to arbitrary native
+        # screenshots or JSON records placed beside the public comparison.
+        for name in ('private-desktop.png', 'private-device.json'):
+            (extracted / directory / name).write_bytes(b'private fixture, never publish')
+        self.assertEqual(source_files(extracted), captured)
+        for name in required:
+            path = extracted / name
+            original = path.read_bytes()
+            path.unlink()
+            with self.assertRaises(FileNotFoundError):
+                source_files(extracted)
+            path.write_bytes(original)
+            with patch('preview._linked', side_effect=lambda candidate, linked=path: candidate == linked):
+                with self.assertRaisesRegex(ValueError, 'Linked source'):
+                    source_files(extracted)
 
     def test_android_source_snapshot_excludes_toolchains_keys_and_binaries(self):
         captured = source_files(ROOT)

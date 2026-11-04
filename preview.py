@@ -68,6 +68,10 @@ ICON_CHECKSUMS = 'icons/SVG-SHA256SUMS'
 GARMIN_SOURCE_FILES = (
     'garmin/build.py', 'garmin/watchface/manifest.xml', 'garmin/watchface/monkey.jungle',
     'garmin/generate_clock_font.py',
+    'garmin/generate_dial_art.py',
+    'garmin/watchface/resources/dial/clair.png',
+    'garmin/watchface/resources/dial/obscur.png',
+    'garmin/watchface/resources/dial/provenance.json',
     'garmin/watchface/resources/fonts/clair-obscur-clock-108.fnt',
     'garmin/watchface/resources/fonts/clair-obscur-clock-108.png',
     'garmin/watchface/resources/fonts/fonts.xml',
@@ -131,6 +135,9 @@ def source_files(root: Path) -> dict[str, bytes]:
         'tests/fixtures/icon-optical-0.32.json',
         'tools/render_mechanism.py', 'docs/mechanism.json',
         'docs/mechanism-rendering.json', 'docs/requirements-figures.txt',
+        'docs/images/garmin-redesign-012/baseline-011-obscur-1010.png',
+        'docs/images/garmin-redesign-012/candidate-012-obscur-1010.png',
+        'docs/images/garmin-redesign-012/provenance.json',
     )]
     # Only the reviewed project files belong in the public source snapshot.
     # SDKs, keys, compiled programs and debug XML stay outside this inventory.

@@ -1,0 +1,55 @@
+{
+  "canvas_source": "tokens-monochrome.json",
+  "canvas_source_sha256": "65d70318f370d076a9d690cfa491b65d6fe7eee687f93c2fba87be25e07c836c",
+  "canvas_values": {
+    "clair": 255,
+    "obscur": 0
+  },
+  "files": {
+    "clair.png": {
+      "bytes": 81506,
+      "sha256": "a41b8ff6f51962452489f167afbbc41d56fc823a3752fa7ecf9f03665062a386"
+    },
+    "obscur.png": {
+      "bytes": 81303,
+      "sha256": "a71496884e97b171622245db0277a20effec120d7fc7058b677731fa403cea43"
+    }
+  },
+  "generator": "garmin/generate_dial_art.py",
+  "generator_sha256": "8c87db1b005f01aa4c58a7e0b2b0f847e0c27d42928333b41e49feec8ebfe906",
+  "geometry": {
+    "DIAL_CENTER": 227,
+    "DISPLAY_SIZE": 454,
+    "HYBRID_BATON_HALF": 8,
+    "HYBRID_BATON_INNER": 137,
+    "HYBRID_BATON_OUTER": 166,
+    "HYBRID_BEZEL_INNER": 177,
+    "HYBRID_BEZEL_OUTER": 226,
+    "HYBRID_BEZEL_RADIUS": 203,
+    "HYBRID_CIRCLE_INNER": 11,
+    "HYBRID_CIRCLE_RADIUS": 14,
+    "HYBRID_MARKER_CENTER": 155,
+    "HYBRID_TICK_INNER": 169,
+    "HYBRID_TICK_OUTER": 174,
+    "HYBRID_TRIANGLE_HALF": 17,
+    "HYBRID_TRIANGLE_INNER": 119,
+    "HYBRID_TRIANGLE_OUTER": 164
+  },
+  "kind": "clair-obscur-original-static-dial",
+  "lighting": "Narrow upper-left metal highlights and lower-right shadows; uniform black ceramic with no noise or broad glare.",
+  "model": "garmin/watchface/source/FaceModel.mc",
+  "model_sha256": "9848b41d5e6079eec5ef5697095d716d28ca856729bbf60fd9ad2c2a85311e07",
+  "native_canvas_check": "GeneratedPalette.mc CLAIR_CANVAS and OBSCUR_CANVAS agree with token values",
+  "numeral_contours_sha256": "fcb3cd2c5c12b2d8cf909b2332d9ca7c6c0c0228e9aab03af2dfc6a15154e8d8",
+  "renderer": {
+    "downsample": "LANCZOS",
+    "library": "Pillow",
+    "output": "454x454 RGB PNG, neutral channels",
+    "png_compress_level": 9,
+    "supersampling": 4,
+    "version": "12.3.0"
+  },
+  "schema_version": 1,
+  "scope": "Production Monkey C bitmap backplate only. No hands, live data, branding, font or photograph. Not native rendering or physical appearance acceptance.",
+  "source_art": "Original closed polygons and native-model marker geometry; no external artwork or fonts."
+}

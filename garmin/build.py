@@ -15,6 +15,29 @@ ROOT = Path(__file__).resolve().parents[1]
 TARGET = "fenix9pro47mm"
 
 
+def verify_dial_resources(root: Path) -> None:
+    """Reject stale committed dial artwork without requiring its rasterizer."""
+    directory = root / "garmin/watchface/resources/dial"
+    record = json.loads((directory / "provenance.json").read_bytes())
+    if record.get("kind") != "clair-obscur-original-static-dial":
+        raise ValueError("Unrecognized static dial provenance")
+    sources = {
+        "generator_sha256": root / "garmin/generate_dial_art.py",
+        "model_sha256": root / "garmin/watchface/source/FaceModel.mc",
+        "canvas_source_sha256": root / "tokens-monochrome.json",
+    }
+    for field, source in sources.items():
+        if hashlib.sha256(source.read_bytes()).hexdigest() != record.get(field):
+            raise ValueError(f"Static dial source changed: {source.name}. Regenerate and review its resources.")
+    if set(record.get("files", {})) != {"clair.png", "obscur.png"}:
+        raise ValueError("The static dial requires both reviewed appearances")
+    for name in ("clair.png", "obscur.png"):
+        data = (directory / name).read_bytes()
+        expected = record["files"][name]
+        if len(data) != expected["bytes"] or hashlib.sha256(data).hexdigest() != expected["sha256"]:
+            raise ValueError(f"Static dial resource changed: {name}")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--sdk", type=Path, required=True, help="Installed Connect IQ SDK directory")
@@ -47,6 +70,7 @@ def main(argv: list[str] | None = None) -> int:
     sys.path.insert(0, str(ROOT))
     from themeforge.garmin import VERSION, main as check_palette
     check_palette(["--check"])
+    verify_dial_resources(ROOT)
     output.mkdir(parents=True)
     program = output / ("ClairObscur-tests.prg" if options.tests else "ClairObscur.prg")
     command = [str(compiler), "-f", str(ROOT / "garmin/watchface/monkey.jungle"),
