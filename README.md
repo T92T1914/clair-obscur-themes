@@ -90,6 +90,10 @@ the day aperture stays at three, and battery sits above the pivot. Weather and
 steps retain their exact values and status. The printed scale is a visual reference,
 not a dive timer.
 
+The accepted 0.12.0 normal program has a verified physical transfer and
+user-reported activation and normal operation. The [qualification matrix](docs/garmin-watchface.md#0120-native-qualification-in-progress)
+keeps that report separate from simulator measurements and untested physical behavior.
+
 The shared palette also supports a [Garmin watch face candidate](docs/garmin-watchface.md)
 and [original phone icon artwork](docs/samsung-icons.md). The [matched native 10:10 comparison](docs/garmin-redesign.md#matched-native-comparison)
 shows the retained 0.11.0 baseline beside the final 0.12.0 normal program on the
