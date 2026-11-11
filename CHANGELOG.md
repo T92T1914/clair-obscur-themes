@@ -1,5 +1,10 @@
 # Changes
 
+## Portable kit ancestor check
+
+- Compare folders above an extracted kit by kind, device, inode and mode only. Their times change whenever another program adds or removes an unrelated file beside the kit, which made the included verifier refuse intact kits in busy folders such as Downloads, Temp or the user profile.
+- Keep the complete comparison for the selected directory and its contents. A replaced ancestor and a changed selected directory are still refused, and every other existing guard is unchanged.
+
 ## Garmin black-dial redesign candidate 0.12.0
 
 - Replace the fixed Hybrid dial with original production artwork: a substantial ceramic bezel, filled radial numeral contours, larger applied markers and restrained directional steel edges. Keep live hands, date and every data value in the Monkey C renderer.

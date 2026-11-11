@@ -223,6 +223,16 @@ Timestamp comparisons remain exact, with no rounding or tolerance. Creation time
 is not a Windows metadata-change timestamp, so a change reflected only in `ctime`
 is outside that comparison.
 
+The selected directory and everything inside it receive that complete comparison.
+Folders above the selected directory are compared by kind, device, inode and mode
+only. Other programs add and remove files in folders such as Downloads, Temp or
+the user profile while a kit is checked. That changes the folder's times and
+size without touching the kit, and the earlier complete comparison refused
+intact kits on a busy Windows computer for that reason. A folder replaced at the
+same path normally has a different identity and is still refused. Where a file
+system reuses or does not report a stable identity, this ancestor check is
+weaker.
+
 Observed disappearance, replacement or compared metadata change makes the result
 unverified. The content limits do not bound filesystem latency or guarantee a
 simultaneous snapshot. Portable standard-library observations cannot prevent an
