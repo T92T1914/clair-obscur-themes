@@ -16,7 +16,7 @@
   "inputs_sha256_lf": {
     "docs/acceptance.md": "b404770a27721f997742e94167b726d4172dcc2ee65b329d4196cf9dcfe8507a",
     "docs/mechanism.json": "49434d979ac750789d4b6741427f034e85f9a88e306423f6ba5ab0cdcb999f32",
-    "docs/platform-portability.md": "8ce38be1032c009f1d93a03b40ef7a07b3d82aa744fb7090a968202d66eed5b0",
+    "docs/platform-portability.md": "6cd31edfcb49268cf17d5d81dbb34c37c995d340c4a609d400d1fbce260cc301",
     "tokens-monochrome.json": "65d70318f370d076a9d690cfa491b65d6fe7eee687f93c2fba87be25e07c836c",
     "tools/render_mechanism.py": "84d16a9a70c0bc7c842c42c2d37a06d5734c26eb8eacb84eb6576a1ece578f20"
   },
