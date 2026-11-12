@@ -294,6 +294,23 @@ def _same(path: Path, expected: Observation) -> None:
         raise VerificationObservationError(f'Entry changed: {_quoted(path.name)}')
 
 
+def _same_path(directory: Path, ancestors: dict[Path, Observation]) -> None:
+    # A folder above the kit changes its times and size whenever any unrelated
+    # entry beside the kit is added or removed. Only its identity locates the
+    # kit. The selected directory keeps the complete comparison.
+    for path, expected in ancestors.items():
+        if path == directory:
+            _same(path, expected)
+            continue
+        try:
+            actual = _lstat(path)
+        except VerificationInputError as error:
+            raise VerificationObservationError('Entry changed during verification') from error
+        if (actual.kind, actual.device, actual.inode, actual.mode) != (
+                expected.kind, expected.device, expected.inode, expected.mode):
+            raise VerificationObservationError(f'Entry changed: {_quoted(path.name)}')
+
+
 def _read(root: Path, name: str, expected: Observation, budget: ReadBudget,
           cap: int, reserve: int = 0, capture: bool = False) -> tuple[str, bytes]:
     if expected.kind != 'FILE':
@@ -395,8 +412,7 @@ def verify(root: str | Path) -> tuple[int, bytes]:
         entry = first.get(name)
         if entry is not None and entry.kind == 'FILE':
             hashes[name], _ = _read(directory, name, entry, budget, MAX_FILE_BYTES, reserve)
-    for path, entry in ancestors.items():
-        _same(path, entry)
+    _same_path(directory, ancestors)
     try:
         second = inventory(directory)
     except VerificationInputError as error:
@@ -407,8 +423,7 @@ def verify(root: str | Path) -> tuple[int, bytes]:
                             budget, MAX_MANIFEST_BYTES, capture=True)
     if checked_data != data:
         raise VerificationObservationError('Manifest changed during verification')
-    for path, entry in ancestors.items():
-        _same(path, entry)
+    _same_path(directory, ancestors)
     return _report(manifest, first, hashes, manifest_digest)
 
 

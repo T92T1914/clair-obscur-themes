@@ -1,3 +1,4 @@
+import dataclasses
 import hashlib
 from html.parser import HTMLParser
 import io
@@ -178,6 +179,51 @@ class VerificationComparisonTests(KitFixture):
         self.kit.rename(moved)
         self.assertEqual(verifier.verify(moved), (status, report))
         self.assertEqual(before, self.snapshot(moved))
+
+    def test_unrelated_entries_beside_an_ancestor_do_not_refuse_the_kit(self):
+        # Browsers and other programs add and remove files in Downloads, Temp
+        # and the profile folder while a kit is checked. Those siblings are
+        # outside the selected kit and do not replace the path to it. An old
+        # fixed time makes the sibling write visible on any timestamp clock.
+        os.utime(self.base, ns=(1_000_000_000_000_000_000, 1_000_000_000_000_000_000))
+        before = verifier._lstat(self.base)
+        original = verifier._read
+        churned = []
+
+        def sibling_churn(root, name, *args, **kwargs):
+            value = original(root, name, *args, **kwargs)
+            if name == 'site-manifest.json':
+                sibling = self.base / f'unrelated-{len(churned)}.tmp'
+                sibling.write_bytes(b'unrelated download')
+                churned.append(verifier._lstat(self.base))
+                sibling.unlink()
+            return value
+
+        with patch.object(verifier, '_read', side_effect=sibling_churn):
+            status, report = verifier.verify(self.kit)
+        self.assertEqual(len(churned), 2)
+        self.assertNotEqual(churned[0], before)
+        self.assertEqual(status, 0)
+        self.assertTrue(report.startswith(b'Portable kit verification: consistent\n'))
+
+    def test_replaced_ancestor_and_changed_selected_directory_remain_unverified(self):
+        # The initial ancestor observations come from the selection itself.
+        # Every later observation of the target reports the changed field.
+        original = verifier._lstat
+        cases = [(self.base, field) for field in ('inode', 'device', 'kind', 'mode')]
+        cases += [(self.kit, field) for field in ('mtime_ns', 'metadata_time_ns', 'attributes')]
+        for target, field in cases:
+            def changed(path, target=target, field=field):
+                observed = original(path)
+                if path == target:
+                    value = 'FILE' if field == 'kind' else getattr(observed, field) + 1
+                    observed = dataclasses.replace(observed, **{field: value})
+                return observed
+
+            with self.subTest(target=target.name, field=field), \
+                    patch.object(verifier, '_lstat', side_effect=changed):
+                with self.assertRaisesRegex(verifier.VerificationObservationError, 'Entry changed'):
+                    verifier.verify(self.kit)
 
     def test_missing_changed_extra_and_empty_directory_have_exact_sorted_rows(self):
         (self.kit / 'preview.js').unlink()
