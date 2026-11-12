@@ -16,10 +16,10 @@
 
 ## Garmin Hybrid readability candidate 0.11.0
 
-- Protect calendar, weather/status, steps and battery with measured text rows after solid hand fills. Retain one-pixel hand contours only inside those rows, branding behind the hands and the final compact clock/day protection. Thin strokes can still cross glyphs; new native visual acceptance remains pending.
+- Protect calendar, weather/status, steps and battery with measured text rows after solid hand fills. Retain one-pixel hand contours only inside those rows, branding behind the hands and the final compact clock/day protection. Thin strokes can still cross glyphs. New native visual acceptance remains pending.
 - Preserve fixed positions, font candidates, precise values and unavailable/stale/unknown distinctions. Keep Analog, Digital, shared hand geometry, AOD, settings and providers unchanged.
 - Correct the Samsung guide's current artwork/archive and private Android companion identities to artwork 0.33.0, Obscur 0.1.17/code 18 and Clair 0.1.6/code 7. Preserve historical versions and existing artwork/package bytes.
-- Keep new simulator and physical-watch checks deferred under SHARED_PC. The retained 0.10.0 diagnostic reported 42 passes but exited 1; its normal runs and captures do not qualify the changed renderer.
+- Keep new simulator and physical-watch checks deferred under SHARED_PC. The retained 0.10.0 diagnostic reported 42 passes but exited 1. Its normal runs and captures do not qualify the changed renderer.
 
 ## Garmin black-dial candidate 0.10.0
 
@@ -27,7 +27,7 @@
 - Draw ordinary information before the hands and protect only the clock/day afterward. Remove glyph halos. Keep protected fields clear of the circular hour head in source geometry, while retaining explicit minute-hand and secondary-data occlusion tradeoffs.
 - Fit Hybrid weather/steps as two rows with truthful cached/stale/unknown/unavailable states, full step counts and BAT/CHG meaning. Preserve provider behavior, localized date settings, Analog=0, Digital=1, Hybrid=2, app identity, signing route, existing fonts and desktop/icon bytes.
 - Keep a separately shifted sparse AOD path without active fields, numbered bezel or new timer. Add meaningful source and diagnostic geometry/presentation checks while preserving the earlier AOD allowance.
-- Compile normal and diagnostic programs for the exact fenix9pro47mm target. Run 60 focused host tests: 58 passed and two explicit original-font skips. All 42 native groups compiled; zero executed. Host SVG alternatives are not Garmin-rendered comparisons. Current SDK visual/runtime and physical-device qualification remain deferred-shared-pc.
+- Compile normal and diagnostic programs for the exact fenix9pro47mm target. Run 60 focused host tests: 58 passed and two explicit original-font skips. All 42 native groups compiled. Zero executed. Host SVG alternatives are not Garmin-rendered comparisons. Current SDK visual/runtime and physical-device qualification remain deferred-shared-pc.
 
 ## Coverage report recreation and artwork 0.33.0
 

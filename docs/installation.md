@@ -40,9 +40,9 @@ Use an already installed Equibop client with Equicord's local theme loader. The 
 ### Install
 
 1. In the running Equibop client, privately record the current native appearance, enabled local/online themes, their activation modes, zoom/chat size and relevant font-plugin settings. Preserve existing QuickCSS separately without replacing its live contents. Do not export account or session data.
-2. In Equicord's Themes settings, use **Open Themes Folder** to locate the actual loader directory. Copy the desired `.theme.css` file into that folder. If a file with the same name exists, compare its version and preserve it before replacement. Upstream also provides **Load missing Themes** to refresh the list. If your client does not show these controls, stop before guessing a folder. The labels are established by the [upstream controls](https://github.com/Equicord/Equicord/blob/957307d5f034028bb31ab0ac52ea1a6e90b6d43a/src/components/settings/tabs/themes/QuickActions.tsx), not by completed native acceptance here. Do not install BetterDiscord or switch clients.
-3. Choose native **Dark** appearance for Obscur or **Light** appearance for Clair. Temporarily disable only conflicting color themes, then enable one of the family files. Do not combine Clair and Obscur with other full color themes for acceptance testing.
-4. If the installed theme card offers **Dark only** or **Light only**, assign the matching mode. The CSS also gates itself to the correct native base. An opposite base should retain its native palette rather than become a partly converted interface.
+2. In Equicord's Themes settings, use “Open Themes Folder” to locate the actual loader directory. Copy the desired `.theme.css` file into that folder. If a file with the same name exists, compare its version and preserve it before replacement. Upstream also provides “Load missing Themes” to refresh the list. If your client does not show these controls, stop before guessing a folder. The labels are established by the [upstream controls](https://github.com/Equicord/Equicord/blob/957307d5f034028bb31ab0ac52ea1a6e90b6d43a/src/components/settings/tabs/themes/QuickActions.tsx), not by completed native acceptance here. Do not install BetterDiscord or switch clients.
+3. Choose native “Dark” appearance for Obscur or “Light” appearance for Clair. Temporarily disable only conflicting color themes, then enable one of the family files. Do not combine Clair and Obscur with other full color themes for acceptance testing.
+4. If the installed theme card offers “Dark only” or “Light only”, assign the matching mode. The CSS also gates itself to the correct native base. An opposite base should retain its native palette rather than become a partly converted interface.
 5. Read existing non-sensitive messages, search results, settings, code, links and a selected passage. Check keyboard focus and checked/unchecked switches before keeping the theme enabled. No test message or private conversation is required. Repeat with increased native chat size or zoom, without changing Windows scaling or display calibration. Test Obscur first and give Clair the same coverage.
 
 ### Switch
@@ -63,7 +63,7 @@ A font plugin can override the theme. Compare its current settings with the inte
 
 ### Troubleshooting
 
-If the theme is missing, confirm the downloaded file still ends in `.theme.css`, the actual loader folder and the **Load missing Themes** control. If colors do not change, check the matching native base and other full themes. If fonts differ, preserve and inspect the existing font-plugin settings. Disable only this candidate and compare the same surface with the recorded baseline. Keep QuickCSS intact. Retain the client version, package hash and exact loader error rather than installing another client.
+If the theme is missing, confirm the downloaded file still ends in `.theme.css`, the actual loader folder and the “Load missing Themes” control. If colors do not change, check the matching native base and other full themes. If fonts differ, preserve and inspect the existing font-plugin settings. Disable only this candidate and compare the same surface with the recorded baseline. Keep QuickCSS intact. Retain the client version, package hash and exact loader error rather than installing another client.
 
 ## Ordinary Google Chrome
 
@@ -76,8 +76,8 @@ Use a [separate local test profile](https://support.google.com/chrome/answer/236
 ### Install
 
 1. Extract one Chrome ZIP to a permanent folder outside the repository's managed `dist/` directory. If building from source, copy the generated theme folder to that separate installation location. Locate the folder containing `manifest.json`.
-2. Open `chrome://extensions` in the test profile, enable **Developer mode**, choose **Load unpacked** and select that folder. This is Chrome's [development installation route](https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world#load-unpacked), not a consumer store installation. If Chrome rejects the package or the control is unavailable, retain the exact error. Do not change browser policy or switch to another browser to obtain a pass.
-3. Inspect **Settings > Appearance** and the real browser frame. Begin with Obscur, then give Clair the same checks. Test active/inactive tabs, multiple windows, the address bar and suggestions, bookmarks, tab groups, downloads and Incognito recognition.
+2. Open `chrome://extensions` in the test profile, enable “Developer mode”, choose “Load unpacked” and select that folder. This is Chrome's [development installation route](https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world#load-unpacked), not a consumer store installation. If Chrome rejects the package or the control is unavailable, retain the exact error. Do not change browser policy or switch to another browser to obtain a pass.
+3. Inspect “Settings > Appearance” and the real browser frame. Begin with Obscur, then give Clair the same checks. Test active/inactive tabs, multiple windows, the address bar and suggestions, bookmarks, tab groups, downloads and Incognito recognition.
 4. Try windowed, split-screen and maximized sizes. Use normal browser zoom for page content when needed. Page zoom does not establish a change to Chrome's native UI font or frame scaling.
 
 ### Switch
@@ -86,7 +86,7 @@ Installing the other package should switch the active theme in that profile. Con
 
 ### Remove and restore
 
-To remove it, use **Settings > Appearance > Reset to default**, Chrome's [documented removal path](https://support.google.com/chrome_webstore/answer/148695). Confirm the candidate is gone, restore any test-profile color choice recorded earlier and close the test windows. Do not delete a profile containing data you want to keep. Keep the everyday profile untouched until the preview has passed the intended checks.
+To remove it, use “Settings > Appearance > Reset to default”, Chrome's [documented removal path](https://support.google.com/chrome_webstore/answer/148695). Confirm the candidate is gone, restore any test-profile color choice recorded earlier and close the test windows. Do not delete a profile containing data you want to keep. Keep the everyday profile untouched until the preview has passed the intended checks.
 
 Remove only a remaining Clair or Obscur development entry if the extensions page exposes it, then return Developer mode to its recorded setting. Do not delete a live installation folder before removing its candidate.
 
@@ -109,16 +109,16 @@ Use already installed desktop Firefox 128 or later and a disposable, unsynced pr
 ### Install
 
 1. Save the chosen XPI. An XPI is a ZIP archive. Make a separate copy with a `.zip` extension and extract it to a test folder, retaining the original download and license. Locate `manifest.json` directly inside the extracted folder.
-2. Open `about:debugging`, select **This Firefox**, choose **Load Temporary Add-on**, and select that `manifest.json`. This is Mozilla's temporary developer route. It lasts until removal or a Firefox restart. [Temporary installation](https://extensionworkshop.com/documentation/develop/temporary-installation-in-firefox/) and [XPI packaging](https://extensionworkshop.com/documentation/publish/package-your-extension/).
+2. Open `about:debugging`, select “This Firefox”, choose “Load Temporary Add-on”, and select that `manifest.json`. This is Mozilla's temporary developer route. It lasts until removal or a Firefox restart. [Temporary installation](https://extensionworkshop.com/documentation/develop/temporary-installation-in-firefox/) and [XPI packaging](https://extensionworkshop.com/documentation/publish/package-your-extension/).
 3. Confirm the selected Clair or Obscur identity and inspect tabs, address suggestions, focused fields, popups, sidebar selection and private-window recognition. A temporary load does not establish signed distribution or ordinary restart persistence.
 
 ### Switch
 
-Remove the current temporary candidate in **This Firefox**, then load the other appearance's extracted manifest using the same route. Confirm the effective appearance and switch back once. Keep the system website-appearance preference recorded earlier. The two packages are manual choices, without an automatic light/dark pair.
+Remove the current temporary candidate in “This Firefox”, then load the other appearance's extracted manifest using the same route. Confirm the effective appearance and switch back once. Keep the system website-appearance preference recorded earlier. The two packages are manual choices, without an automatic light/dark pair.
 
 ### Remove and restore
 
-Remove only Clair and Obscur temporary entries from `about:debugging`. In `about:addons` > **Themes**, enable the recorded original theme. If a candidate remains listed there, use its own three-dot menu and **Remove**. Confirm the original appearance returns. A normal Firefox restart also ends temporary installation, but it does not prove the previous custom theme was restored. [Mozilla theme removal](https://support.mozilla.org/en-US/kb/disable-or-remove-add-ons).
+Remove only Clair and Obscur temporary entries from `about:debugging`. In `about:addons` > “Themes”, enable the recorded original theme. If a candidate remains listed there, use its own three-dot menu and “Remove”. Confirm the original appearance returns. A normal Firefox restart also ends temporary installation, but it does not prove the previous custom theme was restored. [Mozilla theme removal](https://support.mozilla.org/en-US/kb/disable-or-remove-add-ons).
 
 ### Fonts
 
@@ -137,7 +137,7 @@ Use already installed desktop Edge with a separate recoverable profile, without 
 ### Install
 
 1. Extract the chosen Chrome ZIP to a permanent test folder outside managed build output. Locate the folder containing `manifest.json`.
-2. In Edge, open **Extensions** > **Manage extensions** (`edge://extensions`), enable **Developer mode**, choose **Load unpacked** and select that folder. These controls come from [Microsoft's local sideloading guide](https://learn.microsoft.com/en-us/microsoft-edge/extensions/getting-started/extension-sideloading). The general route does not establish that this color theme works in Edge.
+2. In Edge, open “Extensions” > “Manage extensions” (`edge://extensions`), enable “Developer mode”, choose “Load unpacked” and select that folder. These controls come from [Microsoft's local sideloading guide](https://learn.microsoft.com/en-us/microsoft-edge/extensions/getting-started/extension-sideloading). The general route does not establish that this color theme works in Edge.
 3. Confirm the package identity in Edge's appearance settings. Inspect tabs, address suggestions, favorites, sidebar, active/inactive windows and InPrivate recognition. Record unchanged Edge-owned surfaces rather than recoloring them with extra CSS.
 
 ### Switch
@@ -146,7 +146,7 @@ Remove the current candidate using the theme removal route below, then load the 
 
 ### Remove and restore
 
-Open `edge://settings/appearance` and use the custom theme's **Remove** control. This theme-specific route was documented by [Microsoft's Edge program manager](https://techcommunity.microsoft.com/discussions/edgeinsiderannouncements/make-microsoft-edge-your-own-with-themes/2083165) in 2021. Current [Edge appearance documentation](https://support.microsoft.com/en-us/edge/visual-changes-to-microsoft-edge) warns that controls can differ by version. Check that the removal control exists before loading a candidate. If it is absent, stop the test rather than guessing a global reset.
+Open `edge://settings/appearance` and use the custom theme's “Remove” control. This theme-specific route was documented by [Microsoft's Edge program manager](https://techcommunity.microsoft.com/discussions/edgeinsiderannouncements/make-microsoft-edge-your-own-with-themes/2083165) in 2021. Current [Edge appearance documentation](https://support.microsoft.com/en-us/edge/visual-changes-to-microsoft-edge) warns that controls can differ by version. Check that the removal control exists before loading a candidate. If it is absent, stop the test rather than guessing a global reset.
 
 Restore the recorded original theme and native appearance, confirm the baseline returns, and remove only a remaining candidate entry if Manage extensions exposes it. Return Developer mode to its recorded setting after candidate removal. Keep your everyday profile intact.
 
@@ -167,7 +167,7 @@ Use already installed desktop Brave with a separate unsynced test profile. Recor
 ### Install
 
 1. Extract the chosen Chrome ZIP to a permanent test folder outside managed build output, with `manifest.json` directly inside.
-2. Open `brave://extensions`, enable **Developer mode**, choose **Load unpacked** and select that folder. Brave's own [extension control strings](https://github.com/brave/brave-core/blob/master/app/extensions_strings.grdp) establish these controls. This is a source-backed developer candidate route, not completed native theme acceptance.
+2. Open `brave://extensions`, enable “Developer mode”, choose “Load unpacked” and select that folder. Brave's own [extension control strings](https://github.com/brave/brave-core/blob/master/app/extensions_strings.grdp) establish these controls. This is a source-backed developer candidate route, not completed native theme acceptance.
 3. Check the theme's identity and effective palette. Inspect active/inactive tabs and windows, address suggestions, sidebars and private-window recognition. Brave Colors or other host choices can take precedence.
 
 ### Switch
@@ -176,7 +176,7 @@ Use the theme-specific reset below to stop the current candidate, then load the 
 
 ### Remove and restore
 
-In Brave's **Settings** > **Appearance**, use the theme-specific **Reset to default** control, whose accessibility label is **Reset to default theme** in [Brave's settings source](https://github.com/brave/brave-core/blob/master/app/settings_strings.grdp). Confirm this control exists before installation. Do not use the browser-wide Reset settings operation, which affects unrelated preferences and data.
+In Brave's “Settings” > “Appearance”, use the theme-specific “Reset to default” control, whose accessibility label is “Reset to default theme” in [Brave's settings source](https://github.com/brave/brave-core/blob/master/app/settings_strings.grdp). Confirm this control exists before installation. Do not use the browser-wide Reset settings operation, which affects unrelated preferences and data.
 
 Restore the recorded original theme, Brave Colors and native appearance. Confirm the baseline returns. Remove only a remaining Clair/Obscur entry if the extensions page exposes it, then return Developer mode to its recorded setting. Keep the extracted folder until candidate removal is complete.
 
@@ -196,17 +196,17 @@ Use already installed desktop Vivaldi 5.0 or later and a separate unsynced test 
 
 ### Install
 
-Vivaldi's documented ZIP route uses **Settings > Themes > Library > Open Theme** on desktop version 5.0 or later. Select one settings ZIP, inspect the live preview, and choose **Cancel** to discard it or **Install** only within an authorized test. Record existing theme, accent, transparency, schedule and private-window choices before testing. Check whether this minimal color-only export preserves them. Restore the previously selected theme and any test changes. Do not change global settings to hide an import failure.
+Vivaldi's documented ZIP route uses “Settings > Themes > Library > Open Theme” on desktop version 5.0 or later. Select one settings ZIP, inspect the live preview, and choose “Cancel” to discard it or “Install” only within an authorized test. Record existing theme, accent, transparency, schedule and private-window choices before testing. Check whether this minimal color-only export preserves them. Restore the previously selected theme and any test changes. Do not change global settings to hide an import failure.
 
 The [official ZIP import guide](https://help.vivaldi.com/desktop/appearance-customization/shareable-vivaldi-themes/) supplies that route. Keep the ZIP intact. The exported integer `version: 1` is settings metadata, distinct from package version 0.3.0.
 
 ### Switch
 
-Import the other appearance through the same preview route. After installation, select Clair or Obscur in **Settings** > **Themes** > **Library** to apply it, then select the first again. Inspect focus, text selection, tabs, toolbar, suggestions and panels. Preserve the original schedule and private-window theme, which are separate [Vivaldi controls](https://help.vivaldi.com/desktop/appearance-customization/browser-themes/).
+Import the other appearance through the same preview route. After installation, select Clair or Obscur in “Settings” > “Themes” > “Library” to apply it, then select the first again. Inspect focus, text selection, tabs, toolbar, suggestions and panels. Preserve the original schedule and private-window theme, which are separate [Vivaldi controls](https://help.vivaldi.com/desktop/appearance-customization/browser-themes/).
 
 ### Remove and restore
 
-Select only an imported Clair/Obscur theme in the theme library and use its **minus** deletion control, then select the recorded original theme. Vivaldi's [official 5.0 description](https://vivaldi.com/blog/vivaldi-5-0-desktop-themes-translate-panel/) documents that deletion for user-created or installed themes. Leave built-in and previous themes intact. Restore any changed accent, transparency, schedule and private-window choices and confirm the original appearance. If the installed version does not expose the deletion control, select the original theme to disable the candidate and retain the inactive entry for later removal.
+Select only an imported Clair/Obscur theme in the theme library and use its minus deletion control, then select the recorded original theme. Vivaldi's [official 5.0 description](https://vivaldi.com/blog/vivaldi-5-0-desktop-themes-translate-panel/) documents that deletion for user-created or installed themes. Leave built-in and previous themes intact. Restore any changed accent, transparency, schedule and private-window choices and confirm the original appearance. If the installed version does not expose the deletion control, select the original theme to disable the candidate and retain the inactive entry for later removal.
 
 ### Fonts
 
@@ -224,17 +224,17 @@ Use already installed desktop Opera GX with a separate recoverable, unsynced tes
 
 ### Install
 
-The paired Opera GX ZIP must be extracted to a separate permanent test folder. Its official developer route uses **opera:extensions > Developer mode > Load unpacked**, then shows the candidate in **opera:mods**. Record existing mods, their enabled elements and native appearance first. Test Clair in Light and Obscur in Dark, then disable only this candidate and restore the recorded choices. Keep sounds, music, wallpaper, shaders and website styling absent. The host can limit or derive the supplied colors, so a matching webpage is not proof of the effective palette.
+The paired Opera GX ZIP must be extracted to a separate permanent test folder. Its official developer route uses `opera:extensions > Developer mode > Load unpacked`, then shows the candidate in `opera:mods`. Record existing mods, their enabled elements and native appearance first. Test Clair in Light and Obscur in Dark, then disable only this candidate and restore the recorded choices. Keep sounds, music, wallpaper, shaders and website styling absent. The host can limit or derive the supplied colors, so a matching webpage is not proof of the effective palette.
 
-Choose the extracted folder containing `manifest.json`, retaining its icon and license. The [official load procedure](https://github.com/opera-gaming/gxmods#how-to-load-sample-mods) establishes the developer controls. Confirm the candidate's **Clair and Obscur** identity and its theme element in **opera:mods** before judging the palette.
+Choose the extracted folder containing `manifest.json`, retaining its icon and license. The [official load procedure](https://github.com/opera-gaming/gxmods#how-to-load-sample-mods) establishes the developer controls. Confirm the candidate's Clair and Obscur identity and its theme element in `opera:mods` before judging the palette.
 
 ### Switch
 
-Keep the one paired candidate enabled and choose native **Light** for Clair or **Dark** for Obscur in Opera GX's appearance controls. Switch back once. There is no second package to install. The [official mod contract](https://github.com/opera-gaming/gxmods/blob/main/documentation/mods.md) pairs the light and dark entries. Check tabs, address suggestions, private-window recognition and selected/highlighted text in each mode.
+Keep the one paired candidate enabled and choose native “Light” for Clair or “Dark” for Obscur in Opera GX's appearance controls. Switch back once. There is no second package to install. The [official mod contract](https://github.com/opera-gaming/gxmods/blob/main/documentation/mods.md) pairs the light and dark entries. Check tabs, address suggestions, private-window recognition and selected/highlighted text in each mode.
 
 ### Remove and restore
 
-In `opera:mods`, disable only **Clair and Obscur**, then restore the recorded native appearance and previous mods with their original enabled elements. Confirm the baseline returns. To remove the loaded development entry, use that candidate's **Remove** control in `opera:extensions` if exposed by the installed version. Confirm the disable/removal controls before loading. Return Developer mode to its recorded setting after removal and retain the extracted folder until then. Do not reset all mods or delete unrelated packages.
+In `opera:mods`, disable only Clair and Obscur, then restore the recorded native appearance and previous mods with their original enabled elements. Confirm the baseline returns. To remove the loaded development entry, use that candidate's “Remove” control in `opera:extensions` if exposed by the installed version. Confirm the disable/removal controls before loading. Return Developer mode to its recorded setting after removal and retain the extracted folder until then. Do not reset all mods or delete unrelated packages.
 
 ### Fonts
 
@@ -248,14 +248,14 @@ Check the manifest folder if the mod does not appear. On loading rejection or ab
 
 ### Prerequisites and status
 
-Use an already installed Vencord desktop client, Vesktop or supported browser extension with its **Local Themes** loader. Browser, desktop and Vesktop outcomes remain separate and unverified for these 0.2.0 files. Vencord's userscript does not support Themes. Do not install a different client, extension or website restyler to use this guide. These are unofficial client-mod choices, without Discord endorsement or gallery approval.
+Use an already installed Vencord desktop client, Vesktop or supported browser extension with its “Local Themes” loader. Browser, desktop and Vesktop outcomes remain separate and unverified for these 0.2.0 files. Vencord's userscript does not support Themes. Do not install a different client, extension or website restyler to use this guide. These are unofficial client-mod choices, without Discord endorsement or gallery approval.
 
 Record native appearance, enabled themes, activation modes, text size/zoom and font-plugin settings. Preserve QuickCSS and any same-name file before copying. Do not export account/session data.
 
 ### Install
 
-1. Open **Settings** > **Vencord** > **Themes** > **Local Themes**. Desktop/Vesktop: use **Open Themes Folder**, copy the downloaded `Clair-Vencord.theme.css` or `Obscur-Vencord.theme.css`, then choose **Load missing Themes**. Browser extension: use **Upload Theme** to select the downloaded CSS, then refresh the local list if needed. These branches come from [Vencord's local loader source](https://github.com/Vendicated/Vencord/blob/main/src/components/settings/tabs/themes/LocalThemesTab.tsx).
-2. Use native **Light** for Clair or native **Dark** for Obscur. Disable only conflicting full color themes, enable one family card, and match its Light only/Dark only activation mode if offered. The opposite native base retains its own palette.
+1. Open “Settings” > Vencord > “Themes” > “Local Themes”. Desktop/Vesktop: use “Open Themes Folder”, copy the downloaded `Clair-Vencord.theme.css` or `Obscur-Vencord.theme.css`, then choose “Load missing Themes”. Browser extension: use “Upload Theme” to select the downloaded CSS, then refresh the local list if needed. These branches come from [Vencord's local loader source](https://github.com/Vendicated/Vencord/blob/main/src/components/settings/tabs/themes/LocalThemesTab.tsx).
+2. Use native “Light” for Clair or native “Dark” for Obscur. Disable only conflicting full color themes, enable one family card, and match its Light only/Dark only activation mode if offered. The opposite native base retains its own palette.
 3. Check readable messages, inputs, links, code, icons, switch states and keyboard focus, then supported larger text/zoom. A fixture is not a loaded-client pass.
 
 ### Switch
@@ -284,8 +284,8 @@ Record native appearance, enabled themes, text size/zoom and font/plugin setting
 
 ### Install
 
-1. In **Settings** > **BetterDiscord** > **Themes**, choose **Open Themes Folder**. Copy the selected `Clair-BetterDiscord.theme.css` or `Obscur-BetterDiscord.theme.css` into that actual folder without replacing existing files. Return to Themes and enable its card. This is the [official add-on installation route](https://docs.betterdiscord.app/users/guides/installing-addons.html).
-2. Select native **Light** for Clair or native **Dark** for Obscur. Enable only one family theme and temporarily disable only conflicting full themes. The opposite native base keeps its baseline.
+1. In “Settings” > BetterDiscord > “Themes”, choose “Open Themes Folder”. Copy the selected `Clair-BetterDiscord.theme.css` or `Obscur-BetterDiscord.theme.css` into that actual folder without replacing existing files. Return to Themes and enable its card. This is the [official add-on installation route](https://docs.betterdiscord.app/users/guides/installing-addons.html).
+2. Select native “Light” for Clair or native “Dark” for Obscur. Enable only one family theme and temporarily disable only conflicting full themes. The opposite native base keeps its baseline.
 3. Check messages, inputs, links, code, icons, switches and keyboard focus at normal and increased supported text size/zoom. Keep disabled and critical controls recognizable.
 
 ### Switch
