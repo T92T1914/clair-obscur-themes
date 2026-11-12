@@ -72,8 +72,9 @@ Direct project distribution is separate from gallery approval. BetterDiscord's l
 
 | Target | Local contract | Native installation and loaded surfaces | Restart and restoration | Distribution |
 | --- | --- | --- | --- | --- |
-| Chrome 0.1.1 | Existing accepted generator and unchanged bytes | Existing limited Obscur evidence retained | Existing incomplete gates retained | Original preview release unchanged |
+| Chrome 0.1.1 | Existing accepted generator and unchanged bytes | Both appearances installed in an isolated profile, with limited native surface observations | Complete interface journeys, switching, removal and test-profile cleanup open | Original preview release unchanged |
 | Equicord 0.1.1 | Existing accepted generator and unchanged bytes | Existing limited Clair/Obscur evidence retained | Prior restoration evidence retained, full acceptance open | Original local CSS unchanged |
+| Clair Equicord 0.1.2 | Separate focus-color correction over the unchanged Equicord generator | Native focus at five inspected Tab stops, populated search results and five Inter faces in the recorded client | Original installed bytes restored after each trial, normal restart unverified | Current Clair choice, original 0.1.1 CSS retained |
 | Firefox 0.2.0 | Static manifest, bounded package and palette pairing tests | Deferred under SHARED_PC | Deferred under SHARED_PC | Unsigned candidate, signing and store review pending |
 | Edge, Chromium 0.1.1 | Exact Chrome artifact reuse | Deferred under SHARED_PC | Deferred under SHARED_PC | No Edge store submission |
 | Brave using Chrome 0.1.1 | Exact original Chromium artifact reuse | Deferred under SHARED_PC | Deferred under SHARED_PC | No Brave-specific store or native claim |
