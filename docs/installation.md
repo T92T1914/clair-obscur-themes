@@ -254,7 +254,7 @@ Record native appearance, enabled themes, activation modes, text size/zoom and f
 
 ### Install
 
-1. Open “Settings” > Vencord > “Themes” > “Local Themes”. Desktop/Vesktop: use “Open Themes Folder”, copy the downloaded `Clair-Vencord.theme.css` or `Obscur-Vencord.theme.css`, then choose “Load missing Themes”. Browser extension: use “Upload Theme” to select the downloaded CSS, then refresh the local list if needed. These branches come from [Vencord's local loader source](https://github.com/Vendicated/Vencord/blob/main/src/components/settings/tabs/themes/LocalThemesTab.tsx).
+1. Open “Settings” > “Vencord” > “Themes” > “Local Themes”. Desktop/Vesktop: use “Open Themes Folder”, copy the downloaded `Clair-Vencord.theme.css` or `Obscur-Vencord.theme.css`, then choose “Load missing Themes”. Browser extension: use “Upload Theme” to select the downloaded CSS, then refresh the local list if needed. These branches come from [Vencord's local loader source](https://github.com/Vendicated/Vencord/blob/main/src/components/settings/tabs/themes/LocalThemesTab.tsx).
 2. Use native “Light” for Clair or native “Dark” for Obscur. Disable only conflicting full color themes, enable one family card, and match its Light only/Dark only activation mode if offered. The opposite native base retains its own palette.
 3. Check readable messages, inputs, links, code, icons, switch states and keyboard focus, then supported larger text/zoom. A fixture is not a loaded-client pass.
 
@@ -284,7 +284,7 @@ Record native appearance, enabled themes, text size/zoom and font/plugin setting
 
 ### Install
 
-1. In “Settings” > BetterDiscord > “Themes”, choose “Open Themes Folder”. Copy the selected `Clair-BetterDiscord.theme.css` or `Obscur-BetterDiscord.theme.css` into that actual folder without replacing existing files. Return to Themes and enable its card. This is the [official add-on installation route](https://docs.betterdiscord.app/users/guides/installing-addons.html).
+1. In “Settings” > “BetterDiscord” > “Themes”, choose “Open Themes Folder”. Copy the selected `Clair-BetterDiscord.theme.css` or `Obscur-BetterDiscord.theme.css` into that actual folder without replacing existing files. Return to Themes and enable its card. This is the [official add-on installation route](https://docs.betterdiscord.app/users/guides/installing-addons.html).
 2. Select native “Light” for Clair or native “Dark” for Obscur. Enable only one family theme and temporarily disable only conflicting full themes. The opposite native base keeps its baseline.
 3. Check messages, inputs, links, code, icons, switches and keyboard focus at normal and increased supported text size/zoom. Keep disabled and critical controls recognizable.
 
