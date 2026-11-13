@@ -1,0 +1,42 @@
+{
+  "id": "clone-hero-route-20261113",
+  "basis_revision": "4430fd56a8132fe6f864148f9c4a7535c7344b6f",
+  "title": "Clair and Obscur for Clone Hero",
+  "subtitle": "A skin is a preview until I play it.",
+  "footer": "Native play needs its own check.",
+  "output_prefix": "docs/images/clone-hero-obscur",
+  "adapter": {
+    "source": "tokens-monochrome.json",
+    "roles": {
+      "canvas": "#000000",
+      "panel": "#151515",
+      "text": "#ffffff",
+      "muted": "#cccccc",
+      "line": "#999999"
+    }
+  },
+  "source_paths": [],
+  "panels": [
+    {
+      "title": "Build",
+      "lines": [
+        "Profiles and stills from tokens",
+        "Two highway videos pinned by hash"
+      ]
+    },
+    {
+      "title": "Install",
+      "lines": [
+        "Copy into the Custom folder",
+        "Backgrounds stay separate"
+      ]
+    },
+    {
+      "title": "Native play",
+      "lines": [
+        "Played by me, not by the build",
+        "Not accepted yet"
+      ]
+    }
+  ]
+}
