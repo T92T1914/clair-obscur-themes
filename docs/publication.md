@@ -54,7 +54,7 @@ Before a store submission, check the existing authorized publisher account, curr
 
 Prepare the required original promotional image and actual native product screenshots at the [documented sizes](https://developer.chrome.com/docs/webstore/images). At least one 1280 × 800 or 640 × 400 native screenshot is still missing. A webpage mockup or theme preview card must not be substituted for the browser frame. Store packages are therefore not submission ready solely because their manifests and ZIPs validate.
 
-Review listing text separately for each variant. State that fonts and websites remain native. Explain the light or dark palette directly. Do not promise OLED power savings, burn-in prevention, eye health benefits or a correction to a recording pipeline.
+Review listing text separately for each variant. State that fonts and websites remain native. Explain the light or dark palette directly. Do not promise OLED power savings, burn in prevention, eye health benefits or a correction to a recording pipeline.
 
 ## Store status
 

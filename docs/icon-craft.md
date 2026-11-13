@@ -38,7 +38,7 @@ Phone installation and application are deferred. Current launcher identities, Th
 
 ## Focused continuation, artwork 0.31.0
 
-The everyday use continuation revisits three documented C-shaped similarities, rather than reopening the complete 300 drawing review. Current official publisher images for Coinbase, Coursera and Chime match their retained reference bytes. There is no rebrand claim. The original alternatives were compared with the accepted 0.30.0 production PNGs at 24, 32, 48, 64 and 128 pixels in both appearances, individually and in labeled and unlabeled mixed groups. The final mixed group uses the selected pair, accepted Chime and five unchanged neighboring controls.
+The everyday use continuation revisits three documented similarities in the shape of a C, rather than reopening the complete 300 drawing review. Current official publisher images for Coinbase, Coursera and Chime match their retained reference bytes. There is no rebrand claim. The original alternatives were compared with the accepted 0.30.0 production PNGs at 24, 32, 48, 64 and 128 pixels in both appearances, individually and in labeled and unlabeled mixed groups. The final mixed group uses the selected pair, accepted Chime and five unchanged neighboring controls.
 
 | Choice | Selection and tradeoff |
 | --- | --- |
