@@ -35,7 +35,7 @@ No Vivaldi or Opera GX native schema validator was run. The tests enforce the pr
 | Local application versions | September checks identified Chrome 153.0.8010.53 and Equibop 3.3.1.0. October checks identified Chrome 155.0.8059.79 and a newer Equicord client build, recorded below | Results apply only to the recorded versions, configuration and inspected scope |
 | Rendered Inter faces | All six installed faces rendered in the October 14 later-boot headless check. Dated native Clair 0.1.2 observations now cover Regular, SemiBold, Bold, Regular Italic and SemiBold Italic. Obscur coverage remains scoped below | Verify Bold Italic, complete current face coverage across both variants and native code/language fallback. The later-boot result does not establish continuous or permanent persistence |
 | Native restoration | Equibop checks restored their recorded appearance, theme, sync, FontLoader and QuickCSS state. The candidate trial restored original installed CSS bytes and preserved the conversation current at cleanup | Chrome restoration and test-profile cleanup remain incomplete. Earlier selected-conversation, scroll-position and search-history identity are not claimed |
-| Physical display and comfort | User-reported baseline is recorded in the design document | Physical viewing, captured-media comparison and subjective comfort remain **not verified** |
+| Physical display and comfort | User-reported baseline is recorded in the design document | Physical viewing, captured-media comparison and subjective comfort remain not verified |
 
 The identified application versions are Windows test targets. Other operating systems, Discord clients and browser derivatives are not covered by a native compatibility claim. The installation confirmations do not establish complete Chrome acceptance. Detailed private environment and capture records stay outside the public source.
 
@@ -59,9 +59,9 @@ The next normal Windows restart on September 24, 2026 reproduced the failure. Be
 
 The separate diagnostic reproduced the same pattern after that restart: generated aliases and ordinary family selection supplied no Inter glyphs, all twelve metadata-derived local lookups failed, and the same six files rendered correctly through the direct-byte control. These results establish that the previous activation restored only the tested session. They do not identify why Windows failed to load the persisted per-user installation. The direct-byte control bypasses installed-name discovery and cannot satisfy the local-font requirement.
 
-After that failure, Windows Explorer's normal per-user **Install** operation was used on the same six official, hash-verified TTF files. This installation did not use **Install for all users**, scripted resource activation, cache deletion or service restarts. Fresh isolated Chrome 153.0.8010.53 processes then passed the required six-face check and the missing-font control at revision `4db349fa349ae3a46b20a6befbf8d99187834f90`, both with zero skips. Each expected PostScript face rendered a positive glyph count. A separate diagnostic using published artifact revision `303c5dbdc54430d5a3d57dbd574ed230eb9a8c4a` resolved all six faces through generated aliases, ordinary family selection, full names and PostScript names. The direct-byte control still rendered all six faces, and the intentionally missing font still used system fallback.
+After that failure, Windows Explorer's normal per-user “Install” operation was used on the same six official, hash-verified TTF files. This installation did not use “Install for all users”, scripted resource activation, cache deletion or service restarts. Fresh isolated Chrome 153.0.8010.53 processes then passed the required six-face check and the missing-font control at revision `4db349fa349ae3a46b20a6befbf8d99187834f90`, both with zero skips. Each expected PostScript face rendered a positive glyph count. A separate diagnostic using published artifact revision `303c5dbdc54430d5a3d57dbd574ed230eb9a8c4a` resolved all six faces through generated aliases, ordinary family selection, full names and PostScript names. The direct-byte control still rendered all six faces, and the intentionally missing font still used system fallback.
 
-This establishes current-session availability after native installation. At that stage, persistence after the installation remained **not verified**, and the next normal Windows restart still needed a check before any repair or activation. The earlier restart failure remains evidence of the session activation's limit, and its cause is still unresolved. Microsoft documents [temporary resource loading](https://learn.microsoft.com/en-us/windows/win32/gdi/font-installation-and-deletion) separately from its [normal font installation procedure](https://support.microsoft.com/en-us/windows/experience/personalization/manage-fonts-in-windows).
+This establishes current-session availability after native installation. At that stage, persistence after the installation remained not verified, and the next normal Windows restart still needed a check before any repair or activation. The earlier restart failure remains evidence of the session activation's limit, and its cause is still unresolved. Microsoft documents [temporary resource loading](https://learn.microsoft.com/en-us/windows/win32/gdi/font-installation-and-deletion) separately from its [normal font installation procedure](https://support.microsoft.com/en-us/windows/experience/personalization/manage-fonts-in-windows).
 
 The September 24 required installed-font check passed. The partial native Equibop typography results below do not establish all six native faces. Native Chrome acceptance remains open. The published 0.1.1 theme files are unchanged.
 
@@ -88,11 +88,11 @@ This establishes installed-face availability after a later Windows boot, before 
 
 ## Partial native Equibop results
 
-On September 24, 2026, native checks loaded the published 0.1.1 CSS through Equicord's actual theme loader, located with **Open Themes Folder**. The observed client reported Stable 619060 (`3bd5565`), Equicord `957307d5f` Standalone, Electron 43.7.1 and Chromium 150.0.7871.250. The retained installed-file hashes match the published CSS artifacts.
+On September 24, 2026, native checks loaded the published 0.1.1 CSS through Equicord's actual theme loader, located with “Open Themes Folder”. The observed client reported Stable 619060 (`3bd5565`), Equicord `957307d5f` Standalone, Electron 43.7.1 and Chromium 150.0.7871.250. The retained installed-file hashes match the published CSS artifacts.
 
 Obscur applied on native Dark and Clair applied on native Light. Both variants kept the inspected settings, theme gear menus, enabled/disabled controls and icons readable. The built-in Accessibility message preview showed readable text, a link, emoji and a button under both palettes. Native 16 px text size and default density were left unchanged. These observations do not cover ordinary message histories or the full client interface.
 
-The actual client's embedded DevTools **Rendered Fonts** view identified these local faces with positive glyph counts:
+The actual client's embedded DevTools “Rendered Fonts” view identified these local faces with positive glyph counts:
 
 | Variant | Regular 400 description paragraph | Bold 700 theme card title |
 | --- | --- | --- |
@@ -173,9 +173,9 @@ Controlled harness faults demonstrate rejection of a missing word-spacing overri
 
 ## Native Chrome installation result
 
-On September 24, 2026, ordinary Chrome 153.0.8010.53 installed the Obscur 0.1.1 package through **Load unpacked** in a new isolated profile. Chrome's native infobar confirmed **Installed theme "Obscur"**. The everyday profile was not used or modified.
+On September 24, 2026, ordinary Chrome 153.0.8010.53 installed the Obscur 0.1.1 package through “Load unpacked” in a new isolated profile. Chrome's native infobar confirmed Installed theme “Obscur”. The everyday profile was not used or modified.
 
-This establishes installation only. The native session was interrupted before the remaining browser-interface checks, Clair installation, switching, **Reset to default** and cleanup. The isolated test window remained open with Obscur installed at the end of the recorded run. Restoration is **not verified**. Chrome's native interface font remains outside the theme's control.
+This establishes installation only. The native session was interrupted before the remaining browser-interface checks, Clair installation, switching, “Reset to default” and cleanup. The isolated test window remained open with Obscur installed at the end of the recorded run. Restoration is not verified. Chrome's native interface font remains outside the theme's control.
 
 On October 14, 2026, the retained isolated profile was reopened in ordinary Chrome 155.0.8059.79. Its actual Profile Path was confirmed on `chrome://version` before any theme change. The controller then stopped navigation to Appearance because it could not determine the current browser URL with enough confidence to enforce policy. No new theme installation, switching, reset or settings change was performed. At that stop, theme identity, Developer mode and cleanup remained unverified. The test Chrome and task-owned file-browser windows were left open at that stop. The September installation remains historical evidence, and the controller block is not a product defect.
 
@@ -206,7 +206,7 @@ Preserve who performed a native check. A user's manual installation and restorat
 
 Run Obscur first and repeat the same coverage for Clair. Record the package hash, native base, application version and outcome for each scenario. Preserve configuration and use harmless or synthetic content for captures.
 
-**Equibop with Equicord**
+### Equibop with Equicord
 
 - Enable the local theme through the actual loader, confirm its identity and verify disable/restore behavior.
 - Read channel lists, message history, search results, settings, popouts and menus. Check primary and secondary text, empty states, selected text and links.
@@ -215,7 +215,7 @@ Run Obscur first and repeat the same coverage for Clair. Record the package hash
 - Repeat at increased native text size or zoom and smaller window sizes. Check the opposite native base and confirm that the mode gate avoids partial conversion.
 - Record conflicting theme, QuickCSS or FontLoader influence separately. Do not silently change unrelated settings to produce a pass.
 
-**Google Chrome**
+### Google Chrome
 
 - Install the extracted native package in an isolated standard Chrome profile. Confirm theme identity and Reset to default behavior.
 - Inspect active/inactive tabs, focused/unfocused windows, address-bar text and suggestions, bookmarks, tab groups, downloads and the new-tab surface.
@@ -223,7 +223,7 @@ Run Obscur first and repeat the same coverage for Clair. Record the package hash
 - Compare maximized, windowed and split-screen use. Check browser-derived hover/focus states and keyboard navigation.
 - Keep page typography separate from native browser fonts. Do not use a webpage imitation as evidence of the frame.
 
-**Reading and display**
+### Reading and display
 
 - Preserve the existing HDR, SDR brightness, Auto HDR, monitor mode and color-profile associations. Record inspected facts separately from reported settings.
 - Read a sustained passage in both variants, then inspect selection, code and a dense control surface. Record discomfort or ambiguity as feedback, not as a medical finding.

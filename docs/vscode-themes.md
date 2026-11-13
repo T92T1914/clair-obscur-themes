@@ -27,8 +27,8 @@ This generator has its own version and output inventory. It leaves the accepted 
 
 For a first installation, use a disposable VS Code profile. Record its current color-theme selection and settings-sync state before changing anything. Do not replace an existing extension or apply account-wide settings to obtain a test result.
 
-1. Open the Extensions view's menu and choose **Install from VSIX...**. Select the generated VSIX file.
-2. Open **Preferences: Color Theme**. Select **Clair** or **Obscur** from the installed extension. The unique theme identifiers are `clair-obscur-clair` and `clair-obscur-obscur`.
+1. Open the Extensions view's menu and choose “Install from VSIX...”. Select the generated VSIX file.
+2. Open “Preferences: Color Theme”. Select Clair or Obscur from the installed extension. The unique theme identifiers are `clair-obscur-clair` and `clair-obscur-obscur`.
 3. Inspect real code, comments, selections, keyboard focus, lists, inputs, tabs and diagnostics in the languages and extensions you use. Language providers and user color customizations can affect the result.
 4. Switch between both appearances. After an independently normal application restart, check the saved selection before making a repair or changing settings.
 5. Restore the recorded previous theme. Uninstall the local extension if the trial is complete, then confirm the previous selection and sync state. Record any incomplete cleanup.

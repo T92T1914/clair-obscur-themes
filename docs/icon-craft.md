@@ -22,7 +22,7 @@ WEBTOON retains a comic-panel interpretation and The Weather Channel retains a d
 
 ## Construction and references
 
-The family keeps its 512-unit artboard, 32-unit tile inset, 448-unit tile and 104-unit corner radius. Black marks on white Clair tiles and white marks on black Obscur tiles share geometry and transparent outer margins. The 16-unit base stroke remains, with deliberate local weight, filled forms and optical adjustments where the identifying shape needs them. The 184 refined drawings are maintained as original geometric source in `themeforge/icon_craft.py`; retained drawings remain in the existing generators. No publisher pixels, other icon-pack paths or font files are imported.
+The family keeps its 512-unit artboard, 32-unit tile inset, 448-unit tile and 104-unit corner radius. Black marks on white Clair tiles and white marks on black Obscur tiles share geometry and transparent outer margins. The 16-unit base stroke remains, with deliberate local weight, filled forms and optical adjustments where the identifying shape needs them. The 184 refined drawings are maintained as original geometric source in `themeforge/icon_craft.py`. Retained drawings remain in the existing generators. No publisher pixels, other icon-pack paths or font files are imported.
 
 Official app listings in the catalogue supplied bounded identity references. The [Arcticons construction guide](https://docs.arcticons.com/contribute/creating-icons), [Lucide principles](https://lucide.dev/contribute/icons/design-principles) and [Samsung symbol guidance](https://developer.samsung.com/one-ui/iconography/symbol.html) informed comparisons. Their grids and rules belong to their own systems. The companion consumes mapped PNG resources, so [Android adaptive-icon guidance](https://developer.android.com/develop/ui/compose/system/icon_design_adaptive) is context rather than a claim that these resources implement adaptive layers.
 
@@ -53,7 +53,7 @@ Artwork 0.31.0 changes four SVGs and retains the other 596 exact 0.30.0 bytes. A
 
 ## Targeted retained-icon refinement, artwork 0.32.0
 
-This continuation revisits My Spectrum, Wallpaper Engine and Pinterest from the existing catalogue. Their selection comes from the supplied October 21 app screen, not a new complete phone inventory. Original alternatives were compared with accepted 0.31.0 PNGs at 24, 32, 48, 64 and 128 pixels in both appearances, including labeled and unlabeled mixed groups with unchanged controls. The retained publisher-reference images inform the app cues; their artwork is not imported into the package.
+This continuation revisits My Spectrum, Wallpaper Engine and Pinterest from the existing catalogue. Their selection comes from the supplied October 21 app screen, not a new complete phone inventory. Original alternatives were compared with accepted 0.31.0 PNGs at 24, 32, 48, 64 and 128 pixels in both appearances, including labeled and unlabeled mixed groups with unchanged controls. The retained publisher-reference images inform the app cues. Their artwork is not imported into the package.
 
 | Choice | Selection and tradeoff |
 | --- | --- |
@@ -71,7 +71,7 @@ Proton VPN's outer triangle and folded centre remain intact. The panel-colour se
 
 Private comparisons retained the accepted 12-unit drawing and tested separate 16- and 20-unit alternatives at 24, 32, 48, 64 and 128 pixels in both appearances. Labeled and unlabeled mixed contexts included Proton Pass, Proton Authenticator, Proton Mail, Samsung Browser and Spotify. The 20-unit alternative provided the stronger small-size separation without changing the outer triangle, counter, tile, centre or mapping. Those five controls and the other inspected drawings remain unchanged. This is a bounded visual judgment, not a measured recognition benefit or phone result.
 
-Artwork 0.33.0 changes exactly two SVGs and preserves the other 598 exact 0.32.0 bytes. All 300 IDs, labels and catalogue assignments remain unchanged. The complete 0.32.0 archive joins the 31 earlier preserved collections. Historical override maps remain unchanged; this version alone selects the wider separator. The current Android pair is Clair Icons 0.1.6/code 7 and Obscur Icons 0.1.17/code 18, with compiled resources, signer identity and native application checked separately.
+Artwork 0.33.0 changes exactly two SVGs and preserves the other 598 exact 0.32.0 bytes. All 300 IDs, labels and catalogue assignments remain unchanged. The complete 0.32.0 archive joins the 31 earlier preserved collections. Historical override maps remain unchanged. This version alone selects the wider separator. The current Android pair is Clair Icons 0.1.6/code 7 and Obscur Icons 0.1.17/code 18, with compiled resources, signer identity and native application checked separately.
 
 An independent compatibility change appends the exact `com.dominospizza/com.dominospizza.SplashScreenActivity` launcher component observed on October 29, 2026. All 1,354 earlier ordered rows and their provenance remain intact. This produces 1,355 declarations with the same 290 public package queries, 277 included choices and 23 manual choices. It does not establish that an updated package has been installed or that every visible app is assigned by Theme Park. Keyboard assets and accepted desktop packages are unchanged by this icon refinement.
 
