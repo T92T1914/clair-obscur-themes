@@ -38,7 +38,7 @@ The Chrome downloads are native color themes, not replacement browsers or websit
 
 ## Build and try the preview
 
-The [keyboard companion 0.1.0](docs/keyboard-companion.md) adds separate Gboard and Samsung Keyboard recipes, paired illustrative references and a scoped Samsung palette/Quick panel guide. The preview lets you select a keyboard platform and design appearance independently of the page. Its [refined illustration](docs/art-direction.md#keyboard-hierarchy) gives letters the main weight, keeps utility keys readable and distinguishes an example suggestion with bold text and an underline. Those illustration choices add no native keyboard controls. Two optional Gboard backgrounds reuse the original pure white/black PNG bytes. All nine versioned bundle outputs and their guide remain unchanged, with static routes available without JavaScript. It is not a native keyboard/system-theme import, font installer or phone acceptance result. Existing icon APKs, artwork and desktop packages remain separate.
+The [keyboard companion 0.1.0](docs/keyboard-companion.md) adds separate Gboard and Samsung Keyboard recipes, paired illustrative references and a scoped Samsung palette/Quick panel guide. The preview lets you select a keyboard platform and design appearance independently of the page. Its [refined illustration](docs/art-direction.md#keyboard-hierarchy) gives letters the main weight, keeps utility keys readable and distinguishes an example suggestion with bold text and an underline. Those illustration choices add no native keyboard controls. Two optional Gboard backgrounds reuse the original pure white/black PNG bytes. All nine versioned bundle outputs and their guide remain unchanged, with static routes available without JavaScript. It is not a native keyboard or system theme import, font installer or phone acceptance result. Existing icon APKs, artwork and desktop packages remain separate.
 
 Python 3.11 or newer builds seventeen platform choices with thirteen distinct selected downloads, plus the retained original Clair Equicord file. Edge and Brave reuse the exact Chrome ZIPs. The Vivaldi settings ZIPs are separate from the paired Opera GX mod candidate. From this project directory:
 
@@ -82,7 +82,7 @@ See [development and verification](docs/development.md) for reproducible command
 
 ## Watch and phone candidates
 
-The current watch source is the [0.12.0 black-dial redesign candidate](docs/garmin-redesign.md).
+The current watch source is the [0.12.0 black dial redesign candidate](docs/garmin-redesign.md).
 It changes Hybrid's ceramic bezel, filled numerals, applied markers, moving hand
 proportions, typography and data placement. Original production dial artwork stays
 separate from native moving hands and readings. Digital time sits below the pivot,
@@ -91,48 +91,48 @@ steps retain their exact values and status. The printed scale is a visual refere
 not a dive timer.
 
 The accepted 0.12.0 normal program has a verified physical transfer and
-user-reported activation and normal operation. The [qualification matrix](docs/garmin-watchface.md#0120-native-qualification-in-progress)
+activation and normal operation, both reported by the user. The [qualification matrix](docs/garmin-watchface.md#0120-native-qualification-in-progress)
 keeps that report separate from simulator measurements and untested physical behavior.
 
 The shared palette also supports a [Garmin watch face candidate](docs/garmin-watchface.md)
 and [original phone icon artwork](docs/samsung-icons.md). The [matched native 10:10 comparison](docs/garmin-redesign.md#matched-native-comparison)
 shows the retained 0.11.0 baseline beside the final 0.12.0 normal program on the
-exact 454-pixel SDK target. Both face-only images use the same synthetic values.
+exact 454 pixel SDK target. Both images of the face alone use the same synthetic values.
 They show the change in bezel, markers, hands and information placement without
-claiming physical-watch appearance or universal readability.
+claiming physical watch appearance or universal readability.
 
 Retained 0.12.0 active samples cover both appearances, enlarged text, long step
 counts, unavailable weather and charging. The exact 03:02 clock ink grows from
 50 by 19 to 60 by 23 pixels at scale 1.35. The enlarged 06:30 pose retains readable
-time and recognizable hands, with weather-status text crossing the divided head.
+time and recognizable hands, with weather status text crossing the divided head.
 The [retained failures and correction](docs/garmin-redesign.md#native-findings-and-current-limits)
-explain the one-pixel glyph separator and transparent text backgrounds. The earlier
-measured-row/hand-contour policy remains historical.
+explain the one pixel glyph separator and transparent text backgrounds. The earlier
+measured row and hand contour policy remains historical.
 
 The final matching diagnostic reports 42 passes, zero failures and zero errors,
 while its Java process exits 1. The unexplained exit remains part of the result.
-An earlier diagnostic's null-assertion API error was corrected without dropping
-its seven invalid-input cases. Analog/Digital active rendering, saved choices,
+An earlier diagnostic's API error from a null assertion was corrected without dropping
+its seven invalid input cases. Analog/Digital active rendering, saved choices,
 providers and the Digital Inter resource preserve their contracts.
 
 The first complete Hybrid AOD sequence met its sampled area bound but retained
-34 and 36 lit pixels across consecutive four-frame windows. The exact simulator
+34 and 36 lit pixels across windows of four consecutive frames. The exact simulator
 target reports that this temporal protection rule applies. All three sparse AOD
-paths now finish with a rotating black-column pass. Five corrected native frames
-show zero four-frame intersections and recognizable sparse hands, with some outline
+paths now finish with a rotating black column pass. Five corrected native frames
+show zero intersections across four frames and recognizable sparse hands, with some outline
 segments intentionally absent during a phase. The [current matrix](docs/garmin-watchface.md#0120-native-qualification-in-progress)
 keeps that failure, French SDK locale limits, bounded memory/persistence observations,
-scoped restoration and physical-watch use separate.
+scoped restoration and physical watch use separate.
 
 The retained normal 0.10.0 program is 42,076 bytes and its diagnostic program is 204,636
 bytes. Both compile for the exact `fenix9pro47mm` target with SDK 9.2.0. The focused
-host suite ran 60 tests: 58 passed and two original-font checks skipped. The exact
+host suite ran 60 tests: 58 passed and two original font checks skipped. The exact
 diagnostic subsequently reported all 42 target groups passed, with zero failures
 or errors, although its Java runner returned exit code 1. Three qualification
 runs of the unchanged normal program completed with exit code 0. Native captures
 cover both appearances, ordinary and enlarged text, and a controlled 03:15
-comparison with 0.9.0. Current always-on rasters, a memory sample and one normal
-restart provide bounded simulator evidence. Physical-watch use, complete locale
+comparison with 0.9.0. Current always on rasters, a memory sample and one normal
+restart provide bounded simulator evidence. Physical watch use, complete locale
 and stress coverage, sustained runtime and earlier USB restoration remain open.
 The observed Vietnamese SDK date limitation and runner anomaly are retained in the
 [0.10.0 qualification](docs/garmin-watchface.md#current-0100-qualification).
@@ -141,32 +141,32 @@ pending checks](docs/garmin-watchface.md#0110-readability-candidate) keep source
 compiler, simulator and physical evidence separate.
 
 The preserved 0.9.0 program passed 38 target simulator groups and has bounded
-appearance, enlarged-text, always-on and restart observations. Its 39,788-byte
+appearance, enlarged text, always on and restart observations. Its 39,788 byte
 normal program was transferred and independently read back, without establishing
 physical activation or fit. Its visual direction was subsequently selected for
-redesign. The [version-specific history](docs/garmin-watchface.md#preserved-090-qualification)
+redesign. The [history for that version](docs/garmin-watchface.md#preserved-090-qualification)
 retains those results and restoration limits. They do not qualify 0.10.0.
 
 The preserved 0.8.0 programs compiled for the exact target and passed all 32
-annotated simulator groups. Its bounded menu, font-scale, always-on, memory and
-normal-restart observations remain [recorded history](docs/garmin-watchface.md#preserved-080-qualification).
+annotated simulator groups. Its bounded menu, font scale, always on, memory and
+normal restart observations remain [recorded history](docs/garmin-watchface.md#preserved-080-qualification).
 The 0.8.0 visual direction was subsequently rejected against the requested diver
-reference. One transfer and two exact watch-file readbacks did not establish
-watch-side activation, fit or live providers. Earlier 0.7.0 and other programs
+reference. One transfer and two exact watch file readbacks did not establish
+activation on the watch, fit or live providers. Earlier 0.7.0 and other programs
 retain their own source, test and transfer records. Physical acceptance and the
-earlier Garmin USB-mode restoration remain open.
+earlier Garmin USB mode restoration remain open.
 
-The phone gallery's 0.33.0 black and white collection pairs 276 named Android apps with 24 general symbols, giving 300 choices in both appearances. A [focused refinement](docs/icon-craft.md#fold-clearance-refinement-artwork-0330) widens Proton VPN's fold separator after small-size and mixed-context comparisons. Two SVGs change and the other 598 retain their exact 0.32.0 bytes, including the accepted My Spectrum, Wallpaper Engine and Pinterest refinements. All 32 earlier archives remain preserved, including the completed 184-drawing refinement in 0.30.0. A local finder searches names, icon IDs and Android package IDs, with separate app/function and mapping filters. Both appearances stay together, and the full catalogue remains available without JavaScript. Exact official store links and package hints distinguish similar products. Coverage is a selection, not a complete store catalogue or popularity chart. Human recognition, launcher masking and phone acceptance remain separate.
+The phone gallery's 0.33.0 black and white collection pairs 276 named Android apps with 24 general symbols, giving 300 choices in both appearances. A [focused refinement](docs/icon-craft.md#fold-clearance-refinement-artwork-0330) widens Proton VPN's fold separator after comparisons at small sizes and in mixed contexts. Two SVGs change and the other 598 retain their exact 0.32.0 bytes, including the accepted My Spectrum, Wallpaper Engine and Pinterest refinements. All 32 earlier archives remain preserved, including the completed 184 drawing refinement in 0.30.0. A local finder searches names, icon IDs and Android package IDs, with separate app/function and mapping filters. Both appearances stay together, and the full catalogue remains available without JavaScript. Exact official store links and package hints distinguish similar products. Coverage is a selection, not a complete store catalogue or popularity chart. Human recognition, launcher masking and phone acceptance remain separate.
 
-Each gallery card also distinguishes “Mapping included” from “No exact mapping recorded,” deriving the label from the maintained Android declarations. The Pack mapping filter combines with name, icon ID, package search and the app/function filter. The 277 choices with declarations and 23 manual-selection choices have separate short application routes, available without JavaScript. A declared mapping does not prove that an installed app, launcher or saved Theme Park theme uses it. The twelve named-package gaps retain artwork and a manual route.
+Each gallery card also distinguishes “Mapping included” from “No exact mapping recorded,” deriving the label from the maintained Android declarations. The Pack mapping filter combines with name, icon ID, package search and the app/function filter. The 277 choices with declarations and 23 manual selection choices have separate short application routes, available without JavaScript. A declared mapping does not prove that an installed app, launcher or saved Theme Park theme uses it. The twelve named package gaps retain artwork and a manual route.
 
 The hosted gallery can prepare an individual PNG at 512 pixels beside either appearance. It uses the corresponding local SVG in your browser, with no upload or phone installation. The extracted preview opened as a local file keeps the SVG downloads and full instructions for exporting from source because browser origin restrictions prevent that canvas export. The existing exporter still produces every icon at 512 and 1024 pixels.
 
-The maintained [Android icon-pack path](docs/android-iconpack.md) targets the 0.33.0 drawings. Clair Icons 0.1.6/code 7 selects the 300 Clair images and a light application surface. Its package identity is `io.github.t92t1914.clairicons`, separate from Obscur Icons 0.1.17/code 18 at `io.github.t92t1914.obscuricons`. Obscur remains the default build appearance. A completed coverage report can survive an Android configuration recreation through a transient text snapshot, without saving an app inventory to disk or starting another scan. A synthetic JVM regression exercises the actual Activity code. Physical folding and phone application remain separate checks. Package versions are independent from the artwork version. Verify each resulting APK's resources and signature before private delivery.
+The maintained [Android icon pack path](docs/android-iconpack.md) targets the 0.33.0 drawings. Clair Icons 0.1.6/code 7 selects the 300 Clair images and a light application surface. Its package identity is `io.github.t92t1914.clairicons`, separate from Obscur Icons 0.1.17/code 18 at `io.github.t92t1914.obscuricons`. Obscur remains the default build appearance. A completed coverage report can survive an Android configuration recreation through a transient text snapshot, without saving an app inventory to disk or starting another scan. A synthetic JVM regression exercises the actual Activity code. Physical folding and phone application remain separate checks. Package versions are independent from the artwork version. Verify each resulting APK's resources and signature before private delivery.
 
-Both configurations use 1,355 ordered component mappings and 290 exact public package queries. The existing 1,354-row sequence is preserved, with one exact Domino's launcher activity appended from an October 29, 2026 local coverage observation. It adds no query or permission. The twelve separately observed aliases comprise eleven from October 21 and this one addition. The same twelve named packages still have no qualified alias. The local coverage check stays limited to supported package names, with no requested permissions or network reporting. The observation identifies one missing component. The update's installed coverage and Theme Park assignment still require their own checks. Accepted Clair 0.1.4, Obscur 0.1.15 and earlier APKs remain preserved, and signed Android packages stay on the existing private delivery route.
+Both configurations use 1,355 ordered component mappings and 290 exact public package queries. The existing 1,354 row sequence is preserved, with one exact Domino's launcher activity appended from an October 29, 2026 local coverage observation. It adds no query or permission. The twelve separately observed aliases comprise eleven from October 21 and this one addition. The same twelve named packages still have no qualified alias. The local coverage check stays limited to supported package names, with no requested permissions or network reporting. The observation identifies one missing component. The update's installed coverage and Theme Park assignment still require their own checks. Accepted Clair 0.1.4, Obscur 0.1.15 and earlier APKs remain preserved, and signed Android packages stay on the existing private delivery route.
 
-Distinct package identities and compiled light/dark resources do not establish installation together, launcher recognition or Theme Park assignment. User-reported installation and partial application of the original Obscur 0.1.0 remain dated evidence. A later phone check must inspect each pack, a new separate Theme Park draft, both displays, masking, labels and restoration. Neither pack supplies a Samsung system theme, keyboard theme, system font or autocorrect change.
+Distinct package identities and compiled light/dark resources do not establish installation together, launcher recognition or Theme Park assignment. Installation reported by the user and partial application of the original Obscur 0.1.0 remain dated evidence. A later phone check must inspect each pack, a new separate Theme Park draft, both displays, masking, labels and restoration. Neither pack supplies a Samsung system theme, keyboard theme, system font or autocorrect change.
 
 A scoped Samsung Theme Park check saved and applied a local ObscurBW icon theme, with its selection checkmark observed. That pack combined one earlier general drawing, one 0.6.0 named drawing and neutral fallback artwork. It does not establish assignment of the full collection or the later 0.7.0 through 0.17.0 additions. Actual launcher masking, labels, phone fonts, switching and restoration remain separate checks.
 
