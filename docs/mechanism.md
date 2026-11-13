@@ -13,10 +13,10 @@ UI font. This diagram does not rebuild or recolor historical packages.
 
 The [platform contracts](platform-portability.md) and [acceptance record](acceptance.md)
 remain authoritative. New page appearance choices use optional browser storage
-under `clair-obscur-preview-appearance`. First visit and no-JavaScript content
+under `clair-obscur-preview-appearance`. First visit and no JavaScript content
 remain Obscur. Explicit Auto follows the system preference, while Clair/Obscur
 remain explicit until changed. Appearance changes only presentation and preserve
-filters, package selections and local-file inspection state.
+filters, package selections and local file inspection state.
 
 ## Rebuild the graphic
 
@@ -35,7 +35,7 @@ python tools/render_mechanism.py --check
 
 `OBSCUR_FONT_DIR` is an optional alternative to the argument. The renderer checks
 actual font names, weights and Latin glyph coverage, exports opaque 1800 x 800
-wide and 960-pixel-wide narrow PNG/SVG editions, and rejects labels outside the canvas.
+wide and 960 pixel wide narrow PNG/SVG editions, and rejects labels outside the canvas.
 The narrow height follows actual font bounds. The current recorded edition is 960 x 1210.
 Labels use at least 30 points at 100 dpi. SVG labels are outlines from those same
 files. Adjacent HTML/Markdown supplies selectable text and source links.
@@ -44,6 +44,6 @@ The generated `mechanism-rendering.json` records source/adapter hashes, font
 hashes, renderer versions, layout and all four output hashes. `--check` compares
 committed inputs and outputs without importing the application, downloading fonts
 or silently regenerating missing files. A new presentation render is not a new
-application or scientific execution. Actual receiving-page image selection,
+application or scientific execution. Actual receiving page image selection,
 readability and visitor font fallback remain separate checks.
 
