@@ -284,7 +284,7 @@ Record native appearance, enabled themes, text size/zoom and font/plugin setting
 
 ### Install
 
-1. In “Settings” > “BetterDiscord” > “Themes”, choose “Open Themes Folder”. Copy the selected `Clair-BetterDiscord.theme.css` or `Obscur-BetterDiscord.theme.css` into that actual folder without replacing existing files. Return to Themes and enable its card. This is the [official add-on installation route](https://docs.betterdiscord.app/users/guides/installing-addons.html).
+1. In “Settings” > “BetterDiscord” > “Themes”, choose “Open Themes Folder”. Copy the selected `Clair-BetterDiscord.theme.css` or `Obscur-BetterDiscord.theme.css` into that actual folder without replacing existing files. Return to Themes and enable its card. This is the [official route for installing add ons](https://docs.betterdiscord.app/users/guides/installing-addons.html).
 2. Select native “Light” for Clair or native “Dark” for Obscur. Enable only one family theme and temporarily disable only conflicting full themes. The opposite native base keeps its baseline.
 3. Check messages, inputs, links, code, icons, switches and keyboard focus at normal and increased supported text size/zoom. Keep disabled and critical controls recognizable.
 
