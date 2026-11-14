@@ -1,5 +1,12 @@
 # Changes
 
+## Clone Hero skin 0.1.0
+
+- Add a separate Clone Hero candidate built by `python -m themeforge.clonehero`: black and white profiles, full strength lane profiles, two video highways and two still highways. Every profile has the same 183 keys in the same order as a complete professional profile.
+- Commit the two `highway.webm` files as pinned assets that the generator checks by SHA-256, and build everything else with the standard library. Keep the background videos out of the repository and record their checksums in `docs/clone-hero.md`.
+- Add an Obscur route figure for the guide, drawn by the existing renderer from its own source and receipt.
+- Keep every accepted package, tag and version unchanged. Native play in the game remains unchecked.
+
 ## Portable kit ancestor check
 
 - Compare folders above an extracted kit by kind, device, inode and mode only. Their times change whenever another program adds or removes an unrelated file beside the kit, which made the included verifier refuse intact kits in busy folders such as Downloads, Temp or the user profile.

@@ -12,6 +12,8 @@ npm run test:browser
 py -3.11 -X utf8 preview.py --output outputs\preview-0.1.1
 ```
 
+The [Clone Hero skin](clone-hero.md) has its own standard library generator, `py -3.11 -X utf8 -m themeforge.clonehero --output outputs\clone-hero-01`, which needs a new output directory and takes `--check` to compare an existing one. Its two highway videos are pinned assets checked by hash. Its figure has a hash only check, `py -3.11 -X utf8 tools/render_clonehero_figure.py --check`, and the unit suite runs it. Redrawing the figure needs the optional figure requirements and the three Inter files, as for the mechanism figure.
+
 Use `python` instead of `py -3.11` where the Windows launcher is unavailable. The exact Inter check requires all six local static faces. Without that requirement, an environment missing those faces reports the face specific test as skipped and still tests system fallback. The browser suite never opens a visible browser or uses an ordinary profile. It defaults to installed Google Chrome. CI uses the Ubuntu 24.04 runner's installed Google Chrome in an isolated headless profile and logs its version. That still cannot replace the native Chrome check.
 
 The runner explicitly keeps the Chromium sandbox enabled and mutes audio. It records the requested launch configuration and observed browser process version. The Inter check requests every declared face, records load failures, waits for layout and requires the intended PostScript face to supply actual glyphs in each specimen. Portable regressions reject mismatched or empty glyph evidence without installing a font. A font file on disk, successful direct byte diagnostic or green fallback check cannot substitute for this installed font result.
