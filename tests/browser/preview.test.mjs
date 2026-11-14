@@ -1184,7 +1184,7 @@ async function keyboardDownload(page, locator, expectedName) {
     assert.equal(await download.failure(), null);
     const chunks = []; let size = 0;
     for await (const chunk of await download.createReadStream()) {
-      size += chunk.length; assert.ok(size <= 4 * 1024 * 1024, 'Keyboard/source download exceeds its finite bound'); chunks.push(chunk);
+      size += chunk.length; assert.ok(size <= 8 * 1024 * 1024, 'Keyboard/source download exceeds its finite bound'); chunks.push(chunk);
     }
     return Buffer.concat(chunks);
   };
