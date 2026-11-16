@@ -4,7 +4,7 @@ Version 0.12.0 substantially changes the existing Hybrid composition on the exac
 
 ![Original Obscur static dial artwork without hands or readings](../garmin/watchface/resources/dial/obscur.png)
 
-This image is the actual production backplate, not a simulator screenshot or a complete watch face. It contains no frozen time, date, manufacturer photograph or branding. The paired Clair resource uses the exact white canvas from the shared tokens. The supplied reference photographs remain private references.
+This image is the current production backplate, not a simulator screenshot or a complete watch face. Since [0.13.0](garmin-watchface.md#0130-day-and-date-window-candidate) it leaves out the minute track ticks at 14, 15 and 16, behind the wider day window, so it is no longer the exact 0.12.0 plate. It contains no frozen time, date, manufacturer photograph or branding. The paired Clair resource uses the exact white canvas from the shared tokens. The supplied reference photographs remain private references.
 
 ## Matched native comparison
 

@@ -8,22 +8,19 @@ using Toybox.Time.Gregorian;
 using Toybox.Position;
 
 (:test)
-function hybridLocalizedDateFormats(logger as Test.Logger) as Lang.Boolean {
-    Test.assertEqual(FaceModel.hybridDate(29, 2, 2024, "Feb", "Thu", 0), "Thu 29 Feb");
-    Test.assertEqual(FaceModel.hybridDate(29, 2, 2024, "Feb", "Thu", 1), "Thu Feb 29");
-    Test.assertEqual(FaceModel.hybridDate(29, 2, 2024, "Feb", "Thu", 2), "Thu 2024-02-29");
-    Test.assertEqual(FaceModel.hybridDate(1, 1, 2027, "Jan", "Fri", 0), "Fri 1 Jan");
-    Test.assertEqual(FaceModel.hybridDate(31, 12, 2026, "Dez", "Do", 0), "Do 31 Dez");
-    Test.assertEqual(FaceModel.hybridDate(29, 2, 2023, "Feb", "Wed", 0), "--- -- ---");
-    Test.assertEqual(FaceModel.hybridDate(29, 2, 2100, "Feb", "Mon", 0), "--- -- ---");
-    Test.assertEqual(FaceModel.hybridDate(31, 4, 2026, "Apr", "Thu", 0), "--- -- ---");
-    Test.assertEqual(FaceModel.hybridDate(1, 1, 2027, null, null, 0), "2027-01-01");
-    Test.assertEqual(FaceModel.hybridDate(1, 1, 2027, "", "Fri", 0), "2027-01-01");
-    Test.assertEqual(FaceModel.sanitizeDateFormat(0), 0);
-    Test.assertEqual(FaceModel.sanitizeDateFormat(1), 1);
-    Test.assertEqual(FaceModel.sanitizeDateFormat(2), 2);
-    Test.assertEqual(FaceModel.sanitizeDateFormat(3), 0);
-    Test.assertEqual(FaceModel.sanitizeDateFormat(1.0), 0);
+function hybridWeekdayForTheDayWindow(logger as Test.Logger) as Lang.Boolean {
+    // The window at three shows the localized weekday in capitals beside the
+    // day. An invalid date or a missing name leaves the day number alone.
+    Test.assertEqual(FaceModel.hybridWeekday(2, 11, 2026, "Mon"), "MON");
+    Test.assertEqual(FaceModel.hybridWeekday(29, 2, 2024, "Thu"), "THU");
+    Test.assertEqual(FaceModel.hybridWeekday(31, 12, 2026, "Do"), "DO");
+    Test.assertEqual(FaceModel.hybridWeekday(1, 1, 2027, "ven."), "VEN.");
+    Test.assertEqual(FaceModel.hybridWeekday(29, 2, 2023, "Wed"), "");
+    Test.assertEqual(FaceModel.hybridWeekday(29, 2, 2100, "Mon"), "");
+    Test.assertEqual(FaceModel.hybridWeekday(31, 4, 2026, "Thu"), "");
+    Test.assertEqual(FaceModel.hybridWeekday(1, 1, 2027, null), "");
+    Test.assertEqual(FaceModel.hybridWeekday(1, 1, 2027, ""), "");
+    Test.assertEqual(FaceModel.hybridWeekday(1, 1, 2027, 5), "");
     return true;
 }
 

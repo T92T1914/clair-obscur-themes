@@ -23,13 +23,12 @@ module FaceModel {
     const LAYOUT_ANALOG = 0;
     const LAYOUT_DIGITAL = 1;
     const LAYOUT_HYBRID = 2;
-    const HYBRID_DATE_TOP = 145;
-    const HYBRID_DATE_BOTTOM = 170;
-    const HYBRID_DATE_WIDTH = 222;
+    // The day and date window at three. Its left edge stays clear of the hour
+    // head at 03:00. It spans the three minute track ticks the plate omits.
     const HYBRID_DAY_LEFT = 346;
-    const HYBRID_DAY_TOP = 208;
-    const HYBRID_DAY_BOTTOM = 246;
-    const HYBRID_DAY_WIDTH = 46;
+    const HYBRID_DAY_TOP = 213;
+    const HYBRID_DAY_BOTTOM = 241;
+    const HYBRID_DAY_WIDTH = 52;
     const HYBRID_CLOCK_LEFT = 165;
     const HYBRID_CLOCK_TOP = 238;
     const HYBRID_CLOCK_BOTTOM = 280;
@@ -116,30 +115,6 @@ module FaceModel {
         return isLayout(value) ? (value as Lang.Number) : LAYOUT_HYBRID;
     }
 
-    function sanitizeDateFormat(value as Lang.Object or Null) as Lang.Number {
-        if (value instanceof Lang.Number && (value as Lang.Number) >= 0 &&
-                (value as Lang.Number) <= 2) { return value as Lang.Number; }
-        return 0;
-    }
-
-    function hybridDate(day as Lang.Number, month as Lang.Number, year as Lang.Number,
-            monthName as Lang.Object or Null, weekdayName as Lang.Object or Null,
-            order as Lang.Number) as Lang.String {
-        var iso = formatDate(day, month, year);
-        if (iso.equals("---- -- --")) { return "--- -- ---"; }
-        // Abbreviations are device/language dependent. The reviewed public
-        // DeviceSettings API does not expose a native date-order preference.
-        if (!(monthName instanceof Lang.String) || !(weekdayName instanceof Lang.String)) {
-            return iso;
-        }
-        var mon = monthName as Lang.String;
-        var week = weekdayName as Lang.String;
-        if (mon.length() == 0 || week.length() == 0) { return iso; }
-        if (order == 2) { return week + " " + iso; }
-        var date = order == 1 ? mon + " " + day.format("%d") : day.format("%d") + " " + mon;
-        return week + " " + date;
-    }
-
     function hybridCharge(value as Lang.Object or Null,
             charging as Lang.Object or Null) as Lang.String {
         return (charging instanceof Lang.Boolean && (charging as Lang.Boolean) ? "CHG " : "BAT ") +
@@ -148,6 +123,15 @@ module FaceModel {
 
     function hybridDay(day as Lang.Number, month as Lang.Number, year as Lang.Number) as Lang.String {
         return formatDate(day, month, year).equals("---- -- --") ? "--" : day.format("%d");
+    }
+
+    function hybridWeekday(day as Lang.Number, month as Lang.Number, year as Lang.Number,
+            weekdayName as Lang.Object or Null) as Lang.String {
+        // The device localized abbreviation, in capitals. A missing name or an
+        // invalid date leaves only the day number, so the day still shows once.
+        if (hybridDay(day, month, year).equals("--")) { return ""; }
+        if (!(weekdayName instanceof Lang.String)) { return ""; }
+        return (weekdayName as Lang.String).toUpper();
     }
 
     function hybridDetail(data as Lang.Dictionary<Lang.String, Lang.String>) as Lang.String {

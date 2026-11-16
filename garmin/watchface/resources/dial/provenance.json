@@ -7,16 +7,16 @@
   },
   "files": {
     "clair.png": {
-      "bytes": 81506,
-      "sha256": "a41b8ff6f51962452489f167afbbc41d56fc823a3752fa7ecf9f03665062a386"
+      "bytes": 81308,
+      "sha256": "09598a5a012dca1af561035e29f79b84da9ba57b5721f2012d83c6ae1edc1ad4"
     },
     "obscur.png": {
-      "bytes": 81303,
-      "sha256": "a71496884e97b171622245db0277a20effec120d7fc7058b677731fa403cea43"
+      "bytes": 81138,
+      "sha256": "a6103b5114c96eba18c988b476b76898259eb96d69c4bbb3b662926de0d70291"
     }
   },
   "generator": "garmin/generate_dial_art.py",
-  "generator_sha256": "8c87db1b005f01aa4c58a7e0b2b0f847e0c27d42928333b41e49feec8ebfe906",
+  "generator_sha256": "7d27c4225c2cc725dd00358a82d6dd27296c712640e05411670c881880334112",
   "geometry": {
     "DIAL_CENTER": 227,
     "DISPLAY_SIZE": 454,
@@ -28,6 +28,10 @@
     "HYBRID_BEZEL_RADIUS": 203,
     "HYBRID_CIRCLE_INNER": 11,
     "HYBRID_CIRCLE_RADIUS": 14,
+    "HYBRID_DAY_BOTTOM": 241,
+    "HYBRID_DAY_LEFT": 346,
+    "HYBRID_DAY_TOP": 213,
+    "HYBRID_DAY_WIDTH": 52,
     "HYBRID_MARKER_CENTER": 155,
     "HYBRID_TICK_INNER": 169,
     "HYBRID_TICK_OUTER": 174,
@@ -38,7 +42,7 @@
   "kind": "clair-obscur-original-static-dial",
   "lighting": "Narrow upper-left metal highlights and lower-right shadows; uniform black ceramic with no noise or broad glare.",
   "model": "garmin/watchface/source/FaceModel.mc",
-  "model_sha256": "9848b41d5e6079eec5ef5697095d716d28ca856729bbf60fd9ad2c2a85311e07",
+  "model_sha256": "5766f3d4153446a9def4b1993d9c74d8727fc730e3a7000718c601ad5a46f8e9",
   "native_canvas_check": "GeneratedPalette.mc CLAIR_CANVAS and OBSCUR_CANVAS agree with token values",
   "numeral_contours_sha256": "fcb3cd2c5c12b2d8cf909b2332d9ca7c6c0c0228e9aab03af2dfc6a15154e8d8",
   "renderer": {

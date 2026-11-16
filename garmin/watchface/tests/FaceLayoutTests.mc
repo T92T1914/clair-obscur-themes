@@ -425,7 +425,6 @@ function hybridSettingsPreserveLegacyFields(logger as Test.Logger) as Lang.Boole
     var layout = Application.Properties.getValue("layout");
     var left = Application.Properties.getValue("leftData");
     var right = Application.Properties.getValue("rightData");
-    var date = Application.Properties.getValue("hybridDateFormat");
     try {
         Application.Properties.setValue("leftData", FaceData.BODY_BATTERY);
         Application.Properties.setValue("rightData", FaceData.BODY_BATTERY);
@@ -436,19 +435,9 @@ function hybridSettingsPreserveLegacyFields(logger as Test.Logger) as Lang.Boole
         var menu = FaceSettings.makeSettingsMenu();
         var layoutItem = menu.getItem(1);
         Test.assert(layoutItem != null);
-        Test.assertEqual((layoutItem as WatchUi.MenuItem).getSubLabel(), "Hybrid / 0.12.0");
-        var dateItem = menu.getItem(2);
-        Test.assert(dateItem != null);
-        Test.assertEqual((dateItem as WatchUi.MenuItem).getId(), "date");
-        Test.assert(menu.getItem(3) == null);
-        for (var order = 0; order <= 2; order += 1) {
-            Test.assert(FaceSettings.saveDateFormat(order));
-            Test.assertEqual(FaceSettings.readDateFormat(), order);
-        }
-        Test.assert(!FaceSettings.saveDateFormat(3));
-        Test.assert(!FaceSettings.saveDateFormat(1.0));
-        Test.assert(!FaceSettings.saveDateFormat("1"));
-        Test.assertEqual(FaceSettings.readDateFormat(), 2);
+        Test.assertEqual((layoutItem as WatchUi.MenuItem).getSubLabel(), "Hybrid / 0.13.0");
+        // 0.13.0 retires the date order. Hybrid offers Appearance and Layout only.
+        Test.assert(menu.getItem(2) == null);
         Test.assert(FaceSettings.saveLayout(0));
         var legacy = FaceSettings.makeSettingsMenu();
         Test.assertEqual((legacy.getItem(2) as WatchUi.MenuItem).getId(), "left");
@@ -457,7 +446,6 @@ function hybridSettingsPreserveLegacyFields(logger as Test.Logger) as Lang.Boole
         Application.Properties.setValue("layout", layout);
         Application.Properties.setValue("leftData", left);
         Application.Properties.setValue("rightData", right);
-        Application.Properties.setValue("hybridDateFormat", date);
         FaceSettings.refreshDataSubscriptions();
     }
     return true;
@@ -618,13 +606,10 @@ function assertHybridRectSeparate(left as Lang.Number, top as Lang.Number,
 
 (:test)
 function hybridDiverTextBandsAndIndicesStaySeparate(logger as Test.Logger) as Lang.Boolean {
-    Test.assertEqual(FaceModel.HYBRID_DATE_TOP, 145);
-    Test.assertEqual(FaceModel.HYBRID_DATE_BOTTOM, 170);
-    Test.assertEqual(FaceModel.HYBRID_DATE_WIDTH, 222);
     Test.assertEqual(FaceModel.HYBRID_DAY_LEFT, 346);
-    Test.assertEqual(FaceModel.HYBRID_DAY_TOP, 208);
-    Test.assertEqual(FaceModel.HYBRID_DAY_BOTTOM, 246);
-    Test.assertEqual(FaceModel.HYBRID_DAY_WIDTH, 46);
+    Test.assertEqual(FaceModel.HYBRID_DAY_TOP, 213);
+    Test.assertEqual(FaceModel.HYBRID_DAY_BOTTOM, 241);
+    Test.assertEqual(FaceModel.HYBRID_DAY_WIDTH, 52);
     Test.assertEqual(FaceModel.HYBRID_CLOCK_LEFT, 165);
     Test.assertEqual(FaceModel.HYBRID_CLOCK_TOP, 238);
     Test.assertEqual(FaceModel.HYBRID_CLOCK_BOTTOM, 280);
@@ -640,7 +625,7 @@ function hybridDiverTextBandsAndIndicesStaySeparate(logger as Test.Logger) as La
     // Whole admitted bands, including the one-pixel day surround, clear
     // the fixed marker silhouettes. The lower clock band bounds its measured
     // protected row; these are not glyph/raster assertions.
-    var bands = [[116, 145, 222, 170], [345, 207, 48, 247],
+    var bands = [[345, 212, 54, 242],
         [165, 239, 124, 273], [109, 274, 110, 330],
         [235, 274, 110, 330], [168, 332, 118, 362]];
     var indices = [1, 2, 4, 5, 7, 8, 10, 11];
@@ -661,16 +646,25 @@ function hybridDiverTextBandsAndIndicesStaySeparate(logger as Test.Logger) as La
                 fixed[marker][2], fixed[marker][3]);
         }
     }
-    var window = [[345, 207], [393, 207], [393, 247], [345, 247]]
+    var window = [[345, 212], [399, 212], [399, 242], [345, 242]]
         as Lang.Array<Graphics.Point2D>;
     assertSharedDialRoundGuard(window, 0, 0, 2);
     var clock = [[165, 239], [289, 239], [289, 273], [165, 273]]
         as Lang.Array<Graphics.Point2D>;
     assertSharedDialRoundGuard(clock, 0, 0, 2);
-    Test.assert(345 > 227 + 8 && 393 < 404);
+    Test.assert(345 > 227 + 8 && 399 < 404);
     // The active day aperture covers the otherwise present three-o'clock
     // baton. Sparse AOD retains that baton rather than the active aperture.
-    Test.assert(345 < 364 && 393 > 364 && 207 < 219 && 247 > 235);
+    Test.assert(345 < 364 && 399 > 364 && 212 < 219 && 242 > 235);
+    // The plate omits minute ticks 14 to 16 under the wider window. The
+    // neighbouring ticks 13 and 17 stay at least two pixels clear of it.
+    var ticks = [13, 17];
+    for (var tick = 0; tick < ticks.size(); tick += 1) {
+        var ends = FaceModel.hybridMinuteTick(ticks[tick]);
+        for (var end = 0; end < ends.size(); end += 1) {
+            Test.assert(ends[end][1] < 212 - 2 || ends[end][1] > 242 + 2);
+        }
+    }
     Test.assertEqual(FaceModel.hybridActiveBaton(3, false).size(), 0);
     Test.assertEqual(FaceModel.hybridBaton(3, false).size(), 4);
     Test.assertEqual(332 - 330, 2);
@@ -700,7 +694,7 @@ function hybridProtectedFieldsClearTheHourHeadForEveryMinute(logger as Test.Logg
         for (var minute = 0; minute < 60; minute += 1) {
             var head = FaceModel.hybridHourDiscCenter(hour, minute);
             assertHybridHeadClearOfRect(head, 165, 239, 289, 273);
-            assertHybridHeadClearOfRect(head, 345, 207, 393, 247);
+            assertHybridHeadClearOfRect(head, 345, 212, 399, 242);
         }
     }
     // The rejected x337 aperture and its x336 surround intersect the head

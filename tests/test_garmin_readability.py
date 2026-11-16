@@ -95,7 +95,7 @@ def circle_intersects_box(center, radius, box):
 
 def reading_bands(c):
     result = {}
-    for key, name in (("DATE", "calendar"), ("CHARGE", "battery")):
+    for key, name in (("CHARGE", "battery"),):
         left = (c["DISPLAY_SIZE"] - c[f"HYBRID_{key}_WIDTH"]) / 2
         result[name] = (left, c[f"HYBRID_{key}_TOP"], left + c[f"HYBRID_{key}_WIDTH"],
                         c[f"HYBRID_{key}_BOTTOM"])
@@ -134,9 +134,8 @@ class GarminReadingGeometryTests(unittest.TestCase):
         # These literals make an unintended change reviewable by its meaning.
         selected = {
             "DISPLAY_SIZE": 454, "DIAL_CENTER": 227,
-            "HYBRID_DATE_TOP": 145, "HYBRID_DATE_BOTTOM": 170, "HYBRID_DATE_WIDTH": 222,
-            "HYBRID_DAY_LEFT": 346, "HYBRID_DAY_TOP": 208, "HYBRID_DAY_BOTTOM": 246,
-            "HYBRID_DAY_WIDTH": 46, "HYBRID_CLOCK_LEFT": 165, "HYBRID_CLOCK_TOP": 238,
+            "HYBRID_DAY_LEFT": 346, "HYBRID_DAY_TOP": 213, "HYBRID_DAY_BOTTOM": 241,
+            "HYBRID_DAY_WIDTH": 52, "HYBRID_CLOCK_LEFT": 165, "HYBRID_CLOCK_TOP": 238,
             "HYBRID_CLOCK_BOTTOM": 280, "HYBRID_CLOCK_WIDTH": 124,
             "HYBRID_DATA_TOP": 282, "HYBRID_DATA_BOTTOM": 338, "HYBRID_DATA_WIDTH": 110,
             "HYBRID_LEFT_X": 109, "HYBRID_RIGHT_X": 235,
@@ -170,12 +169,12 @@ class GarminReadingGeometryTests(unittest.TestCase):
 
     def test_new_full_cycle_locates_crossing_cases_and_an_unobstructed_control(self):
         crossings = crossing_report(self.constants)
-        self.assertIn(0, crossings["calendar"])       # 12:00, a geometric inspection case, not a new observation
+        # 0.13.0 has no calendar band. Its weekday sits in the window at three.
+        self.assertEqual(set(crossings), {"battery", "weather", "steps"})
         self.assertIn(390, crossings["weather"])    # 06:30
         self.assertNotIn(390, crossings["battery"])  # Battery moved above the pivot.
         self.assertIn(0, crossings["battery"])
-        self.assertIn(415, crossings["calendar"])   # 18:55 is 06:55 on the analog dial
-        self.assertIn(415, crossings["weather"])
+        self.assertIn(415, crossings["weather"])    # 18:55 is 06:55 on the analog dial
         for name, totals in crossings.items():
             with self.subTest(band=name):
                 self.assertGreater(len(totals), 0)
@@ -188,7 +187,7 @@ class GarminReadingGeometryTests(unittest.TestCase):
 
     def test_single_row_with_one_pixel_separator_stays_inside_its_fitted_band(self):
         c = self.constants
-        for name in ("DATE", "CHARGE"):
+        for name in ("CHARGE",):
             width, top, bottom = (c[f"HYBRID_{name}_{key}"] for key in ("WIDTH", "TOP", "BOTTOM"))
             x = (c["DISPLAY_SIZE"] - width) // 2
             for glyph_width in range(1, width - 3):

@@ -1,8 +1,33 @@
 # Clair and Obscur watch face candidate
 
-The current source is the [0.12.0 black dial redesign candidate](garmin-redesign.md). It changes the Hybrid composition, production dial artwork, hand/marker proportions, typography and data placement. Current SDK execution includes a matched 10:10 comparison and retained active view samples. The corrected always on cycle now has bounded native evidence, with remaining physical and extended runtime limits. The following version sections keep current observations, earlier results and physical acceptance separate.
+The current source is the [0.13.0 day and date window candidate](#0130-day-and-date-window-candidate), built on the [0.12.0 black dial redesign candidate](garmin-redesign.md). The 0.12.0 redesign changes the Hybrid composition, production dial artwork, hand/marker proportions, typography and data placement. Current SDK execution includes a matched 10:10 comparison and retained active view samples. The corrected always on cycle now has bounded native evidence, with remaining physical and extended runtime limits. The following version sections keep current observations, earlier results and physical acceptance separate.
 
-This Connect IQ watch face targets `fenix9pro47mm`, the fēnix 9 Pro 47 mm AMOLED. Its current Hybrid layout combines an original diver dial, a compact day aperture at three, digital time below the pivot, full calendar context, weather, steps and battery. The numbered scale is a visual reference, not an interactive timer. The source preserves the monochrome palette, desktop packages, saved layout meanings and separate Analog/Digital modes.
+This Connect IQ watch face targets `fenix9pro47mm`, the fēnix 9 Pro 47 mm AMOLED. Its current Hybrid layout combines an original diver dial, a day and date window at three, digital time below the pivot, weather, steps and battery. The numbered scale is a visual reference, not an interactive timer. The source preserves the monochrome palette, desktop packages, saved layout meanings and separate Analog/Digital modes.
+
+## 0.13.0 day and date window candidate
+
+The 0.12.0 Hybrid face showed the day twice: `Mon 2 Nov` above the pivot and `2` in the window at three. Source 0.13.0 drops that calendar line and puts the weekday beside the day in the window, as in `MON 2`. A day and date window at three is the common layout on a watch, and the change takes one line out of the center column.
+
+The window grows from 46 to 52 pixels wide and shrinks from 38 to 28 pixels tall. Its light face now covers x346..397 and y213..240. The left edge cannot move, because at 3:00 the rim of the hour head comes within one pixel of it, so the window grows toward the minute track instead. The plate leaves out every track tick that would come within four pixels of the painted window, which removes exactly the ticks at 14, 15 and 16 minutes. The ticks at 13 and 17 stay clear of it.
+
+The weekday is the device's own abbreviated name in capitals. The window takes the largest font that fits the reading as if the day had two digits, and it never starts larger than the size `MON 28` needs. In English that keeps one size through the month and through the week. A weekday too wide for the window gives way to the day alone, and an invalid date shows `--`, so the day never disappears behind a name that does not fit.
+
+The Hybrid date order setting is retired. Its property, menu entry, phone setting and labels are gone. Nothing reads a value an earlier version saved, so it cannot raise an error. Analog and Digital keep their own compact date.
+
+The accepted 0.12.0 program keeps its exact bytes. 0.13.0 is a new candidate with its own version.
+
+### 0.13.0 simulator evidence
+
+These captures came from the SDK 9.2.0 Linux simulator on a private virtual X display, with the clock set by `faketime` and no route to the desktop. A simulator capture is evidence for a design change. It is not acceptance on the watch.
+
+1. The current `main` source compiled to the same 462,044 byte program as the committed 0.12.0 capture. Its 10:10 capture matched `candidate-012-obscur-1010.png` pixel for pixel inside the dial, apart from the weather slot, where the simulator's weather fixture differed. That proves the capture route before it judges a change.
+2. The 0.13.0 normal program is 461,132 bytes with SHA-256 `eb6228f4a5ed30ab11eff78a3c899def3234479ab7b0ae60c4d1f6d6f9a5460c`. At 10:10 on November 2 it differs from the `main` capture only in the old calendar band and around the window at three.
+3. `MON 2`, `FRI 6` and `MON 28` render at one size at font scales 0.80, 1.00 and 1.35. The 06:30 pose at 1.35 shows `MON 2` too.
+4. The diagnostic program executed all 42 annotated groups: `PASSED (passed=42, failed=0, errors=0)`. Its runner exited 1, as the 0.12.0 diagnostic did.
+
+A host measurement with the simulator's own Roboto Condensed Bold puts every English weekday with a two digit day inside the 48 pixel text width at all three scales. The captures decide, because the watch draws its own glyphs.
+
+Not checked yet: Clair, other languages, every minute and hand crossing, and anything on the watch. Always on drawing is unchanged and its functions stay pinned by hash. Acceptance on the watch is mine.
 
 ## 0.12.0 native qualification in progress
 

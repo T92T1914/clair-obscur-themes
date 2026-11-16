@@ -84,13 +84,18 @@ See [development and verification](docs/development.md) for reproducible command
 
 ## Watch and phone candidates
 
-The current watch source is the [0.12.0 black dial redesign candidate](docs/garmin-redesign.md).
+The watch source builds on the [0.12.0 black dial redesign candidate](docs/garmin-redesign.md).
 It changes Hybrid's ceramic bezel, filled numerals, applied markers, moving hand
 proportions, typography and data placement. Original production dial artwork stays
 separate from native moving hands and readings. Digital time sits below the pivot,
 the day aperture stays at three, and battery sits above the pivot. Weather and
 steps retain their exact values and status. The printed scale is a visual reference,
 not a dive timer.
+
+Source [0.13.0](docs/garmin-watchface.md#0130-day-and-date-window-candidate) shows
+the day once. It drops the calendar line above the pivot and puts the weekday beside
+the day in a wider window at three, as in `MON 2`. It is a simulator checked candidate
+with its own version, and the accepted 0.12.0 program keeps its bytes.
 
 The accepted 0.12.0 normal program has a verified physical transfer and
 activation and normal operation, both reported by the user. The [qualification matrix](docs/garmin-watchface.md#0120-native-qualification-in-progress)
