@@ -17,8 +17,9 @@ MAX_DECLARED_FILES = 698
 MAX_ENTRIES = 724
 MAX_FILE_BYTES = 8_388_608
 # Complete watch source and matched native comparison images enter source.zip.
-# Round the measured 38,146,223-byte max-revision minimum to the next 64 KiB chunk.
-MAX_READ_BYTES = 38_207_488
+# Round the measured max-revision minimum to the next 64 KiB chunk. The figure
+# that names the watch face and the apps raised it past the 38,207,488-byte limit.
+MAX_READ_BYTES = 38_273_024
 READ_CHUNK = 65_536
 MAX_REPORT_BYTES = 262_144
 MANIFEST_NAME = 'site-manifest.json'
