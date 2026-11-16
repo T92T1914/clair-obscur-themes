@@ -6,7 +6,7 @@ The current icons, preview and watch source use this palette, with Inter where t
 
 <a href="https://t92t1914.github.io/clair-obscur-themes/#how-it-works"><picture>
   <source media="(min-width: 900px)" srcset="web/mechanism-obscur-wide.png">
-  <img src="web/mechanism-obscur-narrow.png" width="960" alt="Conceptual route: shared canvas, text and focus roles become explicit platform mappings and versioned packages. Inspect the preview, then qualify native behavior separately for each host.">
+  <img src="web/mechanism-obscur-narrow.png" width="960" alt="Conceptual route: shared canvas, text and focus roles become explicit platform mappings for browsers, editors, the terminal, phone icons and the Garmin watch face. Inspect the preview, then qualify native behavior separately for each host.">
 </picture></a>
 
 The diagram explains the mechanism, not a native installation result. For example,
