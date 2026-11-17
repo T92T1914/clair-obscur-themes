@@ -32,26 +32,6 @@ module FaceSettings {
         else { FaceData.refreshSubscriptions(readSlot(0), readSlot(1)); }
     }
 
-    function readDateFormat() as Lang.Number {
-        try {
-            var value = Application.Properties.getValue("hybridDateFormat") as Lang.Object;
-            return FaceModel.sanitizeDateFormat(value);
-        } catch (error instanceof Application.Properties.InvalidKeyException) { return 0; }
-    }
-
-    function saveDateFormat(value as Lang.Object or Null) as Lang.Boolean {
-        if (!(value instanceof Lang.Number) || (value as Lang.Number) < 0 ||
-                (value as Lang.Number) > 2) { return false; }
-        Application.Properties.setValue("hybridDateFormat", value as Lang.Number);
-        WatchUi.requestUpdate();
-        return true;
-    }
-
-    function dateFormatName(choice as Lang.Number) as Lang.String {
-        if (choice == 1) { return "Month Day"; }
-        return choice == 2 ? "ISO date" : "Day Month";
-    }
-
     function appearanceFromProperty(value as Lang.Object or Null) as Lang.String {
         if (!(value instanceof Lang.Number)) {
             return "Obscur";
@@ -112,9 +92,9 @@ module FaceSettings {
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.AppearanceTitle, readAppearance(), "appearance", {}));
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.LayoutTitle,
             layoutName(readLayout()) + " / " + ThemePalette.WATCHFACE_VERSION, "layout", {}));
-        if (readLayout() == FaceModel.LAYOUT_HYBRID) {
-            menu.addItem(new WatchUi.MenuItem(Rez.Strings.HybridDateTitle, dateFormatName(readDateFormat()), "date", {}));
-        } else {
+        // Hybrid has fixed fields and no date order choice. A date order saved by
+        // an earlier version is never read, so it cannot raise an error.
+        if (readLayout() != FaceModel.LAYOUT_HYBRID) {
             menu.addItem(new WatchUi.MenuItem(Rez.Strings.LeftDataTitle, slotName(readSlot(0)), "left", {}));
             menu.addItem(new WatchUi.MenuItem(Rez.Strings.RightDataTitle, slotName(readSlot(1)), "right", {}));
         }
@@ -130,15 +110,6 @@ module FaceSettings {
             selected == FaceModel.LAYOUT_DIGITAL ? Rez.Strings.SelectedLabel : null, FaceModel.LAYOUT_DIGITAL, {}));
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.HybridLabel,
             selected == FaceModel.LAYOUT_HYBRID ? Rez.Strings.SelectedLabel : null, FaceModel.LAYOUT_HYBRID, {}));
-        return menu;
-    }
-
-    function makeDateMenu() as WatchUi.Menu2 {
-        var menu = new WatchUi.Menu2({:title => Rez.Strings.HybridDateTitle});
-        for (var choice = 0; choice <= 2; choice += 1) {
-            menu.addItem(new WatchUi.MenuItem(dateFormatName(choice),
-                readDateFormat() == choice ? Rez.Strings.SelectedLabel : null, choice, {}));
-        }
         return menu;
     }
 
@@ -185,8 +156,6 @@ class FaceConfigurationDelegate extends WatchUi.Menu2InputDelegate {
             WatchUi.pushView(FaceSettings.makeMenu(), new AppearanceMenuDelegate(), WatchUi.SLIDE_IMMEDIATE);
         } else if (id.equals("layout")) {
             WatchUi.pushView(FaceSettings.makeLayoutMenu(), new FaceLayoutDelegate(), WatchUi.SLIDE_IMMEDIATE);
-        } else if (id.equals("date")) {
-            WatchUi.pushView(FaceSettings.makeDateMenu(), new FaceDateDelegate(), WatchUi.SLIDE_IMMEDIATE);
         } else if (id.equals("left") || id.equals("right")) {
             var index = id.equals("right") ? 1 : 0;
             WatchUi.pushView(FaceSettings.makeSlotMenu(index), new FaceSlotDelegate(index), WatchUi.SLIDE_IMMEDIATE);
@@ -209,16 +178,6 @@ class FaceSlotDelegate extends WatchUi.Menu2InputDelegate {
     function initialize(index as Lang.Number) { Menu2InputDelegate.initialize(); _index = index; }
     function onSelect(item as WatchUi.MenuItem) as Void {
         if (FaceSettings.saveSlot(_index, item.getId())) {
-            WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
-            WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
-        }
-    }
-}
-
-class FaceDateDelegate extends WatchUi.Menu2InputDelegate {
-    function initialize() { Menu2InputDelegate.initialize(); }
-    function onSelect(item as WatchUi.MenuItem) as Void {
-        if (FaceSettings.saveDateFormat(item.getId())) {
             WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
             WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
         }

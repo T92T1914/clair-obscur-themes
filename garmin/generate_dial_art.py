@@ -34,7 +34,11 @@ EXPECTED = {
     "HYBRID_TRIANGLE_HALF": 17, "HYBRID_TICK_OUTER": 174,
     "HYBRID_TICK_INNER": 169, "HYBRID_BEZEL_OUTER": 226,
     "HYBRID_BEZEL_INNER": 177, "HYBRID_BEZEL_RADIUS": 203,
+    "HYBRID_DAY_LEFT": 346, "HYBRID_DAY_TOP": 213,
+    "HYBRID_DAY_BOTTOM": 241, "HYBRID_DAY_WIDTH": 52,
 }
+# Clear space the minute track keeps around the painted day and date window.
+DAY_WINDOW_MARGIN = 4
 
 # Original closed contours in a 16 by 28 grid. The counters in 0 and 4
 # are explicit negative shapes. These are solid forms, not stroked paths.
@@ -80,6 +84,25 @@ def geometry() -> tuple[dict[str, int], bytes]:
             raise ValueError(f"Review changed native geometry before regeneration: {name}")
         values[name] = int(found[0])
     return values, raw
+
+
+def day_window_box(g: dict[str, int]) -> tuple[int, int, int, int]:
+    """Inclusive pixels of the painted window at three, its outer recess included."""
+    left, top = g["HYBRID_DAY_LEFT"], g["HYBRID_DAY_TOP"]
+    return left - 1, top - 1, left + g["HYBRID_DAY_WIDTH"], g["HYBRID_DAY_BOTTOM"]
+
+
+def tick_clears_day_window(g: dict[str, int], ends: list[tuple[float, float]]) -> bool:
+    """True when a minute track tick stays the margin away from the window."""
+    left, top, right, bottom = day_window_box(g)
+    (x0, y0), (x1, y1) = ends
+    for step in range(11):
+        x, y = x0 + (x1 - x0) * step / 10, y0 + (y1 - y0) * step / 10
+        dx = max(left - x, 0, x - right)
+        dy = max(top - y, 0, y - bottom)
+        if dx * dx + dy * dy <= DAY_WINDOW_MARGIN ** 2:
+            return False
+    return True
 
 
 def scaled(value: float) -> int:
@@ -189,6 +212,9 @@ def render(appearance: str, g: dict[str, int], canvas: int) -> bytes:
     for index in range(60):
         turn = index / 60
         ends = [radial(g, turn, g["HYBRID_TICK_INNER"]), radial(g, turn, g["HYBRID_TICK_OUTER"])]
+        # The day and date window at three replaces the ticks it would touch.
+        if not tick_clears_day_window(g, ends):
+            continue
         drawing.line([(scaled(x), scaled(y)) for x, y in ends], fill=track, width=SCALE)
     for index in (1, 2, 4, 5, 7, 8, 10, 11):
         x, y = radial(g, index / 12, g["HYBRID_MARKER_CENTER"])

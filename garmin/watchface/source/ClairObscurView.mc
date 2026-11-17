@@ -68,8 +68,9 @@ class ClairObscurView extends WatchUi.WatchFace {
             // The taller clock band permits enlargement without reducing the
             // ordinary reading merely to manufacture a larger-scale result.
             _clockFonts = fonts("RobotoMedium", [30, 28, 26, 24, 22, 20, 18, 16], Graphics.FONT_SMALL, scale);
-            _calendarFonts = fonts("RobotoCondensedRegular", [18, 16, 14], Graphics.FONT_XTINY, scale);
-            _dayFonts = fonts("RobotoCondensedBold", [32, 30, 28, 26, 24, 22, 20], Graphics.FONT_XTINY, scale);
+            // Hybrid prints no calendar line. The weekday shares the window at three.
+            _calendarFonts = [];
+            _dayFonts = fonts("RobotoCondensedBold", [20, 18, 16, 15, 14, 13, 12, 11, 10], Graphics.FONT_XTINY, scale);
             _valueFonts = fonts("RobotoMedium", [26, 24, 22, 20, 18], Graphics.FONT_XTINY, scale);
             _labelFonts = fonts("RobotoCondensedRegular", [14, 12], Graphics.FONT_XTINY, scale);
             _batteryFonts = fonts("RobotoMedium", [18, 16, 14], Graphics.FONT_XTINY, scale);
@@ -167,10 +168,10 @@ class ClairObscurView extends WatchUi.WatchFace {
         var muted = clair ? ThemePalette.CLAIR_MUTED : ThemePalette.OBSCUR_MUTED;
         var accent = clair ? ThemePalette.CLAIR_ACCENT : ThemePalette.OBSCUR_ACCENT;
         if (layout == FaceModel.LAYOUT_HYBRID) {
-            // Same Moment for the numeric clock and device-localized date.
+            // Same Moment for the numeric clock and the device localized weekday.
             var names = Gregorian.info(moment, Time.FORMAT_MEDIUM);
-            var hybridDate = FaceModel.hybridDate(local.day, local.month as Lang.Number, local.year,
-                names.month as Lang.Object, names.day_of_week as Lang.Object, FaceSettings.readDateFormat());
+            var weekday = FaceModel.hybridWeekday(local.day, local.month as Lang.Number, local.year,
+                names.day_of_week as Lang.Object);
             var day = FaceModel.hybridDay(local.day, local.month as Lang.Number, local.year);
             var weather = FaceData.readSlot(FaceData.WEATHER, moment.value());
             var steps = FaceData.readSlot(FaceData.STEPS, moment.value());
@@ -178,7 +179,7 @@ class ClairObscurView extends WatchUi.WatchFace {
             var battery = FaceModel.hybridCharge(stats.battery as Lang.Object, stats.charging as Lang.Object);
             var frame = clair ? ThemePalette.CLAIR_BORDER : ThemePalette.OBSCUR_BORDER;
             drawHybrid(dc, local.hour, local.min, time, period,
-                hybridDate, day, battery, weather, steps, text, muted, frame, canvas);
+                weekday, day, battery, weather, steps, text, muted, frame, canvas);
             return;
         }
         var left = FaceData.readSlot(FaceSettings.readSlot(0), moment.value());
@@ -503,22 +504,46 @@ class ClairObscurView extends WatchUi.WatchFace {
         }
     }
 
-    function drawHybridDay(dc as Graphics.Dc, day as Lang.String,
+    function hybridDayFont(dc as Graphics.Dc, text as Lang.String, number as Lang.String,
+            width as Lang.Number, height as Lang.Number)
+            as Graphics.FontDefinition or Graphics.VectorFont or Null {
+        // Fit as if the day had two digits, so the size holds through the month.
+        // Start no larger than MON 28, the widest English reading, so the size
+        // also holds through the week. A reference that fits nowhere sets no cap.
+        var fit = number.length() == 1 ? text + "0" : text;
+        var start = 0;
+        for (var i = 0; i < _dayFonts.size(); i += 1) {
+            if (dc.getTextWidthInPixels("MON 28", _dayFonts[i]) <= width) { start = i; break; }
+        }
+        for (var i = start; i < _dayFonts.size(); i += 1) {
+            if (dc.getTextWidthInPixels(fit, _dayFonts[i]) <= width &&
+                    dc.getFontHeight(_dayFonts[i]) <= height) { return _dayFonts[i]; }
+        }
+        return null;
+    }
+
+    function drawHybridDay(dc as Graphics.Dc, weekday as Lang.String, day as Lang.String,
             ink as Lang.Number, metal as Lang.Number, canvas as Lang.Number) as Void {
         var left = FaceModel.HYBRID_DAY_LEFT;
         var top = FaceModel.HYBRID_DAY_TOP;
         var width = FaceModel.HYBRID_DAY_WIDTH;
         var height = FaceModel.HYBRID_DAY_BOTTOM - top;
-        // A small recessed three-o'clock aperture. The bright inset contains
-        // a live native numeral, with no simulated magnification or glare.
+        // A small recessed day and date window at three. The bright inset holds
+        // the live weekday and day, with no simulated magnification or glare.
         dc.setColor(0x383838, canvas); dc.fillRectangle(left - 1, top - 1, width + 2, height + 2);
         dc.setColor(0xD0D0D0, canvas); dc.fillRectangle(left, top, width, height);
         dc.setColor(0x565656, canvas);
         dc.drawLine(left + width - 1, top, left + width - 1, top + height - 1);
         dc.drawLine(left, top + height - 1, left + width - 1, top + height - 1);
         dc.setColor(ink, ink); dc.fillRectangle(left + 2, top + 2, width - 4, height - 4);
-        var font = pickFont(dc, day, _dayFonts, width - 4, height - 4);
-        var shown = day;
+        // Weekday and day first. A weekday too wide for the window gives way to
+        // the day alone, so the day never disappears behind an unfitted name.
+        var shown = weekday.length() > 0 ? weekday + " " + day : day;
+        var font = hybridDayFont(dc, shown, day, width - 4, height - 4);
+        if (font == null && weekday.length() > 0) {
+            shown = day;
+            font = hybridDayFont(dc, shown, day, width - 4, height - 4);
+        }
         if (font == null) {
             shown = "--";
             font = pickFont(dc, shown, _dayFonts, width - 4, height - 4);
@@ -532,7 +557,7 @@ class ClairObscurView extends WatchUi.WatchFace {
     }
 
     function drawHybrid(dc as Graphics.Dc, hour as Lang.Number, minute as Lang.Number,
-            time as Lang.String, period as Lang.String, date as Lang.String,
+            time as Lang.String, period as Lang.String, weekday as Lang.String,
             day as Lang.String, charge as Lang.String,
             weather as Lang.Dictionary<Lang.String, Lang.String>,
             steps as Lang.Dictionary<Lang.String, Lang.String>, ink as Lang.Number,
@@ -549,14 +574,12 @@ class ClairObscurView extends WatchUi.WatchFace {
         dc.setColor(0xC8C8C8, canvas); dc.fillCircle(FaceModel.DIAL_CENTER - 1, FaceModel.DIAL_CENTER - 1, 7);
         dc.setColor(0x363636, canvas); dc.fillCircle(FaceModel.DIAL_CENTER, FaceModel.DIAL_CENTER, 4);
         dc.setColor(0xE4E4E4, canvas); dc.fillCircle(FaceModel.DIAL_CENTER - 2, FaceModel.DIAL_CENTER - 2, 1);
-        hybridLine(dc, date, _calendarFonts, FaceModel.HYBRID_DATE_WIDTH,
-            FaceModel.HYBRID_DATE_TOP, FaceModel.HYBRID_DATE_BOTTOM, muted, canvas, true);
         hybridSlot(dc, weather, FaceModel.HYBRID_LEFT_X, ink, muted, canvas, true);
         hybridSlot(dc, steps, FaceModel.HYBRID_RIGHT_X, ink, muted, canvas, true);
         hybridLine(dc, charge, _batteryFonts, FaceModel.HYBRID_CHARGE_WIDTH,
             FaceModel.HYBRID_CHARGE_TOP, FaceModel.HYBRID_CHARGE_BOTTOM, muted, canvas, true);
         drawHybridClock(dc, time, period, ink, canvas);
-        drawHybridDay(dc, day, ink, facet, canvas);
+        drawHybridDay(dc, weekday, day, ink, facet, canvas);
     }
 
     function drawHybridAlwaysOn(dc as Graphics.Dc, hour as Lang.Number, minute as Lang.Number) as Void {

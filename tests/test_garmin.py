@@ -155,9 +155,9 @@ class GarminPaletteTests(unittest.TestCase):
     def test_current_palette_has_exact_black_white_and_neutral_roles(self):
         current = json.loads((ROOT / "tokens-monochrome.json").read_text(encoding="utf-8"))
         source = render_palette(current)
-        self.assertEqual(VERSION, "0.12.0")
+        self.assertEqual(VERSION, "0.13.0")
         self.assertEqual(colors(source), EXPECTED_MONOCHROME_COLORS)
-        self.assertIn('const WATCHFACE_VERSION = "0.12.0";', source)
+        self.assertIn('const WATCHFACE_VERSION = "0.13.0";', source)
         # Keep the native assertion literal and independent of the menu's
         # implementation, while catching a forgotten test-version bump here.
         native = (ROOT / "garmin/watchface/tests/FaceLayoutTests.mc").read_text(encoding="utf-8")
@@ -202,10 +202,18 @@ class GarminPaletteTests(unittest.TestCase):
                          ["fenix9pro47mm"])
         properties = ET.parse(face / "resources/settings/properties.xml").getroot()
         self.assertEqual([(node.get("id"), node.get("type"), node.text) for node in properties],
-                         [("appVersion", "string", "0.12.0"), ("appearance", "number", "1"),
+                         [("appVersion", "string", "0.13.0"), ("appearance", "number", "1"),
                           ("layout", "number", "2"),
-                          ("leftData", "number", "0"), ("rightData", "number", "1"),
-                          ("hybridDateFormat", "number", "0")])
+                          ("leftData", "number", "0"), ("rightData", "number", "1")])
+        # 0.13.0 retires the Hybrid date order. Its property, setting and labels
+        # are gone, and no source reads a value an earlier version stored.
+        resources = (face / "resources/settings/settings.xml").read_text(encoding="utf-8")
+        strings = (face / "resources/strings/strings.xml").read_text(encoding="utf-8")
+        self.assertNotIn("hybridDateFormat", resources)
+        for retired in ("HybridDateTitle", "DayMonthLabel", "MonthDayLabel", "IsoDateLabel"):
+            self.assertNotIn(retired, strings)
+        for source in (face / "source").glob("*.mc"):
+            self.assertNotIn("hybridDateFormat", source.read_text(encoding="utf-8"))
         view = (face / "source/ClairObscurView.mc").read_text(encoding="utf-8")
         self.assertIn('(clair ? ThemePalette.CLAIR_CANVAS : ThemePalette.OBSCUR_CANVAS) : 0x000000;', view)
         self.assertIn('dc.setColor(ThemePalette.OBSCUR_MUTED, 0x000000);', view)
@@ -962,16 +970,17 @@ class GarminHybridContractsTests(unittest.TestCase):
 
     def test_hybrid_regions_have_round_clearance_and_separate_content_bands(self):
         c = self.values
-        for name in ("DATE", "DAY", "CLOCK", "CHARGE"):
+        for name in ("DAY", "CLOCK", "CHARGE"):
             left = c[f"HYBRID_{name}_LEFT"] if name in ("DAY", "CLOCK") else (454 - c[f"HYBRID_{name}_WIDTH"]) / 2
             right = left + c[f"HYBRID_{name}_WIDTH"]
             for x in (left - 1, right + 1):
                 for y in (c[f"HYBRID_{name}_TOP"] - 1, c[f"HYBRID_{name}_BOTTOM"] + 1):
                     self.assertLess((x - 227) ** 2 + (y - 227) ** 2, 227 ** 2)
-        self.assertLess(c["HYBRID_DATE_BOTTOM"], c["HYBRID_CLOCK_TOP"])
+        # 0.13.0 prints no calendar line. The weekday joins the window at three.
+        self.assertFalse({"HYBRID_DATE_TOP", "HYBRID_DATE_BOTTOM", "HYBRID_DATE_WIDTH"} & set(c))
         self.assertLess(c["HYBRID_CLOCK_BOTTOM"], c["HYBRID_DATA_TOP"])
-        self.assertLess(c["HYBRID_DATE_BOTTOM"], c["HYBRID_CHARGE_TOP"])
         self.assertLess(c["HYBRID_CHARGE_BOTTOM"], c["HYBRID_CLOCK_TOP"])
+        self.assertGreater(c["HYBRID_DAY_LEFT"], c["HYBRID_CLOCK_LEFT"] + c["HYBRID_CLOCK_WIDTH"])
         self.assertEqual(tuple(c[key] for key in ("HYBRID_CHARGE_TOP", "HYBRID_CHARGE_BOTTOM",
                          "HYBRID_CHARGE_WIDTH", "HYBRID_DATA_TOP", "HYBRID_DATA_BOTTOM")),
                          (176, 206, 118, 282, 338))
@@ -989,6 +998,10 @@ class GarminHybridContractsTests(unittest.TestCase):
         self.assertIn("Gregorian.info(moment, Time.FORMAT_SHORT)", update)
         self.assertIn("Gregorian.info(moment, Time.FORMAT_MEDIUM)", branch)
         self.assertIn("FaceModel.hybridDay(local.day, local.month as Lang.Number, local.year)", branch)
+        self.assertIn("FaceModel.hybridWeekday(local.day, local.month as Lang.Number, local.year,\n"
+                      "                names.day_of_week as Lang.Object)", branch)
+        self.assertNotIn("hybridDate", branch)
+        self.assertNotIn("names.month", branch)
         self.assertIn("FaceData.readSlot(FaceData.WEATHER, moment.value())", branch)
         self.assertIn("FaceData.readSlot(FaceData.STEPS, moment.value())", branch)
         self.assertNotIn("FaceSettings.readSlot", branch)
@@ -1004,15 +1017,15 @@ class GarminHybridContractsTests(unittest.TestCase):
         draw = GarminAnalogAodGeometryTests.function(view, "drawHybrid")
         first_hand = draw.index("drawHybridHour(dc, hour, minute, ink, facet, canvas)")
         last_hand = draw.index("dc.fillCircle(FaceModel.DIAL_CENTER - 2, FaceModel.DIAL_CENTER - 2, 1)")
-        day = draw.index("drawHybridDay(dc, day")
-        for call in ("hybridLine(dc, date", "hybridSlot(dc, weather", "hybridSlot(dc, steps", "hybridLine(dc, charge",
+        day = draw.index("drawHybridDay(dc, weekday, day")
+        self.assertNotIn("hybridLine(dc, date", draw)
+        for call in ("hybridSlot(dc, weather", "hybridSlot(dc, steps", "hybridLine(dc, charge",
                      "drawHybridClock(dc, time, period"):
             self.assertGreater(draw.index(call), last_hand)
             self.assertLess(draw.index(call), day)
         self.assertLess(draw.index('hybridLine(dc, canvas =='), first_hand)
         self.assertIn("_labelFonts, 130, 120, 140, ink, canvas, false);", draw)
-        for call in ("HYBRID_DATE_BOTTOM, muted, canvas, true);",
-                     "hybridSlot(dc, weather, FaceModel.HYBRID_LEFT_X, ink, muted, canvas, true);",
+        for call in ("hybridSlot(dc, weather, FaceModel.HYBRID_LEFT_X, ink, muted, canvas, true);",
                      "hybridSlot(dc, steps, FaceModel.HYBRID_RIGHT_X, ink, muted, canvas, true);",
                      "HYBRID_CHARGE_BOTTOM, muted, canvas, true);"):
             self.assertIn(call, draw)
@@ -1086,7 +1099,7 @@ class GarminHybridContractsTests(unittest.TestCase):
         with self.assertRaises(AssertionError):
             self.assert_reading_order(old_order)
         edges = "        drawHybridReadingEdges(dc, hour, minute, rows, facet, canvas);\n"
-        day = "        drawHybridDay(dc, day, ink, facet, canvas);\n"
+        day = "        drawHybridDay(dc, weekday, day, ink, facet, canvas);\n"
         late_edges = self.view.replace(day, day + edges, 1)
         unprotected = self.view.replace(call, call.replace("canvas, true", "canvas, false"), 1)
         for changed in (late_edges, unprotected):
@@ -1104,8 +1117,10 @@ class GarminHybridContractsTests(unittest.TestCase):
         self.assertIn("FaceSettings.refreshDataSubscriptions();", GarminAnalogAodGeometryTests.function(self.app, "onStart"))
         self.assertIn("FaceSettings.refreshDataSubscriptions();", GarminAnalogAodGeometryTests.function(self.app, "onSettingsChanged"))
         menu = GarminAnalogAodGeometryTests.function(self.settings, "makeSettingsMenu")
-        self.assertRegex(menu, r'LAYOUT_HYBRID\) \{\s*menu\.addItem\(new WatchUi\.MenuItem\(Rez.Strings.HybridDateTitle,')
-        self.assertRegex(menu, r'\} else \{\s*menu\.addItem\(new WatchUi\.MenuItem\(Rez.Strings.LeftDataTitle,')
+        self.assertRegex(menu, r'readLayout\(\) != FaceModel\.LAYOUT_HYBRID\) \{\s*'
+                               r'menu\.addItem\(new WatchUi\.MenuItem\(Rez.Strings.LeftDataTitle,')
+        self.assertNotRegex(self.settings, r"HybridDateTitle|DateFormat|makeDateMenu|FaceDateDelegate")
+        self.assertNotIn('id.equals("date")', self.settings)
 
     def test_added_gregorian_tests_use_supplied_moments_without_device_clock_mutation(self):
         tests = (ROOT / "garmin/watchface/tests/FaceModelTests.mc").read_text(encoding="utf-8")
@@ -1176,8 +1191,9 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
         self.assertNotIn("loadResource", update)
         self.assertNotIn("drawBitmap", update)
         self.assertLess(update.index("drawHybridAlwaysOn(dc"), update.index("refreshFonts(layout)"))
-        for field in ("hybridLine(dc, date", "hybridSlot(dc, weather", "hybridSlot(dc, steps",
-                      "hybridLine(dc, charge", "drawHybridClock(dc, time", "drawHybridDay(dc, day"):
+        self.assertNotIn("hybridLine(dc, date", self.function(self.view, "drawHybrid"))
+        for field in ("hybridSlot(dc, weather", "hybridSlot(dc, steps",
+                      "hybridLine(dc, charge", "drawHybridClock(dc, time", "drawHybridDay(dc, weekday, day"):
             self.assertIn(field, self.function(self.view, "drawHybrid"))
         for name in ("drawHybridAlwaysOn", "drawAnalogAlwaysOn", "drawAlwaysOn"):
             self.assertNotRegex(self.function(self.view, name),
@@ -1198,7 +1214,7 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
         fonts = self.function(self.view, "refreshFonts")
         branch = fonts.split("layout == FaceModel.LAYOUT_HYBRID) {", 1)[1].split("} else {", 1)[0]
         self.assertIn('fonts("RobotoMedium", [26, 24, 22, 20, 18]', branch)
-        self.assertIn('fonts("RobotoCondensedRegular", [18, 16, 14]', branch)
+        self.assertIn("_calendarFonts = [];", branch)
 
     def assert_protected_clock(self, view):
         clock = self.function(view, "drawHybridClock")
@@ -1226,7 +1242,7 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
         self.assertGreater(draw.index(call), draw.index("FaceModel.hybridMinuteHand(hour, minute, true)"))
         self.assertGreater(draw.index(call), draw.index("dc.fillCircle(FaceModel.DIAL_CENTER - 2, FaceModel.DIAL_CENTER - 2, 1);"))
         self.assertNotIn("drawHybridReadingEdges", view)
-        self.assertLess(draw.index(call), draw.index("drawHybridDay(dc, day, ink, facet, canvas);"))
+        self.assertLess(draw.index(call), draw.index("drawHybridDay(dc, weekday, day, ink, facet, canvas);"))
 
     def test_glyph_protected_clock_and_light_day_have_disjoint_period_clip(self):
         self.assert_protected_clock(self.view)
@@ -1257,12 +1273,32 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
         self.assertIn("FaceModel.HYBRID_DAY_LEFT", day)
         self.assertIn("FaceModel.HYBRID_DAY_WIDTH", day)
         self.assertIn("dc.setColor(ink, ink); dc.fillRectangle(left + 2, top + 2, width - 4, height - 4);", day)
-        self.assertIn("pickFont(dc, day, _dayFonts, width - 4, height - 4)", day)
+        # Weekday and day first, then the day alone, then the unavailable marker.
+        fits = [day.index(text) for text in (
+            'var shown = weekday.length() > 0 ? weekday + " " + day : day;',
+            "var font = hybridDayFont(dc, shown, day, width - 4, height - 4);",
+            "if (font == null && weekday.length() > 0) {",
+            "shown = day;",
+            "\n            font = hybridDayFont(dc, shown, day, width - 4, height - 4);",
+            'shown = "--";',
+            "font = pickFont(dc, shown, _dayFonts, width - 4, height - 4);")]
+        self.assertEqual(fits, sorted(fits))
+        sizing = self.function(self.view, "hybridDayFont")
+        self.assertIn('var fit = number.length() == 1 ? text + "0" : text;', sizing)
+        # One size through the week: the search starts at the first candidate
+        # that fits MON 28, and starts at the largest when none fits it.
+        self.assertIn("var start = 0;", sizing)
+        self.assertIn('if (dc.getTextWidthInPixels("MON 28", _dayFonts[i]) <= width) { start = i; break; }', sizing)
+        self.assertIn("for (var i = start; i < _dayFonts.size(); i += 1) {", sizing)
+        self.assertIn("dc.getTextWidthInPixels(fit, _dayFonts[i]) <= width &&", sizing)
+        self.assertIn("dc.getFontHeight(_dayFonts[i]) <= height) { return _dayFonts[i]; }", sizing)
+        self.assertLess(sizing.index('"MON 28"'), sizing.index("var i = start"))
+        self.assertIn('fonts("RobotoCondensedBold", [20, 18, 16, 15, 14, 13, 12, 11, 10]', font_branch)
         self.assertNotRegex(day, r"haloText|COLOR_TRANSPARENT")
         self.assertEqual(tuple(self.constants[key] for key in ("HYBRID_DAY_LEFT",
                          "HYBRID_DAY_TOP", "HYBRID_DAY_BOTTOM", "HYBRID_DAY_WIDTH")),
-                         (346, 208, 246, 46))
-        self.assertLess(46 * 38, 112 * 46 / 2)
+                         (346, 213, 241, 52))
+        self.assertLess(52 * 28, 112 * 46 / 2)
         active = self.function(self.model, "hybridActiveBaton")
         self.assertIn("if (i == null || i == 3) { return []; }", active)
         aod = self.function(self.view, "drawHybridAlwaysOn")
@@ -1273,7 +1309,7 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
     def test_both_protected_fields_clear_the_hour_head_at_all_720_positions(self):
         # Full painted day frame includes its one-pixel outer recess. The
         # new field has geometric separation, not the former two-pixel guard.
-        rectangles = ((165, 238, 289, 280), (345, 207, 393, 247))
+        rectangles = ((165, 238, 289, 280), (345, 212, 399, 242))
         cardinals = {0: (227, 127), 180: (327, 227),
                      360: (227, 327), 540: (127, 227)}
         for total in range(720):
@@ -1305,7 +1341,7 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
             self.assert_protected_clock(self.view.replace(clock, opaque, 1))
         call = "        drawHybridClock(dc, time, period, ink, canvas);\n"
         hand = "        drawHybridHour(dc, hour, minute, ink, facet, canvas);\n"
-        day = "        drawHybridDay(dc, day, ink, facet, canvas);\n"
+        day = "        drawHybridDay(dc, weekday, day, ink, facet, canvas);\n"
         self.assertEqual(self.view.count(call), 1)
         self.assertEqual(self.view.count(hand), 1)
         self.assertEqual(self.view.count(day), 1)
@@ -1556,6 +1592,10 @@ class GarminStaticDialResourceTests(unittest.TestCase):
             for y in range(238, 281):
                 self.assertEqual(rows[y][165 * 3:290 * 3], bytes([canvas]) * (125 * 3))
             self.assertEqual(rows[227][227 * 3:228 * 3], bytes([canvas]) * 3)
+            # The minute track stops short of the day and date window at three.
+            # Its painted box is x345..398, y212..241, with two clear pixels around it.
+            for y in range(210, 244):
+                self.assertEqual(rows[y][343 * 3:401 * 3], bytes([canvas]) * (58 * 3))
             self.assertGreater(len(set(b"".join(rows))), 2)  # Neutral edge/bevel shades survive.
         self.assertNotEqual(record["files"]["clair.png"]["sha256"], record["files"]["obscur.png"]["sha256"])
 

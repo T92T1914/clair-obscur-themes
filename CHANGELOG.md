@@ -1,5 +1,13 @@
 # Changes
 
+## Garmin day and date window candidate 0.13.0
+
+- Show the day once on Hybrid. Drop the calendar line above the pivot and put the localized weekday in capitals beside the day in the window at three, as in `MON 2`.
+- Widen the window to 52 pixels toward the minute track and shorten it to 28. The plate leaves out the three track ticks the wider window would touch. The left edge stays clear of the hour head at 3:00.
+- Fit the window as if the day had two digits and never larger than `MON 28`, so its size holds through the month and the week. A weekday that does not fit gives way to the day alone.
+- Retire the Hybrid date order setting. Nothing reads a value an earlier version saved.
+- Check it in the SDK 9.2.0 Linux simulator on a private virtual display: captures at font scales 0.80, 1.00 and 1.35, and all 42 annotated groups passed. The accepted 0.12.0 program keeps its bytes. Acceptance on the watch remains open.
+
 ## Clone Hero skin 0.1.0
 
 - Add a separate Clone Hero candidate built by `python -m themeforge.clonehero`: black and white profiles, full strength lane profiles, two video highways and two still highways. Every profile has the same 183 keys in the same order as a complete professional profile.
