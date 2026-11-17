@@ -1,5 +1,11 @@
 # Changes
 
+## Garmin calm center candidate 0.14.0
+
+- Drop the `OBSCUR` and `CLAIR` brand line from Hybrid. With the calendar line gone in 0.13.0, the center column holds only battery above the pivot and the digital time below it.
+- Keep every reading in its 0.13.0 position, font and glyph protection. The brand was the only text drawn behind the hands without protection.
+- Check it in the same simulator route: captures at 10:10 at font scales 1.00 and 1.35 and at 06:30 at 1.35 change from 0.13.0 only where the brand line was, and all 42 annotated groups passed. Acceptance on the watch remains open.
+
 ## Garmin day and date window candidate 0.13.0
 
 - Show the day once on Hybrid. Drop the calendar line above the pivot and put the localized weekday in capitals beside the day in the window at three, as in `MON 2`.
