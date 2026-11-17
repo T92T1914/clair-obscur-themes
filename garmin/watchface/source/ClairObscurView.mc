@@ -72,7 +72,8 @@ class ClairObscurView extends WatchUi.WatchFace {
             _calendarFonts = [];
             _dayFonts = fonts("RobotoCondensedBold", [20, 18, 16, 15, 14, 13, 12, 11, 10], Graphics.FONT_XTINY, scale);
             _valueFonts = fonts("RobotoMedium", [26, 24, 22, 20, 18], Graphics.FONT_XTINY, scale);
-            _labelFonts = fonts("RobotoCondensedRegular", [14, 12], Graphics.FONT_XTINY, scale);
+            // The brand line was the only Hybrid text set in these label fonts.
+            _labelFonts = [];
             _batteryFonts = fonts("RobotoMedium", [18, 16, 14], Graphics.FONT_XTINY, scale);
             _bezelFonts = [];
             _periodFonts = fonts("RobotoMedium", [14, 12, 10], Graphics.FONT_XTINY, scale);
@@ -563,10 +564,8 @@ class ClairObscurView extends WatchUi.WatchFace {
             steps as Lang.Dictionary<Lang.String, Lang.String>, ink as Lang.Number,
             muted as Lang.Number, facet as Lang.Number, canvas as Lang.Number) as Void {
         drawHybridBezel(dc, ink, facet, canvas);
-        // Branding stays quiet dial printing. Useful readings remain on top of
-        // the complete hands with a bounded one-pixel glyph separator.
-        hybridLine(dc, canvas == ThemePalette.CLAIR_CANVAS ? "CLAIR" : "OBSCUR",
-            _labelFonts, 130, 120, 140, ink, canvas, false);
+        // Hybrid prints no brand line, so the center column holds only readings.
+        // They stay on top of the complete hands with a one pixel glyph separator.
         drawHybridHour(dc, hour, minute, ink, facet, canvas);
         hybridMetalPolygon(dc, FaceModel.hybridMinuteHand(hour, minute, false),
             FaceModel.hybridMinuteHand(hour, minute, true), ink, facet, canvas);

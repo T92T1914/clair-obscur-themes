@@ -155,9 +155,9 @@ class GarminPaletteTests(unittest.TestCase):
     def test_current_palette_has_exact_black_white_and_neutral_roles(self):
         current = json.loads((ROOT / "tokens-monochrome.json").read_text(encoding="utf-8"))
         source = render_palette(current)
-        self.assertEqual(VERSION, "0.13.0")
+        self.assertEqual(VERSION, "0.14.0")
         self.assertEqual(colors(source), EXPECTED_MONOCHROME_COLORS)
-        self.assertIn('const WATCHFACE_VERSION = "0.13.0";', source)
+        self.assertIn('const WATCHFACE_VERSION = "0.14.0";', source)
         # Keep the native assertion literal and independent of the menu's
         # implementation, while catching a forgotten test-version bump here.
         native = (ROOT / "garmin/watchface/tests/FaceLayoutTests.mc").read_text(encoding="utf-8")
@@ -202,7 +202,7 @@ class GarminPaletteTests(unittest.TestCase):
                          ["fenix9pro47mm"])
         properties = ET.parse(face / "resources/settings/properties.xml").getroot()
         self.assertEqual([(node.get("id"), node.get("type"), node.text) for node in properties],
-                         [("appVersion", "string", "0.13.0"), ("appearance", "number", "1"),
+                         [("appVersion", "string", "0.14.0"), ("appearance", "number", "1"),
                           ("layout", "number", "2"),
                           ("leftData", "number", "0"), ("rightData", "number", "1")])
         # 0.13.0 retires the Hybrid date order. Its property, setting and labels
@@ -1023,8 +1023,12 @@ class GarminHybridContractsTests(unittest.TestCase):
                      "drawHybridClock(dc, time, period"):
             self.assertGreater(draw.index(call), last_hand)
             self.assertLess(draw.index(call), day)
-        self.assertLess(draw.index('hybridLine(dc, canvas =='), first_hand)
-        self.assertIn("_labelFonts, 130, 120, 140, ink, canvas, false);", draw)
+        # 0.14.0 prints no brand line. The center column holds only readings.
+        self.assertNotIn('"OBSCUR"', draw)
+        self.assertNotIn('"CLAIR"', draw)
+        self.assertNotIn("_labelFonts", draw)
+        self.assertNotIn("canvas, false);", draw)
+        self.assertLess(draw.index("drawHybridBezel(dc, ink, facet, canvas);"), first_hand)
         for call in ("hybridSlot(dc, weather, FaceModel.HYBRID_LEFT_X, ink, muted, canvas, true);",
                      "hybridSlot(dc, steps, FaceModel.HYBRID_RIGHT_X, ink, muted, canvas, true);",
                      "HYBRID_CHARGE_BOTTOM, muted, canvas, true);"):
@@ -1215,6 +1219,9 @@ class GarminHybridDiverContractsTests(unittest.TestCase):
         branch = fonts.split("layout == FaceModel.LAYOUT_HYBRID) {", 1)[1].split("} else {", 1)[0]
         self.assertIn('fonts("RobotoMedium", [26, 24, 22, 20, 18]', branch)
         self.assertIn("_calendarFonts = [];", branch)
+        # With the brand line gone, Hybrid loads no label fonts it never draws.
+        self.assertIn("_labelFonts = [];", branch)
+        self.assertNotIn('fonts("RobotoCondensedRegular", [14, 12]', branch)
 
     def assert_protected_clock(self, view):
         clock = self.function(view, "drawHybridClock")

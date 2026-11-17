@@ -1,8 +1,25 @@
 # Clair and Obscur watch face candidate
 
-The current source is the [0.13.0 day and date window candidate](#0130-day-and-date-window-candidate), built on the [0.12.0 black dial redesign candidate](garmin-redesign.md). The 0.12.0 redesign changes the Hybrid composition, production dial artwork, hand/marker proportions, typography and data placement. Current SDK execution includes a matched 10:10 comparison and retained active view samples. The corrected always on cycle now has bounded native evidence, with remaining physical and extended runtime limits. The following version sections keep current observations, earlier results and physical acceptance separate.
+The current source is the [0.14.0 calm center candidate](#0140-calm-center-candidate). It follows the [0.13.0 day and date window candidate](#0130-day-and-date-window-candidate) and the [0.12.0 black dial redesign candidate](garmin-redesign.md). The 0.12.0 redesign changes the Hybrid composition, production dial artwork, hand/marker proportions, typography and data placement. Current SDK execution includes a matched 10:10 comparison and retained active view samples. The corrected always on cycle now has bounded native evidence, with remaining physical and extended runtime limits. The following version sections keep current observations, earlier results and physical acceptance separate.
 
 This Connect IQ watch face targets `fenix9pro47mm`, the fēnix 9 Pro 47 mm AMOLED. Its current Hybrid layout combines an original diver dial, a day and date window at three, digital time below the pivot, weather, steps and battery. The numbered scale is a visual reference, not an interactive timer. The source preserves the monochrome palette, desktop packages, saved layout meanings and separate Analog/Digital modes.
+
+## 0.14.0 calm center candidate
+
+Source 0.14.0 drops the brand line above the pivot, `OBSCUR` on the black face and `CLAIR` on the light one. With the calendar line already gone in 0.13.0, the center column now holds only readings: battery above the pivot and the digital time below it. Weather and steps keep their two columns below that. The 0.12.0 face carried four text lines in the center column, and 0.14.0 carries two. The brand was also the only text drawn behind the hands without glyph protection, so it was the one line a hand could hide.
+
+No reading moves, and no font, size or glyph protection changes. Hybrid also stops loading the label fonts only the brand line used. Analog, Digital and the always on view are unchanged.
+
+### 0.14.0 simulator evidence
+
+The captures came from the same private Xvfb route as 0.13.0. The normal program is 461,020 bytes with SHA-256 `61938e138e24e9273db8d199547e61c795eed1bc018c4fd400c045c08ad5a8fc`.
+
+1. At 10:10 at font scales 1.00 and 1.35 and at 06:30 at 1.35, the captures differ from 0.13.0 captures of the same pose only where the brand line was: 229, 293 and 293 pixels, all inside x204..249, y124..135.
+2. Every reading is still whole in all three: `BAT 50%`, the time with `AM`, `MON 2`, the weather value and its status, and the step count.
+3. At 06:30 at 1.35 the hour head still sits under the `<1h` cache status. Every glyph is drawn on top of it, as in 0.12.0 and 0.13.0, and the crossing is unchanged. Whether it reads at arm's length is a question for the watch.
+4. The diagnostic program executed all 42 annotated groups: `PASSED (passed=42, failed=0, errors=0)`. Its runner exited 1, as before.
+
+Acceptance on the watch is mine.
 
 ## 0.13.0 day and date window candidate
 

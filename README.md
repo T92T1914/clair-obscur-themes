@@ -94,8 +94,10 @@ not a dive timer.
 
 Source [0.13.0](docs/garmin-watchface.md#0130-day-and-date-window-candidate) shows
 the day once. It drops the calendar line above the pivot and puts the weekday beside
-the day in a wider window at three, as in `MON 2`. It is a simulator checked candidate
-with its own version, and the accepted 0.12.0 program keeps its bytes.
+the day in a wider window at three, as in `MON 2`. Source
+[0.14.0](docs/garmin-watchface.md#0140-calm-center-candidate) also drops the brand
+line, so the center column holds only battery and the time. Both are simulator checked
+candidates with their own versions, and the accepted 0.12.0 program keeps its bytes.
 
 The accepted 0.12.0 normal program has a verified physical transfer and
 activation and normal operation, both reported by the user. The [qualification matrix](docs/garmin-watchface.md#0120-native-qualification-in-progress)

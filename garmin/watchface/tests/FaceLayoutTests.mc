@@ -435,7 +435,7 @@ function hybridSettingsPreserveLegacyFields(logger as Test.Logger) as Lang.Boole
         var menu = FaceSettings.makeSettingsMenu();
         var layoutItem = menu.getItem(1);
         Test.assert(layoutItem != null);
-        Test.assertEqual((layoutItem as WatchUi.MenuItem).getSubLabel(), "Hybrid / 0.13.0");
+        Test.assertEqual((layoutItem as WatchUi.MenuItem).getSubLabel(), "Hybrid / 0.14.0");
         // 0.13.0 retires the date order. Hybrid offers Appearance and Layout only.
         Test.assert(menu.getItem(2) == null);
         Test.assert(FaceSettings.saveLayout(0));
