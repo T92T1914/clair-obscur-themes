@@ -2146,6 +2146,8 @@ async function activateMappingRoute(page, id, target) {
   assert.equal(await link.getAttribute('href'), '#' + target);
   await link.focus(); assert.equal(await link.evaluate(node => node === document.activeElement), true);
   await page.keyboard.press('Enter');
+  // Keyboard dispatch can finish before the fragment navigation is observed.
+  await waitForGuideDestination(page, target);
   assert.equal(new URL(page.url()).hash, '#' + target, 'Actual anchor activation reaches the intended guide');
   const heading = page.locator('#' + target);
   assert.equal(await heading.isVisible(), true, 'Route target must be visible without opening another disclosure');
@@ -2166,6 +2168,8 @@ async function activateMappingRoute(page, id, target) {
   assert.ok(position.bottom > 0 && position.top < position.height && position.left >= -1 && position.right <= position.width + 1,
     'Activated guide must be in the viewport: ' + JSON.stringify(position));
   await onward.focus(); await page.keyboard.press('Enter');
+  // The onward destination is a disclosure that takes no focus, so only its fragment is awaited.
+  await page.waitForURL(url => url.hash === '#' + onwardTarget, { timeout: 2000, waitUntil: 'commit' });
   assert.equal(new URL(page.url()).hash, '#' + onwardTarget, 'Actual onward anchor activation reaches the supported guide');
   const details = page.locator('#' + onwardTarget);
   assert.equal(await details.evaluate(node => node.tagName), 'DETAILS');
@@ -2242,6 +2246,58 @@ test('declared icon mapping availability filters exact choices and provides usab
         scope: 'Maintained declarations, actual preview operations and decoded manual PNG acquisition; no installed phone assignment claim' });
     } finally { await context.close(); }
   }
+});
+
+test('icon mapping routes wait for held keyboard navigation rather than reading the URL at once', async () => {
+  // Hold each route's real link activation behind an explicit release, not a
+  // timer, so Enter finishes before its navigation on every run.
+  const routes = ['#icon-manual-instructions', '#icon-png-instructions'];
+  const { context, page, consoleErrors } = await pageFor({ viewport: { width: 1280, height: 844 } });
+  try {
+    await page.evaluate(hrefs => {
+      window.heldRoutes = [];
+      window.releasedRoutes = new Set();
+      document.addEventListener('click', event => {
+        const link = event.target instanceof Element ? event.target.closest('a[href]') : null;
+        const href = link?.getAttribute('href');
+        if (!hrefs.includes(href) || window.releasedRoutes.has(href)) return;
+        event.preventDefault();
+        window.heldRoutes.push(link);
+      }, true);
+    }, routes);
+    const link = page.locator('[data-icon-function="us-bank"] .icon-mapping > a');
+    await link.focus(); await page.keyboard.press('Enter');
+    assert.throws(() => assert.equal(new URL(page.url()).hash, routes[0]), { code: 'ERR_ASSERTION' },
+      'An immediate read after Enter sees the earlier URL while the navigation is still held');
+    await page.evaluate(() => { window.heldRoutes = []; });
+    let settled = false;
+    const route = activateMappingRoute(page, 'us-bank', 'icon-manual-instructions').then(
+      value => { settled = true; return { value }; }, error => { settled = true; return { error }; });
+    for (const [index, href] of routes.entries()) {
+      // A route that fails early must report its own error, not this wait's timeout.
+      const held = page.waitForFunction(count => window.heldRoutes.length === count, index + 1, { timeout: 2000 })
+        .then(handle => handle.dispose());
+      held.catch(() => {});
+      if (await Promise.race([held.then(() => 'held'), route.then(() => 'settled')]) === 'settled') {
+        const early = await route;
+        if (early.error) throw early.error;
+        assert.fail('Route check finished before the held navigation to ' + href);
+      }
+      assert.equal(await page.evaluate(() => location.hash), index ? routes[0] : '', 'Held activation has not navigated');
+      assert.equal(settled, false, 'Route check must wait for the held navigation to ' + href);
+      await page.evaluate(([position, target]) => {
+        window.releasedRoutes.add(target);
+        window.heldRoutes[position].click();
+      }, [index, href]);
+    }
+    const outcome = await route;
+    if (outcome.error) throw outcome.error;
+    assert.deepEqual([outcome.value.target, outcome.value.onwardTarget], ['icon-manual-instructions', 'icon-png-instructions']);
+    assert.equal(new URL(page.url()).hash, routes[1]);
+    assert.deepEqual(consoleErrors, []);
+    results.scenarios.push({ name: 'mapping routes wait for held keyboard navigation', status: 'passed',
+      held: routes, release: 'explicit link click', timers: 0 });
+  } finally { await context.close(); }
 });
 
 test('icon finder matches labels, stable IDs and packages literally in both appearances and phone layouts', async () => {
