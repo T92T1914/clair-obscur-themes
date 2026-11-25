@@ -128,3 +128,15 @@ A completed report is retained only as an immutable in-memory string through And
 The focused JVM regression compiles the actual Activity source against synthetic Android APIs. Its 29 checks cover completed and in flight recreation, delayed callbacks, fresh scans, failures and cold start and process loss fallback. This reproduces report loss in the earlier source and checks the correction's app logic. The host supplies lifecycle delivery, so it does not qualify Android's callback behavior, physical folding, launcher recognition or phone application. Android's [UI state guidance](https://developer.android.com/topic/libraries/architecture/saving-states) distinguishes configuration recreation from process death. This transient report is deliberately not restored after process loss.
 
 The public source snapshot explicitly includes the app, build command, mapping table and license notices. SDKs, signing keys, compiled APKs and local build outputs stay outside that inventory. Existing desktop packages, SVG archives and release gates are unchanged.
+
+## Emulator evidence from 2026-11-24
+
+This is evidence from a headless Android emulator, gathered by hand outside the build script, which still starts no emulator. It is not acceptance on a phone, and it does not replace the native checks in the sections above. The details are in a private note dated 2026-11-24 that stays outside this repository.
+
+The 0.33.0 PNG export reproduced exactly. Chrome for Testing 156.0.8078.49 ran through Playwright 1.63.0's `chrome` channel with Node v24.16.0. It produced 1,200 PNGs and a manifest with SHA-256 `9fe1093037bd0f24f7b70ecb09395dbd4464a93497ffaf34a6d341298553ded6`, equal to the pin above, and every PNG matched its manifest hash.
+
+Both current packs were built from that export with the unchanged build script and signed with a throwaway test key. Those APKs are not releases and do not carry the release signature. Obscur Icons 0.1.17/code 18 and Clair Icons 0.1.6/code 7 installed side by side on an Android 16 emulator image (API 36, AOSP, no Google APIs) and both answered the icon theme launcher action. In KISS 3.28.1 the icon pack chooser listed both. Settings was drawn with the Obscur tile and then the Clair tile, the Clair choice survived a force stop of KISS, and System icons restored the stock gear.
+
+Coverage was narrow. The image had one of the pack's mapped components, `com.android.settings/.Settings`, and the pack's own coverage check reported 1 of 1 visible supported components mapped with 289 supported packages not visible. Only Settings could change, so this says little about the other mappings. A completed coverage report also stayed on screen through a rotation and back, observed once on the emulator.
+
+Not shown: Theme Park, One UI, Samsung masks, any physical phone, the release signature and any mapped app other than Settings.
