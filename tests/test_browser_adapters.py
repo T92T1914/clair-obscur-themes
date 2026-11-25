@@ -13,7 +13,7 @@ import zipfile
 import zlib
 
 from themeforge.build import BROWSER_VERSION, PROJECT_ROOT, _review_payloads, build_release
-from themeforge.opera_gx import hsl_hint, package_icon, theme_manifest
+from themeforge.opera_gx import LIGHT_BASE_CANDIDATE, hsl_hint, package_icon, theme_manifest
 from themeforge.tokens import contrast, load
 from themeforge.vivaldi import COLOR_TOKENS, theme_id, theme_settings
 
@@ -82,6 +82,20 @@ class BrowserAdapterTests(unittest.TestCase):
         # The extreme base hints are retained, not quietly clamped to claim
         # compatibility. GX's documented host color limits need native evidence.
         self.assertEqual(manifest["mod"]["license"], "LICENSE.txt")
+
+    def test_gx_light_base_candidate_is_opt_in_and_changes_only_the_light_base(self):
+        current = theme_manifest(self.themes, BROWSER_VERSION)
+        self.assertEqual(theme_manifest(self.themes, BROWSER_VERSION, light_base=None), current)
+        candidate = theme_manifest(self.themes, BROWSER_VERSION, light_base=LIGHT_BASE_CANDIDATE)
+        self.assertEqual(candidate["mod"]["payload"]["theme"]["light"]["gx_secondary_base"], {"h": 48, "s": 10, "l": 98})
+        expected = copy.deepcopy(current)
+        expected["mod"]["payload"]["theme"]["light"]["gx_secondary_base"] = {"h": 48, "s": 10, "l": 98}
+        self.assertEqual(candidate, expected)
+        for hint in ({"h": 360, "s": 10, "l": 98}, {"h": 48, "s": 10}, {"h": 48, "s": 10.0, "l": 98},
+                     {"h": 48, "s": True, "l": 98}, {"h": 48, "s": 10, "l": 98, "a": 1}, {"h": 48, "s": -1, "l": 98},
+                     {"h": 48, "s": 10, "l": 101}, "48 10 98", [48, 10, 98]):
+            with self.assertRaises(ValueError):
+                theme_manifest(self.themes, BROWSER_VERSION, light_base=hint)
 
     def test_invalid_candidate_identity_version_or_palette_is_refused(self):
         for name in ("Other", "Clair\nscript", None):
