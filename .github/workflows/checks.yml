@@ -192,6 +192,10 @@ jobs:
         with:
           name: github-pages-${{ github.run_attempt }}
           path: site
+      - name: Wait for the uploaded artifact to be listed
+        # The run's artifact listing now trails a finished upload, and deploy-pages 5.0.1
+        # looks the artifact up once with no retry (actions/deploy-pages#451).
+        run: sleep 60
       - name: Deploy the preview
         id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
