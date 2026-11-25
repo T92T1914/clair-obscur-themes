@@ -54,11 +54,12 @@ class DatedDominosAdmissionTests(unittest.TestCase):
         path = pack.COMPONENTS
         captured = path.read_bytes()
         table = json.loads(captured)
-        self.assertEqual(len(table["mappings"]), 1355)
+        self.assertEqual(len(table["mappings"]), 1359)
         self.assertEqual(digest(json.dumps(table["mappings"][:1354], sort_keys=True,
                                           separators=(",", ":")).encode()),
                          "af2fe774168d48ab21634202263d37662947df861fa24e2e675b2c7bd13f913e")
-        row = table["mappings"][-1]
+        # Four Pixel generic rows were appended after this observation.
+        row = table["mappings"][1354]
         self.assertEqual(row, {"icon_id": "dominos", "android_package": "com.dominospizza",
                                "activity": "com.dominospizza.SplashScreenActivity",
                                "component": "ComponentInfo{com.dominospizza/com.dominospizza.SplashScreenActivity}",
@@ -76,18 +77,33 @@ class DatedDominosAdmissionTests(unittest.TestCase):
                 fixture.write_text(json.dumps({**table, "mappings": table["mappings"][:1354]}), encoding="utf-8")
                 previous = pack._components(fixture, catalog)
         self.assertEqual(current[0]["generic_packages"], previous[0]["generic_packages"])
-        packages = [{"package": item["android_package"], "label": item["label"], "id": item["id"]}
-                    for item in catalog if item["kind"] == "app"]
-        seen = {item["package"] for item in packages}
-        for item in catalog:
-            for package in table["generic_packages"].get(item["id"], []):
-                if package not in seen:
-                    packages.append({"package": package, "label": item["label"], "id": item["id"]})
-                    seen.add(package)
-        self.assertEqual(len(packages), 290)
-        self.assertEqual(digest(json.dumps([item["package"] for item in packages], sort_keys=True,
-                                          separators=(",", ":")).encode()),
+        pixel = {"com.google.android.dialer", "com.google.android.contacts",
+                 "com.google.android.deskclock", "com.google.android.documentsui"}
+
+        def query_order(skip):
+            packages = [{"package": item["android_package"], "label": item["label"], "id": item["id"]}
+                        for item in catalog if item["kind"] == "app"]
+            seen = {item["package"] for item in packages}
+            for item in catalog:
+                for package in table["generic_packages"].get(item["id"], []):
+                    if package not in seen and package not in skip:
+                        packages.append({"package": package, "label": item["label"], "id": item["id"]})
+                        seen.add(package)
+            return [item["package"] for item in packages]
+
+        # The query order this observation shipped with is the current order without the Pixel packages.
+        historical = query_order(pixel)
+        self.assertEqual(len(historical), 290)
+        self.assertEqual(digest(json.dumps(historical, sort_keys=True, separators=(",", ":")).encode()),
                          "6cbcc4b748aafdb89ae2c1e1e68e8d573ed5daf50ad5039666eb975ed2555bd2")
+        with_pixel = query_order(set())
+        self.assertEqual(len(with_pixel), 294)
+        # Each Google package is queried right after the Samsung identity of the same function.
+        for samsung, google in (("com.samsung.android.dialer", "com.google.android.dialer"),
+                                ("com.samsung.android.app.contacts", "com.google.android.contacts"),
+                                ("com.sec.android.app.clockpackage", "com.google.android.deskclock"),
+                                ("com.sec.android.app.myfiles", "com.google.android.documentsui")):
+            self.assertEqual(with_pixel[with_pixel.index(samsung) + 1], google)
         self.assertEqual(path.read_bytes(), captured)
 
     def test_observed_alias_rejects_wrong_owner_duplicate_and_unqualified_date(self):
@@ -100,11 +116,11 @@ class DatedDominosAdmissionTests(unittest.TestCase):
             with patch.object(pack, "COMPONENTS", fixture):
                 for label, changes in faults:
                     changed = copy.deepcopy(table)
-                    changed["mappings"][-1].update(changes)
+                    changed["mappings"][1354].update(changes)
                     fixture.write_text(json.dumps(changed), encoding="utf-8")
                     with self.subTest(fault=label), self.assertRaises(ValueError):
                         pack._components(fixture, catalog)
-                table["mappings"].append(copy.deepcopy(table["mappings"][-1]))
+                table["mappings"].append(copy.deepcopy(table["mappings"][1354]))
                 fixture.write_text(json.dumps(table), encoding="utf-8")
                 with self.assertRaises(ValueError):
                     pack._components(fixture, catalog)

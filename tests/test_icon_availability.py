@@ -45,7 +45,10 @@ class CanonicalMappingAvailabilityTests(unittest.TestCase):
                          (264, 13))
         self.assertEqual(sum(row.included for row in result.values()), 277)
         self.assertEqual(sum(not row.included for row in result.values()), 23)
-        self.assertEqual(sum(row.exact_component_count for row in result.values()), 1355)
+        self.assertEqual(sum(row.exact_component_count for row in result.values()), 1359)
+        for identifier, package in (("phone", "com.google.android.dialer"), ("contacts", "com.google.android.contacts"),
+                                    ("clock", "com.google.android.deskclock"), ("files", "com.google.android.documentsui")):
+            self.assertIn(package, result[identifier].packages)
         for row in result.values():
             self.assertIs(type(row.included), bool)
             self.assertIs(type(row.exact_component_count), int)

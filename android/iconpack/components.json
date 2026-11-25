@@ -7,13 +7,16 @@
       "com.sec.android.app.camera"
     ],
     "clock": [
-      "com.sec.android.app.clockpackage"
+      "com.sec.android.app.clockpackage",
+      "com.google.android.deskclock"
     ],
     "contacts": [
-      "com.samsung.android.app.contacts"
+      "com.samsung.android.app.contacts",
+      "com.google.android.contacts"
     ],
     "files": [
-      "com.sec.android.app.myfiles"
+      "com.sec.android.app.myfiles",
+      "com.google.android.documentsui"
     ],
     "gallery": [
       "com.sec.android.gallery3d"
@@ -22,7 +25,8 @@
       "com.samsung.android.messaging"
     ],
     "phone": [
-      "com.samsung.android.dialer"
+      "com.samsung.android.dialer",
+      "com.google.android.dialer"
     ],
     "search": [
       "com.google.android.googlequicksearchbox"
@@ -20332,6 +20336,66 @@
       "icon_id": "dominos",
       "observed_on": "2026-10-29",
       "source_kind": "observed-launcher"
+    },
+    {
+      "activity": "com.google.android.dialer.extensions.GoogleDialtactsActivity",
+      "android_package": "com.google.android.dialer",
+      "component": "ComponentInfo{com.google.android.dialer/com.google.android.dialer.extensions.GoogleDialtactsActivity}",
+      "icon_id": "phone",
+      "source_components": [
+        "ComponentInfo{com.google.android.dialer/com.google.android.dialer.extensions.GoogleDialtactsActivity}"
+      ],
+      "source_lines": [
+        7707
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.android.contacts.activities.PeopleActivity",
+      "android_package": "com.google.android.contacts",
+      "component": "ComponentInfo{com.google.android.contacts/com.android.contacts.activities.PeopleActivity}",
+      "icon_id": "contacts",
+      "source_components": [
+        "ComponentInfo{com.google.android.contacts/com.android.contacts.activities.PeopleActivity}"
+      ],
+      "source_lines": [
+        7605
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.android.deskclock.DeskClock",
+      "android_package": "com.google.android.deskclock",
+      "component": "ComponentInfo{com.google.android.deskclock/com.android.deskclock.DeskClock}",
+      "icon_id": "clock",
+      "source_components": [
+        "ComponentInfo{com.google.android.deskclock/com.android.deskclock.DeskClock}"
+      ],
+      "source_lines": [
+        3777
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.android.documentsui.LauncherActivity",
+      "android_package": "com.google.android.documentsui",
+      "component": "ComponentInfo{com.google.android.documentsui/com.android.documentsui.LauncherActivity}",
+      "icon_id": "files",
+      "source_components": [
+        "ComponentInfo{com.google.android.documentsui/com.android.documentsui.LauncherActivity}"
+      ],
+      "source_lines": [
+        6034
+      ],
+      "source_types": [
+        "item"
+      ]
     }
   ],
   "schema_version": 1,
