@@ -62,11 +62,11 @@ The illustration and its maintained HTML recipe must stay within the host's cont
 
 The example selected suggestion does not imply replacement after Space or Enter. A browser request for local Inter does not establish phone font availability or live glyph use. Preserve the current font, language, layouts, learned words and correction settings. Keyboard Companion 0.1.0, both original background PNGs, its bundled guide and all nine downloadable outputs remain unchanged. There is no new keyboard bundle or font package.
 
-## Current evidence and delivery limits
+## Evidence and delivery limits for artwork 0.29.0
 
 Ten SVGs change from 0.28.0 and the other 590 retain their exact bytes. The qualified export contains 1,200 PNGs across both appearances at 512 and 1024 pixels. All were independently decoded and checked for neutral RGBA pixels. Twenty change and the other 1,180 retain their exact 0.28.0 bytes. The export manifest SHA-256 is `37f462e9d74707802c1b43f242f2604546f04e5b896f5eea7f77afe24c1de643`. The complete 0.28.0 archive remains separately preserved, together with all earlier revisions.
 
-The maintained [Android path](android-iconpack.md) configures Clair Icons 0.1.2/code 3 and Obscur Icons 0.1.13/code 14 for that export, retaining 1,354 ordered mappings and 290 narrow public package queries. Verify each resulting APK's resources and signature before private delivery. Record exact revision CI, publication and served acceptance results separately from design review. Original desktop package identities and the existing preview mechanism/Auto behavior are preserved.
+The retained Clair Icons 0.1.2/code 3 and Obscur Icons 0.1.13/code 14 were configured for that export, with 1,354 ordered mappings and 290 narrow public package queries. The [Android guide](android-iconpack.md) names the current pair. Verify each resulting APK's resources and signature before private delivery. Record exact revision CI, publication and served acceptance results separately from design review. Original desktop package identities and the existing preview mechanism/Auto behavior are preserved.
 
 Human recognition and preference remain unmeasured. An optional later evaluation could record app familiarity first, then compare identification, confusion, search time and aesthetic preference with varied order. No participants have been recruited and no scores are implied by agent agreement.
 
