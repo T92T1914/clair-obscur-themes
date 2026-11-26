@@ -54,11 +54,11 @@ class DatedDominosAdmissionTests(unittest.TestCase):
         path = pack.COMPONENTS
         captured = path.read_bytes()
         table = json.loads(captured)
-        self.assertEqual(len(table["mappings"]), 1359)
+        self.assertEqual(len(table["mappings"]), 1375)
         self.assertEqual(digest(json.dumps(table["mappings"][:1354], sort_keys=True,
                                           separators=(",", ":")).encode()),
                          "af2fe774168d48ab21634202263d37662947df861fa24e2e675b2c7bd13f913e")
-        # Four Pixel generic rows were appended after this observation.
+        # The Google system app rows were appended after this observation.
         row = table["mappings"][1354]
         self.assertEqual(row, {"icon_id": "dominos", "android_package": "com.dominospizza",
                                "activity": "com.dominospizza.SplashScreenActivity",

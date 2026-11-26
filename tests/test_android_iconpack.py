@@ -145,6 +145,41 @@ def pixel_generic_mappings():
     return rows
 
 
+# Every other declaration the pinned file gives for those four packages, in line order,
+# except the Wear OS home screen activity on line 14283 and the YouTube class filed
+# under Contacts on line 7604.
+PIXEL_OTHER_ALIASES = (
+    ("files", "com.google.android.documentsui", 6018, "com.android.documentsui.files.FilesActivity"),
+    *(("phone", "com.google.android.dialer", line, activity) for line, activity in (
+        (7694, "com.android.contacts.common.dialog.CallSubjectDialog"),
+        (7695, "com.android.dialer.activities.CallLogActivity"),
+        (7696, "com.android.dialer.app.CallDetailActivity"),
+        (7697, "com.android.dialer.app.DialtactsActivity"),
+        (7698, "com.android.dialer.CallDetailActivity"),
+        (7699, "com.android.dialer.DialtactsActivity"),
+        (7700, "com.android.dialer.main.impl.MainActivity"),
+        (7701, "com.android.dialer.RecentCallsListActivity"),
+        (7702, "com.google.android.apps.dialer.calllog.GoogleCallDetailActivity"),
+        (7703, "com.google.android.apps.dialer.extensions.GoogleDialtactsActivity"),
+        (7704, "com.google.android.dialer.activities.CallLogActivity"),
+        (7705, "com.google.android.dialer.calllog.GoogleCallDetailActiviy"),
+        (7706, "com.google.android.dialer.DialtactsActivity"),
+        (7708, "com.google.android.dialer.RecentCallsListActivity"),
+        (7709, "com.google.android.libraries.social.licenses.LicenseMenuActivity"),
+    )),
+)
+
+
+def pixel_other_mappings():
+    rows = []
+    for identifier, package, line, activity in PIXEL_OTHER_ALIASES:
+        component = f"ComponentInfo{{{package}/{activity}}}"
+        rows.append({"icon_id": identifier, "android_package": package, "activity": activity,
+                     "component": component, "source_lines": [line],
+                     "source_components": [component], "source_types": ["item"]})
+    return rows
+
+
 class AndroidIconPackIdentityTests(unittest.TestCase):
     def test_current_pack_configuration_and_qualified_export_pin(self):
         self.assertEqual(pack.ARTWORK_VERSION, "0.33.0")
@@ -475,7 +510,7 @@ class AndroidIconPackTests(unittest.TestCase):
         table = json.loads((pack.ROOT / "android/iconpack/components.json").read_bytes())
         observed = [row for row in table["mappings"] if "source_kind" in row]
         upstream = [row for row in table["mappings"] if "source_kind" not in row]
-        self.assertEqual(len(upstream), 1347)
+        self.assertEqual(len(upstream), 1363)
         self.assertEqual(len(observed), 12)
         self.assertEqual(table["source"], pack.COMPONENT_SOURCE)
         self.assertEqual(digest(json.dumps(table["mappings"][:1354], sort_keys=True, separators=(",", ":")).encode()),
@@ -528,7 +563,7 @@ class AndroidIconPackTests(unittest.TestCase):
             (7123, "com.google.android.libraries.inputmethod.launcher.LauncherActivity"),
             (7126, "com.google.android.archive.ReactivateActivity"),
         )
-        self.assertEqual(len(table["mappings"]), 1359)
+        self.assertEqual(len(table["mappings"]), 1375)
         self.assertEqual(len(gboard), 4)
         for row, (line, activity) in zip(gboard, expected):
             component = f"ComponentInfo{{com.google.android.inputmethod.latin/{activity}}}"
@@ -545,7 +580,7 @@ class AndroidIconPackTests(unittest.TestCase):
         expected = video_editor_mappings()
         self.assertEqual(len(expected), 22)
         self.assertEqual(table["mappings"][1310:1332], expected)
-        self.assertEqual(len(table["mappings"]), 1359)
+        self.assertEqual(len(table["mappings"]), 1375)
         catalog = {row["id"]: row for row in self.svg["catalog"] if row["kind"] == "app"}
         for identifier, package, aliases in VIDEO_EDITOR_ALIASES:
             self.assertEqual(catalog[identifier]["android_package"], package)
@@ -574,7 +609,7 @@ class AndroidIconPackTests(unittest.TestCase):
         expected = messaging_mappings()
         self.assertEqual(len(expected), 14)
         self.assertEqual(table["mappings"][1332:1346], expected)
-        self.assertEqual(len(table["mappings"]), 1359)
+        self.assertEqual(len(table["mappings"]), 1375)
         self.assertEqual({identifier: sum(row["icon_id"] == identifier for row in expected)
                           for identifier in ("line", "viber", "wechat", "kakaotalk")},
                          {"line": 3, "viber": 8, "wechat": 2, "kakaotalk": 1})
@@ -601,7 +636,7 @@ class AndroidIconPackTests(unittest.TestCase):
         expected = added_communication_mappings()
         self.assertEqual(len(expected), 8)
         self.assertEqual(table["mappings"][1346:1354], expected)
-        self.assertEqual(len(table["mappings"]), 1359)
+        self.assertEqual(len(table["mappings"]), 1375)
         self.assertEqual({identifier: sum(row["icon_id"] == identifier for row in expected)
                           for identifier in ("imo", "zalo", "bip", "google-chat")},
                          {"imo": 3, "zalo": 1, "bip": 2, "google-chat": 2})
@@ -618,8 +653,8 @@ class AndroidIconPackTests(unittest.TestCase):
                          "194fe773296d23ce686706335cfb5af475b9e23498773bcdd01f8e4424ac8307")
         expected = pixel_generic_mappings()
         self.assertEqual(len(expected), 4)
-        self.assertEqual(table["mappings"][1355:], expected)
-        self.assertEqual(len(table["mappings"]), 1359)
+        self.assertEqual(table["mappings"][1355:1359], expected)
+        self.assertEqual(len(table["mappings"]), 1375)
         self.assertTrue(all("source_kind" not in row and "observed_on" not in row for row in expected))
         kinds = {row["id"]: row["kind"] for row in self.svg["catalog"]}
         named = {row["android_package"] for row in self.svg["catalog"] if row["kind"] == "app"}
@@ -631,6 +666,25 @@ class AndroidIconPackTests(unittest.TestCase):
             self.assertEqual(len(table["generic_packages"][identifier]), 2)
         self.assertEqual(sum(package in PIXEL_GENERIC_PACKAGES
                              for packages in table["generic_packages"].values() for package in packages), 4)
+
+    def test_pixel_other_aliases_follow_the_launcher_rows_on_the_same_drawings(self):
+        table = json.loads((pack.ROOT / "android/iconpack/components.json").read_bytes())
+        expected = pixel_other_mappings()
+        self.assertEqual(len(expected), 16)
+        self.assertEqual(table["mappings"][1359:], expected)
+        self.assertEqual({identifier: sum(row["icon_id"] == identifier for row in expected)
+                          for identifier in ("phone", "contacts", "clock", "files")},
+                         {"phone": 15, "contacts": 0, "clock": 0, "files": 1})
+        self.assertFalse({7604, 14283} & {line for row in table["mappings"]
+                                          for line in row.get("source_lines", ())})
+        self.assertEqual(len({row["component"] for row in table["mappings"]}), 1375)
+        canonical = pack.ROOT / "android/iconpack/components.json"
+        with patch.object(pack, "COMPONENTS", canonical):
+            pack.prepare_iconpack(self.export, canonical, self.output)
+        entries = {row.attrib["component"]: row.attrib["drawable"]
+                   for row in ET.parse(self.output / "assets/appfilter.xml").getroot()}
+        for row in expected:
+            self.assertEqual(entries[row["component"]], "co_" + row["icon_id"])
 
     def test_pixel_row_needs_its_package_on_the_function_allowlist(self):
         dialer = pixel_generic_mappings()[0]
@@ -657,8 +711,8 @@ class AndroidIconPackTests(unittest.TestCase):
         self.assertEqual(manifest["version"], "0.1.17")
         self.assertEqual(manifest["artwork_version"], "0.33.0")
         self.assertEqual(manifest["counts"]["drawables"], 300)
-        self.assertEqual(manifest["counts"]["component_mappings"], 1359)
-        self.assertEqual(manifest["counts"]["upstream_component_mappings"], 1347)
+        self.assertEqual(manifest["counts"]["component_mappings"], 1375)
+        self.assertEqual(manifest["counts"]["upstream_component_mappings"], 1363)
         self.assertEqual(manifest["counts"]["observed_launcher_mappings"], 12)
         self.assertEqual(manifest["counts"]["named_package_hints"], 276)
         self.assertEqual(manifest["counts"]["package_hints"], 294)
@@ -677,7 +731,7 @@ class AndroidIconPackTests(unittest.TestCase):
                           "google-chat": ("com.google.android.apps.dynamite", "Google Chat")})
         entries = {row.attrib["component"]: row.attrib["drawable"]
                    for row in ET.parse(self.output / "assets/appfilter.xml").getroot()}
-        self.assertEqual(len(entries), 1359)
+        self.assertEqual(len(entries), 1375)
         for row in pixel_generic_mappings():
             self.assertEqual(entries[row["component"]], "co_" + row["icon_id"])
         self.assertEqual(entries["ComponentInfo{com.dominospizza/com.dominospizza.SplashScreenActivity}"], "co_dominos")

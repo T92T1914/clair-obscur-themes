@@ -111,7 +111,7 @@ class ArtDirectionTests(unittest.TestCase):
         historical_bytes = (json.dumps(historical, ensure_ascii=False, sort_keys=True, indent=2) + "\n").encode()
         self.assertEqual(hashlib.sha256(historical_bytes).hexdigest(),
                          "f37fcd87858500b6e389143194fdf67c74eaea8c42f10b6d4098da37b508c8a2")
-        self.assertEqual(len(current["mappings"]), 1359)
+        self.assertEqual(len(current["mappings"]), 1375)
 
     def test_current_artwork_keeps_monochrome_admission_and_accepted_028_archive(self):
         wrong = copy.deepcopy(icons.load_icon_tokens("0.29.0"))

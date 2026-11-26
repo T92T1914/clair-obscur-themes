@@ -20396,6 +20396,246 @@
       "source_types": [
         "item"
       ]
+    },
+    {
+      "activity": "com.android.documentsui.files.FilesActivity",
+      "android_package": "com.google.android.documentsui",
+      "component": "ComponentInfo{com.google.android.documentsui/com.android.documentsui.files.FilesActivity}",
+      "icon_id": "files",
+      "source_components": [
+        "ComponentInfo{com.google.android.documentsui/com.android.documentsui.files.FilesActivity}"
+      ],
+      "source_lines": [
+        6018
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.android.contacts.common.dialog.CallSubjectDialog",
+      "android_package": "com.google.android.dialer",
+      "component": "ComponentInfo{com.google.android.dialer/com.android.contacts.common.dialog.CallSubjectDialog}",
+      "icon_id": "phone",
+      "source_components": [
+        "ComponentInfo{com.google.android.dialer/com.android.contacts.common.dialog.CallSubjectDialog}"
+      ],
+      "source_lines": [
+        7694
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.android.dialer.activities.CallLogActivity",
+      "android_package": "com.google.android.dialer",
+      "component": "ComponentInfo{com.google.android.dialer/com.android.dialer.activities.CallLogActivity}",
+      "icon_id": "phone",
+      "source_components": [
+        "ComponentInfo{com.google.android.dialer/com.android.dialer.activities.CallLogActivity}"
+      ],
+      "source_lines": [
+        7695
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.android.dialer.app.CallDetailActivity",
+      "android_package": "com.google.android.dialer",
+      "component": "ComponentInfo{com.google.android.dialer/com.android.dialer.app.CallDetailActivity}",
+      "icon_id": "phone",
+      "source_components": [
+        "ComponentInfo{com.google.android.dialer/com.android.dialer.app.CallDetailActivity}"
+      ],
+      "source_lines": [
+        7696
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.android.dialer.app.DialtactsActivity",
+      "android_package": "com.google.android.dialer",
+      "component": "ComponentInfo{com.google.android.dialer/com.android.dialer.app.DialtactsActivity}",
+      "icon_id": "phone",
+      "source_components": [
+        "ComponentInfo{com.google.android.dialer/com.android.dialer.app.DialtactsActivity}"
+      ],
+      "source_lines": [
+        7697
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.android.dialer.CallDetailActivity",
+      "android_package": "com.google.android.dialer",
+      "component": "ComponentInfo{com.google.android.dialer/com.android.dialer.CallDetailActivity}",
+      "icon_id": "phone",
+      "source_components": [
+        "ComponentInfo{com.google.android.dialer/com.android.dialer.CallDetailActivity}"
+      ],
+      "source_lines": [
+        7698
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.android.dialer.DialtactsActivity",
+      "android_package": "com.google.android.dialer",
+      "component": "ComponentInfo{com.google.android.dialer/com.android.dialer.DialtactsActivity}",
+      "icon_id": "phone",
+      "source_components": [
+        "ComponentInfo{com.google.android.dialer/com.android.dialer.DialtactsActivity}"
+      ],
+      "source_lines": [
+        7699
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.android.dialer.main.impl.MainActivity",
+      "android_package": "com.google.android.dialer",
+      "component": "ComponentInfo{com.google.android.dialer/com.android.dialer.main.impl.MainActivity}",
+      "icon_id": "phone",
+      "source_components": [
+        "ComponentInfo{com.google.android.dialer/com.android.dialer.main.impl.MainActivity}"
+      ],
+      "source_lines": [
+        7700
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.android.dialer.RecentCallsListActivity",
+      "android_package": "com.google.android.dialer",
+      "component": "ComponentInfo{com.google.android.dialer/com.android.dialer.RecentCallsListActivity}",
+      "icon_id": "phone",
+      "source_components": [
+        "ComponentInfo{com.google.android.dialer/com.android.dialer.RecentCallsListActivity}"
+      ],
+      "source_lines": [
+        7701
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.google.android.apps.dialer.calllog.GoogleCallDetailActivity",
+      "android_package": "com.google.android.dialer",
+      "component": "ComponentInfo{com.google.android.dialer/com.google.android.apps.dialer.calllog.GoogleCallDetailActivity}",
+      "icon_id": "phone",
+      "source_components": [
+        "ComponentInfo{com.google.android.dialer/com.google.android.apps.dialer.calllog.GoogleCallDetailActivity}"
+      ],
+      "source_lines": [
+        7702
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.google.android.apps.dialer.extensions.GoogleDialtactsActivity",
+      "android_package": "com.google.android.dialer",
+      "component": "ComponentInfo{com.google.android.dialer/com.google.android.apps.dialer.extensions.GoogleDialtactsActivity}",
+      "icon_id": "phone",
+      "source_components": [
+        "ComponentInfo{com.google.android.dialer/com.google.android.apps.dialer.extensions.GoogleDialtactsActivity}"
+      ],
+      "source_lines": [
+        7703
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.google.android.dialer.activities.CallLogActivity",
+      "android_package": "com.google.android.dialer",
+      "component": "ComponentInfo{com.google.android.dialer/com.google.android.dialer.activities.CallLogActivity}",
+      "icon_id": "phone",
+      "source_components": [
+        "ComponentInfo{com.google.android.dialer/com.google.android.dialer.activities.CallLogActivity}"
+      ],
+      "source_lines": [
+        7704
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.google.android.dialer.calllog.GoogleCallDetailActiviy",
+      "android_package": "com.google.android.dialer",
+      "component": "ComponentInfo{com.google.android.dialer/com.google.android.dialer.calllog.GoogleCallDetailActiviy}",
+      "icon_id": "phone",
+      "source_components": [
+        "ComponentInfo{com.google.android.dialer/com.google.android.dialer.calllog.GoogleCallDetailActiviy}"
+      ],
+      "source_lines": [
+        7705
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.google.android.dialer.DialtactsActivity",
+      "android_package": "com.google.android.dialer",
+      "component": "ComponentInfo{com.google.android.dialer/com.google.android.dialer.DialtactsActivity}",
+      "icon_id": "phone",
+      "source_components": [
+        "ComponentInfo{com.google.android.dialer/com.google.android.dialer.DialtactsActivity}"
+      ],
+      "source_lines": [
+        7706
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.google.android.dialer.RecentCallsListActivity",
+      "android_package": "com.google.android.dialer",
+      "component": "ComponentInfo{com.google.android.dialer/com.google.android.dialer.RecentCallsListActivity}",
+      "icon_id": "phone",
+      "source_components": [
+        "ComponentInfo{com.google.android.dialer/com.google.android.dialer.RecentCallsListActivity}"
+      ],
+      "source_lines": [
+        7708
+      ],
+      "source_types": [
+        "item"
+      ]
+    },
+    {
+      "activity": "com.google.android.libraries.social.licenses.LicenseMenuActivity",
+      "android_package": "com.google.android.dialer",
+      "component": "ComponentInfo{com.google.android.dialer/com.google.android.libraries.social.licenses.LicenseMenuActivity}",
+      "icon_id": "phone",
+      "source_components": [
+        "ComponentInfo{com.google.android.dialer/com.google.android.libraries.social.licenses.LicenseMenuActivity}"
+      ],
+      "source_lines": [
+        7709
+      ],
+      "source_types": [
+        "item"
+      ]
     }
   ],
   "schema_version": 1,

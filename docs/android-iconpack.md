@@ -1,6 +1,6 @@
 # Clair and Obscur Android icon packs
 
-The maintained Android path prepares two separately identified packs from the same 0.33.0 artwork. Clair Icons selects the 300 Clair PNGs and light application surfaces. Obscur Icons selects the 300 Obscur PNGs and remains the default. Both retain native font fallbacks. Obscur 0.1.17 and Clair 0.1.6 were built with 1,355 ordered component mappings and 290 narrow public package queries. The source table now holds 1,359 mappings and 294 queries, which wait for new pack versions. No Inter font binary is packaged.
+The maintained Android path prepares two separately identified packs from the same 0.33.0 artwork. Clair Icons selects the 300 Clair PNGs and light application surfaces. Obscur Icons selects the 300 Obscur PNGs and remains the default. Both retain native font fallbacks. Obscur 0.1.17 and Clair 0.1.6 were built with 1,355 ordered component mappings and 290 narrow public package queries. The source table now holds 1,375 mappings and 294 queries, which wait for new pack versions. No Inter font binary is packaged.
 
 | Appearance | App label | Application ID | Pack version | Version code | Signed output filename |
 | --- | --- | --- | --- | ---: | --- |
@@ -11,7 +11,7 @@ Package versions are independent from artwork 0.33.0. The fixed appearance choic
 
 The mappings cover 264 of the 276 named app packages and 18 public system app package identities across 13 general functions. Twelve named packages still have no qualified alias. A package hint alone is not an automatic assignment. The current pair and all earlier accepted releases remain separate identities. Never rebuild or replace an accepted binary under the same version.
 
-The four added rows map Google's own Phone, Contacts, Clock and Files to the general drawings the Samsung rows use, as the [Google system app addition](android-iconpack-sources.md#google-system-app-addition) records. A build from this table must not ship as Obscur 0.1.17 or Clair 0.1.6.
+The twenty added rows map Google's own Phone, Contacts, Clock and Files to the general drawings the Samsung rows use, as the [Google system app addition](android-iconpack-sources.md#google-system-app-addition) records. A build from this table must not ship as Obscur 0.1.17 or Clair 0.1.6.
 
 The [gallery](https://t92t1914.github.io/clair-obscur-themes/#icons) derives each card's label from this same validated component table. “Mapping included” means a declaration is assigned to that exact named package or verified general function. “No exact mapping recorded” means the artwork remains available for manual selection. The optional Pack mapping filter combines with name, icon ID, package search and app/function selection. Clear filters resets all three controls. Both labels and the short application routes remain in the static page without JavaScript.
 
