@@ -2,10 +2,11 @@
 
 ## Google system app mappings
 
+- Configure Obscur Icons 0.1.18/code 19 and Clair Icons 0.1.7/code 8 for the extended table on the unchanged 0.33.0 artwork. Keep signed APK delivery private and phone installation open.
 - Map Google's own Phone, Contacts, Clock and Files launcher entries to the general phone, contacts, clock and files drawings the Samsung rows use. Each of the four rows keeps its line in the pinned Lawnicons XML: 7707, 7605, 3777 and 6034.
 - Append 16 of the 18 other declarations the same XML gives for these packages, all for Google Phone or Files, on lines 6018, 7694 to 7706, 7708 and 7709. Leave out line 14283, a Wear OS activity, and line 7604, a YouTube class under Contacts.
 - Add each Google package to its function's allowlist after the Samsung identity. The table grows from 1,355 to 1,375 declarations and the package queries from 290 to 294, with no new permission.
-- Keep the 1,355 earlier rows and the earlier allowlist entries in order. Obscur 0.1.17 and Clair 0.1.6 were built with 1,355 declarations, so a build from this table must not ship under those versions. New pack versions come first.
+- Keep the 1,355 earlier rows and the earlier allowlist entries in order. Obscur 0.1.17 and Clair 0.1.6 were built with 1,355 declarations and keep that identity.
 - Check the four launcher rows on a headless Android 16 emulator with Google APIs: test builds signed with a throwaway key reported 16 of 16 visible launcher components mapped in both packs, up from 12 of 12, and KISS drew the four apps with the Obscur and then the Clair tiles. Acceptance on a phone remains open.
 
 ## Garmin calm center candidate 0.14.0

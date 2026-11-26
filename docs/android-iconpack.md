@@ -1,23 +1,23 @@
 # Clair and Obscur Android icon packs
 
-The maintained Android path prepares two separately identified packs from the same 0.33.0 artwork. Clair Icons selects the 300 Clair PNGs and light application surfaces. Obscur Icons selects the 300 Obscur PNGs and remains the default. Both retain native font fallbacks. Obscur 0.1.17 and Clair 0.1.6 were built with 1,355 ordered component mappings and 290 narrow public package queries. The source table now holds 1,375 mappings and 294 queries, which wait for new pack versions. No Inter font binary is packaged.
+The maintained Android path prepares two separately identified packs from the same 0.33.0 artwork. Clair Icons selects the 300 Clair PNGs and light application surfaces. Obscur Icons selects the 300 Obscur PNGs and remains the default. Both retain native font fallbacks. Obscur 0.1.18 and Clair 0.1.7 select 1,375 ordered component mappings and 294 narrow public package queries. Obscur 0.1.17 and Clair 0.1.6 were built with the first 1,355 mappings and 290 queries. No Inter font binary is packaged.
 
 | Appearance | App label | Application ID | Pack version | Version code | Signed output filename |
 | --- | --- | --- | --- | ---: | --- |
-| Clair | Clair Icons | `io.github.t92t1914.clairicons` | 0.1.6 | 7 | `Clair-Icons-0.1.6.apk` |
-| Obscur | Obscur Icons | `io.github.t92t1914.obscuricons` | 0.1.17 | 18 | `Clair-Obscur-Icons-0.1.17.apk` |
+| Clair | Clair Icons | `io.github.t92t1914.clairicons` | 0.1.7 | 8 | `Clair-Icons-0.1.7.apk` |
+| Obscur | Obscur Icons | `io.github.t92t1914.obscuricons` | 0.1.18 | 19 | `Clair-Obscur-Icons-0.1.18.apk` |
 
 Package versions are independent from artwork 0.33.0. The fixed appearance choice selects its package, label, version, source resources and output identity. The table records the current configured identities and intended signed filenames. Verify each resulting APK's resources and signature before private delivery. Actual device coexistence and consumer recognition remain separate native questions.
 
 The mappings cover 264 of the 276 named app packages and 18 public system app package identities across 13 general functions. Twelve named packages still have no qualified alias. A package hint alone is not an automatic assignment. The current pair and all earlier accepted releases remain separate identities. Never rebuild or replace an accepted binary under the same version.
 
-The twenty added rows map Google's own Phone, Contacts, Clock and Files to the general drawings the Samsung rows use, as the [Google system app addition](android-iconpack-sources.md#google-system-app-addition) records. A build from this table must not ship as Obscur 0.1.17 or Clair 0.1.6.
+The twenty added rows map Google's own Phone, Contacts, Clock and Files to the general drawings the Samsung rows use, as the [Google system app addition](android-iconpack-sources.md#google-system-app-addition) records. They arrive with Obscur 0.1.18 and Clair 0.1.7.
 
 The [gallery](https://t92t1914.github.io/clair-obscur-themes/#icons) derives each card's label from this same validated component table. “Mapping included” means a declaration is assigned to that exact named package or verified general function. “No exact mapping recorded” means the artwork remains available for manual selection. The optional Pack mapping filter combines with name, icon ID, package search and app/function selection. Clear filters resets all three controls. Both labels and the short application routes remain in the static page without JavaScript.
 
 Use the icon pack route only after obtaining and installing the separately delivered companion. Keep the current theme and test a separate Theme Park draft before applying it. A PNG download supplies an image, not an installer or assignment. A saved Theme Park theme may require refreshing after an APK update. Native recognition, masks and both displays still need their own check. [Component sources and permanent gaps](android-iconpack-sources.md) record the declarations and their limits.
 
-Clair 0.1.6/code 7 and Obscur 0.1.17/code 18 select the [Proton VPN fold clearance refinement](icon-craft.md#fold-clearance-refinement-artwork-0330) in artwork 0.33.0. They also retain a completed coverage report as transient text across an eligible configuration recreation. No scan starts automatically, and no inventory is written to saved state or disk. All 300 choices, the 1,355 ordered declarations, 290 public package queries, package IDs, signing route and permissions remain unchanged. Updated APK coverage and Theme Park assignment are separate native checks.
+Clair 0.1.7/code 8 and Obscur 0.1.18/code 19 keep the artwork and coverage report behavior of Clair 0.1.6/code 7 and Obscur 0.1.17/code 18 and select the extended component table. Those earlier two selected the [Proton VPN fold clearance refinement](icon-craft.md#fold-clearance-refinement-artwork-0330) in artwork 0.33.0. They also retain a completed coverage report as transient text across an eligible configuration recreation. No scan starts automatically, and no inventory is written to saved state or disk. For that pair, all 300 choices, the 1,355 ordered declarations, 290 public package queries, package IDs, signing route and permissions remained unchanged. Updated APK coverage and Theme Park assignment are separate native checks.
 
 The retained Clair 0.1.5/code 6 and Obscur 0.1.16/code 17 select the three [targeted retained icon refinements](icon-craft.md#targeted-retained-icon-refinement-artwork-0320) in artwork 0.32.0. That component table appended one exact Domino's activity observed on October 29, 2026 after all 1,354 earlier rows. The retained package binaries and complete artwork archive remain unchanged.
 
@@ -107,7 +107,7 @@ The generated project contains exact artwork copies, both XML and asset forms of
 
 ## Apply through the actual consumer
 
-Both packs have minimum API 26 and target API 36 and declare no permissions. The identity table above distinguishes Clair Icons 0.1.6/code 7 from Obscur Icons 0.1.17/code 18. Installation still requires the device owner's approved Android installation path. Preserve the accepted Obscur app and working icon theme selection when trying the separate Clair package. Do not change security settings or replace an unrelated application to force installation.
+Both packs have minimum API 26 and target API 36 and declare no permissions. The identity table above distinguishes Clair Icons 0.1.7/code 8 from Obscur Icons 0.1.18/code 19. Installation still requires the device owner's approved Android installation path. Preserve the accepted Obscur app and working icon theme selection when trying the separate Clair package. Do not change security settings or replace an unrelated application to force installation.
 
 For later native acceptance, first record the installed Android, launcher and Theme Park/module versions, both display layouts, installed pack identities and current theme selection. Keep the working theme and home screen arrangement. After an approved installation, open each installed pack and check its exact package/artwork label. Opening the app or pressing Check icon coverage does not apply a theme.
 
@@ -137,7 +137,7 @@ This is evidence from a headless Android emulator, gathered by hand outside the 
 
 The 0.33.0 PNG export reproduced exactly. Chrome for Testing 156.0.8078.49 ran through Playwright 1.63.0's `chrome` channel with Node v24.16.0. It produced 1,200 PNGs and a manifest with SHA-256 `9fe1093037bd0f24f7b70ecb09395dbd4464a93497ffaf34a6d341298553ded6`, equal to the pin above, and every PNG matched its manifest hash.
 
-Both current packs were built from that export with the unchanged build script and signed with a throwaway test key. Those APKs are not releases and do not carry the release signature. Obscur Icons 0.1.17/code 18 and Clair Icons 0.1.6/code 7 installed side by side on an Android 16 emulator image (API 36, AOSP, no Google APIs) and both answered the icon theme launcher action. In KISS 3.28.1 the icon pack chooser listed both. Settings was drawn with the Obscur tile and then the Clair tile, the Clair choice survived a force stop of KISS, and System icons restored the stock gear.
+Both packs then current were built from that export with the unchanged build script and signed with a throwaway test key. Those APKs are not releases and do not carry the release signature. Obscur Icons 0.1.17/code 18 and Clair Icons 0.1.6/code 7 installed side by side on an Android 16 emulator image (API 36, AOSP, no Google APIs) and both answered the icon theme launcher action. In KISS 3.28.1 the icon pack chooser listed both. Settings was drawn with the Obscur tile and then the Clair tile, the Clair choice survived a force stop of KISS, and System icons restored the stock gear.
 
 Coverage was narrow. The image had one of the pack's mapped components, `com.android.settings/.Settings`, and the pack's own coverage check reported 1 of 1 visible supported components mapped with 289 supported packages not visible. Only Settings could change, so this says little about the other mappings. A completed coverage report also stayed on screen through a rotation and back, observed once on the emulator.
 

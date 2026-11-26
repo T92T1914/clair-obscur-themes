@@ -186,8 +186,8 @@ class AndroidIconPackIdentityTests(unittest.TestCase):
         self.assertEqual(pack.PNG_MANIFEST_SHA256,
                          "9fe1093037bd0f24f7b70ecb09395dbd4464a93497ffaf34a6d341298553ded6")
         for appearance, package, version, code in (
-                ("Clair", "io.github.t92t1914.clairicons", "0.1.6", 7),
-                ("Obscur", "io.github.t92t1914.obscuricons", "0.1.17", 18)):
+                ("Clair", "io.github.t92t1914.clairicons", "0.1.7", 8),
+                ("Obscur", "io.github.t92t1914.obscuricons", "0.1.18", 19)):
             selected = pack.configuration(appearance)
             self.assertEqual((selected.appearance, selected.package, selected.version, selected.version_code),
                              (appearance, package, version, code))
@@ -276,8 +276,8 @@ class AndroidIconPackTests(unittest.TestCase):
 
     def test_exact_resource_bytes_full_components_and_public_catalog(self):
         manifest = pack.prepare_iconpack(self.export, self.components, self.output)
-        self.assertEqual(manifest["version"], "0.1.17")
-        self.assertEqual(manifest["version_code"], 18)
+        self.assertEqual(manifest["version"], "0.1.18")
+        self.assertEqual(manifest["version_code"], 19)
         self.assertEqual(manifest["counts"]["drawables"], 300)
         self.assertEqual(manifest["counts"]["component_mappings"], 3)
         self.assertEqual(manifest["counts"]["upstream_component_mappings"], 3)
@@ -300,7 +300,7 @@ class AndroidIconPackTests(unittest.TestCase):
                              (self.export / f"Obscur/512/{identifier}.png").read_bytes())
         catalog = json.loads((self.output / "assets/catalog.json").read_bytes())
         self.assertEqual(set(catalog), {"schema_version", "artwork_version", "pack_version", "packages"})
-        self.assertEqual(catalog["pack_version"], "0.1.17")
+        self.assertEqual(catalog["pack_version"], "0.1.18")
         self.assertEqual(catalog["artwork_version"], "0.33.0")
         self.assertEqual(next(row for row in catalog["packages"]
                               if row["package"] == "com.google.android.inputmethod.latin"),
@@ -320,7 +320,7 @@ class AndroidIconPackTests(unittest.TestCase):
                                          appearance="Clair")
         self.assertEqual((manifest["appearance"], manifest["application_id"],
                           manifest["app_label"], manifest["version"], manifest["version_code"]),
-                         ("Clair", "io.github.t92t1914.clairicons", "Clair Icons", "0.1.6", 7))
+                         ("Clair", "io.github.t92t1914.clairicons", "Clair Icons", "0.1.7", 8))
         self.assertEqual(manifest["artwork_version"], "0.33.0")
         self.assertEqual(manifest["counts"]["drawables"], 300)
         self.assertEqual(manifest["counts"]["component_mappings"], 3)
@@ -333,7 +333,7 @@ class AndroidIconPackTests(unittest.TestCase):
             self.assertNotEqual(target.read_bytes(), self.payloads[512])
         catalog = json.loads((self.output / "assets/catalog.json").read_bytes())
         self.assertEqual(set(catalog), {"schema_version", "artwork_version", "pack_version", "packages"})
-        self.assertEqual((catalog["pack_version"], catalog["artwork_version"]), ("0.1.6", "0.33.0"))
+        self.assertEqual((catalog["pack_version"], catalog["artwork_version"]), ("0.1.7", "0.33.0"))
         self.assertEqual((self.output / "assets/appfilter.xml").read_bytes(),
                          (self.output / "res/xml/appfilter.xml").read_bytes())
 
@@ -708,7 +708,7 @@ class AndroidIconPackTests(unittest.TestCase):
         canonical = pack.ROOT / "android/iconpack/components.json"
         with patch.object(pack, "COMPONENTS", canonical):
             manifest = pack.prepare_iconpack(self.export, canonical, self.output)
-        self.assertEqual(manifest["version"], "0.1.17")
+        self.assertEqual(manifest["version"], "0.1.18")
         self.assertEqual(manifest["artwork_version"], "0.33.0")
         self.assertEqual(manifest["counts"]["drawables"], 300)
         self.assertEqual(manifest["counts"]["component_mappings"], 1375)
