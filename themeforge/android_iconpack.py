@@ -19,7 +19,7 @@ import zlib
 from .icons import ROOT, _read_tree, _safe_output, load_icon_tokens, render_icons
 
 
-VERSION = "0.1.17"
+VERSION = "0.1.18"
 ARTWORK_VERSION = "0.33.0"
 APPEARANCE = "Obscur"
 COMPONENTS = ROOT / "android/iconpack/components.json"
@@ -36,9 +36,9 @@ class IconPackConfiguration:
 
 CONFIGURATIONS = MappingProxyType({
     "Obscur": IconPackConfiguration("Obscur", "io.github.t92t1914.obscuricons",
-                                     "Obscur Icons", VERSION, 18),
+                                     "Obscur Icons", VERSION, 19),
     "Clair": IconPackConfiguration("Clair", "io.github.t92t1914.clairicons",
-                                    "Clair Icons", "0.1.6", 7),
+                                    "Clair Icons", "0.1.7", 8),
 })
 
 

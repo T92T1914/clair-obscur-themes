@@ -101,11 +101,17 @@ class ArtDirectionTests(unittest.TestCase):
         self.assertEqual(sum(row["kind"] == "app" for row in new["catalog"]), 276)
         mapping_bytes = (icons.ROOT / "android/iconpack/components.json").read_bytes()
         # Pin the complete accepted table before the separately dated 0.32 alias.
-        historical = {**json.loads(mapping_bytes), "mappings": json.loads(mapping_bytes)["mappings"][:1354]}
+        # The later Pixel generic packages are left out of the allowlist it shipped with.
+        pixel = {"com.google.android.dialer", "com.google.android.contacts",
+                 "com.google.android.deskclock", "com.google.android.documentsui"}
+        current = json.loads(mapping_bytes)
+        historical = {**current, "mappings": current["mappings"][:1354],
+                      "generic_packages": {identifier: [package for package in packages if package not in pixel]
+                                           for identifier, packages in current["generic_packages"].items()}}
         historical_bytes = (json.dumps(historical, ensure_ascii=False, sort_keys=True, indent=2) + "\n").encode()
         self.assertEqual(hashlib.sha256(historical_bytes).hexdigest(),
                          "f37fcd87858500b6e389143194fdf67c74eaea8c42f10b6d4098da37b508c8a2")
-        self.assertEqual(len(json.loads(mapping_bytes)["mappings"]), 1355)
+        self.assertEqual(len(current["mappings"]), 1375)
 
     def test_current_artwork_keeps_monochrome_admission_and_accepted_028_archive(self):
         wrong = copy.deepcopy(icons.load_icon_tokens("0.29.0"))

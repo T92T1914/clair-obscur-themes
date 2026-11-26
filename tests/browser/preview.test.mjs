@@ -1495,8 +1495,8 @@ test('Clair and Obscur Android instructions retain keyboard source access and ho
         assert.equal(await details.evaluate(node => node.open), true);
         const companion = details.locator('p').filter({ hasText: 'The Android source offers Clair Android icon-pack' });
         assert.equal(await companion.count(), 1); assert.ok(await companion.isVisible());
-        assert.match(await companion.innerText(), /Clair Android icon-pack 0\.1\.6 \(code 7\)/);
-        assert.match(await companion.innerText(), /Obscur Android icon-pack 0\.1\.17 \(code 18\)/);
+        assert.match(await companion.innerText(), /Clair Android icon-pack 0\.1\.7 \(code 8\)/);
+        assert.match(await companion.innerText(), /Obscur Android icon-pack 0\.1\.18 \(code 19\)/);
         assert.match(await companion.innerText(), /Both select the 0\.33\.0 artwork/);
         assert.match(await companion.innerText(), /Obscur remains the default build appearance/);
         assert.match(await companion.innerText(), /signed APK delivery stays private/);
