@@ -21,7 +21,7 @@ def hsl_hint(value: str) -> dict[str, int]:
     return {"h": round(hue * 360) % 360, "s": round(saturation * 100), "l": round(lightness * 100)}
 
 
-# The light base hint of GX 0.3.1, measured before it shipped.
+# The light base hint of GX 0.3.1, measured before the package used it.
 # GX derives its light surfaces from the light base hint and sets their
 # lightness itself. Clair's own hint, 48 26 96, makes those surfaces read beige.
 # In Opera GX 139.0.6053.63 for Linux this hint brought the chroma of the info
