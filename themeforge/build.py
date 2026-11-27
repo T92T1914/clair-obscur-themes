@@ -19,7 +19,7 @@ from .equicord import render_clair_native_focus, render_theme
 from .discord_clients import CLIENTS, render_client_theme
 from .firefox import COLOR_TOKENS as FIREFOX_COLORS, theme_manifest as firefox_manifest
 from .vivaldi import COLOR_TOKENS as VIVALDI_COLORS, theme_id as vivaldi_id, theme_settings as vivaldi_settings
-from .opera_gx import package_icon as gx_icon, theme_manifest as gx_manifest
+from .opera_gx import LIGHT_BASE, package_icon as gx_icon, theme_manifest as gx_manifest
 from .legal import license_comment, license_text
 from .tokens import load
 
@@ -33,6 +33,7 @@ SHA = re.compile(r"[0-9a-f]{64}\Z")
 # New adapters have their own version until a deliberate family release.
 PORTABILITY_VERSION = "0.2.0"
 BROWSER_VERSION = "0.3.0"
+OPERA_GX_VERSION = "0.3.1"
 CLAIR_EQUICORD_FOCUS_VERSION = "0.1.2"
 CLAIR_EQUICORD_FOCUS_PATH = "equicord/Clair-Equicord-0.1.2.theme.css"
 
@@ -196,7 +197,7 @@ def _review_payloads(files: dict[str, bytes]) -> None:
             if set(manifest) != {"manifest_version", "name", "version", "description", "developer", "icons", "mod"}:
                 raise ValueError("GX package contains unexpected manifest capabilities")
             if (manifest["manifest_version"] != 3 or manifest["name"] != "Clair and Obscur"
-                    or manifest["version"] != BROWSER_VERSION
+                    or manifest["version"] != OPERA_GX_VERSION
                     or manifest["developer"] != {"name": "T92T1914"}
                     or manifest["icons"] != {"512": "icon512.png"}):
                 raise ValueError("GX identity or packaged icon is invalid")
@@ -272,7 +273,8 @@ def _generate(document: dict, stage: Path) -> dict:
     (stage / "vivaldi" / "LICENSE.txt").write_text(license_text(), encoding="utf-8", newline="\n")
     native = stage / "opera-gx"
     native.mkdir()
-    (native / "manifest.json").write_bytes(_json_bytes(gx_manifest(document["themes"], BROWSER_VERSION)))
+    (native / "manifest.json").write_bytes(_json_bytes(
+        gx_manifest(document["themes"], OPERA_GX_VERSION, light_base=LIGHT_BASE)))
     (native / "icon512.png").write_bytes(gx_icon(document["themes"]))
     (native / "LICENSE.txt").write_text(license_text(), encoding="utf-8", newline="\n")
     files, _ = _inventory(stage)
@@ -305,10 +307,10 @@ def _generate(document: dict, stage: Path) -> dict:
         for client, label in CLIENTS.items():
             downloads.append({"name": name, "platform": client, "path": f"{client}/{name}-{label}.theme.css",
                               "kind": "local-theme-css", "version": PORTABILITY_VERSION, "native_acceptance": "unverified"})
-    path = f"artifacts/Clair-Obscur-OperaGX-{BROWSER_VERSION}.zip"
+    path = f"artifacts/Clair-Obscur-OperaGX-{OPERA_GX_VERSION}.zip"
     files[path] = _zip_bytes({key.split("/", 1)[1]: data for key, data in files.items() if key.startswith("opera-gx/")})
     downloads.append({"name": "Clair and Obscur", "platform": "opera-gx", "path": path,
-                      "kind": "paired-color-hints-zip", "version": BROWSER_VERSION, "native_acceptance": "unverified"})
+                      "kind": "paired-color-hints-zip", "version": OPERA_GX_VERSION, "native_acceptance": "unverified"})
     manifest = {
         "schema_version": 1,
         "generator": OWNER,
@@ -474,6 +476,6 @@ def main(argv: list[str] | None = None) -> int:
         notes = "".join(f"{note}\n" for note in getattr(error, "__notes__", ()))
         parser.exit(1, f"Build failed: {error}\n{notes}")
     print(f"{'Verified' if args.check else 'Built'} {manifest['version']} with adapters {manifest['adapter_version']} "
-          f"and browsers {manifest['browser_adapter_version']}: "
+          f"and browsers {manifest['browser_adapter_version']} with Opera GX {OPERA_GX_VERSION}: "
           f"{len(manifest['downloads'])} download choices, {len(manifest['files'])} payload files")
     return 0

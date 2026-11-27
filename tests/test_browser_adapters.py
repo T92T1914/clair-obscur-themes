@@ -12,8 +12,8 @@ from uuid import UUID
 import zipfile
 import zlib
 
-from themeforge.build import BROWSER_VERSION, PROJECT_ROOT, _review_payloads, build_release
-from themeforge.opera_gx import LIGHT_BASE_CANDIDATE, hsl_hint, package_icon, theme_manifest
+from themeforge.build import BROWSER_VERSION, OPERA_GX_VERSION, PROJECT_ROOT, _review_payloads, build_release
+from themeforge.opera_gx import LIGHT_BASE, hsl_hint, package_icon, theme_manifest
 from themeforge.tokens import contrast, load
 from themeforge.vivaldi import COLOR_TOKENS, theme_id, theme_settings
 
@@ -83,10 +83,10 @@ class BrowserAdapterTests(unittest.TestCase):
         # compatibility. GX's documented host color limits need native evidence.
         self.assertEqual(manifest["mod"]["license"], "LICENSE.txt")
 
-    def test_gx_light_base_candidate_is_opt_in_and_changes_only_the_light_base(self):
+    def test_gx_light_base_changes_only_the_light_base(self):
         current = theme_manifest(self.themes, BROWSER_VERSION)
         self.assertEqual(theme_manifest(self.themes, BROWSER_VERSION, light_base=None), current)
-        candidate = theme_manifest(self.themes, BROWSER_VERSION, light_base=LIGHT_BASE_CANDIDATE)
+        candidate = theme_manifest(self.themes, BROWSER_VERSION, light_base=LIGHT_BASE)
         self.assertEqual(candidate["mod"]["payload"]["theme"]["light"]["gx_secondary_base"], {"h": 48, "s": 10, "l": 98})
         expected = copy.deepcopy(current)
         expected["mod"]["payload"]["theme"]["light"]["gx_secondary_base"] = {"h": 48, "s": 10, "l": 98}
@@ -153,9 +153,14 @@ class BrowserAdapterTests(unittest.TestCase):
                     self.assertEqual(archive.namelist(), ["settings.json"])
                     self.assertEqual(json.loads(archive.read("settings.json")), theme_settings(name, self.themes[name]))
                     self.assertEqual(archive.infolist()[0].date_time, (1980, 1, 1, 0, 0, 0))
-            with zipfile.ZipFile(output / "artifacts/Clair-Obscur-OperaGX-0.3.0.zip") as archive:
+            with zipfile.ZipFile(output / "artifacts/Clair-Obscur-OperaGX-0.3.1.zip") as archive:
                 self.assertEqual(archive.namelist(), ["LICENSE.txt", "icon512.png", "manifest.json"])
-                self.assertEqual(json.loads(archive.read("manifest.json")), theme_manifest(self.themes, BROWSER_VERSION))
+                # Only the version and the light base saturation and lightness
+                # differ from the 0.3.0 manifest.
+                expected = theme_manifest(self.themes, "0.3.0")
+                expected["version"] = "0.3.1"
+                expected["mod"]["payload"]["theme"]["light"]["gx_secondary_base"] = {"h": 48, "s": 10, "l": 98}
+                self.assertEqual(json.loads(archive.read("manifest.json")), expected)
                 self.assertEqual(archive.read("LICENSE.txt"), (PROJECT_ROOT / "LICENSE").read_text(encoding="utf-8").encode())
                 self.assertTrue(all(item.date_time == (1980, 1, 1, 0, 0, 0) for item in archive.infolist()))
 
@@ -174,6 +179,10 @@ class BrowserAdapterTests(unittest.TestCase):
                 with self.subTest(field=field), self.assertRaises(ValueError):
                     _review_payloads(changed)
             gx = json.loads(original["opera-gx/manifest.json"])
+            self.assertEqual(gx["version"], OPERA_GX_VERSION)
+            with self.assertRaises(ValueError):
+                _review_payloads({**original, "opera-gx/manifest.json":
+                                  json.dumps({**gx, "version": BROWSER_VERSION}).encode()})
             mutations = []
             for payload in ("shaders", "page_styles", "wallpaper", "background_music"):
                 mutated = copy.deepcopy(gx)
@@ -202,8 +211,8 @@ class BrowserAdapterTests(unittest.TestCase):
             output = Path(directory) / "build"
             build_release(PROJECT_ROOT / "tokens.json", output)
             before = {p.relative_to(output): p.read_bytes() for p in output.rglob("*") if p.is_file()}
-            def injected(*args):
-                result = theme_manifest(*args)
+            def injected(*args, **kwargs):
+                result = theme_manifest(*args, **kwargs)
                 result["mod"]["payload"]["page_styles"] = []
                 return result
             with patch("themeforge.build.gx_manifest", side_effect=injected), self.assertRaises(ValueError):

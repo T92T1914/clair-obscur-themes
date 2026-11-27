@@ -20,7 +20,7 @@ Limited earlier Equibop and Chrome 0.1.1 observations do not establish complete 
 
 ## Choose your theme
 
-Open the [live preview and downloads](https://t92t1914.github.io/clair-obscur-themes/) to compare Clair and Obscur and choose a package for your application. The page includes installation and restoration steps, source and checksums. All downloads are labeled as previews while native acceptance remains open. The original Chrome and Equicord 0.1.1 files and Firefox, Vencord and BetterDiscord 0.2.0 retain their accepted bytes. The current Clair Equicord choice is a separate 0.1.2 focus correction. New Vivaldi and Opera GX adapters are 0.3.0 candidates. Edge and Brave reuse the original Chrome ZIP. [Platform contracts and remaining acceptance](docs/platform-portability.md).
+Open the [live preview and downloads](https://t92t1914.github.io/clair-obscur-themes/) to compare Clair and Obscur and choose a package for your application. The page includes installation and restoration steps, source and checksums. All downloads are labeled as previews while native acceptance remains open. The original Chrome and Equicord 0.1.1 files and Firefox, Vencord and BetterDiscord 0.2.0 retain their accepted bytes. The current Clair Equicord choice is a separate 0.1.2 focus correction. The Vivaldi adapter is a 0.3.0 candidate. The Opera GX adapter is a 0.3.1 candidate with a new light base hint. Edge and Brave reuse the original Chrome ZIP. [Platform contracts and remaining acceptance](docs/platform-portability.md).
 
 | Application | Clair | Obscur | Typography |
 | --- | --- | --- | --- |
@@ -63,7 +63,7 @@ Reviewed changes merged into `main` publish the checked preview automatically af
 | Vencord candidates | `dist/vencord/Clair-Vencord.theme.css` and `dist/vencord/Obscur-Vencord.theme.css` |
 | BetterDiscord candidates | `dist/betterdiscord/Clair-BetterDiscord.theme.css` and `dist/betterdiscord/Obscur-BetterDiscord.theme.css` |
 | Vivaldi candidates | `dist/artifacts/Clair-Vivaldi-0.3.0.zip` and `dist/artifacts/Obscur-Vivaldi-0.3.0.zip` |
-| Opera GX paired candidate | `dist/artifacts/Clair-Obscur-OperaGX-0.3.0.zip` |
+| Opera GX paired candidate | `dist/artifacts/Clair-Obscur-OperaGX-0.3.1.zip` |
 | Integrity records | `dist/SHA256SUMS` and `dist/artifact-manifest.json` |
 
 Use a separate Chrome test profile or a recoverable Equicord configuration for either appearance, and keep the remaining native checks in view. In Chrome, extract the ZIP and use “Load unpacked” in `chrome://extensions`. In Equibop, use Equicord's “Open Themes Folder” control and copy the CSS there. Do not paste it over QuickCSS or install another Discord client.
