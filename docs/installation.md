@@ -220,7 +220,7 @@ Cancel an unsuitable import preview. On rejection, retain Vivaldi's version, the
 
 ### Prerequisites and status
 
-Use already installed desktop Opera GX with a separate recoverable, unsynced test profile. One 0.3.0 ZIP pairs Clair Light with Obscur Dark. It is an unpacked developer candidate, without a signed CRX or GX Store approval. Native loading, color limits, effective contrast, switching, restart and restoration remain unverified. Opera One and mobile Opera are separate targets.
+Use already installed desktop Opera GX with a separate recoverable, unsynced test profile. One 0.3.1 ZIP pairs Clair Light with Obscur Dark. It is an unpacked developer candidate, without a signed CRX or GX Store approval. Native loading, color limits, effective contrast, switching, restart and restoration remain unverified. Opera One and mobile Opera are separate targets.
 
 ### Install
 

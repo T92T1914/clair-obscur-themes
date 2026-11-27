@@ -1,5 +1,11 @@
 # Changes
 
+## Opera GX 0.3.1
+
+- Set the paired Opera GX candidate to 0.3.1 with the light base hint 48, 10, 98 in place of 48, 26, 96. The only other change in the package is its version number.
+- Build 0.3.1 in place of 0.3.0. Every other download keeps its bytes.
+- Check the packaged 0.3.1 ZIP in Opera GX 139.0.6053.63 for Linux on a private virtual display. Light matched the earlier measurement of this hint at the four compared surfaces, and dark matched the 0.3.0 capture at every sampled point. Acceptance in Opera GX on Windows remains open.
+
 ## Google system app mappings
 
 - Configure Obscur Icons 0.1.18/code 19 and Clair Icons 0.1.7/code 8 for the extended table on the unchanged 0.33.0 artwork. Keep signed APK delivery private and phone installation open.

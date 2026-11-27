@@ -15,7 +15,6 @@ from themeforge.build import CHECKSUMS, MANIFEST, PROJECT_ROOT, build_release
 ACCEPTED_PAYLOAD_HASHES = {
     "artifacts/Clair-Chrome-0.1.1.zip": "4bfa96dd8ffa50647d507c5b7aabb0d82f7c96b7cf07f4beaa73c43a5579aad5",
     "artifacts/Clair-Firefox-0.2.0.xpi": "72fb8c7cdb5db8465382a897bce07701f3ffc9172af3d2808e390997c6190ae2",
-    "artifacts/Clair-Obscur-OperaGX-0.3.0.zip": "44d2073cc0c727027627699ddda292ead0c09e964cd247cd490736b37d43b342",
     "artifacts/Clair-Vivaldi-0.3.0.zip": "7af6406839d404cbaf8195eda64eb1af248c62c2f34e45d178202102f9b518f5",
     "artifacts/Obscur-Chrome-0.1.1.zip": "b8bb73a48ddbc1e8f2f92258d30c3875b17d9d5ec98eab04c457eab2f2a5474a",
     "artifacts/Obscur-Firefox-0.2.0.xpi": "3bf5bdfc6436eff3219fefd00a88d095567d51c60d2851a073cb0a8a04de7a0b",
@@ -36,12 +35,17 @@ ACCEPTED_PAYLOAD_HASHES = {
     "firefox/obscur/manifest.json": "63a45cef4ade23fe8e68221b6bd8e0d3a9f21191fc9b6ca2bfa07ca783ca3e69",
     "opera-gx/LICENSE.txt": "4a0c167c3e57f46605c607890e29afd8f26d6f3e5a6915f4163b53710d5fadbd",
     "opera-gx/icon512.png": "54166075cc3f3d363041eda86696a7984e3cfa8940cdc1445b465df641cfefed",
-    "opera-gx/manifest.json": "0102df238b7cd0792f7a84329885cafcb8be9ebc6a17cb64539d36bea21b4e16",
     "vencord/Clair-Vencord.theme.css": "f46e5ad65bbcb6ed3d68988ec064c8ea5cd824075c630c81695cb3b1c52b92ea",
     "vencord/Obscur-Vencord.theme.css": "22608a0ea5600b44b12fc0299f1f5981162c702197cfad2907a06086e9f4664a",
     "vivaldi/LICENSE.txt": "4a0c167c3e57f46605c607890e29afd8f26d6f3e5a6915f4163b53710d5fadbd",
     "vivaldi/clair/settings.json": "2db074af99419c97c6655e941f7727e3656b2a74ce9387dcc9fb2fdb79205098",
     "vivaldi/obscur/settings.json": "bbffadeca79b4f1f2ea0bfd4640dd6f8a08fa6d07d740837089f6b9e7e943e65",
+}
+
+# GX 0.3.1 replaces the GX 0.3.0 ZIP and manifest with the measured light base.
+GX_LIGHT_BASE_PAYLOAD_HASHES = {
+    "artifacts/Clair-Obscur-OperaGX-0.3.1.zip": "e8f5f10c70e3ed14bcaef16f811b0dc70029f61c9a3820e6f6e6868f97ee8dff",
+    "opera-gx/manifest.json": "b1180cb4cee2d4b17e4dacc2ef7b5c13c66d6a1c63fa3cbbe50464a25df3b839",
 }
 
 
@@ -99,8 +103,9 @@ class ReleaseBuildTests(unittest.TestCase):
         manifest = self.build()
         records = {record["path"]: record for record in manifest["files"]}
         corrected = "equicord/Clair-Equicord-0.1.2.theme.css"
-        self.assertEqual(set(records), set(ACCEPTED_PAYLOAD_HASHES) | {corrected})
-        for path, expected in ACCEPTED_PAYLOAD_HASHES.items():
+        self.assertEqual(set(records),
+                         set(ACCEPTED_PAYLOAD_HASHES) | set(GX_LIGHT_BASE_PAYLOAD_HASHES) | {corrected})
+        for path, expected in {**ACCEPTED_PAYLOAD_HASHES, **GX_LIGHT_BASE_PAYLOAD_HASHES}.items():
             with self.subTest(path=path):
                 actual = hashlib.sha256((self.output / path).read_bytes()).hexdigest()
                 self.assertEqual(actual, expected)

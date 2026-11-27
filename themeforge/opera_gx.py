@@ -21,15 +21,15 @@ def hsl_hint(value: str) -> dict[str, int]:
     return {"h": round(hue * 360) % 360, "s": round(saturation * 100), "l": round(lightness * 100)}
 
 
-# A measured candidate for a later GX version. Version 0.3.0 does not use it.
+# The light base hint of GX 0.3.1, measured before it shipped.
 # GX derives its light surfaces from the light base hint and sets their
 # lightness itself. Clair's own hint, 48 26 96, makes those surfaces read beige.
 # In Opera GX 139.0.6053.63 for Linux this hint brought the chroma of the info
-# bar, the suggestions and the selected suggestion within 1.0 of Clair's
+# bar, the suggestions and the selected suggestion within 1.1 of Clair's
 # control, hover and selected tokens, and left the base within two channels of
 # Clair's canvas. Their lightness stayed GX's own, 4.8 to 10.6 L* darker
 # than those tokens.
-LIGHT_BASE_CANDIDATE = {"h": 48, "s": 10, "l": 98}
+LIGHT_BASE = {"h": 48, "s": 10, "l": 98}
 
 
 def _checked_hint(hint: object) -> dict[str, int]:
